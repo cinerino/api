@@ -56,12 +56,11 @@ eventsRouter.get('/screeningEvent', permitScopes_1.default(['aws.cognito.signin.
 }));
 eventsRouter.get('/screeningEvent/:id', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield cinerino.service.event.findScreeningEventById(req.params.id)({
+        const event = yield cinerino.service.event.findScreeningEventById(req.params.id)({
             event: new cinerino.repository.Event(cinerino.mongoose.connection)
             // itemAvailability: new cinerino.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())
-        }).then((event) => {
-            res.json(event);
         });
+        res.json(event);
     }
     catch (error) {
         next(error);

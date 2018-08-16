@@ -50,7 +50,6 @@ eventsRouter.get(
                 event: new cinerino.repository.Event(cinerino.mongoose.connection)
                 // itemAvailability: new cinerino.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())
             });
-
             res.json(events);
         } catch (error) {
             next(error);
@@ -64,12 +63,11 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            await cinerino.service.event.findScreeningEventById(req.params.id)({
+            const event = await cinerino.service.event.findScreeningEventById(req.params.id)({
                 event: new cinerino.repository.Event(cinerino.mongoose.connection)
                 // itemAvailability: new cinerino.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())
-            }).then((event) => {
-                res.json(event);
             });
+            res.json(event);
         } catch (error) {
             next(error);
         }
