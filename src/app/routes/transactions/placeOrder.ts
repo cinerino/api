@@ -350,10 +350,10 @@ placeOrderTransactionsRouter.delete(
 );
 
 /**
- * ポイント口座確保
+ * 口座確保
  */
 placeOrderTransactionsRouter.post(
-    '/:transactionId/actions/authorize/paymentMethod/accounts/point',
+    '/:transactionId/actions/authorize/paymentMethod/account/:accountType',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     (req, __, next) => {
         req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required').isInt();
@@ -369,9 +369,10 @@ placeOrderTransactionsRouter.post(
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.point.create({
+            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
                 transactionId: req.params.transactionId,
-                amount: parseInt(req.body.amount, 10),
+                amount: Number(req.body.amount),
+                accountType: req.params.accountType,
                 fromAccountNumber: req.body.fromAccountNumber,
                 notes: req.body.notes
             })({
@@ -392,25 +393,29 @@ placeOrderTransactionsRouter.post(
  * ポイント口座承認取消
  */
 placeOrderTransactionsRouter.delete(
-    '/:transactionId/actions/authorize/paymentMethod/accounts/point/:actionId',
+    '/:transactionId/actions/authorize/paymentMethod/account/:actionId',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
-            // pecorino転送取引サービスクライアントを生成
+            const withdrawService = new cinerino.pecorinoapi.service.transaction.Withdraw({
+                endpoint: <string>process.env.PECORINO_ENDPOINT,
+                auth: pecorinoAuthClient
+            });
             const transferService = new cinerino.pecorinoapi.service.transaction.Transfer({
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.point.cancel({
+            await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.cancel({
                 agentId: req.user.sub,
                 transactionId: req.params.transactionId,
                 actionId: req.params.actionId
             })({
                 action: new cinerino.repository.Action(cinerino.mongoose.connection),
                 transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
-                transferTransactionService: transferService
+                transferTransactionService: transferService,
+                withdrawTransactionService: withdrawService
             });
             res.status(NO_CONTENT).end();
         } catch (error) {
