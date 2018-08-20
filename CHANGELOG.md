@@ -15,6 +15,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文返品取引サービスを追加。
 - 口座サービスを追加。
 - 予約サービスを追加。
+- 所有権サービスを追加。
+- 予約サービスを追加。
 
 ### Changed
 

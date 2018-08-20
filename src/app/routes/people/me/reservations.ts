@@ -1,5 +1,5 @@
 /**
- * 自分の口座ルーター
+ * 自分の予約ルーター
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';

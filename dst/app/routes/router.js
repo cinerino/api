@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * ルーター
  */
 const express = require("express");
+const auth_1 = require("./auth");
 const dev_1 = require("./dev");
 const events_1 = require("./events");
 const health_1 = require("./health");
@@ -12,6 +13,7 @@ const organizations_1 = require("./organizations");
 const me_1 = require("./people/me");
 const places_1 = require("./places");
 const programMembership_1 = require("./programMembership");
+const reservations_1 = require("./reservations");
 const placeOrder_1 = require("./transactions/placeOrder");
 const returnOrder_1 = require("./transactions/returnOrder");
 const router = express.Router();
@@ -20,12 +22,14 @@ const router = express.Router();
 //   debug('Time: ', Date.now())
 //   next()
 // })
+router.use('/auth', auth_1.default);
 router.use('/health', health_1.default);
 router.use('/organizations', organizations_1.default);
 router.use('/orders', orders_1.default);
 router.use('/people/me', me_1.default);
 router.use('/places', places_1.default);
 router.use('/programMemberships', programMembership_1.default);
+router.use('/reservations', reservations_1.default);
 router.use('/events', events_1.default);
 router.use('/transactions/placeOrder', placeOrder_1.default);
 router.use('/transactions/returnOrder', returnOrder_1.default);

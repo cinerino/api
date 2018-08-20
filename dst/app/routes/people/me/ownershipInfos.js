@@ -37,6 +37,30 @@ ownershipInfosRouter.get('/:goodType', permitScopes_1.default(['aws.cognito.sign
     }
 }));
 /**
+ * 所有権に対して認可コードを発行する
+ */
+ownershipInfosRouter.get('/:goodType/:identifier/authorize', permitScopes_1.default(['aws.cognito.signin.user.admin']), (_1, _2, next) => {
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
+        const ownershipInfos = yield ownershipInfoRepo.search({
+            goodType: req.params.goodType,
+            identifier: req.params.identifier
+        });
+        if (ownershipInfos.length === 0) {
+            throw new cinerino.factory.errors.NotFound('OwnershipInfo');
+        }
+        const ownershipInfo = ownershipInfos[0];
+        // いったん仮でコードはそのまま所有権ID
+        const code = ownershipInfo.identifier;
+        res.json({ code });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
  * 会員プログラム登録
  */
 ownershipInfosRouter.put('/programMembership/register', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.ownershipInfos']), (_1, _2, next) => {

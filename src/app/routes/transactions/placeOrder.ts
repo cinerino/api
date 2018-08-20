@@ -7,6 +7,7 @@ import * as createDebug from 'debug';
 import { Router } from 'express';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as ioredis from 'ioredis';
+import * as jwt from 'jsonwebtoken';
 import * as moment from 'moment';
 
 import authentication from '../../middlewares/authentication';
@@ -353,17 +354,38 @@ placeOrderTransactionsRouter.delete(
  * 口座確保
  */
 placeOrderTransactionsRouter.post(
-    '/:transactionId/actions/authorize/paymentMethod/account/:accountType',
+    '/:transactionId/actions/authorize/paymentMethod/account',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     (req, __, next) => {
         req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required').isInt();
-        req.checkBody('fromAccountNumber', 'invalid fromAccountNumber').notEmpty().withMessage('fromAccountNumber is required');
+        req.checkBody('fromAccount', 'invalid fromAccount').notEmpty().withMessage('fromAccount is required');
         next();
     },
     validator,
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
+            let fromAccount = req.body.fromAccount;
+            // トークン化された口座情報に対応
+            if (typeof fromAccount === 'string') {
+                fromAccount = await new Promise<any>((resolve, reject) => {
+                    jwt.verify(
+                        fromAccount,
+                        <string>process.env.TOKEN_SECRET,
+                        {},
+                        (err, decoded: any) => {
+                            if (err instanceof Error) {
+                                reject(err);
+                            } else {
+                                if (typeof decoded !== 'object') {
+                                    reject(new cinerino.factory.errors.Argument('fromAccount', 'Invalid token'));
+                                } else {
+                                    resolve(decoded.typeOfGood);
+                                }
+                            }
+                        });
+                });
+            }
             // pecorino転送取引サービスクライアントを生成
             const transferService = new cinerino.pecorinoapi.service.transaction.Transfer({
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
@@ -372,8 +394,10 @@ placeOrderTransactionsRouter.post(
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
                 transactionId: req.params.transactionId,
                 amount: Number(req.body.amount),
-                accountType: req.params.accountType,
-                fromAccountNumber: req.body.fromAccountNumber,
+                fromAccount: {
+                    accountType: fromAccount.accountType,
+                    accountNumber: fromAccount.accountNumber
+                },
                 notes: req.body.notes
             })({
                 action: new cinerino.repository.Action(cinerino.mongoose.connection),

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 自分の口座ルーター
+ * 自分の予約ルーター
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
