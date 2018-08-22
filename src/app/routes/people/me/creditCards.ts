@@ -17,7 +17,7 @@ const debug = createDebug('cinerino-api:router');
  * 会員クレジットカード検索
  */
 creditCardsRouter.get(
-    '/',
+    '',
     permitScopes(['aws.cognito.signin.user.admin', 'people.creditCards', 'people.creditCards.read-only']),
     async (req, res, next) => {
         try {
@@ -34,7 +34,7 @@ creditCardsRouter.get(
  * 会員クレジットカード追加
  */
 creditCardsRouter.post(
-    '/',
+    '',
     permitScopes(['aws.cognito.signin.user.admin', 'people.creditCards']),
     (__1, __2, next) => {
         next();
