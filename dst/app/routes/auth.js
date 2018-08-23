@@ -13,11 +13,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-const jwt = require("jsonwebtoken");
-// import * as redis from '../../redis';
 const authentication_1 = require("../middlewares/authentication");
 // import permitScopes from '../middlewares/permitScopes';
 const validator_1 = require("../middlewares/validator");
+const redis = require("../../redis");
 const authRouter = express_1.Router();
 authRouter.use(authentication_1.default);
 /**
@@ -27,31 +26,15 @@ authRouter.post('/token',
 // permitScopes(['aws.cognito.signin.user.admin']),
 validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const code = req.body.code;
-        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
-        const ownershipInfo = yield ownershipInfoRepo.ownershipInfoModel.findOne({
-            identifier: code
-        }).then((doc) => {
-            if (doc === null) {
-                throw new cinerino.factory.errors.Argument('Invalid code');
-            }
-            return doc.toObject();
-        });
-        // 所有権をトークン化
-        const token = yield new Promise((resolve, reject) => {
-            // 許可証を暗号化する
-            jwt.sign(ownershipInfo, process.env.TOKEN_SECRET, {
-                issuer: process.env.RESOURCE_SERVER_IDENTIFIER,
-                // tslint:disable-next-line:no-magic-numbers
-                expiresIn: 1800
-            }, (err, encoded) => {
-                if (err instanceof Error) {
-                    reject(err);
-                }
-                else {
-                    resolve(encoded);
-                }
-            });
+        const codeRepo = new cinerino.repository.Code(redis.getClient());
+        const token = yield cinerino.service.code.getToken({
+            code: req.body.code,
+            secret: process.env.TOKEN_SECRET,
+            issuer: process.env.RESOURCE_SERVER_IDENTIFIER,
+            // tslint:disable-next-line:no-magic-numbers
+            expiresIn: 1800
+        })({
+            code: codeRepo
         });
         res.json({ token });
     }

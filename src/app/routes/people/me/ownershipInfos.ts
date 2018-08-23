@@ -8,6 +8,8 @@ import { ACCEPTED } from 'http-status';
 import permitScopes from '../../../middlewares/permitScopes';
 import validator from '../../../middlewares/validator';
 
+import * as redis from '../../../../redis';
+
 const ownershipInfosRouter = Router();
 
 /**
@@ -47,17 +49,15 @@ ownershipInfosRouter.get(
     validator,
     async (req, res, next) => {
         try {
+            const codeRepo = new cinerino.repository.Code(redis.getClient());
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
-            const ownershipInfos = await ownershipInfoRepo.search({
+            const code = await cinerino.service.code.publish({
                 goodType: req.params.goodType,
                 identifier: req.params.identifier
+            })({
+                code: codeRepo,
+                ownershipInfo: ownershipInfoRepo
             });
-            if (ownershipInfos.length === 0) {
-                throw new cinerino.factory.errors.NotFound('OwnershipInfo');
-            }
-            const ownershipInfo = ownershipInfos[0];
-            // いったん仮でコードはそのまま所有権ID
-            const code = ownershipInfo.identifier;
             res.json({ code });
         } catch (error) {
             next(error);

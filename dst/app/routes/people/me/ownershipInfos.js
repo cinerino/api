@@ -16,6 +16,7 @@ const express_1 = require("express");
 const http_status_1 = require("http-status");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const validator_1 = require("../../../middlewares/validator");
+const redis = require("../../../../redis");
 const ownershipInfosRouter = express_1.Router();
 /**
  * ユーザーの所有権検索
@@ -43,17 +44,15 @@ ownershipInfosRouter.get('/:goodType/:identifier/authorize', permitScopes_1.defa
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const codeRepo = new cinerino.repository.Code(redis.getClient());
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
-        const ownershipInfos = yield ownershipInfoRepo.search({
+        const code = yield cinerino.service.code.publish({
             goodType: req.params.goodType,
             identifier: req.params.identifier
+        })({
+            code: codeRepo,
+            ownershipInfo: ownershipInfoRepo
         });
-        if (ownershipInfos.length === 0) {
-            throw new cinerino.factory.errors.NotFound('OwnershipInfo');
-        }
-        const ownershipInfo = ownershipInfos[0];
-        // いったん仮でコードはそのまま所有権ID
-        const code = ownershipInfo.identifier;
         res.json({ code });
     }
     catch (error) {
