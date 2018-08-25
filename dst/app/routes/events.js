@@ -75,7 +75,7 @@ eventsRouter.get('/screeningEvent/:id/ticketTypes', permitScopes_1.default(['aws
             endpoint: process.env.CHEVRE_ENDPOINT,
             auth: chevreAuthClient
         });
-        const ticketTypes = yield eventService.searchScreeningEventTicketTyps({ eventId: req.params.id });
+        const ticketTypes = yield eventService.searchScreeningEventTicketTypes({ eventId: req.params.id });
         res.json(ticketTypes);
     }
     catch (error) {

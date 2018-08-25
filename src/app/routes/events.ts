@@ -86,7 +86,7 @@ eventsRouter.get(
                 endpoint: <string>process.env.CHEVRE_ENDPOINT,
                 auth: chevreAuthClient
             });
-            const ticketTypes = await eventService.searchScreeningEventTicketTyps({ eventId: req.params.id });
+            const ticketTypes = await eventService.searchScreeningEventTicketTypes({ eventId: req.params.id });
             res.json(ticketTypes);
         } catch (error) {
             next(error);
