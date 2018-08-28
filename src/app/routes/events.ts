@@ -41,11 +41,11 @@ eventsRouter.get(
                 startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough).toDate() : undefined,
                 endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom).toDate() : undefined,
                 endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough).toDate() : undefined,
-                eventStatuses: (Array.isArray(req.query.eventStatuses)) ? req.query.eventStatuses : undefined,
-                superEventLocationIds:
-                    (Array.isArray(req.query.superEventLocationIds)) ? req.query.superEventLocationIds : undefined,
-                workPerformedIds:
-                    (Array.isArray(req.query.workPerformedIds)) ? req.query.workPerformedIds : undefined
+                eventStatuses: (Array.isArray(req.query.eventStatuses)) ? req.query.eventStatuses : undefined
+                // superEventLocationIds:
+                //     (Array.isArray(req.query.superEventLocationIds)) ? req.query.superEventLocationIds : undefined,
+                // workPerformedIds:
+                //     (Array.isArray(req.query.workPerformedIds)) ? req.query.workPerformedIds : undefined
             })({
                 event: new cinerino.repository.Event(cinerino.mongoose.connection)
                 // itemAvailability: new cinerino.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())
