@@ -16,7 +16,7 @@ import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
 import router from './routes/router';
 
-const debug = createDebug('cinerino-api:*');
+const debug = createDebug('cinerino-api:app');
 
 const app = express();
 

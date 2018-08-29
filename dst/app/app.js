@@ -14,7 +14,7 @@ const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const router_1 = require("./routes/router");
-const debug = createDebug('cinerino-api:*');
+const debug = createDebug('cinerino-api:app');
 const app = express();
 app.use(middlewares.basicAuth({
     name: process.env.BASIC_AUTH_NAME,
