@@ -7,7 +7,6 @@ import * as createDebug from 'debug';
 import { Router } from 'express';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as ioredis from 'ioredis';
-import * as jwt from 'jsonwebtoken';
 import * as moment from 'moment';
 
 import authentication from '../../middlewares/authentication';
@@ -365,26 +364,22 @@ placeOrderTransactionsRouter.post(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
-            let fromAccount = req.body.fromAccount;
+            let fromAccount: cinerino.factory.ownershipInfo.IAccount<cinerino.factory.accountType> | string = req.body.fromAccount;
             // トークン化された口座情報に対応
             if (typeof fromAccount === 'string') {
-                fromAccount = await new Promise<any>((resolve, reject) => {
-                    jwt.verify(
-                        fromAccount,
-                        <string>process.env.TOKEN_SECRET,
-                        {},
-                        (err, decoded: any) => {
-                            if (err instanceof Error) {
-                                reject(err);
-                            } else {
-                                if (typeof decoded !== 'object') {
-                                    reject(new cinerino.factory.errors.Argument('fromAccount', 'Invalid token'));
-                                } else {
-                                    resolve(decoded.typeOfGood);
-                                }
-                            }
-                        });
-                });
+                // tslint:disable-next-line:max-line-length
+                type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.ownershipInfo.AccountGoodType.Account>>;
+                const accountOwnershipInfo = await cinerino.service.code.verifyToken<IPayload>({
+                    agent: req.agent,
+                    token: fromAccount,
+                    secret: <string>process.env.TOKEN_SECRET,
+                    issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
+                })({ action: new cinerino.repository.Action(cinerino.mongoose.connection) });
+                const account = accountOwnershipInfo.typeOfGood;
+                if (account.accountType !== cinerino.factory.accountType.Coin) {
+                    throw new cinerino.factory.errors.Argument('fromAccount', 'Invalid token');
+                }
+                fromAccount = account;
             }
             // pecorino転送取引サービスクライアントを生成
             const transferService = new cinerino.pecorinoapi.service.transaction.Transfer({

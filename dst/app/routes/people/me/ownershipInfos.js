@@ -59,6 +59,15 @@ ownershipInfosRouter.get('/:goodType/:identifier/authorize', permitScopes_1.defa
         next(error);
     }
 }));
+ownershipInfosRouter.get('/:goodType/:identifier/tokens', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const tokens = [];
+        res.json(tokens);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 /**
  * 会員プログラム登録
  */

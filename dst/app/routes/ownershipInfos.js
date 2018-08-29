@@ -17,12 +17,12 @@ const authentication_1 = require("../middlewares/authentication");
 // import permitScopes from '../middlewares/permitScopes';
 const validator_1 = require("../middlewares/validator");
 const redis = require("../../redis");
-const authRouter = express_1.Router();
-authRouter.use(authentication_1.default);
+const ownershipInfosRouter = express_1.Router();
+ownershipInfosRouter.use(authentication_1.default);
 /**
  * コードから所有権に対するアクセストークンを発行する
  */
-authRouter.post('/token', 
+ownershipInfosRouter.post('/tokens', 
 // permitScopes(['aws.cognito.signin.user.admin']),
 validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -42,4 +42,15 @@ validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, functio
         next(error);
     }
 }));
-exports.default = authRouter;
+ownershipInfosRouter.get('/:goodType/:identifier/actions/checkToken', 
+// permitScopes(['aws.cognito.signin.user.admin']),
+validator_1.default, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const actions = [];
+        res.json(actions);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+exports.default = ownershipInfosRouter;

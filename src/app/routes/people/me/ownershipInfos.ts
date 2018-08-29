@@ -11,7 +11,6 @@ import validator from '../../../middlewares/validator';
 import * as redis from '../../../../redis';
 
 const ownershipInfosRouter = Router();
-
 /**
  * ユーザーの所有権検索
  */
@@ -36,7 +35,6 @@ ownershipInfosRouter.get(
         }
     }
 );
-
 /**
  * 所有権に対して認可コードを発行する
  */
@@ -64,7 +62,19 @@ ownershipInfosRouter.get(
         }
     }
 );
-
+ownershipInfosRouter.get(
+    '/:goodType/:identifier/tokens',
+    permitScopes(['aws.cognito.signin.user.admin']),
+    validator,
+    async (_, res, next) => {
+        try {
+            const tokens: string[] = [];
+            res.json(tokens);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 /**
  * 会員プログラム登録
  */
@@ -97,7 +107,6 @@ ownershipInfosRouter.put(
         }
     }
 );
-
 /**
  * 会員プログラム登録解除
  * 所有権のidentifierをURLで指定
@@ -125,5 +134,4 @@ ownershipInfosRouter.put(
         }
     }
 );
-
 export default ownershipInfosRouter;

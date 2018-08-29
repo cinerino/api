@@ -10,14 +10,13 @@ import validator from '../middlewares/validator';
 
 import * as redis from '../../redis';
 
-const authRouter = Router();
-authRouter.use(authentication);
-
+const ownershipInfosRouter = Router();
+ownershipInfosRouter.use(authentication);
 /**
  * コードから所有権に対するアクセストークンを発行する
  */
-authRouter.post(
-    '/token',
+ownershipInfosRouter.post(
+    '/tokens',
     // permitScopes(['aws.cognito.signin.user.admin']),
     validator,
     async (req, res, next) => {
@@ -36,6 +35,19 @@ authRouter.post(
         } catch (error) {
             next(error);
         }
-    });
-
-export default authRouter;
+    }
+);
+ownershipInfosRouter.get(
+    '/:goodType/:identifier/actions/checkToken',
+    // permitScopes(['aws.cognito.signin.user.admin']),
+    validator,
+    async (_, res, next) => {
+        try {
+            const actions: any[] = [];
+            res.json(actions);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+export default ownershipInfosRouter;

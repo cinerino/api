@@ -17,7 +17,6 @@ const createDebug = require("debug");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
 const ioredis = require("ioredis");
-const jwt = require("jsonwebtoken");
 const moment = require("moment");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
@@ -293,21 +292,17 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         let fromAccount = req.body.fromAccount;
         // トークン化された口座情報に対応
         if (typeof fromAccount === 'string') {
-            fromAccount = yield new Promise((resolve, reject) => {
-                jwt.verify(fromAccount, process.env.TOKEN_SECRET, {}, (err, decoded) => {
-                    if (err instanceof Error) {
-                        reject(err);
-                    }
-                    else {
-                        if (typeof decoded !== 'object') {
-                            reject(new cinerino.factory.errors.Argument('fromAccount', 'Invalid token'));
-                        }
-                        else {
-                            resolve(decoded.typeOfGood);
-                        }
-                    }
-                });
-            });
+            const accountOwnershipInfo = yield cinerino.service.code.verifyToken({
+                agent: req.agent,
+                token: fromAccount,
+                secret: process.env.TOKEN_SECRET,
+                issuer: process.env.RESOURCE_SERVER_IDENTIFIER
+            })({ action: new cinerino.repository.Action(cinerino.mongoose.connection) });
+            const account = accountOwnershipInfo.typeOfGood;
+            if (account.accountType !== cinerino.factory.accountType.Coin) {
+                throw new cinerino.factory.errors.Argument('fromAccount', 'Invalid token');
+            }
+            fromAccount = account;
         }
         // pecorino転送取引サービスクライアントを生成
         const transferService = new cinerino.pecorinoapi.service.transaction.Transfer({
