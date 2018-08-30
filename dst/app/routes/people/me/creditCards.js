@@ -22,7 +22,7 @@ const debug = createDebug('cinerino-api:router');
 /**
  * 会員クレジットカード検索
  */
-creditCardsRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.creditCards', 'people.creditCards.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+creditCardsRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const searchCardResults = yield cinerino.service.person.creditCard.find(req.user.sub)();
         debug('searchCardResults:', searchCardResults);
@@ -35,7 +35,7 @@ creditCardsRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin
 /**
  * 会員クレジットカード追加
  */
-creditCardsRouter.post('', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.creditCards']), (__1, __2, next) => {
+creditCardsRouter.post('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (__1, __2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -49,7 +49,7 @@ creditCardsRouter.post('', permitScopes_1.default(['aws.cognito.signin.user.admi
 /**
  * 会員クレジットカード削除
  */
-creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.creditCards']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield cinerino.service.person.creditCard.unsubscribe(req.user.sub, req.params.cardSeq)();
         res.status(http_status_1.NO_CONTENT).end();

@@ -18,23 +18,32 @@ const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const movieTheaterRouter = express_1.Router();
 movieTheaterRouter.use(authentication_1.default);
-movieTheaterRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']), validator_1.default, (__, res, next) => __awaiter(this, void 0, void 0, function* () {
+movieTheaterRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const repository = new cinerino.repository.Organization(cinerino.mongoose.connection);
-        yield repository.searchMovieTheaters({}).then((movieTheaters) => {
-            res.json(movieTheaters);
-        });
+        const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
+        const searchCoinditions = {
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : /* istanbul ignore next*/ 100,
+            page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : /* istanbul ignore next*/ 1,
+            name: req.query.name
+        };
+        const movieTheaters = yield organizationRepo.searchMovieTheaters(searchCoinditions);
+        const totalCount = yield organizationRepo.countMovieTheaters(searchCoinditions);
+        res.set('X-Total-Count', totalCount.toString());
+        res.json(movieTheaters);
     }
     catch (error) {
         next(error);
     }
 }));
-movieTheaterRouter.get('/:branchCode', permitScopes_1.default(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+movieTheaterRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const repository = new cinerino.repository.Organization(cinerino.mongoose.connection);
-        yield repository.findMovieTheaterByBranchCode(req.params.branchCode).then((movieTheater) => {
-            res.json(movieTheater);
+        const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
+        const movieTheater = yield organizationRepo.findById({
+            typeOf: cinerino.factory.organizationType.MovieTheater,
+            id: req.params.id
         });
+        res.json(movieTheater);
     }
     catch (error) {
         next(error);

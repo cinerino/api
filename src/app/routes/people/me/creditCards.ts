@@ -18,7 +18,7 @@ const debug = createDebug('cinerino-api:router');
  */
 creditCardsRouter.get(
     '',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.creditCards', 'people.creditCards.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin']),
     async (req, res, next) => {
         try {
             const searchCardResults = await cinerino.service.person.creditCard.find(req.user.sub)();
@@ -35,7 +35,7 @@ creditCardsRouter.get(
  */
 creditCardsRouter.post(
     '',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.creditCards']),
+    permitScopes(['aws.cognito.signin.user.admin']),
     (__1, __2, next) => {
         next();
     },
@@ -55,7 +55,7 @@ creditCardsRouter.post(
  */
 creditCardsRouter.delete(
     '/:cardSeq',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.creditCards']),
+    permitScopes(['aws.cognito.signin.user.admin']),
     validator,
     async (req, res, next) => {
         try {

@@ -18,13 +18,12 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-
 /**
  * 上映イベント予約検索
  */
 reservationsRouter.get(
     '/eventReservation/screeningEvent',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.accounts.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin']),
     validator,
     async (req, res, next) => {
         try {
@@ -40,11 +39,11 @@ reservationsRouter.get(
                 ownershipInfo: ownershipInfoRepo,
                 reservationService: reservationService
             });
+            res.set('X-Total-Count', ownershipInfos.length.toString());
             res.json(ownershipInfos);
         } catch (error) {
             next(error);
         }
     }
 );
-
 export default reservationsRouter;

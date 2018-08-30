@@ -52,7 +52,7 @@ screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
         };
         const events = yield eventRepo.searchScreeningEvents(searchCoinditions);
         const totalCount = yield eventRepo.countScreeningEvents(searchCoinditions);
-        res.set('Total-Count', totalCount.toString());
+        res.set('X-Total-Count', totalCount.toString());
         res.json(events);
     }
     catch (error) {

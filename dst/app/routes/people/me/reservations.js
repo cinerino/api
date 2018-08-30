@@ -28,7 +28,7 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 /**
  * 上映イベント予約検索
  */
-reservationsRouter.get('/eventReservation/screeningEvent', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+reservationsRouter.get('/eventReservation/screeningEvent', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
         const reservationService = new cinerino.chevre.service.Reservation({
@@ -42,6 +42,7 @@ reservationsRouter.get('/eventReservation/screeningEvent', permitScopes_1.defaul
             ownershipInfo: ownershipInfoRepo,
             reservationService: reservationService
         });
+        res.set('X-Total-Count', ownershipInfos.length.toString());
         res.json(ownershipInfos);
     }
     catch (error) {

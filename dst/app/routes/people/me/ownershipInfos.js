@@ -21,7 +21,7 @@ const ownershipInfosRouter = express_1.Router();
 /**
  * ユーザーの所有権検索
  */
-ownershipInfosRouter.get('/:goodType', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.ownershipInfos', 'people.ownershipInfos.read-only']), (_1, _2, next) => {
+ownershipInfosRouter.get('/:goodType', permitScopes_1.default(['aws.cognito.signin.user.admin']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -71,7 +71,7 @@ ownershipInfosRouter.get('/:goodType/:identifier/tokens', permitScopes_1.default
 /**
  * 会員プログラム登録
  */
-ownershipInfosRouter.put('/programMembership/register', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.ownershipInfos']), (_1, _2, next) => {
+ownershipInfosRouter.put('/programMembership/register', permitScopes_1.default(['aws.cognito.signin.user.admin']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -99,7 +99,7 @@ ownershipInfosRouter.put('/programMembership/register', permitScopes_1.default([
  * 会員プログラム登録解除
  * 所有権のidentifierをURLで指定
  */
-ownershipInfosRouter.put('/programMembership/:identifier/unRegister', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.ownershipInfos']), (_1, _2, next) => {
+ownershipInfosRouter.put('/programMembership/:identifier/unRegister', permitScopes_1.default(['aws.cognito.signin.user.admin']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {

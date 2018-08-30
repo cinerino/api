@@ -16,7 +16,7 @@ const ownershipInfosRouter = Router();
  */
 ownershipInfosRouter.get(
     '/:goodType',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.ownershipInfos', 'people.ownershipInfos.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin']),
     (_1, _2, next) => {
         next();
     },
@@ -80,7 +80,7 @@ ownershipInfosRouter.get(
  */
 ownershipInfosRouter.put(
     '/programMembership/register',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.ownershipInfos']),
+    permitScopes(['aws.cognito.signin.user.admin']),
     (_1, _2, next) => {
         next();
     },
@@ -113,7 +113,7 @@ ownershipInfosRouter.put(
  */
 ownershipInfosRouter.put(
     '/programMembership/:identifier/unRegister',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.ownershipInfos']),
+    permitScopes(['aws.cognito.signin.user.admin']),
     (_1, _2, next) => {
         next();
     },

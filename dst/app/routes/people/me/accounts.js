@@ -28,7 +28,7 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
 /**
  * 口座開設
  */
-accountsRouter.post('/:accountType', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts']), (req, _, next) => {
+accountsRouter.post('/:accountType', permitScopes_1.default(['aws.cognito.signin.user.admin']), (req, _, next) => {
     req.checkBody('name', 'invalid name').notEmpty().withMessage('name is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -58,7 +58,7 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['aws.cognito.signin
  * 口座解約
  * 口座の状態を変更するだけで、所有口座リストから削除はしない
  */
-accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
         const accountService = new cinerino.pecorinoapi.service.Account({
@@ -82,7 +82,7 @@ accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(
 /**
  * 口座検索
  */
-accountsRouter.get('/:accountType', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+accountsRouter.get('/:accountType', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
         const accountService = new cinerino.pecorinoapi.service.Account({
@@ -107,7 +107,7 @@ accountsRouter.get('/:accountType', permitScopes_1.default(['aws.cognito.signin.
 /**
  * 口座取引履歴検索
  */
-accountsRouter.get('/:accountType/:accountNumber/actions/moneyTransfer', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts.actions.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+accountsRouter.get('/:accountType/:accountNumber/actions/moneyTransfer', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
         const accountService = new cinerino.pecorinoapi.service.Account({
@@ -123,6 +123,7 @@ accountsRouter.get('/:accountType/:accountNumber/actions/moneyTransfer', permitS
             ownershipInfo: ownershipInfoRepo,
             accountService: accountService
         });
+        res.set('X-Total-Count', actions.length.toString());
         res.json(actions);
     }
     catch (error) {

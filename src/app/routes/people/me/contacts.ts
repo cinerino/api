@@ -24,7 +24,7 @@ const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServicePr
  */
 contactsRouter.get(
     '',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.contacts', 'people.contacts.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin']),
     async (req, res, next) => {
         try {
             const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
@@ -41,7 +41,7 @@ contactsRouter.get(
  */
 contactsRouter.put(
     '',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.contacts']),
+    permitScopes(['aws.cognito.signin.user.admin']),
     (__1, __2, next) => {
         next();
     },

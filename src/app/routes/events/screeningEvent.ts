@@ -50,7 +50,7 @@ screeningEventRouter.get(
             };
             const events = await eventRepo.searchScreeningEvents(searchCoinditions);
             const totalCount = await eventRepo.countScreeningEvents(searchCoinditions);
-            res.set('Total-Count', totalCount.toString());
+            res.set('X-Total-Count', totalCount.toString());
             res.json(events);
         } catch (error) {
             next(error);

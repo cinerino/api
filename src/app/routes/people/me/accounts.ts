@@ -18,13 +18,12 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-
 /**
  * 口座開設
  */
 accountsRouter.post(
     '/:accountType',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.accounts']),
+    permitScopes(['aws.cognito.signin.user.admin']),
     (req, _, next) => {
         req.checkBody('name', 'invalid name').notEmpty().withMessage('name is required');
         next();
@@ -53,14 +52,13 @@ accountsRouter.post(
         }
     }
 );
-
 /**
  * 口座解約
  * 口座の状態を変更するだけで、所有口座リストから削除はしない
  */
 accountsRouter.put(
     '/:accountType/:accountNumber/close',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.accounts']),
+    permitScopes(['aws.cognito.signin.user.admin']),
     validator,
     async (req, res, next) => {
         try {
@@ -83,13 +81,12 @@ accountsRouter.put(
         }
     }
 );
-
 /**
  * 口座検索
  */
 accountsRouter.get(
     '/:accountType',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.accounts.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin']),
     validator,
     async (req, res, next) => {
         try {
@@ -113,13 +110,12 @@ accountsRouter.get(
         }
     }
 );
-
 /**
  * 口座取引履歴検索
  */
 accountsRouter.get(
     '/:accountType/:accountNumber/actions/moneyTransfer',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.accounts.actions.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin']),
     validator,
     async (req, res, next) => {
         try {
@@ -137,11 +133,11 @@ accountsRouter.get(
                 ownershipInfo: ownershipInfoRepo,
                 accountService: accountService
             });
+            res.set('X-Total-Count', actions.length.toString());
             res.json(actions);
         } catch (error) {
             next(error);
         }
     }
 );
-
 export default accountsRouter;

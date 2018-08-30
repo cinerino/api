@@ -28,7 +28,7 @@ const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServicePr
 /**
  * 連絡先検索
  */
-contactsRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.contacts', 'people.contacts.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+contactsRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
         const contact = yield personRepo.getUserAttributesByAccessToken(req.accessToken);
@@ -41,7 +41,7 @@ contactsRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin', 
 /**
  * 会員プロフィール更新
  */
-contactsRouter.put('', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.contacts']), (__1, __2, next) => {
+contactsRouter.put('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (__1, __2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
