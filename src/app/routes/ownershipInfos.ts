@@ -28,9 +28,7 @@ ownershipInfosRouter.post(
                 issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER,
                 // tslint:disable-next-line:no-magic-numbers
                 expiresIn: 1800
-            })({
-                code: codeRepo
-            });
+            })({ code: codeRepo });
             res.json({ token });
         } catch (error) {
             next(error);

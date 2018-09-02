@@ -9,6 +9,7 @@ import * as createDebug from 'debug';
 import * as express from 'express';
 import * as expressValidator from 'express-validator';
 import * as helmet from 'helmet';
+import * as qs from 'qs';
 
 import mongooseConnectionOptions from '../mongooseConnectionOptions';
 
@@ -19,6 +20,12 @@ import router from './routes/router';
 const debug = createDebug('cinerino-api:app');
 
 const app = express();
+app.set('query parser', (str: any) => qs.parse(str, {
+    arrayLimit: 1000,
+    parseArrays: true,
+    allowDots: false,
+    allowPrototypes: true
+}));
 
 app.use(middlewares.basicAuth({ // ベーシック認証
     name: process.env.BASIC_AUTH_NAME,

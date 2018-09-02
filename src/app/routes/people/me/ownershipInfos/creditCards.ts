@@ -6,29 +6,12 @@ import * as createDebug from 'debug';
 import { Router } from 'express';
 import { CREATED, NO_CONTENT } from 'http-status';
 
-import permitScopes from '../../../middlewares/permitScopes';
-import validator from '../../../middlewares/validator';
+import permitScopes from '../../../../middlewares/permitScopes';
+import validator from '../../../../middlewares/validator';
 
 const creditCardsRouter = Router();
 
 const debug = createDebug('cinerino-api:router');
-
-/**
- * 会員クレジットカード検索
- */
-creditCardsRouter.get(
-    '',
-    permitScopes(['aws.cognito.signin.user.admin']),
-    async (req, res, next) => {
-        try {
-            const searchCardResults = await cinerino.service.person.creditCard.find(req.user.sub)();
-            debug('searchCardResults:', searchCardResults);
-            res.json(searchCardResults);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
 
 /**
  * 会員クレジットカード追加
@@ -49,7 +32,22 @@ creditCardsRouter.post(
         }
     }
 );
-
+/**
+ * 会員クレジットカード検索
+ */
+creditCardsRouter.get(
+    '',
+    permitScopes(['aws.cognito.signin.user.admin']),
+    async (req, res, next) => {
+        try {
+            const searchCardResults = await cinerino.service.person.creditCard.find(req.user.sub)();
+            debug('searchCardResults:', searchCardResults);
+            res.json(searchCardResults);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 /**
  * 会員クレジットカード削除
  */
@@ -66,5 +64,4 @@ creditCardsRouter.delete(
         }
     }
 );
-
 export default creditCardsRouter;

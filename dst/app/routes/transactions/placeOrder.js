@@ -83,7 +83,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito
         //             `${process.env.WAITER_ENDPOINT}/passports`,
         //             {
         //                 body: {
-        //                     scope: `placeOrderTransaction.${seller.identifier}`
+        //                     scope: `placeOrderTransaction.${seller.id}`
         //                 },
         //                 json: true
         //             }

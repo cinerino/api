@@ -17,6 +17,8 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
+type IPayload =
+    cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.chevre.reservationType>>;
 /**
  * トークンで予約照会
  */
@@ -30,7 +32,6 @@ eventReservationRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<any>>;
             const payload =
                 await cinerino.service.code.verifyToken<IPayload>({
                     agent: req.agent,
@@ -39,9 +40,11 @@ eventReservationRouter.post(
                     issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
                 })({ action: new cinerino.repository.Action(cinerino.mongoose.connection) });
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
-            const ownershipInfo = await ownershipInfoRepo.search({
-                goodType: cinerino.factory.chevre.reservationType.EventReservation,
-                identifier: payload.identifier
+            const ownershipInfo = await ownershipInfoRepo.search<cinerino.factory.chevre.reservationType.EventReservation>({
+                typeOfGood: {
+                    typeOf: cinerino.factory.chevre.reservationType.EventReservation,
+                    id: payload.typeOfGood.id
+                }
             }).then((infos) => {
                 if (infos.length === 0) {
                     throw new cinerino.factory.errors.NotFound('OwnershipInfo');

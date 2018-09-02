@@ -5,10 +5,10 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import { CREATED, NO_CONTENT } from 'http-status';
 
-import permitScopes from '../../../middlewares/permitScopes';
-import validator from '../../../middlewares/validator';
+import permitScopes from '../../../../middlewares/permitScopes';
+import validator from '../../../../middlewares/validator';
 
-import * as redis from '../../../../redis';
+import * as redis from '../../../../../redis';
 
 const accountsRouter = Router();
 const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
@@ -68,7 +68,9 @@ accountsRouter.put(
                 auth: pecorinoAuthClient
             });
             await cinerino.service.account.close({
-                personId: req.user.sub,
+                ownedBy: {
+                    id: req.user.sub
+                },
                 accountType: req.params.accountType,
                 accountNumber: req.params.accountNumber
             })({
@@ -82,39 +84,10 @@ accountsRouter.put(
     }
 );
 /**
- * 口座検索
- */
-accountsRouter.get(
-    '/:accountType',
-    permitScopes(['aws.cognito.signin.user.admin']),
-    validator,
-    async (req, res, next) => {
-        try {
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
-            const accountService = new cinerino.pecorinoapi.service.Account({
-                endpoint: <string>process.env.PECORINO_ENDPOINT,
-                auth: pecorinoAuthClient
-            });
-            const ownershipInfos = await cinerino.service.account.search({
-                personId: req.user.sub,
-                accountType: req.params.accountType,
-                accountNumber: req.params.accountNumber,
-                ownedAt: new Date()
-            })({
-                ownershipInfo: ownershipInfoRepo,
-                accountService: accountService
-            });
-            res.json(ownershipInfos);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-/**
  * 口座取引履歴検索
  */
 accountsRouter.get(
-    '/:accountType/:accountNumber/actions/moneyTransfer',
+    '/actions/moneyTransfer',
     permitScopes(['aws.cognito.signin.user.admin']),
     validator,
     async (req, res, next) => {
@@ -125,10 +98,10 @@ accountsRouter.get(
                 auth: pecorinoAuthClient
             });
             const actions = await cinerino.service.account.searchMoneyTransferActions({
-                personId: req.user.sub,
-                accountType: req.params.accountType,
-                accountNumber: req.params.accountNumber,
-                ownedAt: new Date()
+                ownedBy: {
+                    id: req.user.sub
+                },
+                conditions: req.query
             })({
                 ownershipInfo: ownershipInfoRepo,
                 accountService: accountService

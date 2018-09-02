@@ -33,9 +33,7 @@ validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, functio
             issuer: process.env.RESOURCE_SERVER_IDENTIFIER,
             // tslint:disable-next-line:no-magic-numbers
             expiresIn: 1800
-        })({
-            code: codeRepo
-        });
+        })({ code: codeRepo });
         res.json({ token });
     }
     catch (error) {

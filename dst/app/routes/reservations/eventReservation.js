@@ -43,8 +43,10 @@ eventReservationRouter.post('/screeningEvent/findByToken',
         })({ action: new cinerino.repository.Action(cinerino.mongoose.connection) });
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
         const ownershipInfo = yield ownershipInfoRepo.search({
-            goodType: cinerino.factory.chevre.reservationType.EventReservation,
-            identifier: payload.identifier
+            typeOfGood: {
+                typeOf: cinerino.factory.chevre.reservationType.EventReservation,
+                id: payload.typeOfGood.id
+            }
         }).then((infos) => {
             if (infos.length === 0) {
                 throw new cinerino.factory.errors.NotFound('OwnershipInfo');

@@ -3,19 +3,40 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
-import { ACCEPTED } from 'http-status';
+import * as moment from 'moment';
 
 import permitScopes from '../../../middlewares/permitScopes';
 import validator from '../../../middlewares/validator';
 
 import * as redis from '../../../../redis';
 
+import accountsRouter from './ownershipInfos/accounts';
+import creditCardsRouter from './ownershipInfos/creditCards';
+import reservationsRouter from './ownershipInfos/reservations';
+
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
+    domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.PECORINO_CLIENT_ID,
+    clientSecret: <string>process.env.PECORINO_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const ownershipInfosRouter = Router();
+ownershipInfosRouter.use('/accounts', accountsRouter);
+ownershipInfosRouter.use('/creditCards', creditCardsRouter);
+ownershipInfosRouter.use('/reservations', reservationsRouter);
 /**
- * ユーザーの所有権検索
+ * 所有権検索
  */
 ownershipInfosRouter.get(
-    '/:goodType',
+    '',
     permitScopes(['aws.cognito.signin.user.admin']),
     (_1, _2, next) => {
         next();
@@ -23,12 +44,50 @@ ownershipInfosRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const repository = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
-            const ownershipInfos = await repository.search({
-                goodType: req.params.goodType,
-                ownedBy: req.user.sub,
-                ownedAt: new Date()
-            });
+            const query = <cinerino.factory.ownershipInfo.ISearchConditions<cinerino.factory.ownershipInfo.IGoodType>>req.query;
+            const typeOfGood = query.typeOfGood;
+            let ownershipInfos:
+                cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGoodWithDetail<typeof typeOfGood.typeOf>>[];
+            const searchConditions: cinerino.factory.ownershipInfo.ISearchConditions<typeof typeOfGood.typeOf> = {
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (query.limit !== undefined) ? Math.min(query.limit, 100) : 100,
+                page: (query.page !== undefined) ? Math.max(query.page, 1) : 1,
+                sort: (query.sort !== undefined) ? query.sort : { ownedFrom: cinerino.factory.sortType.Descending },
+                ownedBy: { id: req.user.sub },
+                ownedFrom: (query.ownedFrom !== undefined) ? moment(query.ownedFrom).toDate() : undefined,
+                ownedThrough: (query.ownedThrough !== undefined) ? moment(query.ownedThrough).toDate() : undefined,
+                typeOfGood: typeOfGood
+            };
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
+            const totalCount = await ownershipInfoRepo.count(searchConditions);
+            switch (typeOfGood.typeOf) {
+                case cinerino.factory.ownershipInfo.AccountGoodType.Account:
+                    const accountService = new cinerino.pecorinoapi.service.Account({
+                        endpoint: <string>process.env.PECORINO_ENDPOINT,
+                        auth: pecorinoAuthClient
+                    });
+                    ownershipInfos = await cinerino.service.account.search({ ...searchConditions, typeOfGood: typeOfGood })({
+                        ownershipInfo: ownershipInfoRepo,
+                        accountService: accountService
+                    });
+                    break;
+                case cinerino.factory.chevre.reservationType.EventReservation:
+                    const reservationService = new cinerino.chevre.service.Reservation({
+                        endpoint: <string>process.env.CHEVRE_ENDPOINT,
+                        auth: chevreAuthClient
+                    });
+                    ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(
+                        { ...searchConditions, typeOfGood: typeOfGood }
+                    )({
+                        ownershipInfo: ownershipInfoRepo,
+                        reservationService: reservationService
+                    });
+                    break;
+
+                default:
+                    throw new cinerino.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
+            }
+            res.set('X-Total-Count', totalCount.toString());
             res.json(ownershipInfos);
         } catch (error) {
             next(error);
@@ -38,8 +97,8 @@ ownershipInfosRouter.get(
 /**
  * 所有権に対して認可コードを発行する
  */
-ownershipInfosRouter.get(
-    '/:goodType/:identifier/authorize',
+ownershipInfosRouter.post(
+    '/:id/authorize',
     permitScopes(['aws.cognito.signin.user.admin']),
     (_1, _2, next) => {
         next();
@@ -49,86 +108,12 @@ ownershipInfosRouter.get(
         try {
             const codeRepo = new cinerino.repository.Code(redis.getClient());
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
-            const code = await cinerino.service.code.publish({
-                goodType: req.params.goodType,
-                identifier: req.params.identifier
-            })({
-                code: codeRepo,
-                ownershipInfo: ownershipInfoRepo
-            });
+            const ownershipInfo = await ownershipInfoRepo.findById({ id: req.params.id });
+            if (ownershipInfo.ownedBy.id !== req.user.sub) {
+                throw new cinerino.factory.errors.Unauthorized();
+            }
+            const code = await codeRepo.publish({ data: ownershipInfo });
             res.json({ code });
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-ownershipInfosRouter.get(
-    '/:goodType/:identifier/tokens',
-    permitScopes(['aws.cognito.signin.user.admin']),
-    validator,
-    async (_, res, next) => {
-        try {
-            const tokens: string[] = [];
-            res.json(tokens);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-/**
- * 会員プログラム登録
- */
-ownershipInfosRouter.put(
-    '/programMembership/register',
-    permitScopes(['aws.cognito.signin.user.admin']),
-    (_1, _2, next) => {
-        next();
-    },
-    validator,
-    async (req, res, next) => {
-        try {
-            const task = await cinerino.service.programMembership.createRegisterTask({
-                agent: req.agent,
-                seller: {
-                    typeOf: req.body.sellerType,
-                    id: req.body.sellerId
-                },
-                programMembershipId: req.body.programMembershipId,
-                offerIdentifier: req.body.offerIdentifier
-            })({
-                organization: new cinerino.repository.Organization(cinerino.mongoose.connection),
-                programMembership: new cinerino.repository.ProgramMembership(cinerino.mongoose.connection),
-                task: new cinerino.repository.Task(cinerino.mongoose.connection)
-            });
-            // 会員登録タスクとして受け入れられたのでACCEPTED
-            res.status(ACCEPTED).json(task);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-/**
- * 会員プログラム登録解除
- * 所有権のidentifierをURLで指定
- */
-ownershipInfosRouter.put(
-    '/programMembership/:identifier/unRegister',
-    permitScopes(['aws.cognito.signin.user.admin']),
-    (_1, _2, next) => {
-        next();
-    },
-    validator,
-    async (req, res, next) => {
-        try {
-            const task = await cinerino.service.programMembership.createUnRegisterTask({
-                agent: req.agent,
-                ownershipInfoIdentifier: req.params.identifier
-            })({
-                ownershipInfo: new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection),
-                task: new cinerino.repository.Task(cinerino.mongoose.connection)
-            });
-            // 会員登録解除タスクとして受け入れられたのでACCEPTED
-            res.status(ACCEPTED).json(task);
         } catch (error) {
             next(error);
         }
