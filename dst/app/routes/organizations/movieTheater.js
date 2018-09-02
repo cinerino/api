@@ -23,8 +23,9 @@ movieTheaterRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admi
         const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
         const searchCoinditions = {
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : /* istanbul ignore next*/ 100,
-            page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : /* istanbul ignore next*/ 1,
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+            page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+            sort: req.query.sort,
             name: req.query.name
         };
         const movieTheaters = yield organizationRepo.searchMovieTheaters(searchCoinditions);
