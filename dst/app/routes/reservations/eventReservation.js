@@ -14,7 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const authentication_1 = require("../../middlewares/authentication");
-// import permitScopes from '../middlewares/permitScopes';
+const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const eventReservationRouter = express_1.Router();
 eventReservationRouter.use(authentication_1.default);
@@ -28,9 +28,7 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 /**
  * トークンで予約照会
  */
-eventReservationRouter.post('/screeningEvent/findByToken', 
-// permitScopes(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']),
-(req, _, next) => {
+eventReservationRouter.post('/screeningEvent/findByToken', permitScopes_1.default(['admin', 'tokens', 'tokens.read-only']), (req, _, next) => {
     req.checkBody('token', 'invalid token').notEmpty().withMessage('token is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {

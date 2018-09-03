@@ -12,18 +12,16 @@ import validator from '../middlewares/validator';
 
 const ordersRouter = Router();
 ordersRouter.use(authentication);
-
 /**
- * 確認番号と電話番号で注文照会
+ * IDとPASSで注文照会
  */
 ordersRouter.post(
     '/findByOrderInquiryKey',
     permitScopes(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']),
-    (req, _, next) => {
-        req.checkBody('theaterCode', 'invalid theaterCode').notEmpty().withMessage('theaterCode is required');
-        req.checkBody('confirmationNumber', 'invalid confirmationNumber').notEmpty().withMessage('confirmationNumber is required');
-        req.checkBody('telephone', 'invalid telephone').notEmpty().withMessage('telephone is required');
-
+    (_1, _2, next) => {
+        // req.checkBody('theaterCode', 'invalid theaterCode').notEmpty().withMessage('theaterCode is required');
+        // req.checkBody('confirmationNumber', 'invalid confirmationNumber').notEmpty().withMessage('confirmationNumber is required');
+        // req.checkBody('telephone', 'invalid telephone').notEmpty().withMessage('telephone is required');
         next();
     },
     validator,
@@ -36,7 +34,6 @@ ordersRouter.post(
 
                 return;
             }
-
             const key = {
                 theaterCode: req.body.theaterCode,
                 confirmationNumber: req.body.confirmationNumber,

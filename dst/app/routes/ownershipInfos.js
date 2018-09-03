@@ -14,7 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const authentication_1 = require("../middlewares/authentication");
-// import permitScopes from '../middlewares/permitScopes';
+const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const redis = require("../../redis");
 const ownershipInfosRouter = express_1.Router();
@@ -22,9 +22,7 @@ ownershipInfosRouter.use(authentication_1.default);
 /**
  * コードから所有権に対するアクセストークンを発行する
  */
-ownershipInfosRouter.post('/tokens', 
-// permitScopes(['aws.cognito.signin.user.admin']),
-validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+ownershipInfosRouter.post('/tokens', permitScopes_1.default(['aws.cognito.signin.user.admin', 'tokens']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const codeRepo = new cinerino.repository.Code(redis.getClient());
         const token = yield cinerino.service.code.getToken({
@@ -40,9 +38,7 @@ validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, functio
         next(error);
     }
 }));
-ownershipInfosRouter.get('/:goodType/:identifier/actions/checkToken', 
-// permitScopes(['aws.cognito.signin.user.admin']),
-validator_1.default, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+ownershipInfosRouter.get('/:goodType/:identifier/actions/checkToken', permitScopes_1.default(['admin']), validator_1.default, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const actions = [];
         res.json(actions);

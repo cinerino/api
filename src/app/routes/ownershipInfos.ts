@@ -5,7 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 
 import authentication from '../middlewares/authentication';
-// import permitScopes from '../middlewares/permitScopes';
+import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
 import * as redis from '../../redis';
@@ -17,7 +17,7 @@ ownershipInfosRouter.use(authentication);
  */
 ownershipInfosRouter.post(
     '/tokens',
-    // permitScopes(['aws.cognito.signin.user.admin']),
+    permitScopes(['aws.cognito.signin.user.admin', 'tokens']),
     validator,
     async (req, res, next) => {
         try {
@@ -37,7 +37,7 @@ ownershipInfosRouter.post(
 );
 ownershipInfosRouter.get(
     '/:goodType/:identifier/actions/checkToken',
-    // permitScopes(['aws.cognito.signin.user.admin']),
+    permitScopes(['admin']),
     validator,
     async (_, res, next) => {
         try {

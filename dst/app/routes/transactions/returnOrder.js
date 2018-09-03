@@ -12,15 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * 注文返品取引ルーター
  */
 const cinerino = require("@cinerino/domain");
-const createDebug = require("debug");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
 const moment = require("moment");
-const returnOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
-// import permitScopes from '../../middlewares/permitScopes';
+const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
-const debug = createDebug('cinerino-api:router');
+const returnOrderTransactionsRouter = express_1.Router();
 const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
 const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
 const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
@@ -33,9 +31,7 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 returnOrderTransactionsRouter.use(authentication_1.default);
-returnOrderTransactionsRouter.post('/start', 
-// permitScopes(['admin']),
-(req, _, next) => {
+returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), (req, _, next) => {
     req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
     req.checkBody('transactionId', 'invalid transactionId').notEmpty().withMessage('transactionId is required');
     next();
@@ -68,16 +64,13 @@ returnOrderTransactionsRouter.post('/start',
         next(error);
     }
 }));
-returnOrderTransactionsRouter.put('/:transactionId/confirm', 
-// permitScopes(['admin']),
-validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const transactionResult = yield cinerino.service.transaction.returnOrder.confirm(req.user.sub, req.params.transactionId)({
+        yield cinerino.service.transaction.returnOrder.confirm(req.user.sub, req.params.transactionId)({
             action: actionRepo,
             transaction: transactionRepo,
             organization: organizationRepo
         });
-        debug('transaction confirmed', transactionResult);
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {

@@ -21,12 +21,12 @@ const validator_1 = require("../middlewares/validator");
 const ordersRouter = express_1.Router();
 ordersRouter.use(authentication_1.default);
 /**
- * 確認番号と電話番号で注文照会
+ * IDとPASSで注文照会
  */
-ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']), (req, _, next) => {
-    req.checkBody('theaterCode', 'invalid theaterCode').notEmpty().withMessage('theaterCode is required');
-    req.checkBody('confirmationNumber', 'invalid confirmationNumber').notEmpty().withMessage('confirmationNumber is required');
-    req.checkBody('telephone', 'invalid telephone').notEmpty().withMessage('telephone is required');
+ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']), (_1, _2, next) => {
+    // req.checkBody('theaterCode', 'invalid theaterCode').notEmpty().withMessage('theaterCode is required');
+    // req.checkBody('confirmationNumber', 'invalid confirmationNumber').notEmpty().withMessage('confirmationNumber is required');
+    // req.checkBody('telephone', 'invalid telephone').notEmpty().withMessage('telephone is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {

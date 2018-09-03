@@ -2,18 +2,15 @@
  * 注文返品取引ルーター
  */
 import * as cinerino from '@cinerino/domain';
-import * as createDebug from 'debug';
 import { Router } from 'express';
 import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 
-const returnOrderTransactionsRouter = Router();
-
 import authentication from '../../middlewares/authentication';
-// import permitScopes from '../../middlewares/permitScopes';
+import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
-const debug = createDebug('cinerino-api:router');
+const returnOrderTransactionsRouter = Router();
 const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
 const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
 const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
@@ -25,12 +22,10 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-
 returnOrderTransactionsRouter.use(authentication);
-
 returnOrderTransactionsRouter.post(
     '/start',
-    // permitScopes(['admin']),
+    permitScopes(['admin']),
     (req, _, next) => {
         req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
         req.checkBody('transactionId', 'invalid transactionId').notEmpty().withMessage('transactionId is required');
@@ -57,7 +52,6 @@ returnOrderTransactionsRouter.post(
                 order: orderRepo,
                 cancelReservationService: cancelReservationService
             });
-
             // tslint:disable-next-line:no-string-literal
             // const host = req.headers['host'];
             // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
@@ -67,14 +61,13 @@ returnOrderTransactionsRouter.post(
         }
     }
 );
-
 returnOrderTransactionsRouter.put(
     '/:transactionId/confirm',
-    // permitScopes(['admin']),
+    permitScopes(['admin']),
     validator,
     async (req, res, next) => {
         try {
-            const transactionResult = await cinerino.service.transaction.returnOrder.confirm(
+            await cinerino.service.transaction.returnOrder.confirm(
                 req.user.sub,
                 req.params.transactionId
             )({
@@ -82,13 +75,10 @@ returnOrderTransactionsRouter.put(
                 transaction: transactionRepo,
                 organization: organizationRepo
             });
-            debug('transaction confirmed', transactionResult);
-
             res.status(NO_CONTENT).end();
         } catch (error) {
             next(error);
         }
     }
 );
-
 export default returnOrderTransactionsRouter;

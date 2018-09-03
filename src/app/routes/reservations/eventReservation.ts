@@ -5,7 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 
 import authentication from '../../middlewares/authentication';
-// import permitScopes from '../middlewares/permitScopes';
+import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
 const eventReservationRouter = Router();
@@ -24,7 +24,7 @@ type IPayload =
  */
 eventReservationRouter.post(
     '/screeningEvent/findByToken',
-    // permitScopes(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']),
+    permitScopes(['admin', 'tokens', 'tokens.read-only']),
     (req, _, next) => {
         req.checkBody('token', 'invalid token').notEmpty().withMessage('token is required');
         next();
