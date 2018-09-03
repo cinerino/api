@@ -3,7 +3,6 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
-import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import * as moment from 'moment';
 
 import authentication from '../middlewares/authentication';
@@ -13,34 +12,28 @@ import validator from '../middlewares/validator';
 const ordersRouter = Router();
 ordersRouter.use(authentication);
 /**
- * IDとPASSで注文照会
+ * 確認番号で注文照会
  */
 ordersRouter.post(
-    '/findByOrderInquiryKey',
+    '/findByConfirmationNumber',
     permitScopes(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']),
-    (_1, _2, next) => {
-        // req.checkBody('theaterCode', 'invalid theaterCode').notEmpty().withMessage('theaterCode is required');
-        // req.checkBody('confirmationNumber', 'invalid confirmationNumber').notEmpty().withMessage('confirmationNumber is required');
-        // req.checkBody('telephone', 'invalid telephone').notEmpty().withMessage('telephone is required');
+    (req, _2, next) => {
+        req.checkBody('confirmationNumber', 'invalid confirmationNumber').notEmpty().withMessage('confirmationNumber is required');
+        req.checkBody('customer', 'invalid customer').notEmpty().withMessage('customer is required');
         next();
     },
     validator,
     async (req, res, next) => {
         try {
-            const phoneUtil = PhoneNumberUtil.getInstance();
-            const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
-            if (!phoneUtil.isValidNumber(phoneNumber)) {
-                next(new cinerino.factory.errors.Argument('telephone', 'Invalid phone number format'));
-
-                return;
+            const customer = req.body.customer;
+            if (customer.email !== undefined && customer.telephone !== undefined) {
+                throw new cinerino.factory.errors.Argument('customer');
             }
-            const key = {
-                theaterCode: req.body.theaterCode,
+            const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
+            const order = await orderRepo.findByConfirmationNumber({
                 confirmationNumber: req.body.confirmationNumber,
-                telephone: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
-            };
-            const repository = new cinerino.repository.Order(cinerino.mongoose.connection);
-            const order = await repository.findByOrderInquiryKey(key);
+                customer: customer
+            });
             res.json(order);
         } catch (error) {
             next(error);

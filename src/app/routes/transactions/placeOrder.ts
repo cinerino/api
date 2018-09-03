@@ -207,13 +207,18 @@ placeOrderTransactionsRouter.delete(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
+            const reserveService = new cinerino.chevre.service.transaction.Reserve({
+                endpoint: <string>process.env.CHEVRE_ENDPOINT,
+                auth: chevreAuthClient
+            });
             await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.cancel({
                 agentId: req.user.sub,
                 transactionId: req.params.transactionId,
                 actionId: req.params.actionId
             })({
                 action: new cinerino.repository.Action(cinerino.mongoose.connection),
-                transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
+                transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
+                reserveService: reserveService
             });
 
             res.status(NO_CONTENT).end();
@@ -520,6 +525,7 @@ placeOrderTransactionsRouter.put(
             })({
                 action: new cinerino.repository.Action(cinerino.mongoose.connection),
                 transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
+                confirmationNumber: new cinerino.repository.ConfirmationNumber(redis.getClient()),
                 orderNumber: new cinerino.repository.OrderNumber(redis.getClient()),
                 organization: new cinerino.repository.Organization(cinerino.mongoose.connection)
             });
