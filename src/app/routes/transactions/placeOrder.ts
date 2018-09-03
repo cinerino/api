@@ -31,7 +31,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-
 // tslint:disable-next-line:no-magic-numbers
 const UNIT_IN_SECONDS = parseInt(<string>process.env.TRANSACTION_RATE_LIMIT_UNIT_IN_SECONDS, 10);
 // tslint:disable-next-line:no-magic-numbers
@@ -60,9 +59,7 @@ const rateLimit4transactionInProgress =
         // スコープ生成ロジックをカスタマイズ
         scopeGenerator: (req) => `placeOrderTransaction.${req.params.transactionId}`
     });
-
 placeOrderTransactionsRouter.use(authentication);
-
 placeOrderTransactionsRouter.post(
     '/start',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
@@ -127,7 +124,6 @@ placeOrderTransactionsRouter.post(
         }
     }
 );
-
 /**
  * 購入者情報を変更する
  */
@@ -165,7 +161,6 @@ placeOrderTransactionsRouter.put(
         }
     }
 );
-
 /**
  * 座席仮予約
  */
@@ -202,7 +197,6 @@ placeOrderTransactionsRouter.post(
         }
     }
 );
-
 /**
  * 座席仮予約削除
  */
@@ -228,51 +222,6 @@ placeOrderTransactionsRouter.delete(
         }
     }
 );
-
-/**
- * 会員プログラムオファー承認アクション
- */
-placeOrderTransactionsRouter.post(
-    '/:transactionId/actions/authorize/offer/programMembership',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
-    (__1, __2, next) => {
-        next();
-    },
-    validator,
-    rateLimit4transactionInProgress,
-    async (_, res, next) => {
-        try {
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO 実装
-            res.status(CREATED).json({});
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
- * 会員プログラムオファー承認アクション取消
- */
-placeOrderTransactionsRouter.delete(
-    '/:transactionId/actions/authorize/offer/programMembership/:actionId',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
-    (__1, __2, next) => {
-        next();
-    },
-    validator,
-    rateLimit4transactionInProgress,
-    async (_, res, next) => {
-        try {
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO 実装
-            res.status(NO_CONTENT).end();
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
 /**
  * クレジットカードオーソリ
  */
@@ -322,7 +271,6 @@ placeOrderTransactionsRouter.post(
         }
     }
 );
-
 /**
  * クレジットカードオーソリ取消
  */
@@ -348,7 +296,6 @@ placeOrderTransactionsRouter.delete(
         }
     }
 );
-
 /**
  * 口座確保
  */
@@ -407,7 +354,6 @@ placeOrderTransactionsRouter.post(
         }
     }
 );
-
 /**
  * ポイント口座承認取消
  */
@@ -442,7 +388,6 @@ placeOrderTransactionsRouter.delete(
         }
     }
 );
-
 /**
  * Mocoin口座確保
  */
@@ -489,38 +434,6 @@ placeOrderTransactionsRouter.post(
         }
     }
 );
-
-/**
- * Mocoin口座承認取消
- */
-// placeOrderTransactionsRouter.delete(
-//     '/:transactionId/actions/authorize/paymentMethod/mocoin/:actionId',
-//     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
-//     validator,
-//     rateLimit4transactionInProgress,
-//     async (req, res, next) => {
-//         try {
-//             // pecorino転送取引サービスクライアントを生成
-//             const transferService = new cinerino.mocoin.service.transaction.TransferCoin({
-//                 endpoint: <string>process.env.PECORINO_ENDPOINT,
-//                 auth: pecorinoAuthClient
-//             });
-//             await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.mocoin.cancel({
-//                 agentId: req.user.sub,
-//                 transactionId: req.params.transactionId,
-//                 actionId: req.params.actionId
-//             })({
-//                 action: new cinerino.repository.Action(cinerino.mongoose.connection),
-//                 transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
-//                 transferService: transferService
-//             });
-//             res.status(NO_CONTENT).end();
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
-
 /**
  * ポイントインセンティブ承認アクション
  */
@@ -559,7 +472,6 @@ placeOrderTransactionsRouter.post(
         }
     }
 );
-
 /**
  * ポイントインセンティブ承認アクション取消
  */
@@ -592,7 +504,6 @@ placeOrderTransactionsRouter.delete(
         }
     }
 );
-
 placeOrderTransactionsRouter.put(
     '/:transactionId/confirm',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
@@ -619,7 +530,6 @@ placeOrderTransactionsRouter.put(
         }
     }
 );
-
 /**
  * 取引を明示的に中止
  */
@@ -638,38 +548,4 @@ placeOrderTransactionsRouter.put(
         }
     }
 );
-
-placeOrderTransactionsRouter.post(
-    '/:transactionId/tasks/sendEmailNotification',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
-    validator,
-    async (req, res, next) => {
-        try {
-            const task = await cinerino.service.transaction.placeOrder.sendEmail(
-                req.params.transactionId,
-                {
-                    typeOf: cinerino.factory.creativeWorkType.EmailMessage,
-                    sender: {
-                        name: req.body.sender.name,
-                        email: req.body.sender.email
-                    },
-                    toRecipient: {
-                        name: req.body.toRecipient.name,
-                        email: req.body.toRecipient.email
-                    },
-                    about: req.body.about,
-                    text: req.body.text
-                }
-            )({
-                task: new cinerino.repository.Task(cinerino.mongoose.connection),
-                transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
-            });
-
-            res.status(CREATED).json(task);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
 export default placeOrderTransactionsRouter;

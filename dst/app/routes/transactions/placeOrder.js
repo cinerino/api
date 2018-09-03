@@ -198,36 +198,6 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/offer/sea
     }
 }));
 /**
- * 会員プログラムオファー承認アクション
- */
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/programMembership', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (__1, __2, next) => {
-    next();
-}, validator_1.default, rateLimit4transactionInProgress, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
-    try {
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO 実装
-        res.status(http_status_1.CREATED).json({});
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * 会員プログラムオファー承認アクション取消
- */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/offer/programMembership/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (__1, __2, next) => {
-    next();
-}, validator_1.default, rateLimit4transactionInProgress, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
-    try {
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO 実装
-        res.status(http_status_1.NO_CONTENT).end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
  * クレジットカードオーソリ
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/creditCard', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, __2, next) => {
@@ -400,36 +370,6 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     }
 }));
 /**
- * Mocoin口座承認取消
- */
-// placeOrderTransactionsRouter.delete(
-//     '/:transactionId/actions/authorize/paymentMethod/mocoin/:actionId',
-//     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
-//     validator,
-//     rateLimit4transactionInProgress,
-//     async (req, res, next) => {
-//         try {
-//             // pecorino転送取引サービスクライアントを生成
-//             const transferService = new cinerino.mocoin.service.transaction.TransferCoin({
-//                 endpoint: <string>process.env.PECORINO_ENDPOINT,
-//                 auth: pecorinoAuthClient
-//             });
-//             await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.mocoin.cancel({
-//                 agentId: req.user.sub,
-//                 transactionId: req.params.transactionId,
-//                 actionId: req.params.actionId
-//             })({
-//                 action: new cinerino.repository.Action(cinerino.mongoose.connection),
-//                 transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
-//                 transferService: transferService
-//             });
-//             res.status(NO_CONTENT).end();
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
-/**
  * ポイントインセンティブ承認アクション
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accounts/point', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, __2, next) => {
@@ -517,30 +457,6 @@ placeOrderTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.defaul
         yield transactionRepo.cancel(cinerino.factory.transactionType.PlaceOrder, req.params.transactionId);
         debug('transaction canceled.');
         res.status(http_status_1.NO_CONTENT).end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    try {
-        const task = yield cinerino.service.transaction.placeOrder.sendEmail(req.params.transactionId, {
-            typeOf: cinerino.factory.creativeWorkType.EmailMessage,
-            sender: {
-                name: req.body.sender.name,
-                email: req.body.sender.email
-            },
-            toRecipient: {
-                name: req.body.toRecipient.name,
-                email: req.body.toRecipient.email
-            },
-            about: req.body.about,
-            text: req.body.text
-        })({
-            task: new cinerino.repository.Task(cinerino.mongoose.connection),
-            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
-        });
-        res.status(http_status_1.CREATED).json(task);
     }
     catch (error) {
         next(error);
