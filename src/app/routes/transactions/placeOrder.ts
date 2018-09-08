@@ -541,7 +541,7 @@ placeOrderTransactionsRouter.put(
  */
 placeOrderTransactionsRouter.put(
     '/:transactionId/cancel',
-    permitScopes(['admin', 'aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
     async (req, res, next) => {
         try {

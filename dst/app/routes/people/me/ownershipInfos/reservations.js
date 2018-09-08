@@ -17,46 +17,4 @@ const reservationsRouter = express_1.Router();
 //     scopes: [],
 //     state: ''
 // });
-/**
- * 上映イベント予約検索
- */
-// reservationsRouter.get(
-//     '/eventReservation/screeningEvent',
-//     permitScopes(['aws.cognito.signin.user.admin']),
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
-//             const reservationService = new cinerino.chevre.service.Reservation({
-//                 endpoint: <string>process.env.CHEVRE_ENDPOINT,
-//                 auth: chevreAuthClient
-//             });
-//             const searchConditions:
-//                 cinerino.factory.ownershipInfo.ISearchConditions<cinerino.factory.chevre.reservationType.EventReservation> = {
-//                 // tslint:disable-next-line:no-magic-numbers
-//                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-//                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-//                 sort: (req.query.sort !== undefined) ? req.query.sort : { ownedFrom: cinerino.factory.sortType.Descending },
-//                 ownedBy: {
-//                     id: req.user.sub
-//                 },
-//                 ownedFrom: (req.query.ownedFrom !== undefined) ? moment(req.query.ownedFrom).toDate() : undefined,
-//                 ownedThrough: (req.query.ownedThrough !== undefined) ? moment(req.query.ownedThrough).toDate() : undefined,
-//                 typeOfGood: {
-//                     typeOf: cinerino.factory.chevre.reservationType.EventReservation,
-//                     id: req.query.typeOfGood.id
-//                 }
-//             };
-//             const totalCount = await ownershipInfoRepo.count(searchConditions);
-//             const ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(searchConditions)({
-//                 ownershipInfo: ownershipInfoRepo,
-//                 reservationService: reservationService
-//             });
-//             res.set('X-Total-Count', totalCount.toString());
-//             res.json(ownershipInfos);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
 exports.default = reservationsRouter;

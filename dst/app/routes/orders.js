@@ -17,6 +17,7 @@ const moment = require("moment");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
+const redis = require("../../redis");
 const ordersRouter = express_1.Router();
 ordersRouter.use(authentication_1.default);
 /**
@@ -37,6 +38,51 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['aws.cogn
             confirmationNumber: req.body.confirmationNumber,
             customer: customer
         });
+        res.json(order);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 確認番号で注文アイテムに対してコードを発行する
+ */
+ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.default(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']), (req, _2, next) => {
+    req.checkBody('customer', 'invalid customer').notEmpty().withMessage('customer is required');
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const customer = req.body.customer;
+        if (customer.email !== undefined && customer.telephone !== undefined) {
+            throw new cinerino.factory.errors.Argument('customer');
+        }
+        const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
+        const codeRepo = new cinerino.repository.Code(redis.getClient());
+        const order = yield orderRepo.findByOrderNumber(req.params.orderNumber);
+        if (order.customer.email !== customer.email && order.customer.telephone !== customer.telephone) {
+            throw new cinerino.factory.errors.Argument('customer');
+        }
+        // 配送サービスに問い合わせて、注文から所有権を検索
+        const actionsOnOrder = yield actionRepo.findByOrderNumber({ orderNumber: order.orderNumber });
+        const sendAction = actionsOnOrder
+            .filter((a) => a.typeOf === cinerino.factory.actionType.SendAction)
+            .find((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus);
+        if (sendAction === undefined) {
+            throw new cinerino.factory.errors.NotFound('OwnershipInfo');
+        }
+        if (sendAction.result === undefined) {
+            throw new cinerino.factory.errors.NotFound('OwnershipInfo');
+        }
+        const ownershipInfos = sendAction.result.ownershipInfos;
+        // 所有権に対してコード発行
+        order.acceptedOffers = yield Promise.all(order.acceptedOffers.map((offer) => __awaiter(this, void 0, void 0, function* () {
+            const ownershipInfo = ownershipInfos
+                .filter((o) => o.typeOfGood.typeOf === offer.itemOffered.typeOf)
+                .find((o) => o.typeOfGood.id === offer.itemOffered.id);
+            offer.itemOffered.reservedTicket.ticketToken = yield codeRepo.publish({ data: ownershipInfo });
+            return offer;
+        })));
         res.json(order);
     }
     catch (error) {

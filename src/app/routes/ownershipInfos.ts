@@ -1,5 +1,5 @@
 /**
- * 認証ルーター
+ * 所有権ルーター
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
@@ -35,13 +35,28 @@ ownershipInfosRouter.post(
         }
     }
 );
+/**
+ * 所有権に対するトークン検証アクションを検索する
+ */
 ownershipInfosRouter.get(
-    '/:goodType/:identifier/actions/checkToken',
+    '/:id/actions/checkToken',
     permitScopes(['admin']),
     validator,
-    async (_, res, next) => {
+    async (req, res, next) => {
         try {
-            const actions: any[] = [];
+            const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+            const actions = await actionRepo.actionModel.find(
+                {
+                    typeOf: cinerino.factory.actionType.CheckAction,
+                    'result.typeOf': 'OwnershipInfo',
+                    'result.id': req.params.id
+                },
+                {
+                    __v: 0,
+                    createdAt: 0,
+                    updatedAt: 0
+                }
+            ).exec().then((docs) => docs.map((doc) => doc.toObject()));
             res.json(actions);
         } catch (error) {
             next(error);

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 認証ルーター
+ * 所有権ルーター
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
@@ -38,9 +38,21 @@ ownershipInfosRouter.post('/tokens', permitScopes_1.default(['aws.cognito.signin
         next(error);
     }
 }));
-ownershipInfosRouter.get('/:goodType/:identifier/actions/checkToken', permitScopes_1.default(['admin']), validator_1.default, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+/**
+ * 所有権に対するトークン検証アクションを検索する
+ */
+ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const actions = [];
+        const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+        const actions = yield actionRepo.actionModel.find({
+            typeOf: cinerino.factory.actionType.CheckAction,
+            'result.typeOf': 'OwnershipInfo',
+            'result.id': req.params.id
+        }, {
+            __v: 0,
+            createdAt: 0,
+            updatedAt: 0
+        }).exec().then((docs) => docs.map((doc) => doc.toObject()));
         res.json(actions);
     }
     catch (error) {
