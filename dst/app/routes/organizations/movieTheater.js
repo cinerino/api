@@ -13,11 +13,51 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+// tslint:disable-next-line:no-submodule-imports
+const check_1 = require("express-validator/check");
+const http_status_1 = require("http-status");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const movieTheaterRouter = express_1.Router();
 movieTheaterRouter.use(authentication_1.default);
+/**
+ * 劇場組織追加
+ */
+movieTheaterRouter.post('', permitScopes_1.default(['admin', 'organizations']), ...[
+    check_1.body('name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('parentOrganization.typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('parentOrganization.name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('parentOrganization.name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('location.typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('location.branchCode').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('location.name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('location.name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('telephone').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('url').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+        .isURL(),
+    check_1.body('paymentAccepted').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+        .isArray()
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const attributes = {
+            typeOf: cinerino.factory.organizationType.MovieTheater,
+            name: req.body.name,
+            parentOrganization: req.body.parentOrganization,
+            location: req.body.location,
+            telephone: req.body.telephone,
+            url: req.body.url,
+            paymentAccepted: req.body.paymentAccepted
+        };
+        const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
+        const movieTheater = yield organizationRepo.save({ attributes: attributes });
+        res.status(http_status_1.CREATED).json(movieTheater);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 movieTheaterRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
@@ -45,6 +85,53 @@ movieTheaterRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.user.
             id: req.params.id
         });
         res.json(movieTheater);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+movieTheaterRouter.put('/:id', permitScopes_1.default(['admin', 'organizations']), ...[
+    check_1.body('name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('parentOrganization.typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('parentOrganization.name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('parentOrganization.name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('location.typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('location.branchCode').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('location.name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('location.name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('telephone').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('url').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+        .isURL(),
+    check_1.body('paymentAccepted').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+        .isArray()
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const attributes = {
+            typeOf: cinerino.factory.organizationType.MovieTheater,
+            name: req.body.name,
+            parentOrganization: req.body.parentOrganization,
+            location: req.body.location,
+            telephone: req.body.telephone,
+            url: req.body.url,
+            paymentAccepted: req.body.paymentAccepted
+        };
+        const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
+        yield organizationRepo.save({ id: req.params.id, attributes: attributes });
+        res.status(http_status_1.NO_CONTENT).end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+movieTheaterRouter.delete('/:id', permitScopes_1.default(['admin', 'organizations']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
+        yield organizationRepo.deleteById({
+            typeOf: cinerino.factory.organizationType.MovieTheater,
+            id: req.params.id
+        });
+        res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
         next(error);

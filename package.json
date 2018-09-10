@@ -9,13 +9,13 @@
     }
   ],
   "dependencies": {
-    "@cinerino/domain": "^1.0.0-alpha.20",
+    "@cinerino/domain": "^1.0.0-alpha.21",
     "@motionpicture/express-middleware": "^0.1.0",
     "body-parser": "^1.18.3",
     "cors": "^2.8.4",
     "debug": "^3.1.0",
     "express": "^4.16.3",
-    "express-validator": "^4.3.0",
+    "express-validator": "^5.3.0",
     "google-libphonenumber": "^3.1.12",
     "helmet": "^3.12.1",
     "http-status": "^1.1.2",
