@@ -39,6 +39,7 @@ app.use(middlewares.basicAuth({ // ベーシック認証
 const options: cors.CorsOptions = {
     origin: '*',
     allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'X-Access-Token', 'Authorization'],
+    exposedHeaders: ['X-Total-Count'],
     credentials: false,
     methods: ['GET', 'HEAD', 'OPTIONS', 'PUT', 'PATCH', 'POST', 'DELETE'],
     preflightContinue: false,
