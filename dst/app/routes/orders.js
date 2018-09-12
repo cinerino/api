@@ -18,6 +18,13 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const redis = require("../../redis");
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const ordersRouter = express_1.Router();
 ordersRouter.use(authentication_1.default);
 /**
@@ -75,12 +82,31 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
             throw new cinerino.factory.errors.NotFound('OwnershipInfo');
         }
         const ownershipInfos = sendAction.result.ownershipInfos;
+        const reservationIds = ownershipInfos
+            .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
+            .map((o) => o.typeOfGood.id);
+        const reservationService = new cinerino.chevre.service.Reservation({
+            endpoint: process.env.CHEVRE_ENDPOINT,
+            auth: chevreAuthClient
+        });
+        const searchReservationsResult = yield reservationService.searchScreeningEventReservations({
+            limit: reservationIds.length,
+            ids: reservationIds
+        });
         // 所有権に対してコード発行
         order.acceptedOffers = yield Promise.all(order.acceptedOffers.map((offer) => __awaiter(this, void 0, void 0, function* () {
+            // 実際の予約データで置き換え
+            const reservation = searchReservationsResult.data.find((r) => r.id === offer.itemOffered.id);
+            if (reservation !== undefined) {
+                offer.itemOffered = reservation;
+            }
+            // 所有権コード情報を追加
             const ownershipInfo = ownershipInfos
                 .filter((o) => o.typeOfGood.typeOf === offer.itemOffered.typeOf)
                 .find((o) => o.typeOfGood.id === offer.itemOffered.id);
-            offer.itemOffered.reservedTicket.ticketToken = yield codeRepo.publish({ data: ownershipInfo });
+            if (ownershipInfo !== undefined) {
+                offer.itemOffered.reservedTicket.ticketToken = yield codeRepo.publish({ data: ownershipInfo });
+            }
             return offer;
         })));
         res.json(order);
