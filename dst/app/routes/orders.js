@@ -70,18 +70,22 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
         if (order.customer.email !== customer.email && order.customer.telephone !== customer.telephone) {
             throw new cinerino.factory.errors.Argument('customer');
         }
+        // まだ配送済でない場合
+        if (order.orderStatus !== cinerino.factory.orderStatus.OrderDelivered) {
+            throw new cinerino.factory.errors.Argument('orderNumber', 'Not delivered yet');
+        }
         // 配送サービスに問い合わせて、注文から所有権を検索
         const actionsOnOrder = yield actionRepo.findByOrderNumber({ orderNumber: order.orderNumber });
-        const sendAction = actionsOnOrder
+        const sendOrderAction = actionsOnOrder
             .filter((a) => a.typeOf === cinerino.factory.actionType.SendAction)
+            .filter((a) => a.object.typeOf === 'Order')
             .find((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus);
-        if (sendAction === undefined) {
-            throw new cinerino.factory.errors.NotFound('OwnershipInfo');
+        // まだ配送済でない場合
+        if (sendOrderAction === undefined || sendOrderAction.result === undefined) {
+            throw new cinerino.factory.errors.Argument('orderNumber', 'Not delivered yet');
         }
-        if (sendAction.result === undefined) {
-            throw new cinerino.factory.errors.NotFound('OwnershipInfo');
-        }
-        const ownershipInfos = sendAction.result.ownershipInfos;
+        // 配送された所有権情報を注文に付加する
+        const ownershipInfos = sendOrderAction.result.ownershipInfos;
         const reservationIds = ownershipInfos
             .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
             .map((o) => o.typeOfGood.id);
