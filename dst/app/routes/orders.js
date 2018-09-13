@@ -75,7 +75,7 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
             throw new cinerino.factory.errors.Argument('orderNumber', 'Not delivered yet');
         }
         // 配送サービスに問い合わせて、注文から所有権を検索
-        const actionsOnOrder = yield actionRepo.findByOrderNumber({ orderNumber: order.orderNumber });
+        const actionsOnOrder = yield actionRepo.searchByOrderNumber({ orderNumber: order.orderNumber });
         const sendOrderAction = actionsOnOrder
             .filter((a) => a.typeOf === cinerino.factory.actionType.SendAction)
             .filter((a) => a.object.typeOf === 'Order')
@@ -114,6 +114,22 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
             return offer;
         })));
         res.json(order);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 注文に対するアクション検索
+ */
+ordersRouter.get('/:orderNumber/actions', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+        const actions = yield actionRepo.searchByOrderNumber({
+            orderNumber: req.params.orderNumber,
+            sort: req.query.sort
+        });
+        res.json(actions);
     }
     catch (error) {
         next(error);

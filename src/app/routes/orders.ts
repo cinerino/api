@@ -80,7 +80,7 @@ ordersRouter.post(
             }
 
             // 配送サービスに問い合わせて、注文から所有権を検索
-            const actionsOnOrder = await actionRepo.findByOrderNumber({ orderNumber: order.orderNumber });
+            const actionsOnOrder = await actionRepo.searchByOrderNumber({ orderNumber: order.orderNumber });
             const sendOrderAction = <cinerino.factory.action.transfer.send.order.IAction>actionsOnOrder
                 .filter((a) => a.typeOf === cinerino.factory.actionType.SendAction)
                 .filter((a) => a.object.typeOf === 'Order')
@@ -122,6 +122,26 @@ ordersRouter.post(
                 return offer;
             }));
             res.json(order);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+/**
+ * 注文に対するアクション検索
+ */
+ordersRouter.get(
+    '/:orderNumber/actions',
+    permitScopes(['admin']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+            const actions = await actionRepo.searchByOrderNumber({
+                orderNumber: req.params.orderNumber,
+                sort: req.query.sort
+            });
+            res.json(actions);
         } catch (error) {
             next(error);
         }
