@@ -56,26 +56,4 @@ ordersRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']), 
         next(error);
     }
 }));
-/**
- * 注文に対するアクション検索
- */
-ordersRouter.get('/:orderNumber/actions', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    try {
-        const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
-        const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
-        const order = yield orderRepo.findByOrderNumber(req.params.orderNumber);
-        // 自分の注文のみ検索可能
-        if (order.customer.id !== req.user.sub) {
-            throw new cinerino.factory.errors.Forbidden('Order Access Forbidden');
-        }
-        const actions = yield actionRepo.searchByOrderNumber({
-            orderNumber: order.orderNumber,
-            sort: req.query.sort
-        });
-        res.json(actions);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
 exports.default = ordersRouter;
