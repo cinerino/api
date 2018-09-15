@@ -135,7 +135,6 @@ placeOrderTransactionsRouter.put(
         req.checkBody('givenName').notEmpty().withMessage('required');
         req.checkBody('telephone').notEmpty().withMessage('required');
         req.checkBody('email').notEmpty().withMessage('required');
-
         next();
     },
     validator,
@@ -154,8 +153,7 @@ placeOrderTransactionsRouter.put(
             })({
                 transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
             });
-
-            res.status(CREATED).json(contact);
+            res.json(contact);
         } catch (error) {
             next(error);
         }

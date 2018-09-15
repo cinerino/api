@@ -1,5 +1,5 @@
 /**
- * 自分の連絡先ルーター
+ * 自分のプロフィールルーター
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
@@ -7,8 +7,6 @@ import { NO_CONTENT } from 'http-status';
 
 import permitScopes from '../../../middlewares/permitScopes';
 import validator from '../../../middlewares/validator';
-
-const contactsRouter = Router();
 
 const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
     apiVersion: 'latest',
@@ -18,28 +16,21 @@ const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServicePr
         secretAccessKey: <string>process.env.AWS_SECRET_ACCESS_KEY
     })
 });
-
-/**
- * 連絡先検索
- */
-contactsRouter.get(
+const profileRouter = Router();
+profileRouter.get(
     '',
     permitScopes(['aws.cognito.signin.user.admin']),
     async (req, res, next) => {
         try {
             const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
-            const contact = await personRepo.getUserAttributesByAccessToken(req.accessToken);
-            res.json(contact);
+            const profile = await personRepo.getUserAttributesByAccessToken(req.accessToken);
+            res.json(profile);
         } catch (error) {
             next(error);
         }
     }
 );
-
-/**
- * 会員プロフィール更新
- */
-contactsRouter.put(
+profileRouter.put(
     '',
     permitScopes(['aws.cognito.signin.user.admin']),
     (__1, __2, next) => {
@@ -49,9 +40,9 @@ contactsRouter.put(
     async (req, res, next) => {
         try {
             const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
-            await personRepo.updateContactByAccessToken({
+            await personRepo.updateProfileByAccessToken({
                 accessToken: req.accessToken,
-                contact: {
+                profile: {
                     givenName: req.body.givenName,
                     familyName: req.body.familyName,
                     email: req.body.email,
@@ -64,5 +55,4 @@ contactsRouter.put(
         }
     }
 );
-
-export default contactsRouter;
+export default profileRouter;

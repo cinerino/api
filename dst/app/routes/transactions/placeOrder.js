@@ -143,7 +143,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
         })({
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
         });
-        res.status(http_status_1.CREATED).json(contact);
+        res.json(contact);
     }
     catch (error) {
         next(error);

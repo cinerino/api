@@ -9,14 +9,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 自分の連絡先ルーター
+ * 自分のプロフィールルーター
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const validator_1 = require("../../../middlewares/validator");
-const contactsRouter = express_1.Router();
 const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
     apiVersion: 'latest',
     region: 'ap-northeast-1',
@@ -25,30 +24,25 @@ const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServicePr
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
     })
 });
-/**
- * 連絡先検索
- */
-contactsRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+const profileRouter = express_1.Router();
+profileRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
-        const contact = yield personRepo.getUserAttributesByAccessToken(req.accessToken);
-        res.json(contact);
+        const profile = yield personRepo.getUserAttributesByAccessToken(req.accessToken);
+        res.json(profile);
     }
     catch (error) {
         next(error);
     }
 }));
-/**
- * 会員プロフィール更新
- */
-contactsRouter.put('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (__1, __2, next) => {
+profileRouter.put('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (__1, __2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
-        yield personRepo.updateContactByAccessToken({
+        yield personRepo.updateProfileByAccessToken({
             accessToken: req.accessToken,
-            contact: {
+            profile: {
                 givenName: req.body.givenName,
                 familyName: req.body.familyName,
                 email: req.body.email,
@@ -61,4 +55,4 @@ contactsRouter.put('', permitScopes_1.default(['aws.cognito.signin.user.admin'])
         next(error);
     }
 }));
-exports.default = contactsRouter;
+exports.default = profileRouter;
