@@ -21,7 +21,6 @@ const validator_1 = require("../../middlewares/validator");
 const returnOrderTransactionsRouter = express_1.Router();
 const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
 const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
-const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
 const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
@@ -37,6 +36,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
         const cancelReservationService = new cinerino.chevre.service.transaction.CancelReservation({
             endpoint: process.env.CHEVRE_ENDPOINT,
             auth: chevreAuthClient
@@ -66,12 +66,42 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
 }));
 returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
         yield cinerino.service.transaction.returnOrder.confirm(req.user.sub, req.params.transactionId)({
             action: actionRepo,
             transaction: transactionRepo,
             organization: organizationRepo
         });
         res.status(http_status_1.NO_CONTENT).end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 取引検索
+ */
+returnOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
+        const searchConditions = {
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+            page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+            sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: cinerino.factory.sortType.Descending },
+            typeOf: cinerino.factory.transactionType.ReturnOrder,
+            ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
+            statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,
+            startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom).toDate() : undefined,
+            startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough).toDate() : undefined,
+            endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom).toDate() : undefined,
+            endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough).toDate() : undefined,
+            agent: req.query.agent
+        };
+        const transactions = yield transactionRepo.search(searchConditions);
+        const totalCount = yield transactionRepo.count(searchConditions);
+        res.set('X-Total-Count', totalCount.toString());
+        res.json(transactions);
     }
     catch (error) {
         next(error);

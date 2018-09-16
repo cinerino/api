@@ -552,4 +552,40 @@ placeOrderTransactionsRouter.put(
         }
     }
 );
+/**
+ * 取引検索
+ */
+placeOrderTransactionsRouter.get(
+    '',
+    permitScopes(['admin']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
+            const searchConditions: cinerino.factory.transaction.ISearchConditions<cinerino.factory.transactionType.PlaceOrder> = {
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+                sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: cinerino.factory.sortType.Descending },
+                typeOf: cinerino.factory.transactionType.PlaceOrder,
+                ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
+                statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,
+                startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom).toDate() : undefined,
+                startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough).toDate() : undefined,
+                endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom).toDate() : undefined,
+                endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough).toDate() : undefined,
+                agent: req.query.agent,
+                seller: req.query.seller,
+                object: req.query.object,
+                result: req.query.result
+            };
+            const transactions = await transactionRepo.search(searchConditions);
+            const totalCount = await transactionRepo.count(searchConditions);
+            res.set('X-Total-Count', totalCount.toString());
+            res.json(transactions);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 export default placeOrderTransactionsRouter;
