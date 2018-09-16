@@ -500,4 +500,21 @@ placeOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), validato
         next(error);
     }
 }));
+/**
+ * 取引に対するアクション検索
+ */
+placeOrderTransactionsRouter.get('/:transactionId/actions', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+        const actions = yield actionRepo.searchByTransactionId({
+            transactionType: cinerino.factory.transactionType.PlaceOrder,
+            transactionId: req.params.transactionId,
+            sort: req.query.sort
+        });
+        res.json(actions);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 exports.default = placeOrderTransactionsRouter;
