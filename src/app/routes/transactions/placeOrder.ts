@@ -196,10 +196,10 @@ placeOrderTransactionsRouter.post(
     }
 );
 /**
- * 座席仮予約削除
+ * 座席仮予約取消
  */
-placeOrderTransactionsRouter.delete(
-    '/:transactionId/actions/authorize/offer/seatReservation/:actionId',
+placeOrderTransactionsRouter.put(
+    '/:transactionId/actions/authorize/offer/seatReservation/:actionId/cancel',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
     rateLimit4transactionInProgress,
@@ -277,8 +277,8 @@ placeOrderTransactionsRouter.post(
 /**
  * クレジットカードオーソリ取消
  */
-placeOrderTransactionsRouter.delete(
-    '/:transactionId/actions/authorize/paymentMethod/creditCard/:actionId',
+placeOrderTransactionsRouter.put(
+    '/:transactionId/actions/authorize/paymentMethod/creditCard/:actionId/cancel',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
     rateLimit4transactionInProgress,
@@ -360,8 +360,8 @@ placeOrderTransactionsRouter.post(
 /**
  * ポイント口座承認取消
  */
-placeOrderTransactionsRouter.delete(
-    '/:transactionId/actions/authorize/paymentMethod/account/:actionId',
+placeOrderTransactionsRouter.put(
+    '/:transactionId/actions/authorize/paymentMethod/account/:actionId/cancel',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
     rateLimit4transactionInProgress,
@@ -478,8 +478,8 @@ placeOrderTransactionsRouter.post(
 /**
  * ポイントインセンティブ承認アクション取消
  */
-placeOrderTransactionsRouter.delete(
-    '/:transactionId/actions/authorize/award/accounts/point/:actionId',
+placeOrderTransactionsRouter.put(
+    '/:transactionId/actions/authorize/award/accounts/point/:actionId/cancel',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     (__1, __2, next) => {
         next();
@@ -544,7 +544,7 @@ placeOrderTransactionsRouter.put(
     async (req, res, next) => {
         try {
             const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
-            await transactionRepo.cancel(cinerino.factory.transactionType.PlaceOrder, req.params.transactionId);
+            await transactionRepo.cancel({ typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId });
             debug('transaction canceled.');
             res.status(NO_CONTENT).end();
         } catch (error) {

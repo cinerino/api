@@ -179,9 +179,9 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
     }
 }));
 /**
- * 座席仮予約削除
+ * 座席仮予約取消
  */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/offer/seatReservation/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatReservation/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const reserveService = new cinerino.chevre.service.transaction.Reserve({
             endpoint: process.env.CHEVRE_ENDPOINT,
@@ -239,7 +239,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
 /**
  * クレジットカードオーソリ取消
  */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/paymentMethod/creditCard/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/creditCard/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel({
             agentId: req.user.sub,
@@ -308,7 +308,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
 /**
  * ポイント口座承認取消
  */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/paymentMethod/account/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/account/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const withdrawService = new cinerino.pecorinoapi.service.transaction.Withdraw({
             endpoint: process.env.PECORINO_ENDPOINT,
@@ -409,7 +409,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accou
 /**
  * ポイントインセンティブ承認アクション取消
  */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/award/accounts/point/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (__1, __2, next) => {
+placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accounts/point/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (__1, __2, next) => {
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -460,7 +460,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
 placeOrderTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
-        yield transactionRepo.cancel(cinerino.factory.transactionType.PlaceOrder, req.params.transactionId);
+        yield transactionRepo.cancel({ typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId });
         debug('transaction canceled.');
         res.status(http_status_1.NO_CONTENT).end();
     }
