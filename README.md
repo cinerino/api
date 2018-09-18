@@ -34,8 +34,10 @@
 | `TRANSACTION_RATE_LIMIT_THRESHOLD`       | true     |                 | Transaction rate limit threshold   |
 | `RESOURCE_SERVER_IDENTIFIER`             | true     |                 | Resource server identifier         |
 | `TOKEN_ISSUERS`                          | true     |                 | Token issuers(Comma-separated)     |
-| `WAITER_ENDPOINT`                        | true     |                 | WAITER endpoint                    |
-| `WAITER_SECRET`                          | true     |                 | WAITER pasport token secret        |
+| `WAITER_DISABLED`                        | true     | 1 or 0          | WAITER Disable Flag                |
+| `WAITER_ENDPOINT`                        | true     |                 | WAITER Endpoint                    |
+| `WAITER_SECRET`                          | true     |                 | WAITER Pasport Token Secret        |
+| `WAITER_PASSPORT_ISSUER`                 | true     |                 | WAITER Pasport Issuer              |
 | `ORDER_INQUIRY_ENDPOINT`                 | true     |                 | Order inquiry endpoint             |
 | `BASIC_AUTH_NAME`                        | false    |                 | Basic authentication user name     |
 | `BASIC_AUTH_PASS`                        | false    |                 | Basic authentication user password |

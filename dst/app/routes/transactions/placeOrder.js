@@ -22,6 +22,7 @@ const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
+const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const placeOrderTransactionsRouter = express_1.Router();
 const debug = createDebug('cinerino-api:router');
 const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
@@ -70,34 +71,12 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito
     // expires is unix timestamp (in seconds)
     req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required');
     req.checkBody('sellerId', 'invalid sellerId').notEmpty().withMessage('sellerId is required');
+    if (!WAITER_DISABLED) {
+        req.checkBody('passportToken', 'invalid passportToken').notEmpty().withMessage('passportToken is required');
+    }
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const passportToken = req.body.passportToken;
-        // 許可証トークンパラメーターがなければ、WAITERで許可証を取得
-        // if (passportToken === undefined) {
-        //     const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
-        //     const seller = await organizationRepo.findById(cinerino.factory.organizationType.MovieTheater, req.body.sellerId);
-        //     try {
-        //         passportToken = await request.post(
-        //             `${process.env.WAITER_ENDPOINT}/passports`,
-        //             {
-        //                 body: {
-        //                     scope: `placeOrderTransaction.${seller.id}`
-        //                 },
-        //                 json: true
-        //             }
-        //         ).then((body) => body.token);
-        //     } catch (error) {
-        //         if (error.statusCode === NOT_FOUND) {
-        //             throw new cinerino.factory.errors.NotFound('sellerId', 'Seller does not exist.');
-        //         } else if (error.statusCode === TOO_MANY_REQUESTS) {
-        //             throw new cinerino.factory.errors.RateLimitExceeded('PlaceOrder transactions rate limit exceeded.');
-        //         } else {
-        //             throw new cinerino.factory.errors.ServiceUnavailable('Waiter service temporarily unavailable.');
-        //         }
-        //     }
-        // }
         const transaction = yield cinerino.service.transaction.placeOrderInProgress.start({
             expires: moment(req.body.expires).toDate(),
             customer: req.agent,
@@ -106,7 +85,13 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito
                 id: req.body.sellerId
             },
             clientUser: req.user,
-            passportToken: passportToken
+            passport: (!WAITER_DISABLED)
+                ? {
+                    token: req.body.passportToken,
+                    issuer: process.env.WAITER_PASSPORT_ISSUER,
+                    secret: process.env.WAITER_SECRET
+                }
+                : undefined
         })({
             organization: new cinerino.repository.Organization(cinerino.mongoose.connection),
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)

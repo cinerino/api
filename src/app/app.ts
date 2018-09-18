@@ -2,6 +2,7 @@
  * Expressアプリケーション
  */
 import * as cinerino from '@cinerino/domain';
+
 import * as middlewares from '@motionpicture/express-middleware';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
