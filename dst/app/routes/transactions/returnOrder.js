@@ -32,7 +32,7 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 returnOrderTransactionsRouter.use(authentication_1.default);
 returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), (req, _, next) => {
     req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
-    req.checkBody('transactionId', 'invalid transactionId').notEmpty().withMessage('transactionId is required');
+    req.checkBody('object.order.orderNumber', 'invalid order number').notEmpty().withMessage('object.order.orderNumber is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -43,12 +43,14 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
         });
         const transaction = yield cinerino.service.transaction.returnOrder.start({
             expires: moment(req.body.expires).toDate(),
-            agentId: req.user.sub,
-            transactionId: req.body.transactionId,
-            clientUser: req.user,
-            cancellationFee: 0,
-            forcibly: true,
-            reason: cinerino.factory.transaction.returnOrder.Reason.Seller
+            agent: req.agent,
+            object: {
+                order: { orderNumber: req.body.object.order.orderNumber },
+                clientUser: req.user,
+                cancellationFee: 0,
+                // forcibly: true,
+                reason: cinerino.factory.transaction.returnOrder.Reason.Seller
+            }
         })({
             action: actionRepo,
             transaction: transactionRepo,

@@ -27,7 +27,7 @@ returnOrderTransactionsRouter.post(
     permitScopes(['admin']),
     (req, _, next) => {
         req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
-        req.checkBody('transactionId', 'invalid transactionId').notEmpty().withMessage('transactionId is required');
+        req.checkBody('object.order.orderNumber', 'invalid order number').notEmpty().withMessage('object.order.orderNumber is required');
         next();
     },
     validator,
@@ -40,12 +40,14 @@ returnOrderTransactionsRouter.post(
             });
             const transaction = await cinerino.service.transaction.returnOrder.start({
                 expires: moment(req.body.expires).toDate(),
-                agentId: req.user.sub,
-                transactionId: req.body.transactionId,
-                clientUser: req.user,
-                cancellationFee: 0,
-                forcibly: true,
-                reason: cinerino.factory.transaction.returnOrder.Reason.Seller
+                agent: req.agent,
+                object: {
+                    order: { orderNumber: req.body.object.order.orderNumber },
+                    clientUser: req.user,
+                    cancellationFee: 0,
+                    // forcibly: true,
+                    reason: cinerino.factory.transaction.returnOrder.Reason.Seller
+                }
             })({
                 action: actionRepo,
                 transaction: transactionRepo,
