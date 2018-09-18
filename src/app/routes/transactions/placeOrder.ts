@@ -2,6 +2,7 @@
  * 注文取引ルーター
  */
 import * as cinerino from '@cinerino/domain';
+
 import * as middlewares from '@motionpicture/express-middleware';
 import * as createDebug from 'debug';
 import { Router } from 'express';
@@ -65,32 +66,47 @@ placeOrderTransactionsRouter.post(
     '/start',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     (req, _, next) => {
-        // expires is unix timestamp (in seconds)
-        req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required');
-        req.checkBody('sellerId', 'invalid sellerId').notEmpty().withMessage('sellerId is required');
+        req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
+        req.checkBody('agent.identifier', 'invalid agent identifier').optional().isArray();
+        req.checkBody('seller.typeOf', 'invalid seller type').notEmpty().withMessage('seller.typeOf is required');
+        req.checkBody('seller.id', 'invalid seller id').notEmpty().withMessage('seller.id is required');
         if (!WAITER_DISABLED) {
-            req.checkBody('passportToken', 'invalid passportToken').notEmpty().withMessage('passportToken is required');
+            req.checkBody('object.passport.token', 'invalid passport token').notEmpty().withMessage('object.passport.token is required');
         }
         next();
     },
     validator,
     async (req, res, next) => {
         try {
+            // WAITER有効設定であれば許可証をセット
+            let passport: cinerino.factory.transaction.placeOrder.IPassportBeforeStart | undefined;
+            if (!WAITER_DISABLED) {
+                if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
+                    throw new cinerino.factory.errors.ServiceUnavailable('WAITER_PASSPORT_ISSUER undefined');
+                }
+                if (process.env.WAITER_SECRET === undefined) {
+                    throw new cinerino.factory.errors.ServiceUnavailable('WAITER_SECRET undefined');
+                }
+                passport = {
+                    token: req.body.object.passport.token,
+                    issuer: process.env.WAITER_PASSPORT_ISSUER,
+                    secret: process.env.WAITER_SECRET
+                };
+            }
+
             const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
                 expires: moment(req.body.expires).toDate(),
-                customer: req.agent,
-                seller: {
-                    typeOf: cinerino.factory.organizationType.MovieTheater,
-                    id: req.body.sellerId
+                agent: {
+                    ...req.agent,
+                    identifier: (req.body.agent !== undefined)
+                        ? req.body.agent.identifier
+                        : undefined
                 },
-                clientUser: req.user,
-                passport: (!WAITER_DISABLED)
-                    ? {
-                        token: req.body.passportToken,
-                        issuer: <string>process.env.WAITER_PASSPORT_ISSUER,
-                        secret: <string>process.env.WAITER_SECRET
-                    }
-                    : undefined
+                seller: req.body.seller,
+                object: {
+                    clientUser: req.user,
+                    passport: passport
+                }
             })({
                 organization: new cinerino.repository.Organization(cinerino.mongoose.connection),
                 transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)

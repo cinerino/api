@@ -68,30 +68,41 @@ const rateLimit4transactionInProgress = middlewares.rateLimit({
 });
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, _, next) => {
-    // expires is unix timestamp (in seconds)
-    req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required');
-    req.checkBody('sellerId', 'invalid sellerId').notEmpty().withMessage('sellerId is required');
+    req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
+    req.checkBody('agent.identifier', 'invalid agent identifier').optional().isArray();
+    req.checkBody('seller.typeOf', 'invalid seller type').notEmpty().withMessage('seller.typeOf is required');
+    req.checkBody('seller.id', 'invalid seller id').notEmpty().withMessage('seller.id is required');
     if (!WAITER_DISABLED) {
-        req.checkBody('passportToken', 'invalid passportToken').notEmpty().withMessage('passportToken is required');
+        req.checkBody('object.passport.token', 'invalid passport token').notEmpty().withMessage('object.passport.token is required');
     }
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        // WAITER有効設定であれば許可証をセット
+        let passport;
+        if (!WAITER_DISABLED) {
+            if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('WAITER_PASSPORT_ISSUER undefined');
+            }
+            if (process.env.WAITER_SECRET === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('WAITER_SECRET undefined');
+            }
+            passport = {
+                token: req.body.object.passport.token,
+                issuer: process.env.WAITER_PASSPORT_ISSUER,
+                secret: process.env.WAITER_SECRET
+            };
+        }
         const transaction = yield cinerino.service.transaction.placeOrderInProgress.start({
             expires: moment(req.body.expires).toDate(),
-            customer: req.agent,
-            seller: {
-                typeOf: cinerino.factory.organizationType.MovieTheater,
-                id: req.body.sellerId
-            },
-            clientUser: req.user,
-            passport: (!WAITER_DISABLED)
-                ? {
-                    token: req.body.passportToken,
-                    issuer: process.env.WAITER_PASSPORT_ISSUER,
-                    secret: process.env.WAITER_SECRET
-                }
-                : undefined
+            agent: Object.assign({}, req.agent, { identifier: (req.body.agent !== undefined)
+                    ? req.body.agent.identifier
+                    : undefined }),
+            seller: req.body.seller,
+            object: {
+                clientUser: req.user,
+                passport: passport
+            }
         })({
             organization: new cinerino.repository.Organization(cinerino.mongoose.connection),
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
