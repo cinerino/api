@@ -34,8 +34,11 @@ ordersRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']), 
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
             page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
             sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: cinerino.factory.sortType.Descending },
-            sellerIds: (Array.isArray(req.query.sellerIds)) ? req.query.sellerIds : undefined,
-            customerMembershipNumbers: [req.user.username],
+            seller: req.query.seller,
+            customer: {
+                typeOf: cinerino.factory.personType.Person,
+                ids: [req.user.sub]
+            },
             orderNumbers: (Array.isArray(req.query.orderNumbers)) ? req.query.orderNumbers : undefined,
             orderStatuses: (Array.isArray(req.query.orderStatuses)) ? req.query.orderStatuses : undefined,
             orderDateFrom: moment(req.query.orderDateFrom).toDate(),

@@ -167,10 +167,8 @@ ordersRouter.get(
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
                 sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: cinerino.factory.sortType.Descending },
-                sellerIds: (Array.isArray(req.query.sellerIds)) ? req.query.sellerIds : undefined,
-                customerMembershipNumbers: (Array.isArray(req.query.customerMembershipNumbers))
-                    ? req.query.customerMembershipNumbers
-                    : undefined,
+                seller: req.query.seller,
+                customer: req.query.customer,
                 orderNumbers: (Array.isArray(req.query.orderNumbers)) ? req.query.orderNumbers : undefined,
                 orderStatuses: (Array.isArray(req.query.orderStatuses)) ? req.query.orderStatuses : undefined,
                 orderDateFrom: moment(req.query.orderDateFrom).toDate(),
