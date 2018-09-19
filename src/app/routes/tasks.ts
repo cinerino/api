@@ -68,4 +68,42 @@ tasksRouter.get(
         }
     }
 );
+/**
+ * タスク検索
+ */
+tasksRouter.get(
+    '',
+    permitScopes(['admin']),
+    (req, __2, next) => {
+        req.checkQuery('runsFrom').optional().isISO8601().withMessage('must be ISO8601');
+        req.checkQuery('runsThrough').optional().isISO8601().withMessage('must be ISO8601');
+        req.checkQuery('lastTriedFrom').optional().isISO8601().withMessage('must be ISO8601');
+        req.checkQuery('lastTriedThrough').optional().isISO8601().withMessage('must be ISO8601');
+        next();
+    },
+    validator,
+    async (req, res, next) => {
+        try {
+            const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
+            const searchConditions: cinerino.factory.task.ISearchConditions<cinerino.factory.taskName> = {
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+                sort: (req.query.sort !== undefined) ? req.query.sort : { runsAt: cinerino.factory.sortType.Descending },
+                name: req.query.name,
+                statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,
+                runsFrom: (req.query.runsFrom !== undefined) ? moment(req.query.runsFrom).toDate() : undefined,
+                runsThrough: (req.query.runsThrough !== undefined) ? moment(req.query.runsThrough).toDate() : undefined,
+                lastTriedFrom: (req.query.lastTriedFrom !== undefined) ? moment(req.query.lastTriedFrom).toDate() : undefined,
+                lastTriedThrough: (req.query.lastTriedThrough !== undefined) ? moment(req.query.lastTriedThrough).toDate() : undefined
+            };
+            const tasks = await taskRepo.search(searchConditions);
+            const totalCount = await taskRepo.count(searchConditions);
+            res.set('X-Total-Count', totalCount.toString());
+            res.json(tasks);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 export default tasksRouter;
