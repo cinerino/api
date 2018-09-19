@@ -12,6 +12,7 @@ import meRouter from './people/me';
 import reservationsRouter from './reservations';
 import tasksRouter from './tasks';
 import transactionsRouter from './transactions';
+import userPoolsRouter from './userPools';
 
 const router = express.Router();
 
@@ -30,5 +31,6 @@ router.use('/reservations', reservationsRouter);
 router.use('/events', eventsRouter);
 router.use('/tasks', tasksRouter);
 router.use('/transactions', transactionsRouter);
+router.use('/userPools', userPoolsRouter);
 
 export default router;
