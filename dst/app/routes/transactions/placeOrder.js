@@ -474,7 +474,7 @@ placeOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), validato
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
             page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-            sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: cinerino.factory.sortType.Descending },
+            sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: cinerino.factory.sortType.Ascending },
             typeOf: cinerino.factory.transactionType.PlaceOrder,
             ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
             statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,
@@ -508,6 +508,39 @@ placeOrderTransactionsRouter.get('/:transactionId/actions', permitScopes_1.defau
             sort: req.query.sort
         });
         res.json(actions);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 取引レポート
+ */
+placeOrderTransactionsRouter.get('/report', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
+        const searchConditions = {
+            limit: undefined,
+            page: undefined,
+            sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: cinerino.factory.sortType.Ascending },
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
+            statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,
+            startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom).toDate() : undefined,
+            startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough).toDate() : undefined,
+            endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom).toDate() : undefined,
+            endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough).toDate() : undefined,
+            agent: req.query.agent,
+            seller: req.query.seller,
+            object: req.query.object,
+            result: req.query.result
+        };
+        const stream = yield cinerino.service.report.transaction.download({
+            conditions: searchConditions,
+            format: req.query.format
+        })({ transaction: transactionRepo });
+        res.type(`${req.query.format}; charset=utf-8`);
+        stream.pipe(res);
     }
     catch (error) {
         next(error);

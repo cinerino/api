@@ -58,7 +58,7 @@ app.use(helmet.hsts({
 // tslint:disable-next-line:no-require-imports no-var-requires
 const packageInfo = require('../../package.json');
 app.use((__, res, next) => {
-    res.setHeader('x-api-verion', packageInfo.version);
+    res.setHeader('X-API-Version', packageInfo.version);
     next();
 });
 // tslint:disable-next-line:no-single-line-block-comment

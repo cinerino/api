@@ -66,7 +66,7 @@ app.use(helmet.hsts({
 // tslint:disable-next-line:no-require-imports no-var-requires
 const packageInfo = require('../../package.json');
 app.use((__, res, next) => {
-    res.setHeader('x-api-verion', <string>packageInfo.version);
+    res.setHeader('X-API-Version', <string>packageInfo.version);
     next();
 });
 
