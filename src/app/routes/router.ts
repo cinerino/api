@@ -11,6 +11,7 @@ import ownershipInfosRouter from './ownershipInfos';
 import meRouter from './people/me';
 import reservationsRouter from './reservations';
 import tasksRouter from './tasks';
+import telemetryRouter from './telemetry';
 import transactionsRouter from './transactions';
 import userPoolsRouter from './userPools';
 
@@ -30,6 +31,7 @@ router.use('/people/me', meRouter);
 router.use('/reservations', reservationsRouter);
 router.use('/events', eventsRouter);
 router.use('/tasks', tasksRouter);
+router.use('/telemetry', telemetryRouter);
 router.use('/transactions', transactionsRouter);
 router.use('/userPools', userPoolsRouter);
 
