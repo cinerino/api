@@ -8,8 +8,6 @@ import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
-const eventReservationRouter = Router();
-eventReservationRouter.use(authentication);
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -17,8 +15,32 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
+const eventReservationRouter = Router();
+eventReservationRouter.use(authentication);
 type IPayload =
     cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.chevre.reservationType>>;
+/**
+ * 管理者として上映イベント予約検索
+ */
+eventReservationRouter.get(
+    '/screeningEvent',
+    permitScopes(['admin']),
+    validator,
+    async (req, res, next) => {
+        try {
+            // クエリをそのままChevre検索へパス
+            const reservationService = new cinerino.chevre.service.Reservation({
+                endpoint: <string>process.env.CHEVRE_ENDPOINT,
+                auth: chevreAuthClient
+            });
+            const searchResult = await reservationService.searchScreeningEventReservations(req.query);
+            res.set('X-Total-Count', searchResult.totalCount.toString());
+            res.json(searchResult.data);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 /**
  * トークンで予約照会
  */
