@@ -7,6 +7,10 @@ import { NOT_FOUND, UNAUTHORIZED } from 'http-status';
 import * as assert from 'power-assert';
 import * as request from 'supertest';
 
+before(() => {
+    process.env.MONGOLAB_URI = 'https://example.com';
+    process.env.TOKEN_ISSUERS = 'https://example.com';
+});
 describe('GET /', () => {
     beforeEach(() => {
         delete process.env.BASIC_AUTH_NAME;
