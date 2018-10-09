@@ -14,6 +14,7 @@ import accountsRouter from './ownershipInfos/accounts';
 import creditCardsRouter from './ownershipInfos/creditCards';
 import reservationsRouter from './ownershipInfos/reservations';
 
+const CODE_EXPIRES_IN_SECONDS = Number(process.env.CODE_EXPIRES_IN_SECONDS);
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -112,7 +113,10 @@ ownershipInfosRouter.post(
             if (ownershipInfo.ownedBy.id !== req.user.sub) {
                 throw new cinerino.factory.errors.Unauthorized();
             }
-            const code = await codeRepo.publish({ data: ownershipInfo });
+            const code = await codeRepo.publish({
+                data: ownershipInfo,
+                expiresInSeconds: CODE_EXPIRES_IN_SECONDS
+            });
             res.json({ code });
         } catch (error) {
             next(error);

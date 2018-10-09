@@ -12,7 +12,7 @@
 ### Environment variables
 
 | Name                                     | Required | Value           | Purpose                            |
-|------------------------------------------|----------|-----------------|------------------------------------|
+| ---------------------------------------- | -------- | --------------- | ---------------------------------- |
 | `DEBUG`                                  | false    | cinerino-jobs:* | Debug                              |
 | `NODE_ENV`                               | true     |                 | Environment name                   |
 | `MONGOLAB_URI`                           | true     |                 | MongoDB connection URI             |
@@ -43,6 +43,7 @@
 | `AWS_ACCESS_KEY_ID`                      | true     |                 | AWS access key                     |
 | `AWS_SECRET_ACCESS_KEY`                  | true     |                 | AWS secret access key              |
 | `COGNITO_USER_POOL_ID`                   | true     |                 | Cognito user pool ID               |
+| `CODE_EXPIRES_IN_SECONDS`                | true     |                 | 所有権コード期限                   |
 
 ## License
 

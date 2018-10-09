@@ -20,6 +20,7 @@ const redis = require("../../../../redis");
 const accounts_1 = require("./ownershipInfos/accounts");
 const creditCards_1 = require("./ownershipInfos/creditCards");
 const reservations_1 = require("./ownershipInfos/reservations");
+const CODE_EXPIRES_IN_SECONDS = Number(process.env.CODE_EXPIRES_IN_SECONDS);
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -104,7 +105,10 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['aws.cognito
         if (ownershipInfo.ownedBy.id !== req.user.sub) {
             throw new cinerino.factory.errors.Unauthorized();
         }
-        const code = yield codeRepo.publish({ data: ownershipInfo });
+        const code = yield codeRepo.publish({
+            data: ownershipInfo,
+            expiresInSeconds: CODE_EXPIRES_IN_SECONDS
+        });
         res.json({ code });
     }
     catch (error) {

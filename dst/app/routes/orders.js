@@ -18,6 +18,7 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const redis = require("../../redis");
+const CODE_EXPIRES_IN_SECONDS = Number(process.env.CODE_EXPIRES_IN_SECONDS);
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -109,7 +110,10 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
                 .filter((o) => o.typeOfGood.typeOf === offer.itemOffered.typeOf)
                 .find((o) => o.typeOfGood.id === offer.itemOffered.id);
             if (ownershipInfo !== undefined) {
-                offer.itemOffered.reservedTicket.ticketToken = yield codeRepo.publish({ data: ownershipInfo });
+                offer.itemOffered.reservedTicket.ticketToken = yield codeRepo.publish({
+                    data: ownershipInfo,
+                    expiresInSeconds: CODE_EXPIRES_IN_SECONDS
+                });
             }
             return offer;
         })));

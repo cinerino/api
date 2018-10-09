@@ -11,6 +11,7 @@ import validator from '../middlewares/validator';
 
 import * as redis from '../../redis';
 
+const CODE_EXPIRES_IN_SECONDS = Number(process.env.CODE_EXPIRES_IN_SECONDS);
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -116,7 +117,10 @@ ordersRouter.post(
                     .filter((o) => o.typeOfGood.typeOf === offer.itemOffered.typeOf)
                     .find((o) => (<any>o.typeOfGood).id === offer.itemOffered.id);
                 if (ownershipInfo !== undefined) {
-                    offer.itemOffered.reservedTicket.ticketToken = await codeRepo.publish({ data: ownershipInfo });
+                    offer.itemOffered.reservedTicket.ticketToken = await codeRepo.publish({
+                        data: ownershipInfo,
+                        expiresInSeconds: CODE_EXPIRES_IN_SECONDS
+                    });
                 }
 
                 return offer;
