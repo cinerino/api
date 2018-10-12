@@ -152,6 +152,10 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const eventService = new cinerino.chevre.service.Event({
+            endpoint: process.env.CHEVRE_ENDPOINT,
+            auth: chevreAuthClient
+        });
         const reserveService = new cinerino.chevre.service.transaction.Reserve({
             endpoint: process.env.CHEVRE_ENDPOINT,
             auth: chevreAuthClient
@@ -160,12 +164,13 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
             event: req.body.event,
-            tickets: req.body.tickets,
+            acceptedOffer: req.body.acceptedOffer,
             notes: req.body.notes
         })({
             action: new cinerino.repository.Action(cinerino.mongoose.connection),
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
             event: new cinerino.repository.Event(cinerino.mongoose.connection),
+            eventService: eventService,
             reserveService: reserveService
         });
         res.status(http_status_1.CREATED).json(action);

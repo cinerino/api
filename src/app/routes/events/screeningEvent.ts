@@ -71,22 +71,6 @@ screeningEventRouter.get(
         }
     });
 screeningEventRouter.get(
-    '/:id/ticketTypes',
-    permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
-    validator,
-    async (req, res, next) => {
-        try {
-            const eventService = new cinerino.chevre.service.Event({
-                endpoint: <string>process.env.CHEVRE_ENDPOINT,
-                auth: chevreAuthClient
-            });
-            const ticketTypes = await eventService.searchScreeningEventTicketTypes({ eventId: req.params.id });
-            res.json(ticketTypes);
-        } catch (error) {
-            next(error);
-        }
-    });
-screeningEventRouter.get(
     '/:id/offers',
     permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
     validator,
@@ -97,6 +81,22 @@ screeningEventRouter.get(
                 auth: chevreAuthClient
             });
             const offers = await eventService.searchScreeningEventOffers({ eventId: req.params.id });
+            res.json(offers);
+        } catch (error) {
+            next(error);
+        }
+    });
+screeningEventRouter.get(
+    '/:id/offers/ticket',
+    permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const eventService = new cinerino.chevre.service.Event({
+                endpoint: <string>process.env.CHEVRE_ENDPOINT,
+                auth: chevreAuthClient
+            });
+            const offers = await eventService.searchScreeningEventTicketOffers({ eventId: req.params.id });
             res.json(offers);
         } catch (error) {
             next(error);

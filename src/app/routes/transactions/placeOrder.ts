@@ -169,6 +169,10 @@ placeOrderTransactionsRouter.post(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
+            const eventService = new cinerino.chevre.service.Event({
+                endpoint: <string>process.env.CHEVRE_ENDPOINT,
+                auth: chevreAuthClient
+            });
             const reserveService = new cinerino.chevre.service.transaction.Reserve({
                 endpoint: <string>process.env.CHEVRE_ENDPOINT,
                 auth: chevreAuthClient
@@ -177,12 +181,13 @@ placeOrderTransactionsRouter.post(
                 agentId: req.user.sub,
                 transactionId: req.params.transactionId,
                 event: req.body.event,
-                tickets: req.body.tickets,
+                acceptedOffer: req.body.acceptedOffer,
                 notes: req.body.notes
             })({
                 action: new cinerino.repository.Action(cinerino.mongoose.connection),
                 transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
                 event: new cinerino.repository.Event(cinerino.mongoose.connection),
+                eventService: eventService,
                 reserveService: reserveService
             });
 
