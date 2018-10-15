@@ -307,7 +307,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     }
 }));
 /**
- * ポイント口座承認取消
+ * 口座承認取消
  */
 placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/account/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -329,6 +329,40 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
             transferTransactionService: transferService,
             withdrawTransactionService: withdrawService
         });
+        res.status(http_status_1.NO_CONTENT).end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * ムビチケ承認
+ */
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/movieTicket', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (_, __, next) => {
+    next();
+}, validator_1.default, rateLimit4transactionInProgress, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        res.status(http_status_1.CREATED).json({
+            id: 'id'
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * ムビチケ承認取消
+ */
+placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/movieTicket/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        // await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel({
+        //     agentId: req.user.sub,
+        //     transactionId: req.params.transactionId,
+        //     actionId: req.params.actionId
+        // })({
+        //     action: new cinerino.repository.Action(cinerino.mongoose.connection),
+        //     transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
+        // });
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
