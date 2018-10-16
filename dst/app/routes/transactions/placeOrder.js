@@ -359,7 +359,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             transactionId: req.params.transactionId,
             typeOf: cinerino.factory.action.authorize.paymentMethod.movieTicket.ObjectType.MovieTicket,
             event: req.body.event,
-            knyknrNoInfoIn: req.body.knyknrNoInfoIn
+            knyknrNoInfo: req.body.knyknrNoInfo
         })({
             action: new cinerino.repository.Action(cinerino.mongoose.connection),
             event: new cinerino.repository.Event(cinerino.mongoose.connection),
