@@ -268,7 +268,6 @@ placeOrderTransactionsRouter.post(
                 orderId: req.body.orderId,
                 amount: req.body.amount,
                 method: req.body.method,
-                payType: cinerino.GMO.utils.util.PayType.Credit,
                 creditCard: creditCard
             })({
                 action: new cinerino.repository.Action(cinerino.mongoose.connection),
@@ -422,9 +421,11 @@ placeOrderTransactionsRouter.post(
                 agentId: req.user.sub,
                 transactionId: req.params.transactionId,
                 typeOf: cinerino.factory.action.authorize.paymentMethod.movieTicket.ObjectType.MovieTicket,
+                event: req.body.event,
                 knyknrNoInfoIn: req.body.knyknrNoInfoIn
             })({
                 action: new cinerino.repository.Action(cinerino.mongoose.connection),
+                event: new cinerino.repository.Event(cinerino.mongoose.connection),
                 organization: new cinerino.repository.Organization(cinerino.mongoose.connection),
                 transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
                 movieTicketAuthService: authService
