@@ -39,6 +39,13 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
+const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials({
+    domain: process.env.MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.MVTK_RESERVE_CLIENT_ID,
+    clientSecret: process.env.MVTK_RESERVE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 // tslint:disable-next-line:no-magic-numbers
 const UNIT_IN_SECONDS = parseInt(process.env.TRANSACTION_RATE_LIMIT_UNIT_IN_SECONDS, 10);
 // tslint:disable-next-line:no-magic-numbers
@@ -220,9 +227,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
+            typeOf: cinerino.factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard,
             orderId: req.body.orderId,
             amount: req.body.amount,
             method: req.body.method,
+            payType: cinerino.GMO.utils.util.PayType.Credit,
             creditCard: creditCard
         })({
             action: new cinerino.repository.Action(cinerino.mongoose.connection),
@@ -340,11 +349,24 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/movieTicket', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (_, __, next) => {
     next();
-}, validator_1.default, rateLimit4transactionInProgress, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        res.status(http_status_1.CREATED).json({
-            id: 'id'
+        const authService = new cinerino.mvtkreserveapi.service.Auth({
+            endpoint: process.env.MVTK_RESERVE_ENDPOINT,
+            auth: mvtkReserveAuthClient
         });
+        const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.movieTicket.create({
+            agentId: req.user.sub,
+            transactionId: req.params.transactionId,
+            typeOf: cinerino.factory.action.authorize.paymentMethod.movieTicket.ObjectType.MovieTicket,
+            knyknrNoInfoIn: req.body.knyknrNoInfoIn
+        })({
+            action: new cinerino.repository.Action(cinerino.mongoose.connection),
+            organization: new cinerino.repository.Organization(cinerino.mongoose.connection),
+            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
+            movieTicketAuthService: authService
+        });
+        res.status(http_status_1.CREATED).json(action);
     }
     catch (error) {
         next(error);
@@ -353,16 +375,16 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
 /**
  * ムビチケ承認取消
  */
-placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/movieTicket/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/movieTicket/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        // await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel({
-        //     agentId: req.user.sub,
-        //     transactionId: req.params.transactionId,
-        //     actionId: req.params.actionId
-        // })({
-        //     action: new cinerino.repository.Action(cinerino.mongoose.connection),
-        //     transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
-        // });
+        yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.movieTicket.cancel({
+            agentId: req.user.sub,
+            transactionId: req.params.transactionId,
+            actionId: req.params.actionId
+        })({
+            action: new cinerino.repository.Action(cinerino.mongoose.connection),
+            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
+        });
         res.status(http_status_1.NO_CONTENT).end();
     }
     catch (error) {
