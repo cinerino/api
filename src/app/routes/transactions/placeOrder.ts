@@ -235,6 +235,61 @@ placeOrderTransactionsRouter.put(
     }
 );
 /**
+ * 汎用決済承認
+ */
+placeOrderTransactionsRouter.post(
+    '/:transactionId/actions/authorize/paymentMethod/any',
+    permitScopes(['admin', 'admin.transactions']),
+    (req, __2, next) => {
+        req.checkBody('typeOf', 'invalid typeOf').notEmpty().withMessage('typeOf is required');
+        req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required');
+        req.checkBody('additionalProperty', 'invalid additionalProperty').notEmpty().withMessage('additionalProperty is required');
+        next();
+    },
+    validator,
+    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        try {
+            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.any.create({
+                agentId: req.user.sub,
+                transactionId: req.params.transactionId,
+                ...req.body
+            })({
+                action: new cinerino.repository.Action(cinerino.mongoose.connection),
+                transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
+                organization: new cinerino.repository.Organization(cinerino.mongoose.connection)
+            });
+            res.status(CREATED).json(action);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+/**
+ * 汎用決済承認取消
+ */
+placeOrderTransactionsRouter.put(
+    '/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel',
+    permitScopes(['admin', 'admin.transactions']),
+    validator,
+    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        try {
+            await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.any.cancel({
+                agentId: req.user.sub,
+                transactionId: req.params.transactionId,
+                actionId: req.params.actionId
+            })({
+                action: new cinerino.repository.Action(cinerino.mongoose.connection),
+                transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
+            });
+            res.status(NO_CONTENT).end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+/**
  * クレジットカードオーソリ
  */
 placeOrderTransactionsRouter.post(
@@ -264,7 +319,7 @@ placeOrderTransactionsRouter.post(
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
                 agentId: req.user.sub,
                 transactionId: req.params.transactionId,
-                typeOf: cinerino.factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard,
+                typeOf: cinerino.factory.paymentMethodType.CreditCard,
                 orderId: req.body.orderId,
                 amount: req.body.amount,
                 method: req.body.method,
@@ -420,7 +475,7 @@ placeOrderTransactionsRouter.post(
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.movieTicket.create({
                 agentId: req.user.sub,
                 transactionId: req.params.transactionId,
-                typeOf: cinerino.factory.action.authorize.paymentMethod.movieTicket.ObjectType.MovieTicket,
+                typeOf: cinerino.factory.paymentMethodType.MovieTicket,
                 movieTickets: req.body.movieTickets
             })({
                 action: new cinerino.repository.Action(cinerino.mongoose.connection),
