@@ -421,8 +421,7 @@ placeOrderTransactionsRouter.post(
                 agentId: req.user.sub,
                 transactionId: req.params.transactionId,
                 typeOf: cinerino.factory.action.authorize.paymentMethod.movieTicket.ObjectType.MovieTicket,
-                event: req.body.event,
-                knyknrNoInfo: req.body.knyknrNoInfo
+                movieTickets: req.body.movieTickets
             })({
                 action: new cinerino.repository.Action(cinerino.mongoose.connection),
                 event: new cinerino.repository.Event(cinerino.mongoose.connection),
