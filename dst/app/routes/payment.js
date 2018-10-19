@@ -31,10 +31,6 @@ paymentRouter.use(authentication_1.default);
  */
 paymentRouter.post('/movieTicket/actions/check', permitScopes_1.default(['aws.cognito.signin.user.admin', 'tokens']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const authService = new cinerino.mvtkreserveapi.service.Auth({
-            endpoint: process.env.MVTK_RESERVE_ENDPOINT,
-            auth: mvtkReserveAuthClient
-        });
         const action = yield cinerino.service.payment.movietTicket.checkMovieTicket({
             typeOf: cinerino.factory.actionType.CheckAction,
             agent: req.agent,
@@ -43,7 +39,10 @@ paymentRouter.post('/movieTicket/actions/check', permitScopes_1.default(['aws.co
             action: new cinerino.repository.Action(cinerino.mongoose.connection),
             event: new cinerino.repository.Event(cinerino.mongoose.connection),
             organization: new cinerino.repository.Organization(cinerino.mongoose.connection),
-            movieTicketAuthService: authService
+            movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
+                endpoint: process.env.MVTK_RESERVE_ENDPOINT,
+                auth: mvtkReserveAuthClient
+            })
         });
         res.status(http_status_1.CREATED).json(action);
     }

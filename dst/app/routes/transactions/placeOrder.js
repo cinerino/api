@@ -400,10 +400,6 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     check_1.body('movieTickets').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isArray()
 ], validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const authService = new cinerino.mvtkreserveapi.service.Auth({
-            endpoint: process.env.MVTK_RESERVE_ENDPOINT,
-            auth: mvtkReserveAuthClient
-        });
         const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.movieTicket.create({
             typeOf: cinerino.factory.paymentMethodType.MovieTicket,
             agentId: req.user.sub,
@@ -416,7 +412,10 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             event: new cinerino.repository.Event(cinerino.mongoose.connection),
             organization: new cinerino.repository.Organization(cinerino.mongoose.connection),
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
-            movieTicketAuthService: authService
+            movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
+                endpoint: process.env.MVTK_RESERVE_ENDPOINT,
+                auth: mvtkReserveAuthClient
+            })
         });
         res.status(http_status_1.CREATED).json(action);
     }
