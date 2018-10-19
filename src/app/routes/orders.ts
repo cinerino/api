@@ -3,7 +3,6 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
-import * as moment from 'moment';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -158,8 +157,8 @@ ordersRouter.get(
     '',
     permitScopes(['admin']),
     (req, __2, next) => {
-        req.checkQuery('orderDateFrom').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601');
-        req.checkQuery('orderDateThrough').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601');
+        req.checkQuery('orderDateFrom').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601').toDate();
+        req.checkQuery('orderDateThrough').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601').toDate();
         next();
     },
     validator,
@@ -167,22 +166,11 @@ ordersRouter.get(
         try {
             const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
             const searchConditions: cinerino.factory.order.ISearchConditions = {
+                ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-                sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: cinerino.factory.sortType.Descending },
-                seller: req.query.seller,
-                customer: req.query.customer,
-                orderNumbers: (Array.isArray(req.query.orderNumbers)) ? req.query.orderNumbers : undefined,
-                orderStatuses: (Array.isArray(req.query.orderStatuses)) ? req.query.orderStatuses : undefined,
-                orderDateFrom: moment(req.query.orderDateFrom).toDate(),
-                orderDateThrough: moment(req.query.orderDateThrough).toDate(),
-                confirmationNumbers: (Array.isArray(req.query.confirmationNumbers))
-                    ? req.query.confirmationNumbers
-                    : undefined,
-                reservedEventIds: (Array.isArray(req.query.reservedEventIds))
-                    ? req.query.reservedEventIds
-                    : undefined
+                sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: cinerino.factory.sortType.Descending }
             };
             const orders = await orderRepo.search(searchConditions);
             const totalCount = await orderRepo.count(searchConditions);

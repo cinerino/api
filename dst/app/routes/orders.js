@@ -13,7 +13,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-const moment = require("moment");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -143,30 +142,15 @@ ordersRouter.get('/:orderNumber/actions', permitScopes_1.default(['admin']), val
  * 注文検索
  */
 ordersRouter.get('', permitScopes_1.default(['admin']), (req, __2, next) => {
-    req.checkQuery('orderDateFrom').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601');
-    req.checkQuery('orderDateThrough').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601');
+    req.checkQuery('orderDateFrom').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601').toDate();
+    req.checkQuery('orderDateThrough').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601').toDate();
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
-        const searchConditions = {
+        const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-            page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-            sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: cinerino.factory.sortType.Descending },
-            seller: req.query.seller,
-            customer: req.query.customer,
-            orderNumbers: (Array.isArray(req.query.orderNumbers)) ? req.query.orderNumbers : undefined,
-            orderStatuses: (Array.isArray(req.query.orderStatuses)) ? req.query.orderStatuses : undefined,
-            orderDateFrom: moment(req.query.orderDateFrom).toDate(),
-            orderDateThrough: moment(req.query.orderDateThrough).toDate(),
-            confirmationNumbers: (Array.isArray(req.query.confirmationNumbers))
-                ? req.query.confirmationNumbers
-                : undefined,
-            reservedEventIds: (Array.isArray(req.query.reservedEventIds))
-                ? req.query.reservedEventIds
-                : undefined
-        };
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: cinerino.factory.sortType.Descending } });
         const orders = yield orderRepo.search(searchConditions);
         const totalCount = yield orderRepo.count(searchConditions);
         res.set('X-Total-Count', totalCount.toString());
