@@ -6,6 +6,8 @@ import * as cinerino from '@cinerino/domain';
 import * as middlewares from '@motionpicture/express-middleware';
 import * as createDebug from 'debug';
 import { Router } from 'express';
+// tslint:disable-next-line:no-submodule-imports
+import { body } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as ioredis from 'ioredis';
 import * as moment from 'moment';
@@ -240,12 +242,11 @@ placeOrderTransactionsRouter.put(
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/paymentMethod/any',
     permitScopes(['admin', 'admin.transactions']),
-    (req, __2, next) => {
-        req.checkBody('typeOf', 'invalid typeOf').notEmpty().withMessage('typeOf is required');
-        req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required');
-        req.checkBody('additionalProperty', 'invalid additionalProperty').notEmpty().withMessage('additionalProperty is required');
-        next();
-    },
+    ...[
+        body('typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+        body('amount').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isInt(),
+        body('additionalProperty').optional().isArray()
+    ],
     validator,
     rateLimit4transactionInProgress,
     async (req, res, next) => {
@@ -295,14 +296,14 @@ placeOrderTransactionsRouter.put(
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/paymentMethod/creditCard',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
-    (req, __2, next) => {
-        req.checkBody('orderId', 'invalid orderId').notEmpty().withMessage('orderId is required');
-        req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required');
-        req.checkBody('method', 'invalid method').notEmpty().withMessage('method is required');
-        req.checkBody('creditCard', 'invalid creditCard').notEmpty().withMessage('creditCard is required');
-
-        next();
-    },
+    ...[
+        body('typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+        body('amount').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isInt(),
+        body('additionalProperty').optional().isArray(),
+        body('orderId').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isLength({ max: 27 }),
+        body('method').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+        body('creditCard').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+    ],
     validator,
     rateLimit4transactionInProgress,
     async (req, res, next) => {
@@ -317,9 +318,10 @@ placeOrderTransactionsRouter.post(
 
             debug('authorizing credit card...', req.body.creditCard);
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
+                typeOf: cinerino.factory.paymentMethodType.CreditCard,
                 agentId: req.user.sub,
                 transactionId: req.params.transactionId,
-                typeOf: cinerino.factory.paymentMethodType.CreditCard,
+                additionalProperty: req.body.additionalProperty,
                 orderId: req.body.orderId,
                 amount: req.body.amount,
                 method: req.body.method,
@@ -369,16 +371,18 @@ placeOrderTransactionsRouter.put(
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/paymentMethod/account',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
-    (req, __, next) => {
-        req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required').isInt();
-        req.checkBody('fromAccount', 'invalid fromAccount').notEmpty().withMessage('fromAccount is required');
-        next();
-    },
+    ...[
+        body('typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+        body('amount').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isInt(),
+        body('additionalProperty').optional().isArray(),
+        body('fromAccount').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+    ],
     validator,
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
-            let fromAccount: cinerino.factory.ownershipInfo.IAccount<cinerino.factory.accountType> | string = req.body.fromAccount;
+            let fromAccount: cinerino.factory.action.authorize.paymentMethod.account.IFromAccount<cinerino.factory.accountType>
+                = req.body.fromAccount;
             // トークン化された口座情報に対応
             if (typeof fromAccount === 'string') {
                 // tslint:disable-next-line:max-line-length
@@ -401,8 +405,11 @@ placeOrderTransactionsRouter.post(
                 auth: pecorinoAuthClient
             });
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
+                typeOf: cinerino.factory.paymentMethodType.Account,
                 transactionId: req.params.transactionId,
-                amount: Number(req.body.amount),
+                agentId: req.user.sub,
+                amount: req.body.amount,
+                additionalProperty: req.body.additionalProperty,
                 fromAccount: {
                     accountType: fromAccount.accountType,
                     accountNumber: fromAccount.accountNumber
@@ -461,9 +468,12 @@ placeOrderTransactionsRouter.put(
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/paymentMethod/movieTicket',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
-    (_, __, next) => {
-        next();
-    },
+    ...[
+        body('typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+        body('amount').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isInt(),
+        body('additionalProperty').optional().isArray(),
+        body('movieTickets').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isArray()
+    ],
     validator,
     rateLimit4transactionInProgress,
     async (req, res, next) => {
@@ -473,9 +483,11 @@ placeOrderTransactionsRouter.post(
                 auth: mvtkReserveAuthClient
             });
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.movieTicket.create({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
                 typeOf: cinerino.factory.paymentMethodType.MovieTicket,
+                agentId: req.user.sub,
+                amount: 0,
+                additionalProperty: req.body.additionalProperty,
+                transactionId: req.params.transactionId,
                 movieTickets: req.body.movieTickets
             })({
                 action: new cinerino.repository.Action(cinerino.mongoose.connection),
@@ -520,12 +532,13 @@ placeOrderTransactionsRouter.put(
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/paymentMethod/mocoin',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
-    (req, __, next) => {
-        req.checkBody('token', 'invalid token').notEmpty().withMessage('token is required');
-        req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required').isInt();
-        req.checkBody('fromAccountNumber', 'invalid fromAccountNumber').notEmpty().withMessage('fromAccountNumber is required');
-        next();
-    },
+    ...[
+        body('typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+        body('amount').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isInt(),
+        body('additionalProperty').optional().isArray(),
+        body('token').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+        body('fromAccountNumber').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+    ],
     validator,
     rateLimit4transactionInProgress,
     async (req, res, next) => {
@@ -544,8 +557,12 @@ placeOrderTransactionsRouter.post(
                 auth: authClient
             });
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.mocoin.create({
+                typeOf: cinerino.factory.paymentMethodType.Mocoin,
                 transactionId: req.params.transactionId,
-                amount: parseInt(req.body.amount, 10),
+                agentId: req.user.sub,
+                amount: req.body.amount,
+                token: req.body.token,
+                additionalProperty: req.body.additionalProperty,
                 fromAccountNumber: req.body.fromAccountNumber,
                 notes: req.body.notes
             })({
