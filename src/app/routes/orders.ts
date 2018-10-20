@@ -159,6 +159,14 @@ ordersRouter.get(
     (req, __2, next) => {
         req.checkQuery('orderDateFrom').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601').toDate();
         req.checkQuery('orderDateThrough').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601').toDate();
+        req.checkQuery('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
+            .optional().isISO8601().withMessage('must be ISO8601').toDate();
+        req.checkQuery('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
+            .optional().isISO8601().withMessage('must be ISO8601').toDate();
+        req.checkQuery('acceptedOffers.itemOffered.reservationFor.startFrom')
+            .optional().isISO8601().withMessage('must be ISO8601').toDate();
+        req.checkQuery('acceptedOffers.itemOffered.reservationFor.startThrough')
+            .optional().isISO8601().withMessage('must be ISO8601').toDate();
         next();
     },
     validator,

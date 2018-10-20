@@ -24,8 +24,9 @@ const app = express();
 app.set('query parser', (str: any) => qs.parse(str, {
     arrayLimit: 1000,
     parseArrays: true,
+    depth: 10,
     allowDots: false,
-    allowPrototypes: true
+    allowPrototypes: false
 }));
 
 app.use(middlewares.basicAuth({ // ベーシック認証
