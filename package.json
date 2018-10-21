@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@cinerino/domain": "^1.0.0-alpha.68",
+    "@cinerino/domain": "^1.0.0-alpha.72",
     "@motionpicture/express-middleware": "^0.1.0",
     "body-parser": "^1.18.3",
     "cors": "^2.8.4",
@@ -53,7 +53,7 @@
     "power-assert": "^1.6.1",
     "rimraf": "^2.6.2",
     "sinon": "^5.1.1",
-    "snyk": "^1.103.4",
+    "snyk": "^1.104.1",
     "supertest": "^3.3.0",
     "swagger2blueprint": "^1.1.0",
     "ts-node": "^6.1.0",

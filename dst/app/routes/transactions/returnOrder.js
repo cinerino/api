@@ -86,20 +86,9 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
 returnOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
-        const searchConditions = {
+        const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-            page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-            sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: cinerino.factory.sortType.Descending },
-            typeOf: cinerino.factory.transactionType.ReturnOrder,
-            ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
-            statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,
-            startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom).toDate() : undefined,
-            startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough).toDate() : undefined,
-            endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom).toDate() : undefined,
-            endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough).toDate() : undefined,
-            agent: req.query.agent
-        };
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: cinerino.factory.sortType.Descending }, typeOf: cinerino.factory.transactionType.ReturnOrder, startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom).toDate() : undefined, startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough).toDate() : undefined, endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom).toDate() : undefined, endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough).toDate() : undefined });
         const transactions = yield transactionRepo.search(searchConditions);
         const totalCount = yield transactionRepo.count(searchConditions);
         res.set('X-Total-Count', totalCount.toString());
