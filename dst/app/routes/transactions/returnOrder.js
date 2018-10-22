@@ -43,9 +43,10 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
         });
         const transaction = yield cinerino.service.transaction.returnOrder.start({
             expires: moment(req.body.expires).toDate(),
-            agent: Object.assign({ identifier: (req.body.agent !== undefined)
-                    ? req.body.agent.identifier
-                    : undefined }, req.agent),
+            agent: Object.assign({}, req.agent, { identifier: [
+                    ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
+                    ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
+                ] }),
             object: {
                 order: { orderNumber: req.body.object.order.orderNumber },
                 clientUser: req.user,

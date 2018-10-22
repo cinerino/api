@@ -41,10 +41,11 @@ returnOrderTransactionsRouter.post(
             const transaction = await cinerino.service.transaction.returnOrder.start({
                 expires: moment(req.body.expires).toDate(),
                 agent: {
-                    identifier: (req.body.agent !== undefined)
-                        ? req.body.agent.identifier
-                        : undefined,
-                    ...req.agent
+                    ...req.agent,
+                    identifier: [
+                        ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
+                        ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
+                    ]
                 },
                 object: {
                     order: { orderNumber: req.body.object.order.orderNumber },
