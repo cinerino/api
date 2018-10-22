@@ -33,7 +33,8 @@ movieTheaterRouter.post(
         body('url').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
             .isURL(),
         body('paymentAccepted').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
-            .isArray()
+            .isArray(),
+        body('hasPOS').isArray()
     ],
     validator,
     async (req, res, next) => {
@@ -45,7 +46,8 @@ movieTheaterRouter.post(
                 location: req.body.location,
                 telephone: req.body.telephone,
                 url: req.body.url,
-                paymentAccepted: req.body.paymentAccepted
+                paymentAccepted: req.body.paymentAccepted,
+                hasPOS: req.body.hasPOS
             };
             const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
             const movieTheater = await organizationRepo.save({ attributes: attributes });
@@ -112,7 +114,8 @@ movieTheaterRouter.put(
         body('url').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
             .isURL(),
         body('paymentAccepted').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
-            .isArray()
+            .isArray(),
+        body('hasPOS').isArray()
     ],
     validator,
     async (req, res, next) => {
@@ -124,7 +127,8 @@ movieTheaterRouter.put(
                 location: req.body.location,
                 telephone: req.body.telephone,
                 url: req.body.url,
-                paymentAccepted: req.body.paymentAccepted
+                paymentAccepted: req.body.paymentAccepted,
+                hasPOS: req.body.hasPOS
             };
             const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
             await organizationRepo.save({ id: req.params.id, attributes: attributes });
