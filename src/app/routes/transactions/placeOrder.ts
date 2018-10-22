@@ -106,10 +106,10 @@ placeOrderTransactionsRouter.post(
             const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
                 expires: moment(req.body.expires).toDate(),
                 agent: {
-                    ...req.agent,
                     identifier: (req.body.agent !== undefined)
                         ? req.body.agent.identifier
-                        : undefined
+                        : undefined,
+                    ...req.agent
                 },
                 seller: req.body.seller,
                 object: {

@@ -104,9 +104,9 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito
         }
         const transaction = yield cinerino.service.transaction.placeOrderInProgress.start({
             expires: moment(req.body.expires).toDate(),
-            agent: Object.assign({}, req.agent, { identifier: (req.body.agent !== undefined)
+            agent: Object.assign({ identifier: (req.body.agent !== undefined)
                     ? req.body.agent.identifier
-                    : undefined }),
+                    : undefined }, req.agent),
             seller: req.body.seller,
             object: {
                 clientUser: req.user,

@@ -23,18 +23,37 @@ exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* 
         yield express_middleware_1.cognitoAuth({
             issuers: ISSUERS,
             authorizedHandler: (user, token) => __awaiter(this, void 0, void 0, function* () {
-                req.user = user;
-                req.accessToken = token;
-                req.agent = {
-                    typeOf: cinerino.factory.personType.Person,
-                    id: user.sub,
-                    memberOf: (user.username !== undefined) ? {
+                const identifier = [
+                    {
+                        name: 'tokenIssuer',
+                        value: user.iss
+                    },
+                    {
+                        name: 'clientId',
+                        value: user.client_id
+                    }
+                ];
+                let programMembership;
+                if (user.username !== undefined) {
+                    identifier.push({
+                        name: 'username',
+                        value: user.username
+                    });
+                    programMembership = {
                         typeOf: 'ProgramMembership',
                         membershipNumber: user.username,
                         programName: 'Amazon Cognito',
                         award: [],
                         url: user.iss
-                    } : undefined
+                    };
+                }
+                req.user = user;
+                req.accessToken = token;
+                req.agent = {
+                    typeOf: cinerino.factory.personType.Person,
+                    id: user.sub,
+                    memberOf: programMembership,
+                    identifier: identifier
                 };
                 next();
             }),
