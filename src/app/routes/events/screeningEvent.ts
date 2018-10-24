@@ -3,6 +3,8 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+// tslint:disable-next-line:no-submodule-imports
+import { query } from 'express-validator/check';
 import * as moment from 'moment';
 
 // import * as redis from '../../redis';
@@ -17,19 +19,22 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
+
 const screeningEventRouter = Router();
 screeningEventRouter.use(authentication);
+
+/**
+ * イベント検索
+ */
 screeningEventRouter.get(
     '',
     permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
-    (req, __, next) => {
-        req.checkQuery('startFrom').optional().isISO8601().withMessage('startFrom must be ISO8601 timestamp');
-        req.checkQuery('startThrough').optional().isISO8601().withMessage('startThrough must be ISO8601 timestamp');
-        req.checkQuery('endFrom').optional().isISO8601().withMessage('endFrom must be ISO8601 timestamp');
-        req.checkQuery('endThrough').optional().isISO8601().withMessage('endThrough must be ISO8601 timestamp');
-
-        next();
-    },
+    ...[
+        query('startFrom').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`),
+        query('startThrough').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`),
+        query('endFrom').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`),
+        query('endThrough').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`)
+    ],
     validator,
     async (req, res, next) => {
         try {
@@ -57,6 +62,10 @@ screeningEventRouter.get(
         }
     }
 );
+
+/**
+ * IDでイベント検索
+ */
 screeningEventRouter.get(
     '/:id',
     permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
@@ -69,7 +78,12 @@ screeningEventRouter.get(
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
+
+/**
+ * イベントに対するオファー検索
+ */
 screeningEventRouter.get(
     '/:id/offers',
     permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
@@ -85,21 +99,39 @@ screeningEventRouter.get(
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
+
+/**
+ * イベントに対する券種オファー検索
+ */
 screeningEventRouter.get(
     '/:id/offers/ticket',
     permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
+    ...[
+        query('seller').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+        query('store').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+    ],
     validator,
     async (req, res, next) => {
         try {
+            const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
             const eventService = new cinerino.chevre.service.Event({
                 endpoint: <string>process.env.CHEVRE_ENDPOINT,
                 auth: chevreAuthClient
             });
-            const offers = await eventService.searchScreeningEventTicketOffers({ eventId: req.params.id });
+            const offers = await cinerino.service.offer.searchScreeningEventTicketOffers({
+                event: { id: req.params.id },
+                seller: req.query.seller,
+                store: req.query.store
+            })({
+                organization: organizationRepo,
+                eventService: eventService
+            });
             res.json(offers);
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
 export default screeningEventRouter;

@@ -188,8 +188,8 @@ placeOrderTransactionsRouter.post(
                 auth: chevreAuthClient
             });
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
+                agent: { id: req.user.sub },
+                transaction: { id: req.params.transactionId },
                 event: req.body.event,
                 acceptedOffer: req.body.acceptedOffer,
                 notes: req.body.notes

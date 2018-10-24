@@ -35,11 +35,10 @@ movieTheaterRouter.post('', permitScopes_1.default(['admin', 'organizations']), 
     check_1.body('location.name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
     check_1.body('location.name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
     check_1.body('telephone').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('url').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
-        .isURL(),
-    check_1.body('paymentAccepted').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
-        .isArray(),
-    check_1.body('hasPOS').isArray()
+    check_1.body('url').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isURL(),
+    check_1.body('paymentAccepted').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isArray(),
+    check_1.body('hasPOS').isArray(),
+    check_1.body('areaServed').isArray()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const attributes = {
@@ -50,7 +49,8 @@ movieTheaterRouter.post('', permitScopes_1.default(['admin', 'organizations']), 
             telephone: req.body.telephone,
             url: req.body.url,
             paymentAccepted: req.body.paymentAccepted,
-            hasPOS: req.body.hasPOS
+            hasPOS: req.body.hasPOS,
+            areaServed: req.body.areaServed
         };
         const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
         const movieTheater = yield organizationRepo.save({ attributes: attributes });
@@ -103,11 +103,10 @@ movieTheaterRouter.put('/:id', permitScopes_1.default(['admin', 'organizations']
     check_1.body('location.name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
     check_1.body('location.name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
     check_1.body('telephone').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('url').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
-        .isURL(),
-    check_1.body('paymentAccepted').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
-        .isArray(),
-    check_1.body('hasPOS').isArray()
+    check_1.body('url').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isURL(),
+    check_1.body('paymentAccepted').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isArray(),
+    check_1.body('hasPOS').isArray(),
+    check_1.body('areaServed').isArray()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const attributes = {
@@ -118,7 +117,8 @@ movieTheaterRouter.put('/:id', permitScopes_1.default(['admin', 'organizations']
             telephone: req.body.telephone,
             url: req.body.url,
             paymentAccepted: req.body.paymentAccepted,
-            hasPOS: req.body.hasPOS
+            hasPOS: req.body.hasPOS,
+            areaServed: req.body.areaServed
         };
         const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
         yield organizationRepo.save({ id: req.params.id, attributes: attributes });

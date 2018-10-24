@@ -13,6 +13,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+// tslint:disable-next-line:no-submodule-imports
+const check_1 = require("express-validator/check");
 const moment = require("moment");
 // import * as redis from '../../redis';
 const authentication_1 = require("../../middlewares/authentication");
@@ -27,13 +29,15 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 });
 const screeningEventRouter = express_1.Router();
 screeningEventRouter.use(authentication_1.default);
-screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), (req, __, next) => {
-    req.checkQuery('startFrom').optional().isISO8601().withMessage('startFrom must be ISO8601 timestamp');
-    req.checkQuery('startThrough').optional().isISO8601().withMessage('startThrough must be ISO8601 timestamp');
-    req.checkQuery('endFrom').optional().isISO8601().withMessage('endFrom must be ISO8601 timestamp');
-    req.checkQuery('endThrough').optional().isISO8601().withMessage('endThrough must be ISO8601 timestamp');
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+/**
+ * イベント検索
+ */
+screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), ...[
+    check_1.query('startFrom').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`),
+    check_1.query('startThrough').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`),
+    check_1.query('endFrom').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`),
+    check_1.query('endThrough').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`)
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const eventRepo = new cinerino.repository.Event(cinerino.mongoose.connection);
         const searchCoinditions = {
@@ -59,6 +63,9 @@ screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
         next(error);
     }
 }));
+/**
+ * IDでイベント検索
+ */
 screeningEventRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const eventRepo = new cinerino.repository.Event(cinerino.mongoose.connection);
@@ -69,6 +76,9 @@ screeningEventRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.use
         next(error);
     }
 }));
+/**
+ * イベントに対するオファー検索
+ */
 screeningEventRouter.get('/:id/offers', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const eventService = new cinerino.chevre.service.Event({
@@ -82,13 +92,27 @@ screeningEventRouter.get('/:id/offers', permitScopes_1.default(['aws.cognito.sig
         next(error);
     }
 }));
-screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+/**
+ * イベントに対する券種オファー検索
+ */
+screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), ...[
+    check_1.query('seller').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.query('store').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
         const eventService = new cinerino.chevre.service.Event({
             endpoint: process.env.CHEVRE_ENDPOINT,
             auth: chevreAuthClient
         });
-        const offers = yield eventService.searchScreeningEventTicketOffers({ eventId: req.params.id });
+        const offers = yield cinerino.service.offer.searchScreeningEventTicketOffers({
+            event: { id: req.params.id },
+            seller: req.query.seller,
+            store: req.query.store
+        })({
+            organization: organizationRepo,
+            eventService: eventService
+        });
         res.json(offers);
     }
     catch (error) {
