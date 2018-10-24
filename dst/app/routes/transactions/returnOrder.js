@@ -19,9 +19,6 @@ const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const returnOrderTransactionsRouter = express_1.Router();
-const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
-const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
-const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -36,6 +33,8 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
         const cancelReservationService = new cinerino.chevre.service.transaction.CancelReservation({
             endpoint: process.env.CHEVRE_ENDPOINT,
@@ -71,6 +70,8 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
 }));
 returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+        const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
         yield cinerino.service.transaction.returnOrder.confirm(req.user.sub, req.params.transactionId)({
             action: actionRepo,

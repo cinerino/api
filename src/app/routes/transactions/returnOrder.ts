@@ -11,9 +11,6 @@ import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
 const returnOrderTransactionsRouter = Router();
-const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
-const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
-const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -33,6 +30,8 @@ returnOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
+            const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+            const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
             const cancelReservationService = new cinerino.chevre.service.transaction.CancelReservation({
                 endpoint: <string>process.env.CHEVRE_ENDPOINT,
@@ -75,6 +74,8 @@ returnOrderTransactionsRouter.put(
     validator,
     async (req, res, next) => {
         try {
+            const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+            const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
             await cinerino.service.transaction.returnOrder.confirm(
                 req.user.sub,

@@ -70,7 +70,7 @@ ordersRouter.post(
             const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
             const codeRepo = new cinerino.repository.Code(redis.getClient());
 
-            const order = await orderRepo.findByOrderNumber(req.params.orderNumber);
+            const order = await orderRepo.findByOrderNumber({ orderNumber: req.params.orderNumber });
             if (order.customer.email !== customer.email && order.customer.telephone !== customer.telephone) {
                 throw new cinerino.factory.errors.Argument('customer');
             }

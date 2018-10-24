@@ -66,7 +66,7 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
         const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
         const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
         const codeRepo = new cinerino.repository.Code(redis.getClient());
-        const order = yield orderRepo.findByOrderNumber(req.params.orderNumber);
+        const order = yield orderRepo.findByOrderNumber({ orderNumber: req.params.orderNumber });
         if (order.customer.email !== customer.email && order.customer.telephone !== customer.telephone) {
             throw new cinerino.factory.errors.Argument('customer');
         }
