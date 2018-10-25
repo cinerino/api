@@ -18,7 +18,7 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
 export default async () => {
     const connection = await connectMongo({ defaultConnection: false });
 
-    cron.schedule('* * * * *', async () => {
+    cron.schedule('*/5 * * * *', async () => {
         const taskRepo = new cinerino.repository.Task(connection);
         const organizationRepo = new cinerino.repository.Organization(connection);
 
