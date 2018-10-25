@@ -70,13 +70,12 @@ tasksRouter.get('/:name/:id', permitScopes_1.default(['admin']), validator_1.def
 /**
  * タスク検索
  */
-tasksRouter.get('', permitScopes_1.default(['admin']), (req, __2, next) => {
-    req.checkQuery('runsFrom').optional().isISO8601().withMessage('must be ISO8601');
-    req.checkQuery('runsThrough').optional().isISO8601().withMessage('must be ISO8601');
-    req.checkQuery('lastTriedFrom').optional().isISO8601().withMessage('must be ISO8601');
-    req.checkQuery('lastTriedThrough').optional().isISO8601().withMessage('must be ISO8601');
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+tasksRouter.get('', permitScopes_1.default(['admin']), ...[
+    check_1.query('runsFrom').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`),
+    check_1.query('runsThrough').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`),
+    check_1.query('lastTriedFrom').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`),
+    check_1.query('lastTriedThrough').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`)
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
         const searchConditions = {

@@ -11,11 +11,17 @@ const express = require("express");
 const expressValidator = require("express-validator");
 const helmet = require("helmet");
 const qs = require("qs");
-const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
+const connectMongo_1 = require("../connectMongo");
+const run_1 = require("./jobs/run");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const router_1 = require("./routes/router");
 const debug = createDebug('cinerino-api:app');
+run_1.default().then().catch((err) => {
+    // tslint:disable-next-line:no-console
+    console.error('runJobs:', err);
+    process.exit(1);
+});
 const app = express();
 app.set('query parser', (str) => qs.parse(str, {
     arrayLimit: 1000,
@@ -85,9 +91,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 // 静的ファイル
 // app.use(express.static(__dirname + '/../../public'));
-cinerino.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default)
-    .then(() => { debug('MongoDB connected.'); })
-    .catch(console.error);
+connectMongo_1.connectMongo({ defaultConnection: true }).then().catch((err) => {
+    // tslint:disable-next-line:no-console
+    console.error('connetMongo:', err);
+    process.exit(1);
+});
 // routers
 app.use('/', router_1.default);
 // 404

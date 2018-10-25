@@ -4,7 +4,7 @@
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
-import { body } from 'express-validator/check';
+import { body, query } from 'express-validator/check';
 import { CREATED } from 'http-status';
 import * as moment from 'moment';
 
@@ -14,6 +14,7 @@ import validator from '../middlewares/validator';
 
 const tasksRouter = Router();
 tasksRouter.use(authentication);
+
 /**
  * タスク作成
  */
@@ -48,6 +49,7 @@ tasksRouter.post(
         }
     }
 );
+
 /**
  * タスク確認
  */
@@ -68,19 +70,19 @@ tasksRouter.get(
         }
     }
 );
+
 /**
  * タスク検索
  */
 tasksRouter.get(
     '',
     permitScopes(['admin']),
-    (req, __2, next) => {
-        req.checkQuery('runsFrom').optional().isISO8601().withMessage('must be ISO8601');
-        req.checkQuery('runsThrough').optional().isISO8601().withMessage('must be ISO8601');
-        req.checkQuery('lastTriedFrom').optional().isISO8601().withMessage('must be ISO8601');
-        req.checkQuery('lastTriedThrough').optional().isISO8601().withMessage('must be ISO8601');
-        next();
-    },
+    ...[
+        query('runsFrom').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`),
+        query('runsThrough').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`),
+        query('lastTriedFrom').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`),
+        query('lastTriedThrough').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`)
+    ],
     validator,
     async (req, res, next) => {
         try {
@@ -106,4 +108,5 @@ tasksRouter.get(
         }
     }
 );
+
 export default tasksRouter;
