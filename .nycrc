@@ -10,8 +10,8 @@
     "exclude": [
         "**/*.spec.ts",
         "src/app/error/**/*.ts",
-        "src/app/jobs/**/*.ts",
-        "src/app/routes/**/*.ts"
+        "src/app/routes/**/*.ts",
+        "src/jobs/**/*.ts"
     ],
     "include": [
         "src/**/*.ts"

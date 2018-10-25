@@ -7,8 +7,15 @@ const startTime = process.hrtime();
 import * as createDebug from 'debug';
 import * as http from 'http';
 import * as app from './app/app';
+import runJobs from './jobs/run';
 
 const debug = createDebug('cinerino-api:server');
+
+runJobs().then().catch((err) => {
+    // tslint:disable-next-line:no-console
+    console.error('runJobs:', err);
+    process.exit(1);
+});
 
 /**
  * Get port from environment and store in Express.

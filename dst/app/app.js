@@ -12,16 +12,10 @@ const expressValidator = require("express-validator");
 const helmet = require("helmet");
 const qs = require("qs");
 const connectMongo_1 = require("../connectMongo");
-const run_1 = require("./jobs/run");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const router_1 = require("./routes/router");
 const debug = createDebug('cinerino-api:app');
-run_1.default().then().catch((err) => {
-    // tslint:disable-next-line:no-console
-    console.error('runJobs:', err);
-    process.exit(1);
-});
 const app = express();
 app.set('query parser', (str) => qs.parse(str, {
     arrayLimit: 1000,

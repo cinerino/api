@@ -14,19 +14,11 @@ import * as qs from 'qs';
 
 import { connectMongo } from '../connectMongo';
 
-import runJobs from './jobs/run';
-
 import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
 import router from './routes/router';
 
 const debug = createDebug('cinerino-api:app');
-
-runJobs().then().catch((err) => {
-    // tslint:disable-next-line:no-console
-    console.error('runJobs:', err);
-    process.exit(1);
-});
 
 const app = express();
 app.set('query parser', (str: any) => qs.parse(str, {
