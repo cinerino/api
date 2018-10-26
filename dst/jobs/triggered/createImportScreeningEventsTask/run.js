@@ -24,7 +24,7 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
     : 1;
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
-    cron.schedule('* * * * *', () => __awaiter(this, void 0, void 0, function* () {
+    cron.schedule('*/5 * * * *', () => __awaiter(this, void 0, void 0, function* () {
         const taskRepo = new cinerino.repository.Task(connection);
         const organizationRepo = new cinerino.repository.Organization(connection);
         // 全劇場組織を取得
