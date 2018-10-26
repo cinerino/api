@@ -259,7 +259,9 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     check_1.body('typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
     check_1.body('amount').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isInt(),
     check_1.body('additionalProperty').optional().isArray(),
-    check_1.body('orderId').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isLength({ max: 27 }),
+    check_1.body('orderId').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+        .isString().withMessage((_, options) => `${options.path} must be string`)
+        .isLength({ max: 27 }),
     check_1.body('method').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
     check_1.body('creditCard').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
 ], validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {

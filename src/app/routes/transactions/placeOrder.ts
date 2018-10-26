@@ -301,7 +301,9 @@ placeOrderTransactionsRouter.post(
         body('typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
         body('amount').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isInt(),
         body('additionalProperty').optional().isArray(),
-        body('orderId').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isLength({ max: 27 }),
+        body('orderId').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+            .isString().withMessage((_, options) => `${options.path} must be string`)
+            .isLength({ max: 27 }),
         body('method').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
         body('creditCard').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
     ],
