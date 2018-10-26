@@ -17,7 +17,6 @@ import onExpiredPlaceOrder from './continuous/onExpiredPlaceOrder/run';
 import onExpiredReturnOrder from './continuous/onExpiredReturnOrder/run';
 import payAccount from './continuous/payAccount/run';
 import payCreditCard from './continuous/payCreditCard/run';
-import payMocoin from './continuous/payMocoin/run';
 import payMovieTicket from './continuous/payMovieTicket/run';
 import placeOrder from './continuous/placeOrder/run';
 import reexportTransactionTasks from './continuous/reexportTransactionTasks/run';
@@ -50,7 +49,6 @@ export default async () => {
     await onExpiredReturnOrder();
     await payAccount();
     await payCreditCard();
-    await payMocoin();
     await payMovieTicket();
     await placeOrder();
     await reexportTransactionTasks();

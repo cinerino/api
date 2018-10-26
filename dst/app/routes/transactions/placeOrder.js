@@ -444,51 +444,6 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
     }
 }));
 /**
- * Mocoin口座確保
- */
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/mocoin', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), ...[
-    check_1.body('typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('amount').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isInt(),
-    check_1.body('additionalProperty').optional().isArray(),
-    check_1.body('token').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('fromAccountNumber').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
-], validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    try {
-        // mocoin転送取引サービスクライアントを生成
-        const authClient = new cinerino.mocoin.auth.OAuth2({
-            domain: process.env.MOCOIN_AUTHORIZE_SERVER_DOMAIN,
-            clientId: process.env.MOCOIN_CLIENT_ID,
-            clientSecret: process.env.MOCOIN_CLIENT_SECRET,
-            redirectUri: '',
-            logoutUri: ''
-        });
-        authClient.setCredentials({ access_token: req.body.token });
-        const transferService = new cinerino.mocoin.service.transaction.TransferCoin({
-            endpoint: process.env.MOCOIN_API_ENDPOINT,
-            auth: authClient
-        });
-        const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.mocoin.create({
-            typeOf: cinerino.factory.paymentMethodType.Mocoin,
-            transactionId: req.params.transactionId,
-            agentId: req.user.sub,
-            amount: req.body.amount,
-            token: req.body.token,
-            additionalProperty: req.body.additionalProperty,
-            fromAccountNumber: req.body.fromAccountNumber,
-            notes: req.body.notes
-        })({
-            action: new cinerino.repository.Action(cinerino.mongoose.connection),
-            organization: new cinerino.repository.Organization(cinerino.mongoose.connection),
-            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
-            transferService: transferService
-        });
-        res.status(http_status_1.CREATED).json(action);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
  * ポイントインセンティブ承認アクション
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accounts/point', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, __2, next) => {
