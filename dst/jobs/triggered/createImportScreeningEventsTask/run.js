@@ -12,9 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * 上映イベントインポートタスク作成
  */
 const cinerino = require("@cinerino/domain");
+const cron_1 = require("cron");
+const createDebug = require("debug");
 const moment = require("moment");
-const cron = require("node-cron");
 const connectMongo_1 = require("../../../connectMongo");
+const debug = createDebug('cinerino-api:jobs');
 /**
  * 上映イベントを何週間後までインポートするか
  */
@@ -24,7 +26,7 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
     : 1;
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
-    cron.schedule('*/5 * * * *', () => __awaiter(this, void 0, void 0, function* () {
+    const job = new cron_1.CronJob('*/5 * * * *', () => __awaiter(this, void 0, void 0, function* () {
         const taskRepo = new cinerino.repository.Task(connection);
         const organizationRepo = new cinerino.repository.Organization(connection);
         // 全劇場組織を取得
@@ -54,5 +56,6 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
                 console.error(error);
             }
         })));
-    }));
+    }), undefined, true);
+    debug('job started', job);
 });
