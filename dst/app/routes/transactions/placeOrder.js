@@ -283,9 +283,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
             organization: new cinerino.repository.Organization(cinerino.mongoose.connection)
         });
-        res.status(http_status_1.CREATED).json({
-            id: action.id
-        });
+        if (action.result !== undefined) {
+            delete action.result.entryTranArgs;
+            delete action.result.execTranArgs;
+            delete action.result.execTranResult;
+        }
+        res.status(http_status_1.CREATED).json(action);
     }
     catch (error) {
         next(error);
