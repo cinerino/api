@@ -15,7 +15,6 @@ const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
-const moment = require("moment");
 // import * as redis from '../../redis';
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
@@ -33,27 +32,22 @@ screeningEventRouter.use(authentication_1.default);
  * イベント検索
  */
 screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), ...[
-    check_1.query('startFrom').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`),
-    check_1.query('startThrough').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`),
-    check_1.query('endFrom').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`),
-    check_1.query('endThrough').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`)
+    check_1.query('inSessionFrom').optional().isISO8601().toDate(),
+    check_1.query('inSessionThrough').optional().isISO8601().toDate(),
+    check_1.query('startFrom').optional().isISO8601().toDate(),
+    check_1.query('startThrough').optional().isISO8601().toDate(),
+    check_1.query('endFrom').optional().isISO8601().toDate(),
+    check_1.query('endThrough').optional().isISO8601().toDate(),
+    check_1.query('offers.availableFrom').optional().isISO8601().toDate(),
+    check_1.query('offers.availableThrough').optional().isISO8601().toDate(),
+    check_1.query('offers.validFrom').optional().isISO8601().toDate(),
+    check_1.query('offers.validThrough').optional().isISO8601().toDate()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const eventRepo = new cinerino.repository.Event(cinerino.mongoose.connection);
-        const searchCoinditions = {
+        const searchCoinditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-            page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-            name: req.query.name,
-            inSessionFrom: (req.query.inSessionFrom !== undefined) ? moment(req.query.inSessionFrom).toDate() : undefined,
-            inSessionThrough: (req.query.inSessionThrough !== undefined) ? moment(req.query.inSessionThrough).toDate() : undefined,
-            startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom).toDate() : undefined,
-            startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough).toDate() : undefined,
-            endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom).toDate() : undefined,
-            endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough).toDate() : undefined,
-            eventStatuses: (Array.isArray(req.query.eventStatuses)) ? req.query.eventStatuses : undefined,
-            superEvent: req.query.superEvent
-        };
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         const events = yield eventRepo.searchScreeningEvents(searchCoinditions);
         const totalCount = yield eventRepo.countScreeningEvents(searchCoinditions);
         res.set('X-Total-Count', totalCount.toString());
