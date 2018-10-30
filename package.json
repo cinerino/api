@@ -9,11 +9,11 @@
     }
   ],
   "dependencies": {
-    "@cinerino/domain": "^1.0.0-alpha.82",
+    "@cinerino/domain": "^1.0.0-alpha.83",
     "@motionpicture/express-middleware": "^0.1.0",
     "body-parser": "^1.18.3",
     "cors": "^2.8.4",
-    "cron": "^1.4.1",
+    "cron": "^1.5.0",
     "debug": "^3.2.6",
     "express": "^4.16.4",
     "express-validator": "^5.3.0",
