@@ -12,6 +12,7 @@ import * as redis from '../../redis';
 
 const ownershipInfosRouter = Router();
 ownershipInfosRouter.use(authentication);
+
 /**
  * コードから所有権に対するアクセストークンを発行する
  */
@@ -35,6 +36,7 @@ ownershipInfosRouter.post(
         }
     }
 );
+
 /**
  * 所有権に対するトークン検証アクションを検索する
  */
@@ -64,4 +66,5 @@ ownershipInfosRouter.get(
         }
     }
 );
+
 export default ownershipInfosRouter;

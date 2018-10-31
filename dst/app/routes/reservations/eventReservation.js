@@ -74,6 +74,8 @@ eventReservationRouter.post('/screeningEvent/findByToken', permitScopes_1.defaul
             auth: chevreAuthClient
         });
         const reservation = yield reservationService.findScreeningEventReservationById({ id: ownershipInfo.typeOfGood.id });
+        // 入場
+        yield reservationService.attendScreeningEvent(reservation);
         res.json(Object.assign({}, ownershipInfo, { typeOfGood: reservation }));
     }
     catch (error) {

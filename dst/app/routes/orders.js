@@ -116,6 +116,10 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
             }
             return offer;
         })));
+        // Chevreでチェックイン
+        yield Promise.all(order.acceptedOffers.map((offer) => __awaiter(this, void 0, void 0, function* () {
+            yield reservationService.checkInScreeningEvent({ id: offer.itemOffered.id });
+        })));
         res.json(order);
     }
     catch (error) {

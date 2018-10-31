@@ -109,6 +109,14 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['aws.cognito
             data: ownershipInfo,
             expiresInSeconds: CODE_EXPIRES_IN_SECONDS
         });
+        // 座席予約に対する所有権であれば、Chevreでチェックイン
+        if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
+            const reservationService = new cinerino.chevre.service.Reservation({
+                endpoint: process.env.CHEVRE_ENDPOINT,
+                auth: chevreAuthClient
+            });
+            yield reservationService.checkInScreeningEvent({ id: ownershipInfo.typeOfGood.id });
+        }
         res.json({ code });
     }
     catch (error) {

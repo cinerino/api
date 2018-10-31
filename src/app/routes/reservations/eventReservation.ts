@@ -15,10 +15,13 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-const eventReservationRouter = Router();
-eventReservationRouter.use(authentication);
+
 type IPayload =
     cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.chevre.reservationType>>;
+
+const eventReservationRouter = Router();
+eventReservationRouter.use(authentication);
+
 /**
  * 管理者として上映イベント予約検索
  */
@@ -41,6 +44,7 @@ eventReservationRouter.get(
         }
     }
 );
+
 /**
  * トークンで予約照会
  */
@@ -74,15 +78,21 @@ eventReservationRouter.post(
 
                 return infos[0];
             });
+
             const reservationService = new cinerino.chevre.service.Reservation({
                 endpoint: <string>process.env.CHEVRE_ENDPOINT,
                 auth: chevreAuthClient
             });
             const reservation = await reservationService.findScreeningEventReservationById({ id: ownershipInfo.typeOfGood.id });
+
+            // 入場
+            await reservationService.attendScreeningEvent(reservation);
+
             res.json({ ...ownershipInfo, typeOfGood: reservation });
         } catch (error) {
             next(error);
         }
     }
 );
+
 export default eventReservationRouter;

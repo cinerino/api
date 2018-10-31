@@ -124,12 +124,19 @@ ordersRouter.post(
 
                 return offer;
             }));
+
+            // Chevreでチェックイン
+            await Promise.all(order.acceptedOffers.map(async (offer) => {
+                await reservationService.checkInScreeningEvent({ id: offer.itemOffered.id });
+            }));
+
             res.json(order);
         } catch (error) {
             next(error);
         }
     }
 );
+
 /**
  * 注文に対するアクション検索
  */
@@ -150,6 +157,7 @@ ordersRouter.get(
         }
     }
 );
+
 /**
  * 注文検索
  */
@@ -189,4 +197,5 @@ ordersRouter.get(
         }
     }
 );
+
 export default ordersRouter;

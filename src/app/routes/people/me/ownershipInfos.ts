@@ -33,6 +33,7 @@ const ownershipInfosRouter = Router();
 ownershipInfosRouter.use('/accounts', accountsRouter);
 ownershipInfosRouter.use('/creditCards', creditCardsRouter);
 ownershipInfosRouter.use('/reservations', reservationsRouter);
+
 /**
  * 所有権検索
  */
@@ -95,6 +96,7 @@ ownershipInfosRouter.get(
         }
     }
 );
+
 /**
  * 所有権に対して認可コードを発行する
  */
@@ -117,10 +119,21 @@ ownershipInfosRouter.post(
                 data: ownershipInfo,
                 expiresInSeconds: CODE_EXPIRES_IN_SECONDS
             });
+
+            // 座席予約に対する所有権であれば、Chevreでチェックイン
+            if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
+                const reservationService = new cinerino.chevre.service.Reservation({
+                    endpoint: <string>process.env.CHEVRE_ENDPOINT,
+                    auth: chevreAuthClient
+                });
+                await reservationService.checkInScreeningEvent({ id: ownershipInfo.typeOfGood.id });
+            }
+
             res.json({ code });
         } catch (error) {
             next(error);
         }
     }
 );
+
 export default ownershipInfosRouter;
