@@ -4,7 +4,7 @@
 import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
 
-const debug = createDebug('cinerino-api:*');
+const debug = createDebug('cinerino-api:connectMongo');
 const PING_INTERVAL = 10000;
 const connectOptions: cinerino.mongoose.ConnectionOptions = {
     autoReconnect: true,

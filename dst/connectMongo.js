@@ -13,7 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
-const debug = createDebug('cinerino-api:*');
+const debug = createDebug('cinerino-api:connectMongo');
 const PING_INTERVAL = 10000;
 const connectOptions = {
     autoReconnect: true,

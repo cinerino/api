@@ -34,6 +34,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+        const invoiceRepo = new cinerino.repository.Invoice(cinerino.mongoose.connection);
         const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
         const cancelReservationService = new cinerino.chevre.service.transaction.CancelReservation({
@@ -55,6 +56,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
             }
         })({
             action: actionRepo,
+            invoice: invoiceRepo,
             transaction: transactionRepo,
             order: orderRepo,
             cancelReservationService: cancelReservationService

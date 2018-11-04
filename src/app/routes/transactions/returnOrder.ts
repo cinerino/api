@@ -31,6 +31,7 @@ returnOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+            const invoiceRepo = new cinerino.repository.Invoice(cinerino.mongoose.connection);
             const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
             const cancelReservationService = new cinerino.chevre.service.transaction.CancelReservation({
@@ -55,6 +56,7 @@ returnOrderTransactionsRouter.post(
                 }
             })({
                 action: actionRepo,
+                invoice: invoiceRepo,
                 transaction: transactionRepo,
                 order: orderRepo,
                 cancelReservationService: cancelReservationService
