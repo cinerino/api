@@ -9,10 +9,10 @@
     }
   ],
   "dependencies": {
-    "@cinerino/domain": "^1.0.0-alpha.87",
+    "@cinerino/domain": "^1.0.0-alpha.88",
     "@motionpicture/express-middleware": "^0.1.0",
     "body-parser": "^1.18.3",
-    "cors": "^2.8.4",
+    "cors": "^2.8.5",
     "cron": "^1.5.0",
     "debug": "^3.2.6",
     "express": "^4.16.4",
@@ -55,7 +55,7 @@
     "power-assert": "^1.6.1",
     "rimraf": "^2.6.2",
     "sinon": "^5.1.1",
-    "snyk": "^1.105.0",
+    "snyk": "^1.108.0",
     "supertest": "^3.3.0",
     "swagger2blueprint": "^1.1.0",
     "ts-node": "^6.1.0",
