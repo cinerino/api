@@ -10,11 +10,13 @@ const https = require("https");
 const app = require("./app/app");
 const run_1 = require("./jobs/run");
 const debug = createDebug('cinerino-api:server');
-run_1.default().then().catch((err) => {
-    // tslint:disable-next-line:no-console
-    console.error('runJobs:', err);
-    process.exit(1);
-});
+if (process.env.JOBS_STOPPED !== '1') {
+    run_1.default().then().catch((err) => {
+        // tslint:disable-next-line:no-console
+        console.error('runJobs:', err);
+        process.exit(1);
+    });
+}
 /**
  * Get port from environment and store in Express.
  */

@@ -11,11 +11,13 @@ import runJobs from './jobs/run';
 
 const debug = createDebug('cinerino-api:server');
 
-runJobs().then().catch((err) => {
-    // tslint:disable-next-line:no-console
-    console.error('runJobs:', err);
-    process.exit(1);
-});
+if (process.env.JOBS_STOPPED !== '1') {
+    runJobs().then().catch((err) => {
+        // tslint:disable-next-line:no-console
+        console.error('runJobs:', err);
+        process.exit(1);
+    });
+}
 
 /**
  * Get port from environment and store in Express.

@@ -49,6 +49,7 @@
 | `MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN`   | true     |                | ムビチケ着券API認可サーバードメイン     |
 | `MVTK_RESERVE_CLIENT_ID`                 | true     |                | ムビチケ着券APIクライアントID           |
 | `MVTK_RESERVE_CLIENT_SECRET`             | true     |                | ムビチケ着券APIクライアントシークレット |
+| `JOBS_STOPPED`                           | true     | 1 or 0         | 非同期ジョブ停止フラグ                  |
 
 ## License
 
