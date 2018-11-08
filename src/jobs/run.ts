@@ -22,6 +22,7 @@ import placeOrder from './continuous/placeOrder/run';
 import reexportTransactionTasks from './continuous/reexportTransactionTasks/run';
 import refundAccount from './continuous/refundAccount/run';
 import refundCreditCard from './continuous/refundCreditCard/run';
+import refundMovieTicket from './continuous/refundMovieTicket/run';
 import registerProgramMembership from './continuous/registerProgramMembership/run';
 import retryTasks from './continuous/retryTasks/run';
 import returnOrder from './continuous/returnOrder/run';
@@ -54,6 +55,7 @@ export default async () => {
     await reexportTransactionTasks();
     await refundAccount();
     await refundCreditCard();
+    await refundMovieTicket();
     await registerProgramMembership();
     await retryTasks();
     await returnOrder();
