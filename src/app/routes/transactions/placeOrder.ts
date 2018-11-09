@@ -253,9 +253,9 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.any.create({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                ...req.body
+                object: req.body,
+                agent: { id: req.user.sub },
+                transaction: { id: req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(cinerino.mongoose.connection),
                 transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),

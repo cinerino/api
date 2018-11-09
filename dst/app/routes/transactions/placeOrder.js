@@ -222,7 +222,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     check_1.body('additionalProperty').optional().isArray()
 ], validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.any.create(Object.assign({ agentId: req.user.sub, transactionId: req.params.transactionId }, req.body))({
+        const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.any.create({
+            object: req.body,
+            agent: { id: req.user.sub },
+            transaction: { id: req.params.transactionId }
+        })({
             action: new cinerino.repository.Action(cinerino.mongoose.connection),
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
             organization: new cinerino.repository.Organization(cinerino.mongoose.connection)
