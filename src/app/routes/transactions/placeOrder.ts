@@ -617,7 +617,10 @@ placeOrderTransactionsRouter.put(
                 id: req.params.transactionId,
                 agent: { id: req.user.sub },
                 result: { order: { orderDate: orderDate } },
-                options: { sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false }
+                options: {
+                    ...req.body,
+                    sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false
+                }
             })({
                 action: new cinerino.repository.Action(cinerino.mongoose.connection),
                 transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
