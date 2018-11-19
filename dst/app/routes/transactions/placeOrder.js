@@ -171,11 +171,9 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
             auth: chevreAuthClient
         });
         const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create({
+            object: req.body,
             agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId },
-            event: req.body.event,
-            acceptedOffer: req.body.acceptedOffer,
-            notes: req.body.notes
+            transaction: { id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(cinerino.mongoose.connection),
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
@@ -199,9 +197,9 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatRe
             auth: chevreAuthClient
         });
         yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.cancel({
-            agentId: req.user.sub,
-            transactionId: req.params.transactionId,
-            actionId: req.params.actionId
+            agent: { id: req.user.sub },
+            transaction: { id: req.params.transactionId },
+            id: req.params.actionId
         })({
             action: new cinerino.repository.Action(cinerino.mongoose.connection),
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
