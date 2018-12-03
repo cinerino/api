@@ -63,12 +63,21 @@ ordersRouter.post(
                 if (placeOrderTransaction === undefined) {
                     throw new cinerino.factory.errors.NotFound('Transaction');
                 }
+                const transactionResult = <cinerino.factory.transaction.IResult<cinerino.factory.transactionType.PlaceOrder>>
+                    placeOrderTransaction.result;
+                const orderActionAttributes: cinerino.factory.action.trade.order.IAttributes = {
+                    typeOf: cinerino.factory.actionType.OrderAction,
+                    object: transactionResult.order,
+                    agent: req.agent,
+                    potentialActions: {}
+                };
 
-                await cinerino.service.order.placeOrder(placeOrderTransaction)({
+                await cinerino.service.order.placeOrder(orderActionAttributes)({
                     action: actionRepo,
                     invoice: invoiceRepo,
                     order: orderRepo,
-                    task: taskRepo
+                    task: taskRepo,
+                    transaction: transactionRepo
                 });
 
                 order =

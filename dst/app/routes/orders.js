@@ -61,11 +61,19 @@ ordersRouter.post('', permitScopes_1.default(['admin']), ...[
             if (placeOrderTransaction === undefined) {
                 throw new cinerino.factory.errors.NotFound('Transaction');
             }
-            yield cinerino.service.order.placeOrder(placeOrderTransaction)({
+            const transactionResult = placeOrderTransaction.result;
+            const orderActionAttributes = {
+                typeOf: cinerino.factory.actionType.OrderAction,
+                object: transactionResult.order,
+                agent: req.agent,
+                potentialActions: {}
+            };
+            yield cinerino.service.order.placeOrder(orderActionAttributes)({
                 action: actionRepo,
                 invoice: invoiceRepo,
                 order: orderRepo,
-                task: taskRepo
+                task: taskRepo,
+                transaction: transactionRepo
             });
             order =
                 placeOrderTransaction.result.order;
