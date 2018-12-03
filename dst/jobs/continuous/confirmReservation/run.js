@@ -9,15 +9,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 注文配送
+ * 予約確定
  */
 const cinerino = require("@cinerino/domain");
 const connectMongo_1 = require("../../../connectMongo");
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
+    const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+        domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+        clientId: process.env.CHEVRE_CLIENT_ID,
+        clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+        scopes: [],
+        state: ''
+    });
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
-    const INTERVAL_MILLISECONDS = 200;
+    const INTERVAL_MILLISECONDS = 500;
     const taskRepo = new cinerino.repository.Task(connection);
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
@@ -25,9 +32,11 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         }
         count += 1;
         try {
-            yield cinerino.service.task.executeByName(cinerino.factory.taskName.SendOrder)({
+            yield cinerino.service.task.executeByName(cinerino.factory.taskName.ConfirmReservation)({
                 taskRepo: taskRepo,
-                connection: connection
+                connection: connection,
+                chevreEndpoint: process.env.CHEVRE_ENDPOINT,
+                chevreAuthClient: chevreAuthClient
             });
         }
         catch (error) {

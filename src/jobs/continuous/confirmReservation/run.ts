@@ -1,5 +1,5 @@
 /**
- * 注文配送
+ * 予約確定
  */
 import * as cinerino from '@cinerino/domain';
 
@@ -8,10 +8,17 @@ import { connectMongo } from '../../../connectMongo';
 export default async () => {
     const connection = await connectMongo({ defaultConnection: false });
 
+    const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+        domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+        clientId: <string>process.env.CHEVRE_CLIENT_ID,
+        clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+        scopes: [],
+        state: ''
+    });
     let count = 0;
 
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
-    const INTERVAL_MILLISECONDS = 200;
+    const INTERVAL_MILLISECONDS = 500;
     const taskRepo = new cinerino.repository.Task(connection);
 
     setInterval(
@@ -24,10 +31,12 @@ export default async () => {
 
             try {
                 await cinerino.service.task.executeByName(
-                    cinerino.factory.taskName.SendOrder
+                    cinerino.factory.taskName.ConfirmReservation
                 )({
                     taskRepo: taskRepo,
-                    connection: connection
+                    connection: connection,
+                    chevreEndpoint: <string>process.env.CHEVRE_ENDPOINT,
+                    chevreAuthClient: chevreAuthClient
                 });
             } catch (error) {
                 console.error(error);

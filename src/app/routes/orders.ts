@@ -3,6 +3,9 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+// tslint:disable-next-line:no-submodule-imports
+import { body } from 'express-validator/check';
+import { NO_CONTENT } from 'http-status';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -20,17 +23,123 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 });
 const ordersRouter = Router();
 ordersRouter.use(authentication);
+
+/**
+ * 注文作成
+ */
+ordersRouter.post(
+    '',
+    permitScopes(['admin']),
+    ...[
+        body('orderNumber').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+            const invoiceRepo = new cinerino.repository.Invoice(cinerino.mongoose.connection);
+            const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
+            const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
+            const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
+
+            const orderNumber = <string>req.body.orderNumber;
+
+            // 注文検索
+            const orders = await orderRepo.search({
+                limit: 1,
+                orderNumbers: [orderNumber]
+            });
+            let order = orders.shift();
+
+            // 注文未作成であれば作成
+            if (order === undefined) {
+                // 注文取引検索
+                const placeOrderTransactions = await transactionRepo.search<cinerino.factory.transactionType.PlaceOrder>({
+                    limit: 1,
+                    typeOf: cinerino.factory.transactionType.PlaceOrder,
+                    result: { order: { orderNumbers: [orderNumber] } }
+                });
+                const placeOrderTransaction = placeOrderTransactions.shift();
+                if (placeOrderTransaction === undefined) {
+                    throw new cinerino.factory.errors.NotFound('Transaction');
+                }
+
+                await cinerino.service.order.placeOrder(placeOrderTransaction)({
+                    action: actionRepo,
+                    invoice: invoiceRepo,
+                    order: orderRepo,
+                    task: taskRepo
+                });
+
+                order =
+                    (<cinerino.factory.transaction.IResult<cinerino.factory.transactionType.PlaceOrder>>placeOrderTransaction.result).order;
+            }
+
+            res.json(order);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 注文配送
+ */
+ordersRouter.post(
+    '/:orderNumber/deliver',
+    permitScopes(['admin']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+            const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
+            const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
+
+            const orderNumber = <string>req.params.orderNumber;
+
+            // 注文検索
+            const order = await orderRepo.findByOrderNumber({
+                orderNumber: orderNumber
+            });
+
+            if (order.orderStatus !== cinerino.factory.orderStatus.OrderDelivered) {
+                // APIユーザーとして注文配送を実行する
+                const sendOrderActionAttributes: cinerino.factory.action.transfer.send.order.IAttributes = {
+                    typeOf: cinerino.factory.actionType.SendAction,
+                    object: order,
+                    agent: req.agent,
+                    recipient: order.customer,
+                    potentialActions: {
+                        sendEmailMessage: undefined
+                    }
+                };
+
+                await cinerino.service.delivery.sendOrder(sendOrderActionAttributes)({
+                    action: actionRepo,
+                    order: orderRepo,
+                    ownershipInfo: ownershipInfoRepo,
+                    task: taskRepo
+                });
+            }
+
+            res.status(NO_CONTENT).end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 /**
  * 確認番号で注文照会
  */
 ordersRouter.post(
     '/findByConfirmationNumber',
     permitScopes(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']),
-    (req, _2, next) => {
-        req.checkBody('confirmationNumber', 'invalid confirmationNumber').notEmpty().withMessage('confirmationNumber is required');
-        req.checkBody('customer', 'invalid customer').notEmpty().withMessage('customer is required');
-        next();
-    },
+    ...[
+        body('confirmationNumber').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+        body('customer').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+    ],
     validator,
     async (req, res, next) => {
         try {
@@ -49,16 +158,16 @@ ordersRouter.post(
         }
     }
 );
+
 /**
  * 確認番号で注文アイテムに対してコードを発行する
  */
 ordersRouter.post(
     '/:orderNumber/ownershipInfos/authorize',
     permitScopes(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']),
-    (req, _2, next) => {
-        req.checkBody('customer', 'invalid customer').notEmpty().withMessage('customer is required');
-        next();
-    },
+    ...[
+        body('customer').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+    ],
     validator,
     async (req, res, next) => {
         try {

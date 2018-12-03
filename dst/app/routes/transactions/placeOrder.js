@@ -214,7 +214,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatRe
 /**
  * 汎用決済承認
  */
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/any', permitScopes_1.default(['admin', 'admin.transactions']), ...[
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/any', permitScopes_1.default(['admin']), ...[
     check_1.body('typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
     check_1.body('amount').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isInt(),
     check_1.body('additionalProperty').optional().isArray()
@@ -238,7 +238,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
 /**
  * 汎用決済承認取消
  */
-placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel', permitScopes_1.default(['admin', 'admin.transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel', permitScopes_1.default(['admin']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.any.cancel({
             id: req.params.actionId,

@@ -240,7 +240,7 @@ placeOrderTransactionsRouter.put(
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/paymentMethod/any',
-    permitScopes(['admin', 'admin.transactions']),
+    permitScopes(['admin']),
     ...[
         body('typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
         body('amount').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isInt(),
@@ -270,7 +270,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.put(
     '/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel',
-    permitScopes(['admin', 'admin.transactions']),
+    permitScopes(['admin']),
     validator,
     rateLimit4transactionInProgress,
     async (req, res, next) => {

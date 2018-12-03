@@ -13,6 +13,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+// tslint:disable-next-line:no-submodule-imports
+const check_1 = require("express-validator/check");
+const http_status_1 = require("http-status");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -28,13 +31,96 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 const ordersRouter = express_1.Router();
 ordersRouter.use(authentication_1.default);
 /**
+ * 注文作成
+ */
+ordersRouter.post('', permitScopes_1.default(['admin']), ...[
+    check_1.body('orderNumber').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+        const invoiceRepo = new cinerino.repository.Invoice(cinerino.mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
+        const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
+        const orderNumber = req.body.orderNumber;
+        // 注文検索
+        const orders = yield orderRepo.search({
+            limit: 1,
+            orderNumbers: [orderNumber]
+        });
+        let order = orders.shift();
+        // 注文未作成であれば作成
+        if (order === undefined) {
+            // 注文取引検索
+            const placeOrderTransactions = yield transactionRepo.search({
+                limit: 1,
+                typeOf: cinerino.factory.transactionType.PlaceOrder,
+                result: { order: { orderNumbers: [orderNumber] } }
+            });
+            const placeOrderTransaction = placeOrderTransactions.shift();
+            if (placeOrderTransaction === undefined) {
+                throw new cinerino.factory.errors.NotFound('Transaction');
+            }
+            yield cinerino.service.order.placeOrder(placeOrderTransaction)({
+                action: actionRepo,
+                invoice: invoiceRepo,
+                order: orderRepo,
+                task: taskRepo
+            });
+            order =
+                placeOrderTransaction.result.order;
+        }
+        res.json(order);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 注文配送
+ */
+ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
+        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
+        const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
+        const orderNumber = req.params.orderNumber;
+        // 注文検索
+        const order = yield orderRepo.findByOrderNumber({
+            orderNumber: orderNumber
+        });
+        if (order.orderStatus !== cinerino.factory.orderStatus.OrderDelivered) {
+            // APIユーザーとして注文配送を実行する
+            const sendOrderActionAttributes = {
+                typeOf: cinerino.factory.actionType.SendAction,
+                object: order,
+                agent: req.agent,
+                recipient: order.customer,
+                potentialActions: {
+                    sendEmailMessage: undefined
+                }
+            };
+            yield cinerino.service.delivery.sendOrder(sendOrderActionAttributes)({
+                action: actionRepo,
+                order: orderRepo,
+                ownershipInfo: ownershipInfoRepo,
+                task: taskRepo
+            });
+        }
+        res.status(http_status_1.NO_CONTENT).end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
  * 確認番号で注文照会
  */
-ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']), (req, _2, next) => {
-    req.checkBody('confirmationNumber', 'invalid confirmationNumber').notEmpty().withMessage('confirmationNumber is required');
-    req.checkBody('customer', 'invalid customer').notEmpty().withMessage('customer is required');
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']), ...[
+    check_1.body('confirmationNumber').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
+    check_1.body('customer').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const customer = req.body.customer;
         if (customer.email !== undefined && customer.telephone !== undefined) {
@@ -54,10 +140,9 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['aws.cogn
 /**
  * 確認番号で注文アイテムに対してコードを発行する
  */
-ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.default(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']), (req, _2, next) => {
-    req.checkBody('customer', 'invalid customer').notEmpty().withMessage('customer is required');
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.default(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']), ...[
+    check_1.body('customer').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const customer = req.body.customer;
         if (customer.email !== undefined && customer.telephone !== undefined) {

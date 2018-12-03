@@ -6,6 +6,7 @@ import cancelAccount from './continuous/cancelAccount/run';
 import cancelCreditCard from './continuous/cancelCreditCard/run';
 import cancelPointAward from './continuous/cancelPointAward/run';
 import cancelSeatReservation from './continuous/cancelSeatReservation/run';
+import confirmReservation from './continuous/confirmReservation/run';
 import givePointAward from './continuous/givePointAward/run';
 import importScreeningEvents from './continuous/importScreeningEvents/run';
 import makeTransactionExpired from './continuous/makeTransactionExpired/run';
@@ -39,6 +40,7 @@ export default async () => {
     await cancelCreditCard();
     await cancelPointAward();
     await cancelSeatReservation();
+    await confirmReservation();
     await givePointAward();
     await importScreeningEvents();
     await makeTransactionExpired();
