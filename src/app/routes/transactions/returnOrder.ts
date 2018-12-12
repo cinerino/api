@@ -3,6 +3,8 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+// tslint:disable-next-line:no-submodule-imports
+import { query } from 'express-validator/check';
 import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 
@@ -99,6 +101,12 @@ returnOrderTransactionsRouter.put(
 returnOrderTransactionsRouter.get(
     '',
     permitScopes(['admin']),
+    ...[
+        query('startFrom').optional().isISO8601().toDate(),
+        query('startThrough').optional().isISO8601().toDate(),
+        query('endFrom').optional().isISO8601().toDate(),
+        query('endThrough').optional().isISO8601().toDate()
+    ],
     validator,
     async (req, res, next) => {
         try {
@@ -109,11 +117,7 @@ returnOrderTransactionsRouter.get(
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
                 sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: cinerino.factory.sortType.Descending },
-                typeOf: cinerino.factory.transactionType.ReturnOrder,
-                startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom).toDate() : undefined,
-                startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough).toDate() : undefined,
-                endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom).toDate() : undefined,
-                endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough).toDate() : undefined
+                typeOf: cinerino.factory.transactionType.ReturnOrder
             };
             const transactions = await transactionRepo.search(searchConditions);
             const totalCount = await transactionRepo.count(searchConditions);

@@ -13,6 +13,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+// tslint:disable-next-line:no-submodule-imports
+const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const authentication_1 = require("../../middlewares/authentication");
@@ -92,12 +94,17 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
 /**
  * 取引検索
  */
-returnOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+returnOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
+    check_1.query('startFrom').optional().isISO8601().toDate(),
+    check_1.query('startThrough').optional().isISO8601().toDate(),
+    check_1.query('endFrom').optional().isISO8601().toDate(),
+    check_1.query('endThrough').optional().isISO8601().toDate()
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: cinerino.factory.sortType.Descending }, typeOf: cinerino.factory.transactionType.ReturnOrder, startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom).toDate() : undefined, startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough).toDate() : undefined, endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom).toDate() : undefined, endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough).toDate() : undefined });
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: cinerino.factory.sortType.Descending }, typeOf: cinerino.factory.transactionType.ReturnOrder });
         const transactions = yield transactionRepo.search(searchConditions);
         const totalCount = yield transactionRepo.count(searchConditions);
         res.set('X-Total-Count', totalCount.toString());

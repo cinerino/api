@@ -7,7 +7,7 @@ import * as middlewares from '@motionpicture/express-middleware';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
-import { body } from 'express-validator/check';
+import { body, query } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as ioredis from 'ioredis';
 import * as moment from 'moment';
@@ -659,26 +659,23 @@ placeOrderTransactionsRouter.put(
 placeOrderTransactionsRouter.get(
     '',
     permitScopes(['admin']),
+    ...[
+        query('startFrom').optional().isISO8601().toDate(),
+        query('startThrough').optional().isISO8601().toDate(),
+        query('endFrom').optional().isISO8601().toDate(),
+        query('endThrough').optional().isISO8601().toDate()
+    ],
     validator,
     async (req, res, next) => {
         try {
             const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
             const searchConditions: cinerino.factory.transaction.ISearchConditions<cinerino.factory.transactionType.PlaceOrder> = {
+                ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
                 sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: cinerino.factory.sortType.Ascending },
-                typeOf: cinerino.factory.transactionType.PlaceOrder,
-                ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
-                statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,
-                startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom).toDate() : undefined,
-                startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough).toDate() : undefined,
-                endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom).toDate() : undefined,
-                endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough).toDate() : undefined,
-                agent: req.query.agent,
-                seller: req.query.seller,
-                object: req.query.object,
-                result: req.query.result
+                typeOf: cinerino.factory.transactionType.PlaceOrder
             };
             const transactions = await transactionRepo.search(searchConditions);
             const totalCount = await transactionRepo.count(searchConditions);

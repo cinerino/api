@@ -239,8 +239,8 @@ ordersRouter.get('/:orderNumber/actions', permitScopes_1.default(['admin']), val
  * 注文検索
  */
 ordersRouter.get('', permitScopes_1.default(['admin']), (req, __2, next) => {
-    req.checkQuery('orderDateFrom').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601').toDate();
-    req.checkQuery('orderDateThrough').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601').toDate();
+    req.checkQuery('orderDateFrom').optional().isISO8601().withMessage('must be ISO8601').toDate();
+    req.checkQuery('orderDateThrough').optional().isISO8601().withMessage('must be ISO8601').toDate();
     req.checkQuery('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
         .optional().isISO8601().withMessage('must be ISO8601').toDate();
     req.checkQuery('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
