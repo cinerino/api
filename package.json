@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@cinerino/domain": "^1.0.0-alpha.101",
+    "@cinerino/domain": "^1.0.0-alpha.102",
     "@motionpicture/express-middleware": "^0.1.0",
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
@@ -40,7 +40,7 @@
     "@types/power-assert": "^1.5.0",
     "@types/qs": "^6.5.1",
     "@types/sinon": "^4.3.3",
-    "@types/supertest": "^2.0.6",
+    "@types/supertest": "^2.0.7",
     "@types/winston": "^2.4.4",
     "aglio": "^2.3.0",
     "clear-require": "^2.0.0",
@@ -54,7 +54,7 @@
     "power-assert": "^1.6.1",
     "rimraf": "^2.6.2",
     "sinon": "^5.1.1",
-    "snyk": "^1.116.2",
+    "snyk": "^1.117.1",
     "supertest": "^3.3.0",
     "swagger2blueprint": "^1.1.0",
     "ts-node": "^6.1.0",
