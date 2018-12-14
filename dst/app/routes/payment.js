@@ -42,7 +42,8 @@ paymentRouter.post('/movieTicket/actions/check', permitScopes_1.default(['aws.co
             movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
                 endpoint: process.env.MVTK_RESERVE_ENDPOINT,
                 auth: mvtkReserveAuthClient
-            })
+            }),
+            paymentMethod: new cinerino.repository.PaymentMethod(cinerino.mongoose.connection)
         });
         res.status(http_status_1.CREATED).json(action);
     }
