@@ -13,6 +13,7 @@ import validator from '../middlewares/validator';
 
 import * as redis from '../../redis';
 
+type EventReservationGoodType = cinerino.factory.ownershipInfo.IGood<cinerino.factory.chevre.reservationType.EventReservation>;
 const CODE_EXPIRES_IN_SECONDS = Number(process.env.CODE_EXPIRES_IN_SECONDS);
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
@@ -212,7 +213,7 @@ ordersRouter.post(
             const ownershipInfos = sendOrderAction.result.ownershipInfos;
             const reservationIds = ownershipInfos
                 .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
-                .map((o) => (<any>o.typeOfGood).id);
+                .map((o) => (<EventReservationGoodType>o.typeOfGood).id);
             const reservationService = new cinerino.chevre.service.Reservation({
                 endpoint: <string>process.env.CHEVRE_ENDPOINT,
                 auth: chevreAuthClient
@@ -232,7 +233,7 @@ ordersRouter.post(
                 // 所有権コード情報を追加
                 const ownershipInfo = ownershipInfos
                     .filter((o) => o.typeOfGood.typeOf === offer.itemOffered.typeOf)
-                    .find((o) => (<any>o.typeOfGood).id === offer.itemOffered.id);
+                    .find((o) => (<EventReservationGoodType>o.typeOfGood).id === offer.itemOffered.id);
                 if (ownershipInfo !== undefined) {
                     offer.itemOffered.reservedTicket.ticketToken = await codeRepo.publish({
                         data: ownershipInfo,
@@ -243,9 +244,15 @@ ordersRouter.post(
                 return offer;
             }));
 
-            // Chevreでチェックイン
-            await Promise.all(order.acceptedOffers.map(async (offer) => {
-                await reservationService.checkInScreeningEvent({ id: offer.itemOffered.id });
+            // 予約番号でChevreチェックイン
+            let reservationNumbers = ownershipInfos
+                .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
+                .map((o) => (<EventReservationGoodType>o.typeOfGood).reservationNumber);
+            reservationNumbers = [...new Set(reservationNumbers)];
+            await Promise.all(reservationNumbers.map(async (reservationNumber) => {
+                await reservationService.checkInScreeningEventReservations({
+                    reservationNumber: reservationNumber
+                });
             }));
 
             res.json(order);

@@ -115,7 +115,7 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['aws.cognito
                 endpoint: process.env.CHEVRE_ENDPOINT,
                 auth: chevreAuthClient
             });
-            yield reservationService.checkInScreeningEvent({ id: ownershipInfo.typeOfGood.id });
+            yield reservationService.checkInScreeningEventReservations({ id: ownershipInfo.typeOfGood.id });
         }
         res.json({ code });
     }

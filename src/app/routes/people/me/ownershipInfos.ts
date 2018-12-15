@@ -126,7 +126,7 @@ ownershipInfosRouter.post(
                     endpoint: <string>process.env.CHEVRE_ENDPOINT,
                     auth: chevreAuthClient
                 });
-                await reservationService.checkInScreeningEvent({ id: ownershipInfo.typeOfGood.id });
+                await reservationService.checkInScreeningEventReservations({ id: ownershipInfo.typeOfGood.id });
             }
 
             res.json({ code });

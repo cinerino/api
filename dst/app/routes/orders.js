@@ -209,9 +209,15 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
             }
             return offer;
         })));
-        // Chevreでチェックイン
-        yield Promise.all(order.acceptedOffers.map((offer) => __awaiter(this, void 0, void 0, function* () {
-            yield reservationService.checkInScreeningEvent({ id: offer.itemOffered.id });
+        // 予約番号でChevreチェックイン
+        let reservationNumbers = ownershipInfos
+            .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
+            .map((o) => o.typeOfGood.reservationNumber);
+        reservationNumbers = [...new Set(reservationNumbers)];
+        yield Promise.all(reservationNumbers.map((reservationNumber) => __awaiter(this, void 0, void 0, function* () {
+            yield reservationService.checkInScreeningEventReservations({
+                reservationNumber: reservationNumber
+            });
         })));
         res.json(order);
     }
