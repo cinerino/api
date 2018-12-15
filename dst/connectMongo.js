@@ -71,6 +71,7 @@ function connectMongo(params) {
             catch (error) {
                 // tslint:disable-next-line:no-console
                 console.error('mongoose.connect:', error);
+                yield cinerino.service.notification.report2developers(`[${process.env.PROJECT_ID}] api:connectMongo`, `MongoDB connection error: ${error.stack}`)();
             }
         }), PING_INTERVAL);
         return connection;
