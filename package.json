@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@cinerino/domain": "^1.0.0-alpha.107",
+    "@cinerino/domain": "^1.0.0-alpha.108",
     "@motionpicture/express-middleware": "^0.1.0",
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
@@ -54,13 +54,13 @@
     "power-assert": "^1.6.1",
     "rimraf": "^2.6.2",
     "sinon": "^5.1.1",
-    "snyk": "^1.117.1",
+    "snyk": "^1.118.0",
     "supertest": "^3.3.0",
     "swagger2blueprint": "^1.1.0",
-    "ts-node": "^6.1.0",
-    "tslint": "^5.10.0",
-    "tslint-microsoft-contrib": "^5.2.1",
-    "typescript": "^2.9.1"
+    "ts-node": "^6.2.0",
+    "tslint": "^5.12.0",
+    "tslint-microsoft-contrib": "^6.0.0",
+    "typescript": "^3.2.2"
   },
   "engines": {
     "node": ">=8.0.0",

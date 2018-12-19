@@ -29,7 +29,9 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
  * 口座開設
  */
 accountsRouter.post('/:accountType', permitScopes_1.default(['aws.cognito.signin.user.admin']), (req, _, next) => {
-    req.checkBody('name', 'invalid name').notEmpty().withMessage('name is required');
+    req.checkBody('name', 'invalid name')
+        .notEmpty()
+        .withMessage('name is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -48,7 +50,8 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['aws.cognito.signin
             accountNumber: accountNumberRepo,
             accountService: accountService
         });
-        res.status(http_status_1.CREATED).json(ownershipInfo);
+        res.status(http_status_1.CREATED)
+            .json(ownershipInfo);
     }
     catch (error) {
         next(error);
@@ -75,7 +78,8 @@ accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(
             ownershipInfo: ownershipInfoRepo,
             accountService: accountService
         });
-        res.status(http_status_1.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);

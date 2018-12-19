@@ -25,7 +25,9 @@ accountsRouter.post(
     '/:accountType',
     permitScopes(['aws.cognito.signin.user.admin']),
     (req, _, next) => {
-        req.checkBody('name', 'invalid name').notEmpty().withMessage('name is required');
+        req.checkBody('name', 'invalid name')
+            .notEmpty()
+            .withMessage('name is required');
         next();
     },
     validator,
@@ -46,7 +48,8 @@ accountsRouter.post(
                 accountNumber: accountNumberRepo,
                 accountService: accountService
             });
-            res.status(CREATED).json(ownershipInfo);
+            res.status(CREATED)
+                .json(ownershipInfo);
         } catch (error) {
             next(error);
         }
@@ -77,7 +80,8 @@ accountsRouter.put(
                 ownershipInfo: ownershipInfoRepo,
                 accountService: accountService
             });
-            res.status(NO_CONTENT).end();
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }

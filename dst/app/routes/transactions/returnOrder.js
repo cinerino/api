@@ -30,8 +30,13 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 });
 returnOrderTransactionsRouter.use(authentication_1.default);
 returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), (req, _, next) => {
-    req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
-    req.checkBody('object.order.orderNumber', 'invalid order number').notEmpty().withMessage('object.order.orderNumber is required');
+    req.checkBody('expires', 'invalid expires')
+        .notEmpty()
+        .withMessage('expires is required')
+        .isISO8601();
+    req.checkBody('object.order.orderNumber', 'invalid order number')
+        .notEmpty()
+        .withMessage('object.order.orderNumber is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -44,7 +49,8 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
             auth: chevreAuthClient
         });
         const transaction = yield cinerino.service.transaction.returnOrder.start({
-            expires: moment(req.body.expires).toDate(),
+            expires: moment(req.body.expires)
+                .toDate(),
             agent: Object.assign({}, req.agent, { identifier: [
                     ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
                     ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
@@ -85,7 +91,8 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
             transaction: transactionRepo,
             organization: organizationRepo
         });
-        res.status(http_status_1.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);
@@ -95,10 +102,22 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
  * 取引検索
  */
 returnOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
-    check_1.query('startFrom').optional().isISO8601().toDate(),
-    check_1.query('startThrough').optional().isISO8601().toDate(),
-    check_1.query('endFrom').optional().isISO8601().toDate(),
-    check_1.query('endThrough').optional().isISO8601().toDate()
+    check_1.query('startFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('startThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('endFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('endThrough')
+        .optional()
+        .isISO8601()
+        .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);

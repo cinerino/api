@@ -46,7 +46,8 @@ function connectMongo(params) {
                 let pingResult;
                 yield new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
                     try {
-                        pingResult = yield connection.db.admin().ping();
+                        pingResult = yield connection.db.admin()
+                            .ping();
                         debug('pingResult:', pingResult);
                     }
                     catch (error) {

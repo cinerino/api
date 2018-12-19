@@ -22,11 +22,13 @@ const debug = createDebug('cinerino-api:router');
 const TIMEOUT_GIVE_UP_CHECKING_IN_MILLISECONDS = 3000;
 healthRouter.get('', (_, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield cinerino.mongoose.connection.db.admin().ping();
+        yield cinerino.mongoose.connection.db.admin()
+            .ping();
         yield new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             let givenUpChecking = false;
             // redisサーバー接続が生きているかどうか確認
-            redis.getClient().ping('wake up!', (err, reply) => {
+            redis.getClient()
+                .ping('wake up!', (err, reply) => {
                 debug('redis ping:', err, reply);
                 // すでにあきらめていたら何もしない
                 if (givenUpChecking) {
@@ -44,7 +46,8 @@ healthRouter.get('', (_, res, next) => __awaiter(this, void 0, void 0, function*
                 reject(new Error('unable to check db connection'));
             }, TIMEOUT_GIVE_UP_CHECKING_IN_MILLISECONDS);
         }));
-        res.status(http_status_1.OK).send('healthy!');
+        res.status(http_status_1.OK)
+            .send('healthy!');
     }
     catch (error) {
         next(error);

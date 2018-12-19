@@ -45,7 +45,8 @@ paymentRouter.post('/movieTicket/actions/check', permitScopes_1.default(['aws.co
             }),
             paymentMethod: new cinerino.repository.PaymentMethod(cinerino.mongoose.connection)
         });
-        res.status(http_status_1.CREATED).json(action);
+        res.status(http_status_1.CREATED)
+            .json(action);
     }
     catch (error) {
         next(error);

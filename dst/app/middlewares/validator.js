@@ -21,7 +21,8 @@ const debug = createDebug('cinerino-api:middlewares');
 exports.default = (req, __, next) => __awaiter(this, void 0, void 0, function* () {
     const validatorResult = yield req.getValidationResult();
     if (!validatorResult.isEmpty()) {
-        const errors = validatorResult.array().map((mappedRrror) => {
+        const errors = validatorResult.array()
+            .map((mappedRrror) => {
             return new cinerino.factory.errors.Argument(mappedRrror.param, mappedRrror.msg);
         });
         debug('validation result not empty...', errors);

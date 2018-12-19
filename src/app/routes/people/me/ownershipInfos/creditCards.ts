@@ -26,7 +26,8 @@ creditCardsRouter.post(
     async (req, res, next) => {
         try {
             const creditCard = await cinerino.service.person.creditCard.save(req.user.sub, req.body)();
-            res.status(CREATED).json(creditCard);
+            res.status(CREATED)
+                .json(creditCard);
         } catch (error) {
             next(error);
         }
@@ -58,7 +59,8 @@ creditCardsRouter.delete(
     async (req, res, next) => {
         try {
             await cinerino.service.person.creditCard.unsubscribe(req.user.sub, req.params.cardSeq)();
-            res.status(NO_CONTENT).end();
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }

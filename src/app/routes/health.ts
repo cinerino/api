@@ -18,24 +18,26 @@ healthRouter.get(
     '',
     async (_, res, next) => {
         try {
-            await cinerino.mongoose.connection.db.admin().ping();
+            await cinerino.mongoose.connection.db.admin()
+                .ping();
             await new Promise(async (resolve, reject) => {
                 let givenUpChecking = false;
 
                 // redisサーバー接続が生きているかどうか確認
-                redis.getClient().ping('wake up!', (err, reply) => {
-                    debug('redis ping:', err, reply);
-                    // すでにあきらめていたら何もしない
-                    if (givenUpChecking) {
-                        return;
-                    }
+                redis.getClient()
+                    .ping('wake up!', (err, reply) => {
+                        debug('redis ping:', err, reply);
+                        // すでにあきらめていたら何もしない
+                        if (givenUpChecking) {
+                            return;
+                        }
 
-                    if (err instanceof Error) {
-                        reject(err);
-                    } else {
-                        resolve();
-                    }
-                });
+                        if (err instanceof Error) {
+                            reject(err);
+                        } else {
+                            resolve();
+                        }
+                    });
 
                 setTimeout(
                     () => {
@@ -46,7 +48,8 @@ healthRouter.get(
                 );
             });
 
-            res.status(OK).send('healthy!');
+            res.status(OK)
+                .send('healthy!');
         } catch (error) {
             next(error);
         }

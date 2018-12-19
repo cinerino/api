@@ -34,7 +34,10 @@ ordersRouter.use(authentication_1.default);
  * 注文作成
  */
 ordersRouter.post('', permitScopes_1.default(['admin']), ...[
-    check_1.body('orderNumber').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+    check_1.body('orderNumber')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
@@ -116,7 +119,8 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['admin']), va
                 task: taskRepo
             });
         }
-        res.status(http_status_1.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);
@@ -126,8 +130,14 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['admin']), va
  * 確認番号で注文照会
  */
 ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']), ...[
-    check_1.body('confirmationNumber').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('customer').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+    check_1.body('confirmationNumber')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('customer')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const customer = req.body.customer;
@@ -149,7 +159,10 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['aws.cogn
  * 確認番号で注文アイテムに対してコードを発行する
  */
 ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.default(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']), ...[
-    check_1.body('customer').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+    check_1.body('customer')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const customer = req.body.customer;
@@ -245,16 +258,36 @@ ordersRouter.get('/:orderNumber/actions', permitScopes_1.default(['admin']), val
  * 注文検索
  */
 ordersRouter.get('', permitScopes_1.default(['admin']), (req, __2, next) => {
-    req.checkQuery('orderDateFrom').optional().isISO8601().withMessage('must be ISO8601').toDate();
-    req.checkQuery('orderDateThrough').optional().isISO8601().withMessage('must be ISO8601').toDate();
+    req.checkQuery('orderDateFrom')
+        .optional()
+        .isISO8601()
+        .withMessage('must be ISO8601')
+        .toDate();
+    req.checkQuery('orderDateThrough')
+        .optional()
+        .isISO8601()
+        .withMessage('must be ISO8601')
+        .toDate();
     req.checkQuery('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
-        .optional().isISO8601().withMessage('must be ISO8601').toDate();
+        .optional()
+        .isISO8601()
+        .withMessage('must be ISO8601')
+        .toDate();
     req.checkQuery('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
-        .optional().isISO8601().withMessage('must be ISO8601').toDate();
+        .optional()
+        .isISO8601()
+        .withMessage('must be ISO8601')
+        .toDate();
     req.checkQuery('acceptedOffers.itemOffered.reservationFor.startFrom')
-        .optional().isISO8601().withMessage('must be ISO8601').toDate();
+        .optional()
+        .isISO8601()
+        .withMessage('must be ISO8601')
+        .toDate();
     req.checkQuery('acceptedOffers.itemOffered.reservationFor.startThrough')
-        .optional().isISO8601().withMessage('must be ISO8601').toDate();
+        .optional()
+        .isISO8601()
+        .withMessage('must be ISO8601')
+        .toDate();
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {

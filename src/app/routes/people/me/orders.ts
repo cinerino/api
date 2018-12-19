@@ -17,8 +17,18 @@ ordersRouter.get(
     '',
     permitScopes(['aws.cognito.signin.user.admin']),
     (req, __2, next) => {
-        req.checkQuery('orderDateFrom').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601').toDate();
-        req.checkQuery('orderDateThrough').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601').toDate();
+        req.checkQuery('orderDateFrom')
+            .notEmpty()
+            .withMessage('required')
+            .isISO8601()
+            .withMessage('must be ISO8601')
+            .toDate();
+        req.checkQuery('orderDateThrough')
+            .notEmpty()
+            .withMessage('required')
+            .isISO8601()
+            .withMessage('must be ISO8601')
+            .toDate();
         next();
     },
     validator,

@@ -29,16 +29,46 @@ screeningEventRouter.get(
     '',
     permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
     ...[
-        query('inSessionFrom').optional().isISO8601().toDate(),
-        query('inSessionThrough').optional().isISO8601().toDate(),
-        query('startFrom').optional().isISO8601().toDate(),
-        query('startThrough').optional().isISO8601().toDate(),
-        query('endFrom').optional().isISO8601().toDate(),
-        query('endThrough').optional().isISO8601().toDate(),
-        query('offers.availableFrom').optional().isISO8601().toDate(),
-        query('offers.availableThrough').optional().isISO8601().toDate(),
-        query('offers.validFrom').optional().isISO8601().toDate(),
-        query('offers.validThrough').optional().isISO8601().toDate()
+        query('inSessionFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('inSessionThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('startFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('startThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('endFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('endThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('offers.availableFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('offers.availableThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('offers.validFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('offers.validThrough')
+            .optional()
+            .isISO8601()
+            .toDate()
     ],
     validator,
     async (req, res, next) => {
@@ -106,8 +136,14 @@ screeningEventRouter.get(
     '/:id/offers/ticket',
     permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
     ...[
-        query('seller').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        query('store').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+        query('seller')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        query('store')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
     ],
     validator,
     async (req, res, next) => {

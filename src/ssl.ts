@@ -13,11 +13,13 @@ import runJobs from './jobs/run';
 const debug = createDebug('cinerino-api:server');
 
 if (process.env.JOBS_STOPPED !== '1') {
-    runJobs().then().catch((err) => {
-        // tslint:disable-next-line:no-console
-        console.error('runJobs:', err);
-        process.exit(1);
-    });
+    runJobs()
+        .then()
+        .catch((err) => {
+            // tslint:disable-next-line:no-console
+            console.error('runJobs:', err);
+            process.exit(1);
+        });
 }
 
 /**
@@ -32,7 +34,9 @@ app.set('port', port);
  */
 
 const options = {
+    // tslint:disable-next-line:non-literal-fs-path
     key: fs.readFileSync(`${__dirname}/../certificate/server.key`),
+    // tslint:disable-next-line:non-literal-fs-path
     cert: fs.readFileSync(`${__dirname}/../certificate/server.crt`)
 };
 const server = https.createServer(options, app);

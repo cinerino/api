@@ -49,7 +49,8 @@ profileRouter.put('', permitScopes_1.default(['aws.cognito.signin.user.admin']),
                 telephone: req.body.telephone
             }
         });
-        res.status(http_status_1.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);

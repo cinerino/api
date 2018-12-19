@@ -22,11 +22,20 @@ tasksRouter.post(
     '/:name',
     permitScopes(['admin']),
     ...[
-        body('runsAt').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+        body('runsAt')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
             .isISO8601(),
-        body('remainingNumberOfTries').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+        body('remainingNumberOfTries')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
             .isInt(),
-        body('data').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+        body('data')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
     ],
     validator,
     async (req, res, next) => {
@@ -35,15 +44,18 @@ tasksRouter.post(
             const attributes: cinerino.factory.task.IAttributes<cinerino.factory.taskName> = {
                 name: req.params.name,
                 status: cinerino.factory.taskStatus.Ready,
-                runsAt: moment(req.body.runsAt).toDate(),
+                runsAt: moment(req.body.runsAt)
+                    .toDate(),
                 remainingNumberOfTries: Number(req.body.remainingNumberOfTries),
+                // tslint:disable-next-line:no-null-keyword
                 lastTriedAt: null,
                 numberOfTried: 0,
                 executionResults: [],
                 data: req.body.data
             };
             const task = await taskRepo.save(attributes);
-            res.status(CREATED).json(task);
+            res.status(CREATED)
+                .json(task);
         } catch (error) {
             next(error);
         }
@@ -78,26 +90,37 @@ tasksRouter.get(
     '',
     permitScopes(['admin']),
     ...[
-        query('runsFrom').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`),
-        query('runsThrough').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`),
-        query('lastTriedFrom').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`),
-        query('lastTriedThrough').optional().isISO8601().withMessage((_, options) => `${options.path} must be ISO8601 timestamp`)
+        query('runsFrom')
+            .optional()
+            .isISO8601()
+            .withMessage((_, options) => `${options.path} must be ISO8601 timestamp`)
+            .toDate(),
+        query('runsThrough')
+            .optional()
+            .isISO8601()
+            .withMessage((_, options) => `${options.path} must be ISO8601 timestamp`)
+            .toDate(),
+        query('lastTriedFrom')
+            .optional()
+            .isISO8601()
+            .withMessage((_, options) => `${options.path} must be ISO8601 timestamp`)
+            .toDate(),
+        query('lastTriedThrough')
+            .optional()
+            .isISO8601()
+            .withMessage((_, options) => `${options.path} must be ISO8601 timestamp`)
+            .toDate()
     ],
     validator,
     async (req, res, next) => {
         try {
             const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
             const searchConditions: cinerino.factory.task.ISearchConditions<cinerino.factory.taskName> = {
+                ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-                sort: (req.query.sort !== undefined) ? req.query.sort : { runsAt: cinerino.factory.sortType.Descending },
-                name: req.query.name,
-                statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,
-                runsFrom: (req.query.runsFrom !== undefined) ? moment(req.query.runsFrom).toDate() : undefined,
-                runsThrough: (req.query.runsThrough !== undefined) ? moment(req.query.runsThrough).toDate() : undefined,
-                lastTriedFrom: (req.query.lastTriedFrom !== undefined) ? moment(req.query.lastTriedFrom).toDate() : undefined,
-                lastTriedThrough: (req.query.lastTriedThrough !== undefined) ? moment(req.query.lastTriedThrough).toDate() : undefined
+                sort: (req.query.sort !== undefined) ? req.query.sort : { runsAt: cinerino.factory.sortType.Descending }
             };
             const tasks = await taskRepo.search(searchConditions);
             const totalCount = await taskRepo.count(searchConditions);

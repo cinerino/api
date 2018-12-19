@@ -20,20 +20,60 @@ movieTheaterRouter.post(
     '',
     permitScopes(['admin', 'organizations']),
     ...[
-        body('name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('parentOrganization.typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('parentOrganization.name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('parentOrganization.name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('location.typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('location.branchCode').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('location.name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('location.name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('telephone').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('url').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isURL(),
-        body('paymentAccepted').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isArray(),
-        body('hasPOS').isArray(),
-        body('areaServed').isArray()
+        body('name.ja')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('name.en')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('parentOrganization.typeOf')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('parentOrganization.name.ja')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('parentOrganization.name.en')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('location.typeOf')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('location.branchCode')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('location.name.ja')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('location.name.en')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('telephone')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('url')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
+            .isURL(),
+        body('paymentAccepted')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
+            .isArray(),
+        body('hasPOS')
+            .isArray(),
+        body('areaServed')
+            .isArray()
     ],
     validator,
     async (req, res, next) => {
@@ -51,7 +91,8 @@ movieTheaterRouter.post(
             };
             const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
             const movieTheater = await organizationRepo.save({ attributes: attributes });
-            res.status(CREATED).json(movieTheater);
+            res.status(CREATED)
+                .json(movieTheater);
         } catch (error) {
             next(error);
         }
@@ -101,20 +142,60 @@ movieTheaterRouter.put(
     '/:id',
     permitScopes(['admin', 'organizations']),
     ...[
-        body('name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('parentOrganization.typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('parentOrganization.name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('parentOrganization.name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('location.typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('location.branchCode').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('location.name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('location.name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('telephone').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('url').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isURL(),
-        body('paymentAccepted').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isArray(),
-        body('hasPOS').isArray(),
-        body('areaServed').isArray()
+        body('name.ja')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('name.en')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('parentOrganization.typeOf')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('parentOrganization.name.ja')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('parentOrganization.name.en')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('location.typeOf')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('location.branchCode')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('location.name.ja')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('location.name.en')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('telephone')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('url')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
+            .isURL(),
+        body('paymentAccepted')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
+            .isArray(),
+        body('hasPOS')
+            .isArray(),
+        body('areaServed')
+            .isArray()
     ],
     validator,
     async (req, res, next) => {
@@ -132,7 +213,8 @@ movieTheaterRouter.put(
             };
             const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
             await organizationRepo.save({ id: req.params.id, attributes: attributes });
-            res.status(NO_CONTENT).end();
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }
@@ -149,7 +231,8 @@ movieTheaterRouter.delete(
                 typeOf: cinerino.factory.organizationType.MovieTheater,
                 id: req.params.id
             });
-            res.status(NO_CONTENT).end();
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }

@@ -22,8 +22,18 @@ ordersRouter.use(authentication_1.default);
  * 注文検索
  */
 ordersRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (req, __2, next) => {
-    req.checkQuery('orderDateFrom').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601').toDate();
-    req.checkQuery('orderDateThrough').notEmpty().withMessage('required').isISO8601().withMessage('must be ISO8601').toDate();
+    req.checkQuery('orderDateFrom')
+        .notEmpty()
+        .withMessage('required')
+        .isISO8601()
+        .withMessage('must be ISO8601')
+        .toDate();
+    req.checkQuery('orderDateThrough')
+        .notEmpty()
+        .withMessage('required')
+        .isISO8601()
+        .withMessage('must be ISO8601')
+        .toDate();
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {

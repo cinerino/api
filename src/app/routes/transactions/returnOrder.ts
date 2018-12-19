@@ -25,8 +25,13 @@ returnOrderTransactionsRouter.post(
     '/start',
     permitScopes(['admin']),
     (req, _, next) => {
-        req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
-        req.checkBody('object.order.orderNumber', 'invalid order number').notEmpty().withMessage('object.order.orderNumber is required');
+        req.checkBody('expires', 'invalid expires')
+            .notEmpty()
+            .withMessage('expires is required')
+            .isISO8601();
+        req.checkBody('object.order.orderNumber', 'invalid order number')
+            .notEmpty()
+            .withMessage('object.order.orderNumber is required');
         next();
     },
     validator,
@@ -41,7 +46,8 @@ returnOrderTransactionsRouter.post(
                 auth: chevreAuthClient
             });
             const transaction = await cinerino.service.transaction.returnOrder.start({
-                expires: moment(req.body.expires).toDate(),
+                expires: moment(req.body.expires)
+                    .toDate(),
                 agent: {
                     ...req.agent,
                     identifier: [
@@ -89,7 +95,8 @@ returnOrderTransactionsRouter.put(
                 transaction: transactionRepo,
                 organization: organizationRepo
             });
-            res.status(NO_CONTENT).end();
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }
@@ -102,10 +109,22 @@ returnOrderTransactionsRouter.get(
     '',
     permitScopes(['admin']),
     ...[
-        query('startFrom').optional().isISO8601().toDate(),
-        query('startThrough').optional().isISO8601().toDate(),
-        query('endFrom').optional().isISO8601().toDate(),
-        query('endThrough').optional().isISO8601().toDate()
+        query('startFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('startThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('endFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('endThrough')
+            .optional()
+            .isISO8601()
+            .toDate()
     ],
     validator,
     async (req, res, next) => {

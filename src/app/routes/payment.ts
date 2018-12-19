@@ -42,7 +42,8 @@ paymentRouter.post(
                 }),
                 paymentMethod: new cinerino.repository.PaymentMethod(cinerino.mongoose.connection)
             });
-            res.status(CREATED).json(action);
+            res.status(CREATED)
+                .json(action);
         } catch (error) {
             next(error);
         }

@@ -41,7 +41,8 @@ export async function connectMongo(params: {
                 let pingResult: any;
                 await new Promise(async (resolve) => {
                     try {
-                        pingResult = await connection.db.admin().ping();
+                        pingResult = await connection.db.admin()
+                            .ping();
                         debug('pingResult:', pingResult);
                     } catch (error) {
                         // tslint:disable-next-line:no-console

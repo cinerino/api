@@ -99,11 +99,13 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 // 静的ファイル
 // app.use(express.static(__dirname + '/../../public'));
 
-connectMongo({ defaultConnection: true }).then().catch((err) => {
-    // tslint:disable-next-line:no-console
-    console.error('connetMongo:', err);
-    process.exit(1);
-});
+connectMongo({ defaultConnection: true })
+    .then()
+    .catch((err) => {
+        // tslint:disable-next-line:no-console
+        console.error('connetMongo:', err);
+        process.exit(1);
+    });
 
 // routers
 app.use('/', router);

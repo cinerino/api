@@ -28,8 +28,11 @@ export default async () => {
 
             // 全劇場組織を取得
             const movieTheaters = await organizationRepo.searchMovieTheaters({});
-            const importFrom = moment().toDate();
-            const importThrough = moment().add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks').toDate();
+            const importFrom = moment()
+                .toDate();
+            const importThrough = moment()
+                .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
+                .toDate();
             const runsAt = new Date();
             await Promise.all(movieTheaters.map(async (movieTheater) => {
                 try {
@@ -38,6 +41,7 @@ export default async () => {
                         status: cinerino.factory.taskStatus.Ready,
                         runsAt: runsAt,
                         remainingNumberOfTries: 1,
+                        // tslint:disable-next-line:no-null-keyword
                         lastTriedAt: null,
                         numberOfTried: 0,
                         executionResults: [],

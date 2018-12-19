@@ -49,7 +49,8 @@ profileRouter.put(
                     telephone: req.body.telephone
                 }
             });
-            res.status(NO_CONTENT).end();
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }

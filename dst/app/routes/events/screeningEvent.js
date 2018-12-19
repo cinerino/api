@@ -32,16 +32,46 @@ screeningEventRouter.use(authentication_1.default);
  * イベント検索
  */
 screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), ...[
-    check_1.query('inSessionFrom').optional().isISO8601().toDate(),
-    check_1.query('inSessionThrough').optional().isISO8601().toDate(),
-    check_1.query('startFrom').optional().isISO8601().toDate(),
-    check_1.query('startThrough').optional().isISO8601().toDate(),
-    check_1.query('endFrom').optional().isISO8601().toDate(),
-    check_1.query('endThrough').optional().isISO8601().toDate(),
-    check_1.query('offers.availableFrom').optional().isISO8601().toDate(),
-    check_1.query('offers.availableThrough').optional().isISO8601().toDate(),
-    check_1.query('offers.validFrom').optional().isISO8601().toDate(),
-    check_1.query('offers.validThrough').optional().isISO8601().toDate()
+    check_1.query('inSessionFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('inSessionThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('startFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('startThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('endFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('endThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('offers.availableFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('offers.availableThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('offers.validFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('offers.validThrough')
+        .optional()
+        .isISO8601()
+        .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const eventRepo = new cinerino.repository.Event(cinerino.mongoose.connection);
@@ -90,8 +120,14 @@ screeningEventRouter.get('/:id/offers', permitScopes_1.default(['aws.cognito.sig
  * イベントに対する券種オファー検索
  */
 screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), ...[
-    check_1.query('seller').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.query('store').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+    check_1.query('seller')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.query('store')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);

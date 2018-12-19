@@ -32,7 +32,10 @@ ordersRouter.post(
     '',
     permitScopes(['admin']),
     ...[
-        body('orderNumber').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+        body('orderNumber')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
     ],
     validator,
     async (req, res, next) => {
@@ -133,7 +136,8 @@ ordersRouter.post(
                 });
             }
 
-            res.status(NO_CONTENT).end();
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }
@@ -147,8 +151,14 @@ ordersRouter.post(
     '/findByConfirmationNumber',
     permitScopes(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']),
     ...[
-        body('confirmationNumber').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('customer').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+        body('confirmationNumber')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('customer')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
     ],
     validator,
     async (req, res, next) => {
@@ -176,7 +186,10 @@ ordersRouter.post(
     '/:orderNumber/ownershipInfos/authorize',
     permitScopes(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']),
     ...[
-        body('customer').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+        body('customer')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
     ],
     validator,
     async (req, res, next) => {
@@ -290,16 +303,36 @@ ordersRouter.get(
     '',
     permitScopes(['admin']),
     (req, __2, next) => {
-        req.checkQuery('orderDateFrom').optional().isISO8601().withMessage('must be ISO8601').toDate();
-        req.checkQuery('orderDateThrough').optional().isISO8601().withMessage('must be ISO8601').toDate();
+        req.checkQuery('orderDateFrom')
+            .optional()
+            .isISO8601()
+            .withMessage('must be ISO8601')
+            .toDate();
+        req.checkQuery('orderDateThrough')
+            .optional()
+            .isISO8601()
+            .withMessage('must be ISO8601')
+            .toDate();
         req.checkQuery('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
-            .optional().isISO8601().withMessage('must be ISO8601').toDate();
+            .optional()
+            .isISO8601()
+            .withMessage('must be ISO8601')
+            .toDate();
         req.checkQuery('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
-            .optional().isISO8601().withMessage('must be ISO8601').toDate();
+            .optional()
+            .isISO8601()
+            .withMessage('must be ISO8601')
+            .toDate();
         req.checkQuery('acceptedOffers.itemOffered.reservationFor.startFrom')
-            .optional().isISO8601().withMessage('must be ISO8601').toDate();
+            .optional()
+            .isISO8601()
+            .withMessage('must be ISO8601')
+            .toDate();
         req.checkQuery('acceptedOffers.itemOffered.reservationFor.startThrough')
-            .optional().isISO8601().withMessage('must be ISO8601').toDate();
+            .optional()
+            .isISO8601()
+            .withMessage('must be ISO8601')
+            .toDate();
         next();
     },
     validator,

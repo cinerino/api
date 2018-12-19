@@ -58,7 +58,9 @@ ownershipInfosRouter.get(
                     createdAt: 0,
                     updatedAt: 0
                 }
-            ).exec().then((docs) => docs.map((doc) => doc.toObject()));
+            )
+                .exec()
+                .then((docs) => docs.map((doc) => doc.toObject()));
             res.set('X-Total-Count', actions.length.toString());
             res.json(actions);
         } catch (error) {

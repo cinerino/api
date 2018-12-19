@@ -1,14 +1,15 @@
 import { factory } from '@cinerino/domain';
 
 /**
- * APIError
+ * APIエラー
  */
 export class APIError extends Error {
     public readonly code: number;
     public readonly errors: factory.errors.Cinerino[];
 
     constructor(code: number, errors: factory.errors.Cinerino[]) {
-        const message = errors.map((error) => error.message).join('\n');
+        const message = errors.map((error) => error.message)
+            .join('\n');
         super(message);
 
         this.name = 'APIError';

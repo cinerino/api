@@ -52,7 +52,9 @@ eventReservationRouter.post(
     '/screeningEvent/findByToken',
     permitScopes(['admin', 'tokens', 'tokens.read-only']),
     (req, _, next) => {
-        req.checkBody('token', 'invalid token').notEmpty().withMessage('token is required');
+        req.checkBody('token', 'invalid token')
+            .notEmpty()
+            .withMessage('token is required');
         next();
     },
     validator,
@@ -71,13 +73,14 @@ eventReservationRouter.post(
                     typeOf: cinerino.factory.chevre.reservationType.EventReservation,
                     id: payload.typeOfGood.id
                 }
-            }).then((infos) => {
-                if (infos.length === 0) {
-                    throw new cinerino.factory.errors.NotFound('OwnershipInfo');
-                }
+            })
+                .then((infos) => {
+                    if (infos.length === 0) {
+                        throw new cinerino.factory.errors.NotFound('OwnershipInfo');
+                    }
 
-                return infos[0];
-            });
+                    return infos[0];
+                });
 
             const reservationService = new cinerino.chevre.service.Reservation({
                 endpoint: <string>process.env.CHEVRE_ENDPOINT,

@@ -31,8 +31,11 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         const organizationRepo = new cinerino.repository.Organization(connection);
         // 全劇場組織を取得
         const movieTheaters = yield organizationRepo.searchMovieTheaters({});
-        const importFrom = moment().toDate();
-        const importThrough = moment().add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks').toDate();
+        const importFrom = moment()
+            .toDate();
+        const importThrough = moment()
+            .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
+            .toDate();
         const runsAt = new Date();
         yield Promise.all(movieTheaters.map((movieTheater) => __awaiter(this, void 0, void 0, function* () {
             try {
@@ -41,6 +44,7 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
                     status: cinerino.factory.taskStatus.Ready,
                     runsAt: runsAt,
                     remainingNumberOfTries: 1,
+                    // tslint:disable-next-line:no-null-keyword
                     lastTriedAt: null,
                     numberOfTried: 0,
                     executionResults: [],

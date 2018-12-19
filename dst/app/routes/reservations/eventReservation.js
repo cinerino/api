@@ -47,7 +47,9 @@ eventReservationRouter.get('/screeningEvent', permitScopes_1.default(['admin']),
  * トークンで予約照会
  */
 eventReservationRouter.post('/screeningEvent/findByToken', permitScopes_1.default(['admin', 'tokens', 'tokens.read-only']), (req, _, next) => {
-    req.checkBody('token', 'invalid token').notEmpty().withMessage('token is required');
+    req.checkBody('token', 'invalid token')
+        .notEmpty()
+        .withMessage('token is required');
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -63,7 +65,8 @@ eventReservationRouter.post('/screeningEvent/findByToken', permitScopes_1.defaul
                 typeOf: cinerino.factory.chevre.reservationType.EventReservation,
                 id: payload.typeOfGood.id
             }
-        }).then((infos) => {
+        })
+            .then((infos) => {
             if (infos.length === 0) {
                 throw new cinerino.factory.errors.NotFound('OwnershipInfo');
             }

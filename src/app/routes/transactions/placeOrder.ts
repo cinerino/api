@@ -75,12 +75,23 @@ placeOrderTransactionsRouter.post(
     '/start',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     (req, _, next) => {
-        req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
-        req.checkBody('agent.identifier', 'invalid agent identifier').optional().isArray();
-        req.checkBody('seller.typeOf', 'invalid seller type').notEmpty().withMessage('seller.typeOf is required');
-        req.checkBody('seller.id', 'invalid seller id').notEmpty().withMessage('seller.id is required');
+        req.checkBody('expires', 'invalid expires')
+            .notEmpty()
+            .withMessage('expires is required')
+            .isISO8601();
+        req.checkBody('agent.identifier', 'invalid agent identifier')
+            .optional()
+            .isArray();
+        req.checkBody('seller.typeOf', 'invalid seller type')
+            .notEmpty()
+            .withMessage('seller.typeOf is required');
+        req.checkBody('seller.id', 'invalid seller id')
+            .notEmpty()
+            .withMessage('seller.id is required');
         if (!WAITER_DISABLED) {
-            req.checkBody('object.passport.token', 'invalid passport token').notEmpty().withMessage('object.passport.token is required');
+            req.checkBody('object.passport.token', 'invalid passport token')
+                .notEmpty()
+                .withMessage('object.passport.token is required');
         }
         next();
     },
@@ -104,7 +115,8 @@ placeOrderTransactionsRouter.post(
             }
 
             const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
-                expires: moment(req.body.expires).toDate(),
+                expires: moment(req.body.expires)
+                    .toDate(),
                 agent: {
                     ...req.agent,
                     identifier: [
@@ -138,10 +150,18 @@ placeOrderTransactionsRouter.put(
     '/:transactionId/customerContact',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     (req, _, next) => {
-        req.checkBody('familyName').notEmpty().withMessage('required');
-        req.checkBody('givenName').notEmpty().withMessage('required');
-        req.checkBody('telephone').notEmpty().withMessage('required');
-        req.checkBody('email').notEmpty().withMessage('required');
+        req.checkBody('familyName')
+            .notEmpty()
+            .withMessage('required');
+        req.checkBody('givenName')
+            .notEmpty()
+            .withMessage('required');
+        req.checkBody('telephone')
+            .notEmpty()
+            .withMessage('required');
+        req.checkBody('email')
+            .notEmpty()
+            .withMessage('required');
         next();
     },
     validator,
@@ -199,7 +219,8 @@ placeOrderTransactionsRouter.post(
                 reserveService: reserveService
             });
 
-            res.status(CREATED).json(action);
+            res.status(CREATED)
+                .json(action);
         } catch (error) {
             next(error);
         }
@@ -229,7 +250,8 @@ placeOrderTransactionsRouter.put(
                 reserveService: reserveService
             });
 
-            res.status(NO_CONTENT).end();
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }
@@ -242,9 +264,18 @@ placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/paymentMethod/any',
     permitScopes(['admin']),
     ...[
-        body('typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('amount').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isInt(),
-        body('additionalProperty').optional().isArray()
+        body('typeOf')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('amount')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
+            .isInt(),
+        body('additionalProperty')
+            .optional()
+            .isArray()
     ],
     validator,
     rateLimit4transactionInProgress,
@@ -259,7 +290,8 @@ placeOrderTransactionsRouter.post(
                 transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
                 organization: new cinerino.repository.Organization(cinerino.mongoose.connection)
             });
-            res.status(CREATED).json(action);
+            res.status(CREATED)
+                .json(action);
         } catch (error) {
             next(error);
         }
@@ -283,7 +315,8 @@ placeOrderTransactionsRouter.put(
                 action: new cinerino.repository.Action(cinerino.mongoose.connection),
                 transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
             });
-            res.status(NO_CONTENT).end();
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }
@@ -296,14 +329,33 @@ placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/paymentMethod/creditCard',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     ...[
-        body('typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('amount').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isInt(),
-        body('additionalProperty').optional().isArray(),
-        body('orderId').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
-            .isString().withMessage((_, options) => `${options.path} must be string`)
+        body('typeOf')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('amount')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
+            .isInt(),
+        body('additionalProperty')
+            .optional()
+            .isArray(),
+        body('orderId')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
+            .isString()
+            .withMessage((_, options) => `${options.path} must be string`)
             .isLength({ max: 27 }),
-        body('method').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('creditCard').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+        body('method')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('creditCard')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
     ],
     validator,
     rateLimit4transactionInProgress,
@@ -340,7 +392,8 @@ placeOrderTransactionsRouter.post(
                 delete action.result.execTranArgs;
                 delete action.result.execTranResult;
             }
-            res.status(CREATED).json(action);
+            res.status(CREATED)
+                .json(action);
         } catch (error) {
             next(error);
         }
@@ -365,7 +418,8 @@ placeOrderTransactionsRouter.put(
                 transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
             });
 
-            res.status(NO_CONTENT).end();
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }
@@ -378,10 +432,22 @@ placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/paymentMethod/account',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     ...[
-        body('typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('amount').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isInt(),
-        body('additionalProperty').optional().isArray(),
-        body('fromAccount').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+        body('typeOf')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('amount')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
+            .isInt(),
+        body('additionalProperty')
+            .optional()
+            .isArray(),
+        body('fromAccount')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
     ],
     validator,
     rateLimit4transactionInProgress,
@@ -430,7 +496,8 @@ placeOrderTransactionsRouter.post(
                 transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
                 transferTransactionService: transferService
             });
-            res.status(CREATED).json(action);
+            res.status(CREATED)
+                .json(action);
         } catch (error) {
             next(error);
         }
@@ -464,7 +531,8 @@ placeOrderTransactionsRouter.put(
                 transferTransactionService: transferService,
                 withdrawTransactionService: withdrawService
             });
-            res.status(NO_CONTENT).end();
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }
@@ -477,10 +545,23 @@ placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/paymentMethod/movieTicket',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     ...[
-        body('typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-        body('amount').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isInt(),
-        body('additionalProperty').optional().isArray(),
-        body('movieTickets').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isArray()
+        body('typeOf')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('amount')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
+            .isInt(),
+        body('additionalProperty')
+            .optional()
+            .isArray(),
+        body('movieTickets')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
+            .isArray()
     ],
     validator,
     rateLimit4transactionInProgress,
@@ -505,7 +586,8 @@ placeOrderTransactionsRouter.post(
                     auth: mvtkReserveAuthClient
                 })
             });
-            res.status(CREATED).json(action);
+            res.status(CREATED)
+                .json(action);
         } catch (error) {
             next(error);
         }
@@ -529,7 +611,8 @@ placeOrderTransactionsRouter.put(
                 action: new cinerino.repository.Action(cinerino.mongoose.connection),
                 transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
             });
-            res.status(NO_CONTENT).end();
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }
@@ -542,8 +625,13 @@ placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/award/accounts/point',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     (req, __2, next) => {
-        req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required').isInt();
-        req.checkBody('toAccountNumber', 'invalid toAccountNumber').notEmpty().withMessage('toAccountNumber is required');
+        req.checkBody('amount', 'invalid amount')
+            .notEmpty()
+            .withMessage('amount is required')
+            .isInt();
+        req.checkBody('toAccountNumber', 'invalid toAccountNumber')
+            .notEmpty()
+            .withMessage('toAccountNumber is required');
         next();
     },
     validator,
@@ -567,7 +655,8 @@ placeOrderTransactionsRouter.post(
                 ownershipInfo: new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection),
                 depositTransactionService: depositService
             });
-            res.status(CREATED).json(action);
+            res.status(CREATED)
+                .json(action);
         } catch (error) {
             next(error);
         }
@@ -599,7 +688,8 @@ placeOrderTransactionsRouter.put(
                 transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
                 depositTransactionService: depositService
             });
-            res.status(NO_CONTENT).end();
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }
@@ -647,7 +737,8 @@ placeOrderTransactionsRouter.put(
             const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
             await transactionRepo.cancel({ typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId });
             debug('transaction canceled.');
-            res.status(NO_CONTENT).end();
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }
@@ -660,10 +751,22 @@ placeOrderTransactionsRouter.get(
     '',
     permitScopes(['admin']),
     ...[
-        query('startFrom').optional().isISO8601().toDate(),
-        query('startThrough').optional().isISO8601().toDate(),
-        query('endFrom').optional().isISO8601().toDate(),
-        query('endThrough').optional().isISO8601().toDate()
+        query('startFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('startThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('endFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('endThrough')
+            .optional()
+            .isISO8601()
+            .toDate()
     ],
     validator,
     async (req, res, next) => {
@@ -724,10 +827,14 @@ placeOrderTransactionsRouter.get(
                 typeOf: cinerino.factory.transactionType.PlaceOrder,
                 ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
                 statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,
-                startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom).toDate() : undefined,
-                startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough).toDate() : undefined,
-                endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom).toDate() : undefined,
-                endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough).toDate() : undefined,
+                startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom)
+                    .toDate() : undefined,
+                startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough)
+                    .toDate() : undefined,
+                endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom)
+                    .toDate() : undefined,
+                endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough)
+                    .toDate() : undefined,
                 agent: req.query.agent,
                 seller: req.query.seller,
                 object: req.query.object,

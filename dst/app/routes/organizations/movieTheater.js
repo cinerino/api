@@ -25,20 +25,60 @@ movieTheaterRouter.use(authentication_1.default);
  * 劇場組織追加
  */
 movieTheaterRouter.post('', permitScopes_1.default(['admin', 'organizations']), ...[
-    check_1.body('name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('parentOrganization.typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('parentOrganization.name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('parentOrganization.name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('location.typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('location.branchCode').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('location.name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('location.name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('telephone').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('url').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isURL(),
-    check_1.body('paymentAccepted').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isArray(),
-    check_1.body('hasPOS').isArray(),
-    check_1.body('areaServed').isArray()
+    check_1.body('name.ja')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('name.en')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('parentOrganization.typeOf')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('parentOrganization.name.ja')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('parentOrganization.name.en')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('location.typeOf')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('location.branchCode')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('location.name.ja')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('location.name.en')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('telephone')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('url')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
+        .isURL(),
+    check_1.body('paymentAccepted')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
+        .isArray(),
+    check_1.body('hasPOS')
+        .isArray(),
+    check_1.body('areaServed')
+        .isArray()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const attributes = {
@@ -54,7 +94,8 @@ movieTheaterRouter.post('', permitScopes_1.default(['admin', 'organizations']), 
         };
         const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
         const movieTheater = yield organizationRepo.save({ attributes: attributes });
-        res.status(http_status_1.CREATED).json(movieTheater);
+        res.status(http_status_1.CREATED)
+            .json(movieTheater);
     }
     catch (error) {
         next(error);
@@ -93,20 +134,60 @@ movieTheaterRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.user.
     }
 }));
 movieTheaterRouter.put('/:id', permitScopes_1.default(['admin', 'organizations']), ...[
-    check_1.body('name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('parentOrganization.typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('parentOrganization.name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('parentOrganization.name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('location.typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('location.branchCode').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('location.name.ja').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('location.name.en').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('telephone').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('url').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isURL(),
-    check_1.body('paymentAccepted').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isArray(),
-    check_1.body('hasPOS').isArray(),
-    check_1.body('areaServed').isArray()
+    check_1.body('name.ja')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('name.en')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('parentOrganization.typeOf')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('parentOrganization.name.ja')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('parentOrganization.name.en')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('location.typeOf')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('location.branchCode')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('location.name.ja')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('location.name.en')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('telephone')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('url')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
+        .isURL(),
+    check_1.body('paymentAccepted')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
+        .isArray(),
+    check_1.body('hasPOS')
+        .isArray(),
+    check_1.body('areaServed')
+        .isArray()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const attributes = {
@@ -122,7 +203,8 @@ movieTheaterRouter.put('/:id', permitScopes_1.default(['admin', 'organizations']
         };
         const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
         yield organizationRepo.save({ id: req.params.id, attributes: attributes });
-        res.status(http_status_1.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);
@@ -135,7 +217,8 @@ movieTheaterRouter.delete('/:id', permitScopes_1.default(['admin', 'organization
             typeOf: cinerino.factory.organizationType.MovieTheater,
             id: req.params.id
         });
-        res.status(http_status_1.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);

@@ -77,12 +77,23 @@ const rateLimit4transactionInProgress = middlewares.rateLimit({
 });
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, _, next) => {
-    req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
-    req.checkBody('agent.identifier', 'invalid agent identifier').optional().isArray();
-    req.checkBody('seller.typeOf', 'invalid seller type').notEmpty().withMessage('seller.typeOf is required');
-    req.checkBody('seller.id', 'invalid seller id').notEmpty().withMessage('seller.id is required');
+    req.checkBody('expires', 'invalid expires')
+        .notEmpty()
+        .withMessage('expires is required')
+        .isISO8601();
+    req.checkBody('agent.identifier', 'invalid agent identifier')
+        .optional()
+        .isArray();
+    req.checkBody('seller.typeOf', 'invalid seller type')
+        .notEmpty()
+        .withMessage('seller.typeOf is required');
+    req.checkBody('seller.id', 'invalid seller id')
+        .notEmpty()
+        .withMessage('seller.id is required');
     if (!WAITER_DISABLED) {
-        req.checkBody('object.passport.token', 'invalid passport token').notEmpty().withMessage('object.passport.token is required');
+        req.checkBody('object.passport.token', 'invalid passport token')
+            .notEmpty()
+            .withMessage('object.passport.token is required');
     }
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -103,7 +114,8 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito
             };
         }
         const transaction = yield cinerino.service.transaction.placeOrderInProgress.start({
-            expires: moment(req.body.expires).toDate(),
+            expires: moment(req.body.expires)
+                .toDate(),
             agent: Object.assign({}, req.agent, { identifier: [
                     ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
                     ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
@@ -130,10 +142,18 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito
  * 購入者情報を変更する
  */
 placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, _, next) => {
-    req.checkBody('familyName').notEmpty().withMessage('required');
-    req.checkBody('givenName').notEmpty().withMessage('required');
-    req.checkBody('telephone').notEmpty().withMessage('required');
-    req.checkBody('email').notEmpty().withMessage('required');
+    req.checkBody('familyName')
+        .notEmpty()
+        .withMessage('required');
+    req.checkBody('givenName')
+        .notEmpty()
+        .withMessage('required');
+    req.checkBody('telephone')
+        .notEmpty()
+        .withMessage('required');
+    req.checkBody('email')
+        .notEmpty()
+        .withMessage('required');
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -181,7 +201,8 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
             eventService: eventService,
             reserveService: reserveService
         });
-        res.status(http_status_1.CREATED).json(action);
+        res.status(http_status_1.CREATED)
+            .json(action);
     }
     catch (error) {
         next(error);
@@ -205,7 +226,8 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatRe
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
             reserveService: reserveService
         });
-        res.status(http_status_1.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);
@@ -215,9 +237,18 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatRe
  * 汎用決済承認
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/any', permitScopes_1.default(['admin']), ...[
-    check_1.body('typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('amount').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isInt(),
-    check_1.body('additionalProperty').optional().isArray()
+    check_1.body('typeOf')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('amount')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
+        .isInt(),
+    check_1.body('additionalProperty')
+        .optional()
+        .isArray()
 ], validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.any.create({
@@ -229,7 +260,8 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
             organization: new cinerino.repository.Organization(cinerino.mongoose.connection)
         });
-        res.status(http_status_1.CREATED).json(action);
+        res.status(http_status_1.CREATED)
+            .json(action);
     }
     catch (error) {
         next(error);
@@ -248,7 +280,8 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
             action: new cinerino.repository.Action(cinerino.mongoose.connection),
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
         });
-        res.status(http_status_1.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);
@@ -258,14 +291,33 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
  * クレジットカードオーソリ
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/creditCard', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), ...[
-    check_1.body('typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('amount').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isInt(),
-    check_1.body('additionalProperty').optional().isArray(),
-    check_1.body('orderId').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
-        .isString().withMessage((_, options) => `${options.path} must be string`)
+    check_1.body('typeOf')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('amount')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
+        .isInt(),
+    check_1.body('additionalProperty')
+        .optional()
+        .isArray(),
+    check_1.body('orderId')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
+        .isString()
+        .withMessage((_, options) => `${options.path} must be string`)
         .isLength({ max: 27 }),
-    check_1.body('method').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('creditCard').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+    check_1.body('method')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('creditCard')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
 ], validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const creditCard = Object.assign({}, req.body.creditCard, { memberId: req.user.sub });
@@ -292,7 +344,8 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             delete action.result.execTranArgs;
             delete action.result.execTranResult;
         }
-        res.status(http_status_1.CREATED).json(action);
+        res.status(http_status_1.CREATED)
+            .json(action);
     }
     catch (error) {
         next(error);
@@ -311,7 +364,8 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
             action: new cinerino.repository.Action(cinerino.mongoose.connection),
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
         });
-        res.status(http_status_1.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);
@@ -321,10 +375,22 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
  * 口座確保
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/account', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), ...[
-    check_1.body('typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('amount').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isInt(),
-    check_1.body('additionalProperty').optional().isArray(),
-    check_1.body('fromAccount').not().isEmpty().withMessage((_, options) => `${options.path} is required`)
+    check_1.body('typeOf')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('amount')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
+        .isInt(),
+    check_1.body('additionalProperty')
+        .optional()
+        .isArray(),
+    check_1.body('fromAccount')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
 ], validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         let fromAccount = req.body.fromAccount;
@@ -367,7 +433,8 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
             transferTransactionService: transferService
         });
-        res.status(http_status_1.CREATED).json(action);
+        res.status(http_status_1.CREATED)
+            .json(action);
     }
     catch (error) {
         next(error);
@@ -396,7 +463,8 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
             transferTransactionService: transferService,
             withdrawTransactionService: withdrawService
         });
-        res.status(http_status_1.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);
@@ -406,10 +474,23 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
  * ムビチケ承認
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/movieTicket', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), ...[
-    check_1.body('typeOf').not().isEmpty().withMessage((_, options) => `${options.path} is required`),
-    check_1.body('amount').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isInt(),
-    check_1.body('additionalProperty').optional().isArray(),
-    check_1.body('movieTickets').not().isEmpty().withMessage((_, options) => `${options.path} is required`).isArray()
+    check_1.body('typeOf')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('amount')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
+        .isInt(),
+    check_1.body('additionalProperty')
+        .optional()
+        .isArray(),
+    check_1.body('movieTickets')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
+        .isArray()
 ], validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.movieTicket.create({
@@ -431,7 +512,8 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
                 auth: mvtkReserveAuthClient
             })
         });
-        res.status(http_status_1.CREATED).json(action);
+        res.status(http_status_1.CREATED)
+            .json(action);
     }
     catch (error) {
         next(error);
@@ -450,7 +532,8 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
             action: new cinerino.repository.Action(cinerino.mongoose.connection),
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
         });
-        res.status(http_status_1.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);
@@ -460,8 +543,13 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
  * ポイントインセンティブ承認アクション
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accounts/point', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, __2, next) => {
-    req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required').isInt();
-    req.checkBody('toAccountNumber', 'invalid toAccountNumber').notEmpty().withMessage('toAccountNumber is required');
+    req.checkBody('amount', 'invalid amount')
+        .notEmpty()
+        .withMessage('amount is required')
+        .isInt();
+    req.checkBody('toAccountNumber', 'invalid toAccountNumber')
+        .notEmpty()
+        .withMessage('toAccountNumber is required');
     next();
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -482,7 +570,8 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accou
             ownershipInfo: new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection),
             depositTransactionService: depositService
         });
-        res.status(http_status_1.CREATED).json(action);
+        res.status(http_status_1.CREATED)
+            .json(action);
     }
     catch (error) {
         next(error);
@@ -508,7 +597,8 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accoun
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
             depositTransactionService: depositService
         });
-        res.status(http_status_1.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);
@@ -544,7 +634,8 @@ placeOrderTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.defaul
         const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
         yield transactionRepo.cancel({ typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId });
         debug('transaction canceled.');
-        res.status(http_status_1.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);
@@ -554,10 +645,22 @@ placeOrderTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.defaul
  * 取引検索
  */
 placeOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
-    check_1.query('startFrom').optional().isISO8601().toDate(),
-    check_1.query('startThrough').optional().isISO8601().toDate(),
-    check_1.query('endFrom').optional().isISO8601().toDate(),
-    check_1.query('endThrough').optional().isISO8601().toDate()
+    check_1.query('startFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('startThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('endFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('endThrough')
+        .optional()
+        .isISO8601()
+        .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
@@ -603,10 +706,14 @@ placeOrderTransactionsRouter.get('/report', permitScopes_1.default(['admin']), v
             typeOf: cinerino.factory.transactionType.PlaceOrder,
             ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
             statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,
-            startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom).toDate() : undefined,
-            startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough).toDate() : undefined,
-            endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom).toDate() : undefined,
-            endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough).toDate() : undefined,
+            startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom)
+                .toDate() : undefined,
+            startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough)
+                .toDate() : undefined,
+            endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom)
+                .toDate() : undefined,
+            endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough)
+                .toDate() : undefined,
             agent: req.query.agent,
             seller: req.query.seller,
             object: req.query.object,

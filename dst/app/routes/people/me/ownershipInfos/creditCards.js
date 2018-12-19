@@ -27,7 +27,8 @@ creditCardsRouter.post('', permitScopes_1.default(['aws.cognito.signin.user.admi
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const creditCard = yield cinerino.service.person.creditCard.save(req.user.sub, req.body)();
-        res.status(http_status_1.CREATED).json(creditCard);
+        res.status(http_status_1.CREATED)
+            .json(creditCard);
     }
     catch (error) {
         next(error);
@@ -52,7 +53,8 @@ creditCardsRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin
 creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield cinerino.service.person.creditCard.unsubscribe(req.user.sub, req.params.cardSeq)();
-        res.status(http_status_1.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);

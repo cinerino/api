@@ -105,8 +105,10 @@ peopleRouter.get(
                 page: (query.page !== undefined) ? Math.max(query.page, 1) : 1,
                 sort: (query.sort !== undefined) ? query.sort : { ownedFrom: cinerino.factory.sortType.Descending },
                 ownedBy: { id: req.params.id },
-                ownedFrom: (query.ownedFrom !== undefined) ? moment(query.ownedFrom).toDate() : undefined,
-                ownedThrough: (query.ownedThrough !== undefined) ? moment(query.ownedThrough).toDate() : undefined,
+                ownedFrom: (query.ownedFrom !== undefined) ? moment(query.ownedFrom)
+                    .toDate() : undefined,
+                ownedThrough: (query.ownedThrough !== undefined) ? moment(query.ownedThrough)
+                    .toDate() : undefined,
                 typeOfGood: typeOfGood
             };
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
