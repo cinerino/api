@@ -607,19 +607,31 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accoun
 placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const orderDate = new Date();
+        const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
+        const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
+        const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
+        const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
+        const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
         const result = yield cinerino.service.transaction.placeOrderInProgress.confirm({
             id: req.params.transactionId,
             agent: { id: req.user.sub },
             result: { order: { orderDate: orderDate } },
             options: Object.assign({}, req.body, { sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false })
         })({
-            action: new cinerino.repository.Action(cinerino.mongoose.connection),
-            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
-            confirmationNumber: new cinerino.repository.ConfirmationNumber(redis.getClient()),
-            orderNumber: new cinerino.repository.OrderNumber(redis.getClient()),
-            organization: new cinerino.repository.Organization(cinerino.mongoose.connection)
+            action: actionRepo,
+            transaction: transactionRepo,
+            confirmationNumber: confirmationNumberRepo,
+            orderNumber: orderNumberRepo,
+            organization: organizationRepo
         });
         debug('transaction confirmed');
+        // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
+        // tslint:disable-next-line:no-floating-promises
+        cinerino.service.transaction.placeOrder.exportTasks(cinerino.factory.transactionStatusType.Confirmed)({
+            task: taskRepo,
+            transaction: transactionRepo
+        });
         res.json(result);
     }
     catch (error) {
@@ -631,9 +643,15 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
  */
 placeOrderTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
         yield transactionRepo.cancel({ typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId });
-        debug('transaction canceled.');
+        // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
+        // tslint:disable-next-line:no-floating-promises
+        cinerino.service.transaction.placeOrder.exportTasks(cinerino.factory.transactionStatusType.Canceled)({
+            task: taskRepo,
+            transaction: transactionRepo
+        });
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
