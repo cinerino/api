@@ -1,5 +1,5 @@
 /**
- * 劇場組織ルーター
+ * 販売者ルーター
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
@@ -7,19 +7,24 @@ import { Router } from 'express';
 import { body } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
 
-import authentication from '../../middlewares/authentication';
-import permitScopes from '../../middlewares/permitScopes';
-import validator from '../../middlewares/validator';
+import authentication from '../middlewares/authentication';
+import permitScopes from '../middlewares/permitScopes';
+import validator from '../middlewares/validator';
 
-const movieTheaterRouter = Router();
-movieTheaterRouter.use(authentication);
+const sellersRouter = Router();
+sellersRouter.use(authentication);
+
 /**
- * 劇場組織追加
+ * 販売者作成
  */
-movieTheaterRouter.post(
+sellersRouter.post(
     '',
-    permitScopes(['admin', 'organizations']),
+    permitScopes(['admin', 'sellers']),
     ...[
+        body('typeOf')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
         body('name.ja')
             .not()
             .isEmpty()
@@ -78,8 +83,8 @@ movieTheaterRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const attributes: cinerino.factory.organization.IAttributes<cinerino.factory.organizationType.MovieTheater> = {
-                typeOf: cinerino.factory.organizationType.MovieTheater,
+            const attributes: cinerino.factory.organization.IAttributes<typeof req.body.typeOf> = {
+                typeOf: req.body.typeOf,
                 name: req.body.name,
                 parentOrganization: req.body.parentOrganization,
                 location: req.body.location,
@@ -89,59 +94,77 @@ movieTheaterRouter.post(
                 hasPOS: req.body.hasPOS,
                 areaServed: req.body.areaServed
             };
-            const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
-            const movieTheater = await organizationRepo.save({ attributes: attributes });
+
+            const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
+            const seller = await sellerRepo.save({ attributes: attributes });
+
             res.status(CREATED)
-                .json(movieTheater);
+                .json(seller);
         } catch (error) {
             next(error);
         }
     }
 );
-movieTheaterRouter.get(
+
+/**
+ * 販売者検索
+ */
+sellersRouter.get(
     '',
-    permitScopes(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin', 'sellers', 'sellers.read-only']),
     validator,
     async (req, res, next) => {
         try {
-            const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
-            const searchCoinditions: cinerino.factory.organization.ISearchConditions<cinerino.factory.organizationType.MovieTheater> = {
+            const searchCoinditions: cinerino.factory.organization.ISearchConditions<any> = {
+                ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-                sort: req.query.sort,
-                name: req.query.name
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
-            const movieTheaters = await organizationRepo.searchMovieTheaters(searchCoinditions);
-            const totalCount = await organizationRepo.countMovieTheaters(searchCoinditions);
+
+            const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
+            const sellers = await sellerRepo.search(searchCoinditions);
+            const totalCount = await sellerRepo.count(searchCoinditions);
+
             res.set('X-Total-Count', totalCount.toString());
-            res.json(movieTheaters);
+            res.json(sellers);
         } catch (error) {
             next(error);
         }
     }
 );
-movieTheaterRouter.get(
+
+/**
+ * IDで販売者検索
+ */
+sellersRouter.get(
     '/:id',
-    permitScopes(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']),
+    permitScopes(['aws.cognito.signin.user.admin', 'sellers', 'sellers.read-only']),
     validator,
     async (req, res, next) => {
         try {
-            const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
-            const movieTheater = await organizationRepo.findById({
-                typeOf: cinerino.factory.organizationType.MovieTheater,
+            const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
+            const seller = await sellerRepo.findById({
                 id: req.params.id
             });
-            res.json(movieTheater);
+            res.json(seller);
         } catch (error) {
             next(error);
         }
     }
 );
-movieTheaterRouter.put(
+
+/**
+ * 販売者更新
+ */
+sellersRouter.put(
     '/:id',
-    permitScopes(['admin', 'organizations']),
+    permitScopes(['admin', 'sellers']),
     ...[
+        body('typeOf')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
         body('name.ja')
             .not()
             .isEmpty()
@@ -200,8 +223,8 @@ movieTheaterRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const attributes: cinerino.factory.organization.IAttributes<cinerino.factory.organizationType.MovieTheater> = {
-                typeOf: cinerino.factory.organizationType.MovieTheater,
+            const attributes: cinerino.factory.organization.IAttributes<typeof req.body.typeOf> = {
+                typeOf: req.body.typeOf,
                 name: req.body.name,
                 parentOrganization: req.body.parentOrganization,
                 location: req.body.location,
@@ -211,8 +234,10 @@ movieTheaterRouter.put(
                 hasPOS: req.body.hasPOS,
                 areaServed: req.body.areaServed
             };
-            const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
-            await organizationRepo.save({ id: req.params.id, attributes: attributes });
+
+            const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
+            await sellerRepo.save({ id: req.params.id, attributes: attributes });
+
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {
@@ -220,17 +245,21 @@ movieTheaterRouter.put(
         }
     }
 );
-movieTheaterRouter.delete(
+
+/**
+ * 販売者削除
+ */
+sellersRouter.delete(
     '/:id',
-    permitScopes(['admin', 'organizations']),
+    permitScopes(['admin', 'sellers']),
     validator,
     async (req, res, next) => {
         try {
-            const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
-            await organizationRepo.deleteById({
-                typeOf: cinerino.factory.organizationType.MovieTheater,
+            const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
+            await sellerRepo.deleteById({
                 id: req.params.id
             });
+
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {
@@ -238,4 +267,5 @@ movieTheaterRouter.delete(
         }
     }
 );
-export default movieTheaterRouter;
+
+export default sellersRouter;
