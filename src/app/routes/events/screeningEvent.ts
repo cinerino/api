@@ -117,11 +117,18 @@ screeningEventRouter.get(
     validator,
     async (req, res, next) => {
         try {
+            const eventRepo = new cinerino.repository.Event(cinerino.mongoose.connection);
             const eventService = new cinerino.chevre.service.Event({
                 endpoint: <string>process.env.CHEVRE_ENDPOINT,
                 auth: chevreAuthClient
             });
-            const offers = await eventService.searchScreeningEventOffers({ eventId: req.params.id });
+            const offers = await cinerino.service.offer.searchScreeningEventOffers({
+                event: { id: req.params.id }
+            })({
+                event: eventRepo,
+                eventService: eventService
+            });
+
             res.json(offers);
         } catch (error) {
             next(error);
@@ -148,6 +155,7 @@ screeningEventRouter.get(
     validator,
     async (req, res, next) => {
         try {
+            const eventRepo = new cinerino.repository.Event(cinerino.mongoose.connection);
             const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
             const eventService = new cinerino.chevre.service.Event({
                 endpoint: <string>process.env.CHEVRE_ENDPOINT,
@@ -158,8 +166,9 @@ screeningEventRouter.get(
                 seller: req.query.seller,
                 store: req.query.store
             })({
-                organization: organizationRepo,
-                eventService: eventService
+                event: eventRepo,
+                eventService: eventService,
+                organization: organizationRepo
             });
             res.json(offers);
         } catch (error) {

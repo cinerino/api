@@ -196,10 +196,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
             transaction: { id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(cinerino.mongoose.connection),
-            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
             event: new cinerino.repository.Event(cinerino.mongoose.connection),
             eventService: eventService,
-            reserveService: reserveService
+            organization: new cinerino.repository.Organization(cinerino.mongoose.connection),
+            reserveService: reserveService,
+            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
         });
         res.status(http_status_1.CREATED)
             .json(action);

@@ -105,11 +105,17 @@ screeningEventRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.use
  */
 screeningEventRouter.get('/:id/offers', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const eventRepo = new cinerino.repository.Event(cinerino.mongoose.connection);
         const eventService = new cinerino.chevre.service.Event({
             endpoint: process.env.CHEVRE_ENDPOINT,
             auth: chevreAuthClient
         });
-        const offers = yield eventService.searchScreeningEventOffers({ eventId: req.params.id });
+        const offers = yield cinerino.service.offer.searchScreeningEventOffers({
+            event: { id: req.params.id }
+        })({
+            event: eventRepo,
+            eventService: eventService
+        });
         res.json(offers);
     }
     catch (error) {
@@ -130,6 +136,7 @@ screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['aws.cogn
         .withMessage((_, options) => `${options.path} is required`)
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const eventRepo = new cinerino.repository.Event(cinerino.mongoose.connection);
         const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
         const eventService = new cinerino.chevre.service.Event({
             endpoint: process.env.CHEVRE_ENDPOINT,
@@ -140,8 +147,9 @@ screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['aws.cogn
             seller: req.query.seller,
             store: req.query.store
         })({
-            organization: organizationRepo,
-            eventService: eventService
+            event: eventRepo,
+            eventService: eventService,
+            organization: organizationRepo
         });
         res.json(offers);
     }
