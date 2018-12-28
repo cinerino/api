@@ -78,6 +78,8 @@ movieTheaterRouter.post('', permitScopes_1.default(['admin', 'organizations']), 
     check_1.body('hasPOS')
         .isArray(),
     check_1.body('areaServed')
+        .isArray(),
+    check_1.body('makesOffer')
         .isArray()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -90,7 +92,8 @@ movieTheaterRouter.post('', permitScopes_1.default(['admin', 'organizations']), 
             url: req.body.url,
             paymentAccepted: req.body.paymentAccepted,
             hasPOS: req.body.hasPOS,
-            areaServed: req.body.areaServed
+            areaServed: req.body.areaServed,
+            makesOffer: req.body.makesOffer
         };
         const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
         const movieTheater = yield organizationRepo.save({ attributes: attributes });
@@ -187,6 +190,8 @@ movieTheaterRouter.put('/:id', permitScopes_1.default(['admin', 'organizations']
     check_1.body('hasPOS')
         .isArray(),
     check_1.body('areaServed')
+        .isArray(),
+    check_1.body('makesOffer')
         .isArray()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -199,7 +204,8 @@ movieTheaterRouter.put('/:id', permitScopes_1.default(['admin', 'organizations']
             url: req.body.url,
             paymentAccepted: req.body.paymentAccepted,
             hasPOS: req.body.hasPOS,
-            areaServed: req.body.areaServed
+            areaServed: req.body.areaServed,
+            makesOffer: req.body.makesOffer
         };
         const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
         yield organizationRepo.save({ id: req.params.id, attributes: attributes });

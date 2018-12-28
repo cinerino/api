@@ -36,22 +36,25 @@ export default async () => {
             const runsAt = new Date();
             await Promise.all(movieTheaters.map(async (movieTheater) => {
                 try {
-                    const taskAttributes: cinerino.factory.task.IAttributes<cinerino.factory.taskName.ImportScreeningEvents> = {
-                        name: cinerino.factory.taskName.ImportScreeningEvents,
-                        status: cinerino.factory.taskStatus.Ready,
-                        runsAt: runsAt,
-                        remainingNumberOfTries: 1,
-                        // tslint:disable-next-line:no-null-keyword
-                        lastTriedAt: null,
-                        numberOfTried: 0,
-                        executionResults: [],
-                        data: {
-                            locationBranchCode: movieTheater.location.branchCode,
-                            importFrom: importFrom,
-                            importThrough: importThrough
-                        }
-                    };
-                    await taskRepo.save(taskAttributes);
+                    await Promise.all(movieTheater.makesOffer.map(async (offer) => {
+                        const taskAttributes: cinerino.factory.task.IAttributes<cinerino.factory.taskName.ImportScreeningEvents> = {
+                            name: cinerino.factory.taskName.ImportScreeningEvents,
+                            status: cinerino.factory.taskStatus.Ready,
+                            runsAt: runsAt,
+                            remainingNumberOfTries: 1,
+                            // tslint:disable-next-line:no-null-keyword
+                            lastTriedAt: null,
+                            numberOfTried: 0,
+                            executionResults: [],
+                            data: {
+                                locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
+                                offeredThrough: offer.offeredThrough,
+                                importFrom: importFrom,
+                                importThrough: importThrough
+                            }
+                        };
+                        await taskRepo.save(taskAttributes);
+                    }));
                 } catch (error) {
                     console.error(error);
                 }

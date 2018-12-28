@@ -13,6 +13,7 @@ import validator from '../../middlewares/validator';
 
 const movieTheaterRouter = Router();
 movieTheaterRouter.use(authentication);
+
 /**
  * 劇場組織追加
  */
@@ -73,6 +74,8 @@ movieTheaterRouter.post(
         body('hasPOS')
             .isArray(),
         body('areaServed')
+            .isArray(),
+        body('makesOffer')
             .isArray()
     ],
     validator,
@@ -87,7 +90,8 @@ movieTheaterRouter.post(
                 url: req.body.url,
                 paymentAccepted: req.body.paymentAccepted,
                 hasPOS: req.body.hasPOS,
-                areaServed: req.body.areaServed
+                areaServed: req.body.areaServed,
+                makesOffer: req.body.makesOffer
             };
             const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
             const movieTheater = await organizationRepo.save({ attributes: attributes });
@@ -98,6 +102,7 @@ movieTheaterRouter.post(
         }
     }
 );
+
 movieTheaterRouter.get(
     '',
     permitScopes(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']),
@@ -121,6 +126,7 @@ movieTheaterRouter.get(
         }
     }
 );
+
 movieTheaterRouter.get(
     '/:id',
     permitScopes(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']),
@@ -138,6 +144,7 @@ movieTheaterRouter.get(
         }
     }
 );
+
 movieTheaterRouter.put(
     '/:id',
     permitScopes(['admin', 'organizations']),
@@ -195,6 +202,8 @@ movieTheaterRouter.put(
         body('hasPOS')
             .isArray(),
         body('areaServed')
+            .isArray(),
+        body('makesOffer')
             .isArray()
     ],
     validator,
@@ -209,7 +218,8 @@ movieTheaterRouter.put(
                 url: req.body.url,
                 paymentAccepted: req.body.paymentAccepted,
                 hasPOS: req.body.hasPOS,
-                areaServed: req.body.areaServed
+                areaServed: req.body.areaServed,
+                makesOffer: req.body.makesOffer
             };
             const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
             await organizationRepo.save({ id: req.params.id, attributes: attributes });
@@ -220,6 +230,7 @@ movieTheaterRouter.put(
         }
     }
 );
+
 movieTheaterRouter.delete(
     '/:id',
     permitScopes(['admin', 'organizations']),
@@ -238,4 +249,5 @@ movieTheaterRouter.delete(
         }
     }
 );
+
 export default movieTheaterRouter;

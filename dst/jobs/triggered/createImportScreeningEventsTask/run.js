@@ -39,22 +39,25 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         const runsAt = new Date();
         yield Promise.all(movieTheaters.map((movieTheater) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const taskAttributes = {
-                    name: cinerino.factory.taskName.ImportScreeningEvents,
-                    status: cinerino.factory.taskStatus.Ready,
-                    runsAt: runsAt,
-                    remainingNumberOfTries: 1,
-                    // tslint:disable-next-line:no-null-keyword
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        locationBranchCode: movieTheater.location.branchCode,
-                        importFrom: importFrom,
-                        importThrough: importThrough
-                    }
-                };
-                yield taskRepo.save(taskAttributes);
+                yield Promise.all(movieTheater.makesOffer.map((offer) => __awaiter(this, void 0, void 0, function* () {
+                    const taskAttributes = {
+                        name: cinerino.factory.taskName.ImportScreeningEvents,
+                        status: cinerino.factory.taskStatus.Ready,
+                        runsAt: runsAt,
+                        remainingNumberOfTries: 1,
+                        // tslint:disable-next-line:no-null-keyword
+                        lastTriedAt: null,
+                        numberOfTried: 0,
+                        executionResults: [],
+                        data: {
+                            locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
+                            offeredThrough: offer.offeredThrough,
+                            importFrom: importFrom,
+                            importThrough: importThrough
+                        }
+                    };
+                    yield taskRepo.save(taskAttributes);
+                })));
             }
             catch (error) {
                 console.error(error);
