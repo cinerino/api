@@ -1,12 +1,12 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * スコープ許可ミドルウェア
- * @module middlewares.permitScopes
  */
-Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
 const debug = createDebug('cinerino-api:middlewares');
+exports.SCOPE_ADMIN = 'admin';
 exports.default = (permittedScopes) => {
     return (req, __, next) => {
         if (process.env.RESOURCE_SERVER_IDENTIFIER === undefined) {
@@ -14,6 +14,7 @@ exports.default = (permittedScopes) => {
             return;
         }
         debug('req.user.scopes:', req.user.scopes);
+        req.isAdmin = req.user.scopes.indexOf(`${process.env.RESOURCE_SERVER_IDENTIFIER}/${exports.SCOPE_ADMIN}`) >= 0;
         // ドメインつきのカスタムスコープリストを許容するように変更
         const permittedScopesWithResourceServerIdentifier = [
             ...permittedScopes.map((permittedScope) => `${process.env.RESOURCE_SERVER_IDENTIFIER}/${permittedScope}`),

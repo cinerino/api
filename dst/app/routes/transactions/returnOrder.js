@@ -16,11 +16,9 @@ const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
-const moment = require("moment");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
-const returnOrderTransactionsRouter = express_1.Router();
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -28,17 +26,20 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
+const returnOrderTransactionsRouter = express_1.Router();
 returnOrderTransactionsRouter.use(authentication_1.default);
-returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), (req, _, next) => {
-    req.checkBody('expires', 'invalid expires')
-        .notEmpty()
-        .withMessage('expires is required')
-        .isISO8601();
-    req.checkBody('object.order.orderNumber', 'invalid order number')
-        .notEmpty()
-        .withMessage('object.order.orderNumber is required');
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'transactions']), ...[
+    check_1.body('expires')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
+        .isISO8601()
+        .toDate(),
+    check_1.body('object.order.orderNumber')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
         const invoiceRepo = new cinerino.repository.Invoice(cinerino.mongoose.connection);
@@ -48,15 +49,39 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
             endpoint: process.env.CHEVRE_ENDPOINT,
             auth: chevreAuthClient
         });
+        let order;
+        let returnableOrder = req.body.object.order;
+        // APIユーザーが管理者の場合、顧客情報を自動取得
+        if (req.isAdmin) {
+            order = yield orderRepo.findByOrderNumber({ orderNumber: returnableOrder.orderNumber });
+            returnableOrder = Object.assign({}, returnableOrder, { customer: { email: order.customer.email, telephone: order.customer.telephone } });
+        }
+        else {
+            const returnableOrderCustomer = returnableOrder.customer;
+            if (returnableOrderCustomer === undefined) {
+                throw new cinerino.factory.errors.ArgumentNull('Order Customer', 'Order customer info required');
+            }
+            if (returnableOrderCustomer.email === undefined && returnableOrderCustomer.telephone === undefined) {
+                throw new cinerino.factory.errors.ArgumentNull('Order Customer', 'Order customer info required');
+            }
+            const orders = yield orderRepo.search({
+                orderNumbers: [returnableOrder.orderNumber],
+                customer: returnableOrder.customer
+            });
+            order = orders.shift();
+            if (order === undefined) {
+                throw new cinerino.factory.errors.NotFound('Order');
+            }
+            returnableOrder = order;
+        }
         const transaction = yield cinerino.service.transaction.returnOrder.start({
-            expires: moment(req.body.expires)
-                .toDate(),
+            expires: req.body.expires,
             agent: Object.assign({}, req.agent, { identifier: [
                     ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
                     ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
                 ] }),
             object: {
-                order: { orderNumber: req.body.object.order.orderNumber },
+                order: returnableOrder,
                 clientUser: req.user,
                 cancellationFee: 0,
                 // forcibly: true,
@@ -78,7 +103,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
         next(error);
     }
 }));
-returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
         const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);

@@ -4,15 +4,13 @@
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
-import { query } from 'express-validator/check';
+import { body, query } from 'express-validator/check';
 import { NO_CONTENT } from 'http-status';
-import * as moment from 'moment';
 
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
-const returnOrderTransactionsRouter = Router();
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -20,20 +18,25 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
+
+const returnOrderTransactionsRouter = Router();
 returnOrderTransactionsRouter.use(authentication);
+
 returnOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['admin']),
-    (req, _, next) => {
-        req.checkBody('expires', 'invalid expires')
-            .notEmpty()
-            .withMessage('expires is required')
-            .isISO8601();
-        req.checkBody('object.order.orderNumber', 'invalid order number')
-            .notEmpty()
-            .withMessage('object.order.orderNumber is required');
-        next();
-    },
+    permitScopes(['admin', 'transactions']),
+    ...[
+        body('expires')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
+            .isISO8601()
+            .toDate(),
+        body('object.order.orderNumber')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
+    ],
     validator,
     async (req, res, next) => {
         try {
@@ -45,9 +48,36 @@ returnOrderTransactionsRouter.post(
                 endpoint: <string>process.env.CHEVRE_ENDPOINT,
                 auth: chevreAuthClient
             });
+
+            let order: cinerino.factory.order.IOrder | undefined;
+            let returnableOrder: cinerino.factory.transaction.returnOrder.IReturnableOrder = req.body.object.order;
+
+            // APIユーザーが管理者の場合、顧客情報を自動取得
+            if (req.isAdmin) {
+                order = await orderRepo.findByOrderNumber({ orderNumber: returnableOrder.orderNumber });
+                returnableOrder = { ...returnableOrder, customer: { email: order.customer.email, telephone: order.customer.telephone } };
+            } else {
+                const returnableOrderCustomer = returnableOrder.customer;
+                if (returnableOrderCustomer === undefined) {
+                    throw new cinerino.factory.errors.ArgumentNull('Order Customer', 'Order customer info required');
+                }
+                if (returnableOrderCustomer.email === undefined && returnableOrderCustomer.telephone === undefined) {
+                    throw new cinerino.factory.errors.ArgumentNull('Order Customer', 'Order customer info required');
+                }
+
+                const orders = await orderRepo.search({
+                    orderNumbers: [returnableOrder.orderNumber],
+                    customer: returnableOrder.customer
+                });
+                order = orders.shift();
+                if (order === undefined) {
+                    throw new cinerino.factory.errors.NotFound('Order');
+                }
+                returnableOrder = order;
+            }
+
             const transaction = await cinerino.service.transaction.returnOrder.start({
-                expires: moment(req.body.expires)
-                    .toDate(),
+                expires: req.body.expires,
                 agent: {
                     ...req.agent,
                     identifier: [
@@ -56,7 +86,7 @@ returnOrderTransactionsRouter.post(
                     ]
                 },
                 object: {
-                    order: { orderNumber: req.body.object.order.orderNumber },
+                    order: returnableOrder,
                     clientUser: req.user,
                     cancellationFee: 0,
                     // forcibly: true,
@@ -69,6 +99,7 @@ returnOrderTransactionsRouter.post(
                 order: orderRepo,
                 cancelReservationService: cancelReservationService
             });
+
             // tslint:disable-next-line:no-string-literal
             // const host = req.headers['host'];
             // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
@@ -78,9 +109,10 @@ returnOrderTransactionsRouter.post(
         }
     }
 );
+
 returnOrderTransactionsRouter.put(
     '/:transactionId/confirm',
-    permitScopes(['admin']),
+    permitScopes(['admin', 'transactions']),
     validator,
     async (req, res, next) => {
         try {
@@ -102,6 +134,7 @@ returnOrderTransactionsRouter.put(
         }
     }
 );
+
 /**
  * 取引検索
  */
@@ -147,4 +180,5 @@ returnOrderTransactionsRouter.get(
         }
     }
 );
+
 export default returnOrderTransactionsRouter;

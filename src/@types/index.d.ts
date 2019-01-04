@@ -14,6 +14,7 @@ declare global {
             agent: cinerino.factory.person.IPerson;
             user: IUser;
             accessToken: string;
+            isAdmin: boolean;
         }
     }
 }

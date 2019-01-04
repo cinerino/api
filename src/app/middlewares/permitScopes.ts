@@ -1,13 +1,13 @@
 /**
  * スコープ許可ミドルウェア
- * @module middlewares.permitScopes
  */
-
 import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 
 const debug = createDebug('cinerino-api:middlewares');
+
+export const SCOPE_ADMIN = 'admin';
 
 /**
  * スコープインターフェース
@@ -23,6 +23,7 @@ export default (permittedScopes: IScope[]) => {
         }
 
         debug('req.user.scopes:', req.user.scopes);
+        req.isAdmin = req.user.scopes.indexOf(`${process.env.RESOURCE_SERVER_IDENTIFIER}/${SCOPE_ADMIN}`) >= 0;
 
         // ドメインつきのカスタムスコープリストを許容するように変更
         const permittedScopesWithResourceServerIdentifier = [
