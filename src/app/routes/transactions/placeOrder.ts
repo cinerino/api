@@ -57,7 +57,7 @@ const rateLimit4transactionInProgress =
             // tslint:disable-next-line:no-magic-numbers
             port: parseInt(<string>process.env.REDIS_PORT, 10),
             password: <string>process.env.REDIS_KEY,
-            tls: { servername: <string>process.env.REDIS_HOST }
+            tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
         }),
         aggregationUnitInSeconds: UNIT_IN_SECONDS,
         threshold: THRESHOLD,

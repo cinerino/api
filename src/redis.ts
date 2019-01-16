@@ -34,7 +34,7 @@ function createClient() {
         // tslint:disable-next-line:no-magic-numbers
         port: parseInt(<string>process.env.REDIS_PORT, 10),
         password: <string>process.env.REDIS_KEY,
-        tls: { servername: <string>process.env.REDIS_HOST },
+        tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined,
         // If you return a number from this function, the retry will happen exactly after that time in milliseconds.
         // If you return a non-number, no further retry will happen and all offline commands are flushed with errors.
         // Return an error to return that specific error to all offline commands.

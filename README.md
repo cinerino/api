@@ -19,6 +19,7 @@
 | `REDIS_HOST`                             | true     |                | Redis Cache host                        |
 | `REDIS_PORT`                             | true     |                | Redis Cache port                        |
 | `REDIS_KEY`                              | true     |                | Redis Cache key                         |
+| `REDIS_TLS_SERVERNAME`                   | false    |                | Redis Cache host                        |
 | `GMO_ENDPOINT`                           | true     |                | GMO API endpoint                        |
 | `GMO_SITE_ID`                            | true     |                | GMO SiteID                              |
 | `GMO_SITE_PASS`                          | true     |                | GMO SitePass                            |
@@ -30,6 +31,8 @@
 | `CHEVRE_AUTHORIZE_SERVER_DOMAIN`         | true     |                | Chevre authorize server domain          |
 | `CHEVRE_CLIENT_ID`                       | true     |                | Chevre client id                        |
 | `CHEVRE_CLIENT_SECRET`                   | true     |                | Chevre client secret                    |
+| `COA_ENDPOINT`                           | true     |                | COA endpoint                            |
+| `COA_REFRESH_TOKEN`                      | true     |                | COA refresh token                       |
 | `TRANSACTION_RATE_LIMIT_UNIT_IN_SECONDS` | true     |                | Transaction rate limit unit             |
 | `TRANSACTION_RATE_LIMIT_THRESHOLD`       | true     |                | Transaction rate limit threshold        |
 | `RESOURCE_SERVER_IDENTIFIER`             | true     |                | Resource server identifier              |
