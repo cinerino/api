@@ -3,6 +3,7 @@
  */
 import * as express from 'express';
 
+import creativeWorksRouter from './creativeWorks';
 import eventsRouter from './events';
 import healthRouter from './health';
 import ordersRouter from './orders';
@@ -26,6 +27,8 @@ const router = express.Router();
 //   next()
 // })
 
+router.use('/creativeWorks', creativeWorksRouter);
+router.use('/events', eventsRouter);
 router.use('/health', healthRouter);
 router.use('/organizations', organizationsRouter);
 router.use('/orders', ordersRouter);
@@ -35,7 +38,6 @@ router.use('/paymentMethods', paymentMethodsRouter);
 router.use('/people/me', meRouter);
 router.use('/people', peopleRouter);
 router.use('/reservations', reservationsRouter);
-router.use('/events', eventsRouter);
 router.use('/sellers', sellersRouter);
 router.use('/tasks', tasksRouter);
 router.use('/transactions', transactionsRouter);
