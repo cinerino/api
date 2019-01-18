@@ -16,7 +16,12 @@ const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServicePr
         secretAccessKey: <string>process.env.AWS_SECRET_ACCESS_KEY
     })
 });
+
 const profileRouter = Router();
+
+/**
+ * プロフィール検索
+ */
 profileRouter.get(
     '',
     permitScopes(['aws.cognito.signin.user.admin']),
@@ -30,24 +35,21 @@ profileRouter.get(
         }
     }
 );
+
+/**
+ * プロフィール更新
+ * @deprecated Use patch method
+ */
 profileRouter.put(
     '',
     permitScopes(['aws.cognito.signin.user.admin']),
-    (__1, __2, next) => {
-        next();
-    },
     validator,
     async (req, res, next) => {
         try {
             const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
             await personRepo.updateProfileByAccessToken({
                 accessToken: req.accessToken,
-                profile: {
-                    givenName: req.body.givenName,
-                    familyName: req.body.familyName,
-                    email: req.body.email,
-                    telephone: req.body.telephone
-                }
+                profile: req.body
             });
             res.status(NO_CONTENT)
                 .end();
@@ -56,4 +58,27 @@ profileRouter.put(
         }
     }
 );
+
+/**
+ * プロフィール更新
+ */
+profileRouter.patch(
+    '',
+    permitScopes(['aws.cognito.signin.user.admin']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+            await personRepo.updateProfileByAccessToken({
+                accessToken: req.accessToken,
+                profile: req.body
+            });
+            res.status(NO_CONTENT)
+                .end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 export default profileRouter;

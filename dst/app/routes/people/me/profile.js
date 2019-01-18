@@ -25,6 +25,9 @@ const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServicePr
     })
 });
 const profileRouter = express_1.Router();
+/**
+ * プロフィール検索
+ */
 profileRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
@@ -35,19 +38,33 @@ profileRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']),
         next(error);
     }
 }));
-profileRouter.put('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (__1, __2, next) => {
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+/**
+ * プロフィール更新
+ * @deprecated Use patch method
+ */
+profileRouter.put('', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
         yield personRepo.updateProfileByAccessToken({
             accessToken: req.accessToken,
-            profile: {
-                givenName: req.body.givenName,
-                familyName: req.body.familyName,
-                email: req.body.email,
-                telephone: req.body.telephone
-            }
+            profile: req.body
+        });
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * プロフィール更新
+ */
+profileRouter.patch('', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+        yield personRepo.updateProfileByAccessToken({
+            accessToken: req.accessToken,
+            profile: req.body
         });
         res.status(http_status_1.NO_CONTENT)
             .end();
