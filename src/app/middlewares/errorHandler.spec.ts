@@ -35,7 +35,10 @@ describe('errorHandler.default()', () => {
             next: () => undefined
         };
 
-        sandbox.mock(params).expects('next').once().withExactArgs(sinon.match.instanceOf(Error));
+        sandbox.mock(params)
+            .expects('next')
+            .once()
+            .withExactArgs(sinon.match.instanceOf(Error));
 
         const result = await errorHandler.default(params.err, <any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);
@@ -54,9 +57,18 @@ describe('errorHandler.default()', () => {
             next: () => undefined
         };
 
-        sandbox.mock(params).expects('next').never();
-        sandbox.mock(params.res).expects('status').once().returns(params.res);
-        sandbox.mock(params.res).expects('json').once().withExactArgs({ error: params.err.toObject() }).returns(params.res);
+        sandbox.mock(params)
+            .expects('next')
+            .never();
+        sandbox.mock(params.res)
+            .expects('status')
+            .once()
+            .returns(params.res);
+        sandbox.mock(params.res)
+            .expects('json')
+            .once()
+            .withExactArgs({ error: params.err.toObject() })
+            .returns(params.res);
 
         const result = await errorHandler.default(params.err, <any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);
@@ -85,10 +97,22 @@ describe('errorHandler.default()', () => {
             };
             const body = {};
 
-            sandbox.mock(params).expects('next').never();
-            sandbox.mock(APIError.prototype).expects('toObject').once().returns(body);
-            sandbox.mock(params.res).expects('status').once().returns(params.res);
-            sandbox.mock(params.res).expects('json').once().withExactArgs({ error: body }).returns(params.res);
+            sandbox.mock(params)
+                .expects('next')
+                .never();
+            sandbox.mock(APIError.prototype)
+                .expects('toObject')
+                .once()
+                .returns(body);
+            sandbox.mock(params.res)
+                .expects('status')
+                .once()
+                .returns(params.res);
+            sandbox.mock(params.res)
+                .expects('json')
+                .once()
+                .withExactArgs({ error: body })
+                .returns(params.res);
 
             const result = await errorHandler.default(params.err, <any>params.req, <any>params.res, params.next);
             assert.equal(result, undefined);
@@ -120,14 +144,59 @@ describe('errorHandler.default()', () => {
             };
             const body = {};
 
-            sandbox.mock(params).expects('next').never();
-            sandbox.mock(APIError.prototype).expects('toObject').once().returns(body);
-            sandbox.mock(params.res).expects('status').once().returns(params.res);
-            sandbox.mock(params.res).expects('json').once().withExactArgs({ error: body }).returns(params.res);
+            sandbox.mock(params)
+                .expects('next')
+                .never();
+            sandbox.mock(APIError.prototype)
+                .expects('toObject')
+                .once()
+                .returns(body);
+            sandbox.mock(params.res)
+                .expects('status')
+                .once()
+                .returns(params.res);
+            sandbox.mock(params.res)
+                .expects('json')
+                .once()
+                .withExactArgs({ error: body })
+                .returns(params.res);
 
             const result = await errorHandler.default(params.err, <any>params.req, <any>params.res, params.next);
             assert.equal(result, undefined);
             sandbox.verify();
         });
+    });
+
+    it('APIErrorでもCinerinoErrorでもないエラーと共に呼ばれればそのままAPIErrorに変換されるはず', async () => {
+        const err = new Error('Some unexpected error');
+        const params = {
+            err: err,
+            req: {},
+            res: {
+                headersSent: false,
+                status: () => undefined,
+                json: () => undefined
+            },
+            next: () => undefined
+        };
+
+        sandbox.mock(params)
+            .expects('next')
+            .never();
+        sandbox.mock(params.res)
+            .expects('status')
+            .once()
+            .returns(params.res);
+        sandbox.mock(APIError.prototype)
+            .expects('toObject')
+            .once();
+        sandbox.mock(params.res)
+            .expects('json')
+            .once()
+            .returns(params.res);
+
+        const result = await errorHandler.default(params.err, <any>params.req, <any>params.res, params.next);
+        assert.equal(result, undefined);
+        sandbox.verify();
     });
 });

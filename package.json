@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@cinerino/domain": "^1.0.0-alpha.127",
+    "@cinerino/domain": "^1.0.0-alpha.129",
     "@motionpicture/express-middleware": "^0.1.0",
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
@@ -34,7 +34,7 @@
     "@types/express": "^4.16.1",
     "@types/helmet": "0.0.36",
     "@types/http-status": "^0.2.30",
-    "@types/ioredis": "^3.2.18",
+    "@types/ioredis": "^3.2.19",
     "@types/mocha": "^5.2.1",
     "@types/nock": "^9.3.1",
     "@types/power-assert": "^1.5.0",
@@ -54,7 +54,6 @@
     "power-assert": "^1.6.1",
     "rimraf": "^2.6.3",
     "sinon": "^5.1.1",
-    "snyk": "^1.122.3",
     "supertest": "^3.4.2",
     "swagger2blueprint": "^1.1.0",
     "ts-node": "^6.2.0",
@@ -85,7 +84,6 @@
     "http-server": "http-server",
     "mocha": "mocha",
     "coverage": "nyc mocha \"src/**/*.spec.ts\"",
-    "snyk": "snyk wizard",
     "start": "node dst/server.js",
     "start:development": "node dst/ssl.js",
     "test": "npm run check && npm run coverage",
