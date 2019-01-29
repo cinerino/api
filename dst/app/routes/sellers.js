@@ -85,17 +85,7 @@ sellersRouter.post('', permitScopes_1.default(['admin', 'sellers']), ...[
         .isArray()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const attributes = {
-            typeOf: req.body.typeOf,
-            name: req.body.name,
-            parentOrganization: req.body.parentOrganization,
-            location: req.body.location,
-            telephone: req.body.telephone,
-            url: req.body.url,
-            paymentAccepted: req.body.paymentAccepted,
-            hasPOS: req.body.hasPOS,
-            areaServed: req.body.areaServed
-        };
+        const attributes = req.body;
         const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
         const seller = yield sellerRepo.save({ attributes: attributes });
         res.status(http_status_1.CREATED)
@@ -202,17 +192,7 @@ sellersRouter.put('/:id', permitScopes_1.default(['admin', 'sellers']), ...[
         .isArray()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const attributes = {
-            typeOf: req.body.typeOf,
-            name: req.body.name,
-            parentOrganization: req.body.parentOrganization,
-            location: req.body.location,
-            telephone: req.body.telephone,
-            url: req.body.url,
-            paymentAccepted: req.body.paymentAccepted,
-            hasPOS: req.body.hasPOS,
-            areaServed: req.body.areaServed
-        };
+        const attributes = req.body;
         const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
         yield sellerRepo.save({ id: req.params.id, attributes: attributes });
         res.status(http_status_1.NO_CONTENT)

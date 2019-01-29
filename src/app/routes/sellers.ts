@@ -83,17 +83,7 @@ sellersRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const attributes: cinerino.factory.organization.IAttributes<typeof req.body.typeOf> = {
-                typeOf: req.body.typeOf,
-                name: req.body.name,
-                parentOrganization: req.body.parentOrganization,
-                location: req.body.location,
-                telephone: req.body.telephone,
-                url: req.body.url,
-                paymentAccepted: req.body.paymentAccepted,
-                hasPOS: req.body.hasPOS,
-                areaServed: req.body.areaServed
-            };
+            const attributes: cinerino.factory.organization.IAttributes<typeof req.body.typeOf> = req.body;
 
             const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
             const seller = await sellerRepo.save({ attributes: attributes });
@@ -223,17 +213,7 @@ sellersRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const attributes: cinerino.factory.organization.IAttributes<typeof req.body.typeOf> = {
-                typeOf: req.body.typeOf,
-                name: req.body.name,
-                parentOrganization: req.body.parentOrganization,
-                location: req.body.location,
-                telephone: req.body.telephone,
-                url: req.body.url,
-                paymentAccepted: req.body.paymentAccepted,
-                hasPOS: req.body.hasPOS,
-                areaServed: req.body.areaServed
-            };
+            const attributes: cinerino.factory.organization.IAttributes<typeof req.body.typeOf> = req.body;
 
             const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
             await sellerRepo.save({ id: req.params.id, attributes: attributes });
