@@ -83,7 +83,7 @@ sellersRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const attributes: cinerino.factory.organization.IAttributes<typeof req.body.typeOf> = req.body;
+            const attributes: cinerino.factory.seller.IAttributes<typeof req.body.typeOf> = req.body;
 
             const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
             const seller = await sellerRepo.save({ attributes: attributes });
@@ -105,7 +105,7 @@ sellersRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const searchCoinditions: cinerino.factory.organization.ISearchConditions<any> = {
+            const searchCoinditions: cinerino.factory.seller.ISearchConditions = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
@@ -213,7 +213,7 @@ sellersRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const attributes: cinerino.factory.organization.IAttributes<typeof req.body.typeOf> = req.body;
+            const attributes: cinerino.factory.seller.IAttributes<typeof req.body.typeOf> = req.body;
 
             const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
             await sellerRepo.save({ id: req.params.id, attributes: attributes });

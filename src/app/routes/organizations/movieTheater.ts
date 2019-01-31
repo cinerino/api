@@ -81,7 +81,7 @@ movieTheaterRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const attributes: cinerino.factory.organization.IAttributes<cinerino.factory.organizationType.MovieTheater> = {
+            const attributes: cinerino.factory.seller.IAttributes<cinerino.factory.organizationType.MovieTheater> = {
                 typeOf: cinerino.factory.organizationType.MovieTheater,
                 name: req.body.name,
                 parentOrganization: req.body.parentOrganization,
@@ -93,7 +93,7 @@ movieTheaterRouter.post(
                 areaServed: req.body.areaServed,
                 makesOffer: req.body.makesOffer
             };
-            const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
+            const organizationRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
             const movieTheater = await organizationRepo.save({ attributes: attributes });
             res.status(CREATED)
                 .json(movieTheater);
@@ -109,16 +109,16 @@ movieTheaterRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
-            const searchCoinditions: cinerino.factory.organization.ISearchConditions<cinerino.factory.organizationType.MovieTheater> = {
+            const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
+            const searchCoinditions: cinerino.factory.seller.ISearchConditions = {
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
                 sort: req.query.sort,
                 name: req.query.name
             };
-            const movieTheaters = await organizationRepo.searchMovieTheaters(searchCoinditions);
-            const totalCount = await organizationRepo.countMovieTheaters(searchCoinditions);
+            const movieTheaters = await sellerRepo.search(searchCoinditions);
+            const totalCount = await sellerRepo.count(searchCoinditions);
             res.set('X-Total-Count', totalCount.toString());
             res.json(movieTheaters);
         } catch (error) {
@@ -133,9 +133,8 @@ movieTheaterRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
-            const movieTheater = await organizationRepo.findById({
-                typeOf: cinerino.factory.organizationType.MovieTheater,
+            const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
+            const movieTheater = await sellerRepo.findById({
                 id: req.params.id
             });
             res.json(movieTheater);
@@ -209,7 +208,7 @@ movieTheaterRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const attributes: cinerino.factory.organization.IAttributes<cinerino.factory.organizationType.MovieTheater> = {
+            const attributes: cinerino.factory.seller.IAttributes<cinerino.factory.organizationType.MovieTheater> = {
                 typeOf: cinerino.factory.organizationType.MovieTheater,
                 name: req.body.name,
                 parentOrganization: req.body.parentOrganization,
@@ -221,7 +220,7 @@ movieTheaterRouter.put(
                 areaServed: req.body.areaServed,
                 makesOffer: req.body.makesOffer
             };
-            const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
+            const organizationRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
             await organizationRepo.save({ id: req.params.id, attributes: attributes });
             res.status(NO_CONTENT)
                 .end();
@@ -237,9 +236,8 @@ movieTheaterRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
-            await organizationRepo.deleteById({
-                typeOf: cinerino.factory.organizationType.MovieTheater,
+            const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
+            await sellerRepo.deleteById({
                 id: req.params.id
             });
             res.status(NO_CONTENT)

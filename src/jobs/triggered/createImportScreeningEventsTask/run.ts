@@ -24,37 +24,39 @@ export default async () => {
         '*/5 * * * *',
         async () => {
             const taskRepo = new cinerino.repository.Task(connection);
-            const organizationRepo = new cinerino.repository.Organization(connection);
+            const sellerRepo = new cinerino.repository.Seller(connection);
 
             // 全劇場組織を取得
-            const movieTheaters = await organizationRepo.searchMovieTheaters({});
+            const sellers = await sellerRepo.search({});
             const importFrom = moment()
                 .toDate();
             const importThrough = moment()
                 .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
                 .toDate();
             const runsAt = new Date();
-            await Promise.all(movieTheaters.map(async (movieTheater) => {
+            await Promise.all(sellers.map(async (movieTheater) => {
                 try {
-                    await Promise.all(movieTheater.makesOffer.map(async (offer) => {
-                        const taskAttributes: cinerino.factory.task.IAttributes<cinerino.factory.taskName.ImportScreeningEvents> = {
-                            name: cinerino.factory.taskName.ImportScreeningEvents,
-                            status: cinerino.factory.taskStatus.Ready,
-                            runsAt: runsAt,
-                            remainingNumberOfTries: 1,
-                            // tslint:disable-next-line:no-null-keyword
-                            lastTriedAt: null,
-                            numberOfTried: 0,
-                            executionResults: [],
-                            data: {
-                                locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
-                                offeredThrough: offer.offeredThrough,
-                                importFrom: importFrom,
-                                importThrough: importThrough
-                            }
-                        };
-                        await taskRepo.save(taskAttributes);
-                    }));
+                    if (Array.isArray(movieTheater.makesOffer)) {
+                        await Promise.all(movieTheater.makesOffer.map(async (offer) => {
+                            const taskAttributes: cinerino.factory.task.IAttributes<cinerino.factory.taskName.ImportScreeningEvents> = {
+                                name: cinerino.factory.taskName.ImportScreeningEvents,
+                                status: cinerino.factory.taskStatus.Ready,
+                                runsAt: runsAt,
+                                remainingNumberOfTries: 1,
+                                // tslint:disable-next-line:no-null-keyword
+                                lastTriedAt: null,
+                                numberOfTried: 0,
+                                executionResults: [],
+                                data: {
+                                    locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
+                                    offeredThrough: offer.offeredThrough,
+                                    importFrom: importFrom,
+                                    importThrough: importThrough
+                                }
+                            };
+                            await taskRepo.save(taskAttributes);
+                        }));
+                    }
                 } catch (error) {
                     console.error(error);
                 }

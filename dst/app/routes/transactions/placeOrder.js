@@ -126,7 +126,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito
                 passport: passport
             }
         })({
-            organization: new cinerino.repository.Organization(cinerino.mongoose.connection),
+            seller: new cinerino.repository.Seller(cinerino.mongoose.connection),
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
         });
         // tslint:disable-next-line:no-string-literal
@@ -202,7 +202,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
                 endpoint: process.env.MVTK_RESERVE_ENDPOINT,
                 auth: mvtkReserveAuthClient
             }),
-            organization: new cinerino.repository.Organization(cinerino.mongoose.connection),
+            seller: new cinerino.repository.Seller(cinerino.mongoose.connection),
             reserveService: reserveService,
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
         });
@@ -263,7 +263,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         })({
             action: new cinerino.repository.Action(cinerino.mongoose.connection),
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
-            organization: new cinerino.repository.Organization(cinerino.mongoose.connection)
+            seller: new cinerino.repository.Seller(cinerino.mongoose.connection)
         });
         res.status(http_status_1.CREATED)
             .json(action);
@@ -342,7 +342,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         })({
             action: new cinerino.repository.Action(cinerino.mongoose.connection),
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
-            organization: new cinerino.repository.Organization(cinerino.mongoose.connection)
+            seller: new cinerino.repository.Seller(cinerino.mongoose.connection)
         });
         if (action.result !== undefined) {
             delete action.result.entryTranArgs;
@@ -433,7 +433,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             transaction: { id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(cinerino.mongoose.connection),
-            organization: new cinerino.repository.Organization(cinerino.mongoose.connection),
+            seller: new cinerino.repository.Seller(cinerino.mongoose.connection),
             ownershipInfo: new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection),
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
             transferTransactionService: transferService
@@ -510,7 +510,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         })({
             action: new cinerino.repository.Action(cinerino.mongoose.connection),
             event: new cinerino.repository.Event(cinerino.mongoose.connection),
-            organization: new cinerino.repository.Organization(cinerino.mongoose.connection),
+            seller: new cinerino.repository.Seller(cinerino.mongoose.connection),
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
             movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
                 endpoint: process.env.MVTK_RESERVE_ENDPOINT,
@@ -616,7 +616,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
         const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
         const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
         const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
-        const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
         const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
         const result = yield cinerino.service.transaction.placeOrderInProgress.confirm({
             id: req.params.transactionId,
@@ -628,7 +628,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             transaction: transactionRepo,
             confirmationNumber: confirmationNumberRepo,
             orderNumber: orderNumberRepo,
-            organization: organizationRepo
+            seller: sellerRepo
         });
         debug('transaction confirmed');
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)

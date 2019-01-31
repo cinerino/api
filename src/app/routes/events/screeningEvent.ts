@@ -156,7 +156,7 @@ screeningEventRouter.get(
     async (req, res, next) => {
         try {
             const eventRepo = new cinerino.repository.Event(cinerino.mongoose.connection);
-            const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
+            const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
             const eventService = new cinerino.chevre.service.Event({
                 endpoint: <string>process.env.CHEVRE_ENDPOINT,
                 auth: chevreAuthClient
@@ -168,7 +168,7 @@ screeningEventRouter.get(
             })({
                 event: eventRepo,
                 eventService: eventService,
-                organization: organizationRepo
+                seller: sellerRepo
             });
             res.json(offers);
         } catch (error) {

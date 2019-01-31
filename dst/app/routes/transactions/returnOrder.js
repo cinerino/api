@@ -106,7 +106,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 't
 returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
-        const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
         yield cinerino.service.transaction.returnOrder.confirm({
             id: req.params.transactionId,
@@ -114,7 +114,7 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
         })({
             action: actionRepo,
             transaction: transactionRepo,
-            organization: organizationRepo
+            seller: sellerRepo
         });
         res.status(http_status_1.NO_CONTENT)
             .end();

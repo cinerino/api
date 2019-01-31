@@ -117,7 +117,7 @@ returnOrderTransactionsRouter.put(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
-            const organizationRepo = new cinerino.repository.Organization(cinerino.mongoose.connection);
+            const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
             await cinerino.service.transaction.returnOrder.confirm({
                 id: req.params.transactionId,
@@ -125,7 +125,7 @@ returnOrderTransactionsRouter.put(
             })({
                 action: actionRepo,
                 transaction: transactionRepo,
-                organization: organizationRepo
+                seller: sellerRepo
             });
             res.status(NO_CONTENT)
                 .end();

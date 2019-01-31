@@ -28,36 +28,38 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     const job = new cron_1.CronJob('*/5 * * * *', () => __awaiter(this, void 0, void 0, function* () {
         const taskRepo = new cinerino.repository.Task(connection);
-        const organizationRepo = new cinerino.repository.Organization(connection);
+        const sellerRepo = new cinerino.repository.Seller(connection);
         // 全劇場組織を取得
-        const movieTheaters = yield organizationRepo.searchMovieTheaters({});
+        const sellers = yield sellerRepo.search({});
         const importFrom = moment()
             .toDate();
         const importThrough = moment()
             .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
             .toDate();
         const runsAt = new Date();
-        yield Promise.all(movieTheaters.map((movieTheater) => __awaiter(this, void 0, void 0, function* () {
+        yield Promise.all(sellers.map((movieTheater) => __awaiter(this, void 0, void 0, function* () {
             try {
-                yield Promise.all(movieTheater.makesOffer.map((offer) => __awaiter(this, void 0, void 0, function* () {
-                    const taskAttributes = {
-                        name: cinerino.factory.taskName.ImportScreeningEvents,
-                        status: cinerino.factory.taskStatus.Ready,
-                        runsAt: runsAt,
-                        remainingNumberOfTries: 1,
-                        // tslint:disable-next-line:no-null-keyword
-                        lastTriedAt: null,
-                        numberOfTried: 0,
-                        executionResults: [],
-                        data: {
-                            locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
-                            offeredThrough: offer.offeredThrough,
-                            importFrom: importFrom,
-                            importThrough: importThrough
-                        }
-                    };
-                    yield taskRepo.save(taskAttributes);
-                })));
+                if (Array.isArray(movieTheater.makesOffer)) {
+                    yield Promise.all(movieTheater.makesOffer.map((offer) => __awaiter(this, void 0, void 0, function* () {
+                        const taskAttributes = {
+                            name: cinerino.factory.taskName.ImportScreeningEvents,
+                            status: cinerino.factory.taskStatus.Ready,
+                            runsAt: runsAt,
+                            remainingNumberOfTries: 1,
+                            // tslint:disable-next-line:no-null-keyword
+                            lastTriedAt: null,
+                            numberOfTried: 0,
+                            executionResults: [],
+                            data: {
+                                locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
+                                offeredThrough: offer.offeredThrough,
+                                importFrom: importFrom,
+                                importThrough: importThrough
+                            }
+                        };
+                        yield taskRepo.save(taskAttributes);
+                    })));
+                }
             }
             catch (error) {
                 console.error(error);

@@ -35,7 +35,7 @@ paymentRouter.post(
             })({
                 action: new cinerino.repository.Action(cinerino.mongoose.connection),
                 event: new cinerino.repository.Event(cinerino.mongoose.connection),
-                organization: new cinerino.repository.Organization(cinerino.mongoose.connection),
+                seller: new cinerino.repository.Seller(cinerino.mongoose.connection),
                 movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
                     endpoint: <string>process.env.MVTK_RESERVE_ENDPOINT,
                     auth: mvtkReserveAuthClient
