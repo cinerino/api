@@ -49,8 +49,6 @@ tasksRouter.post('/:name', permitScopes_1.default(['admin']), ...[
             runsAt: moment(req.body.runsAt)
                 .toDate(),
             remainingNumberOfTries: Number(req.body.remainingNumberOfTries),
-            // tslint:disable-next-line:no-null-keyword
-            lastTriedAt: null,
             numberOfTried: 0,
             executionResults: [],
             data: req.body.data

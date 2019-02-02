@@ -18,7 +18,7 @@ const PING_INTERVAL = 10000;
 const MONGOLAB_URI = process.env.MONGOLAB_URI;
 const connectOptions = {
     autoReconnect: true,
-    keepAlive: 120000,
+    keepAlive: true,
     connectTimeoutMS: 30000,
     socketTimeoutMS: 0,
     reconnectTries: 30,

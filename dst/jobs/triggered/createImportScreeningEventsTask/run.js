@@ -46,8 +46,6 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
                             status: cinerino.factory.taskStatus.Ready,
                             runsAt: runsAt,
                             remainingNumberOfTries: 1,
-                            // tslint:disable-next-line:no-null-keyword
-                            lastTriedAt: null,
                             numberOfTried: 0,
                             executionResults: [],
                             data: {

@@ -158,13 +158,15 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
 }, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const contact = yield cinerino.service.transaction.placeOrderInProgress.setCustomerContact({
-            agentId: req.user.sub,
-            transactionId: req.params.transactionId,
-            contact: {
-                familyName: req.body.familyName,
-                givenName: req.body.givenName,
-                email: req.body.email,
-                telephone: req.body.telephone
+            id: req.params.transactionId,
+            agent: { id: req.user.sub },
+            object: {
+                customerContact: {
+                    familyName: req.body.familyName,
+                    givenName: req.body.givenName,
+                    email: req.body.email,
+                    telephone: req.body.telephone
+                }
             }
         })({
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
@@ -551,7 +553,8 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accou
     req.checkBody('amount', 'invalid amount')
         .notEmpty()
         .withMessage('amount is required')
-        .isInt();
+        .isInt()
+        .toInt();
     req.checkBody('toAccountNumber', 'invalid toAccountNumber')
         .notEmpty()
         .withMessage('toAccountNumber is required');
@@ -564,11 +567,9 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accou
             auth: pecorinoAuthClient
         });
         const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.create({
-            agentId: req.user.sub,
-            transactionId: req.params.transactionId,
-            amount: parseInt(req.body.amount, 10),
-            toAccountNumber: req.body.toAccountNumber,
-            notes: req.body.notes
+            transaction: { id: req.params.transactionId },
+            agent: { id: req.user.sub },
+            object: req.body
         })({
             action: new cinerino.repository.Action(cinerino.mongoose.connection),
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
@@ -594,9 +595,9 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accoun
             auth: pecorinoAuthClient
         });
         yield cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({
-            agentId: req.user.sub,
-            transactionId: req.params.transactionId,
-            actionId: req.params.actionId
+            agent: { id: req.user.sub },
+            transaction: { id: req.params.transactionId },
+            id: req.params.actionId
         })({
             action: new cinerino.repository.Action(cinerino.mongoose.connection),
             transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
@@ -705,9 +706,11 @@ placeOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
 placeOrderTransactionsRouter.get('/:transactionId/actions', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
-        const actions = yield actionRepo.searchByTransactionId({
-            transactionType: cinerino.factory.transactionType.PlaceOrder,
-            transactionId: req.params.transactionId,
+        const actions = yield actionRepo.searchByPurpose({
+            purpose: {
+                typeOf: cinerino.factory.transactionType.PlaceOrder,
+                id: req.params.transactionId
+            },
             sort: req.query.sort
         });
         res.json(actions);
