@@ -3,6 +3,7 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+import * as mongoose from 'mongoose';
 
 import authentication from '../../../middlewares/authentication';
 import permitScopes from '../../../middlewares/permitScopes';
@@ -34,7 +35,7 @@ ordersRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const searchConditions: cinerino.factory.order.ISearchConditions = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers

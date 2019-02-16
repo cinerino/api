@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
@@ -58,8 +59,8 @@ eventReservationRouter.post('/screeningEvent/findByToken', permitScopes_1.defaul
             token: req.body.token,
             secret: process.env.TOKEN_SECRET,
             issuer: process.env.RESOURCE_SERVER_IDENTIFIER
-        })({ action: new cinerino.repository.Action(cinerino.mongoose.connection) });
-        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
+        })({ action: new cinerino.repository.Action(mongoose.connection) });
+        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const ownershipInfo = yield ownershipInfoRepo.search({
             typeOfGood: {
                 typeOf: cinerino.factory.chevre.reservationType.EventReservation,

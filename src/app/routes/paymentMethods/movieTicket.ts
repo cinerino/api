@@ -3,6 +3,7 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+import * as mongoose from 'mongoose';
 
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
@@ -17,7 +18,7 @@ movieTicketPaymentMethodsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const paymentMethodRepo = new cinerino.repository.PaymentMethod(cinerino.mongoose.connection);
+            const paymentMethodRepo = new cinerino.repository.PaymentMethod(mongoose.connection);
             const searchCoinditions = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers

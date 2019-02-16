@@ -6,6 +6,7 @@ import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { body, query } from 'express-validator/check';
 import { NO_CONTENT } from 'http-status';
+import * as mongoose from 'mongoose';
 
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
@@ -40,10 +41,10 @@ returnOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
-            const invoiceRepo = new cinerino.repository.Invoice(cinerino.mongoose.connection);
-            const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
-            const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             const cancelReservationService = new cinerino.chevre.service.transaction.CancelReservation({
                 endpoint: <string>process.env.CHEVRE_ENDPOINT,
                 auth: chevreAuthClient
@@ -116,9 +117,9 @@ returnOrderTransactionsRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
-            const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
-            const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             await cinerino.service.transaction.returnOrder.confirm({
                 id: req.params.transactionId,
                 agent: { id: req.user.sub }
@@ -162,7 +163,7 @@ returnOrderTransactionsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
+            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             const searchConditions: cinerino.factory.transaction.ISearchConditions<cinerino.factory.transactionType.ReturnOrder> = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers

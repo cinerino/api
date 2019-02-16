@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -43,7 +44,7 @@ ownershipInfosRouter.post('/tokens', permitScopes_1.default(['aws.cognito.signin
  */
 ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const actions = yield actionRepo.actionModel.find({
             typeOf: cinerino.factory.actionType.CheckAction,
             'result.typeOf': 'OwnershipInfo',

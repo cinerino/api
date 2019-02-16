@@ -5,6 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { query } from 'express-validator/check';
+import * as mongoose from 'mongoose';
 
 // import * as redis from '../../redis';
 import authentication from '../../middlewares/authentication';
@@ -73,7 +74,7 @@ screeningEventRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const eventRepo = new cinerino.repository.Event(cinerino.mongoose.connection);
+            const eventRepo = new cinerino.repository.Event(mongoose.connection);
             const searchCoinditions: cinerino.chevre.factory.event.screeningEvent.ISearchConditions = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
@@ -99,7 +100,7 @@ screeningEventRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const eventRepo = new cinerino.repository.Event(cinerino.mongoose.connection);
+            const eventRepo = new cinerino.repository.Event(mongoose.connection);
             const event = await eventRepo.findById({ typeOf: cinerino.factory.chevre.eventType.ScreeningEvent, id: req.params.id });
             res.json(event);
         } catch (error) {
@@ -117,7 +118,7 @@ screeningEventRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const eventRepo = new cinerino.repository.Event(cinerino.mongoose.connection);
+            const eventRepo = new cinerino.repository.Event(mongoose.connection);
             const eventService = new cinerino.chevre.service.Event({
                 endpoint: <string>process.env.CHEVRE_ENDPOINT,
                 auth: chevreAuthClient
@@ -155,8 +156,8 @@ screeningEventRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const eventRepo = new cinerino.repository.Event(cinerino.mongoose.connection);
-            const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
+            const eventRepo = new cinerino.repository.Event(mongoose.connection);
+            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const eventService = new cinerino.chevre.service.Event({
                 endpoint: <string>process.env.CHEVRE_ENDPOINT,
                 auth: chevreAuthClient

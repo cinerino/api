@@ -16,6 +16,7 @@ const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
+const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -40,11 +41,11 @@ ordersRouter.post('', permitScopes_1.default(['admin']), ...[
         .withMessage((_, options) => `${options.path} is required`)
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
-        const invoiceRepo = new cinerino.repository.Invoice(cinerino.mongoose.connection);
-        const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
-        const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
-        const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        const taskRepo = new cinerino.repository.Task(mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const orderNumber = req.body.orderNumber;
         // 注文検索
         const orders = yield orderRepo.search({
@@ -92,10 +93,10 @@ ordersRouter.post('', permitScopes_1.default(['admin']), ...[
  */
 ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
-        const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
-        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
-        const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+        const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const orderNumber = req.params.orderNumber;
         // 注文検索
         const order = yield orderRepo.findByOrderNumber({
@@ -144,7 +145,7 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['aws.cogn
         if (customer.email !== undefined && customer.telephone !== undefined) {
             throw new cinerino.factory.errors.Argument('customer');
         }
-        const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const order = yield orderRepo.findByConfirmationNumber({
             confirmationNumber: req.body.confirmationNumber,
             customer: customer
@@ -169,8 +170,8 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
         if (customer.email !== undefined && customer.telephone !== undefined) {
             throw new cinerino.factory.errors.Argument('customer');
         }
-        const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
-        const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const codeRepo = new cinerino.repository.Code(redis.getClient());
         const order = yield orderRepo.findByOrderNumber({ orderNumber: req.params.orderNumber });
         if (order.customer.email !== customer.email && order.customer.telephone !== customer.telephone) {
@@ -215,10 +216,12 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
                 .filter((o) => o.typeOfGood.typeOf === offer.itemOffered.typeOf)
                 .find((o) => o.typeOfGood.id === offer.itemOffered.id);
             if (ownershipInfo !== undefined) {
-                offer.itemOffered.reservedTicket.ticketToken = yield codeRepo.publish({
-                    data: ownershipInfo,
-                    expiresInSeconds: CODE_EXPIRES_IN_SECONDS
-                });
+                if (offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
+                    offer.itemOffered.reservedTicket.ticketToken = yield codeRepo.publish({
+                        data: ownershipInfo,
+                        expiresInSeconds: CODE_EXPIRES_IN_SECONDS
+                    });
+                }
             }
             return offer;
         })));
@@ -243,7 +246,7 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
  */
 ordersRouter.get('/:orderNumber/actions', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const actions = yield actionRepo.searchByOrderNumber({
             orderNumber: req.params.orderNumber,
             sort: req.query.sort
@@ -291,7 +294,7 @@ ordersRouter.get('', permitScopes_1.default(['admin']), (req, __2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: cinerino.factory.sortType.Descending } });

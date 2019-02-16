@@ -3,7 +3,9 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+// import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
+import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -88,7 +90,7 @@ peopleRouter.get(
  */
 peopleRouter.get(
     '/:id/ownershipInfos',
-    permitScopes(['aws.cognito.signin.user.admin']),
+    permitScopes(['admin']),
     (_1, _2, next) => {
         next();
     },
@@ -111,7 +113,7 @@ peopleRouter.get(
                     .toDate() : undefined,
                 typeOfGood: typeOfGood
             };
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const totalCount = await ownershipInfoRepo.count(searchConditions);
             switch (typeOfGood.typeOf) {
                 case cinerino.factory.ownershipInfo.AccountGoodType.Account:
@@ -163,5 +165,44 @@ peopleRouter.get(
         }
     }
 );
+
+/**
+ * プロフィール検索
+ */
+// peopleRouter.get(
+//     '/:id/profile',
+//     permitScopes(['admin']),
+//     async (req, res, next) => {
+//         try {
+//             const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+//             const profile = await personRepo.getUserAttributesByAccessToken(req.accessToken);
+//             res.json(profile);
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
+
+/**
+ * プロフィール更新
+ */
+// peopleRouter.patch(
+//     '/:id/profile',
+//     permitScopes(['admin']),
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+//             await personRepo.updateProfileByAccessToken({
+//                 accessToken: req.accessToken,
+//                 profile: req.body
+//             });
+//             res.status(NO_CONTENT)
+//                 .end();
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 
 export default peopleRouter;

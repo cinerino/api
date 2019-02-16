@@ -13,7 +13,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+// import { NO_CONTENT } from 'http-status';
 const moment = require("moment");
+const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -82,7 +84,7 @@ peopleRouter.get('/:id', permitScopes_1.default(['admin']), validator_1.default,
 /**
  * 所有権検索
  */
-peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['aws.cognito.signin.user.admin']), (_1, _2, next) => {
+peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['admin']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -101,7 +103,7 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['aws.cognito.sig
                 .toDate() : undefined,
             typeOfGood: typeOfGood
         };
-        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
+        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const totalCount = yield ownershipInfoRepo.count(searchConditions);
         switch (typeOfGood.typeOf) {
             case cinerino.factory.ownershipInfo.AccountGoodType.Account:
@@ -146,4 +148,41 @@ peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['adm
         next(error);
     }
 }));
+/**
+ * プロフィール検索
+ */
+// peopleRouter.get(
+//     '/:id/profile',
+//     permitScopes(['admin']),
+//     async (req, res, next) => {
+//         try {
+//             const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+//             const profile = await personRepo.getUserAttributesByAccessToken(req.accessToken);
+//             res.json(profile);
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
+/**
+ * プロフィール更新
+ */
+// peopleRouter.patch(
+//     '/:id/profile',
+//     permitScopes(['admin']),
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+//             await personRepo.updateProfileByAccessToken({
+//                 accessToken: req.accessToken,
+//                 profile: req.body
+//             });
+//             res.status(NO_CONTENT)
+//                 .end();
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 exports.default = peopleRouter;

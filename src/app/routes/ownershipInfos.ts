@@ -3,6 +3,7 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -46,7 +47,7 @@ ownershipInfosRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const actions = await actionRepo.actionModel.find(
                 {
                     typeOf: cinerino.factory.actionType.CheckAction,

@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
+const mongoose = require("mongoose");
 const debug = createDebug('cinerino-api:connectMongo');
 const PING_INTERVAL = 10000;
 const MONGOLAB_URI = process.env.MONGOLAB_URI;
@@ -30,11 +31,11 @@ function connectMongo(params) {
         let connection;
         if (params === undefined || params.defaultConnection) {
             // コネクション確立
-            yield cinerino.mongoose.connect(MONGOLAB_URI, connectOptions);
-            connection = cinerino.mongoose.connection;
+            yield mongoose.connect(MONGOLAB_URI, connectOptions);
+            connection = mongoose.connection;
         }
         else {
-            connection = cinerino.mongoose.createConnection(MONGOLAB_URI, connectOptions);
+            connection = mongoose.createConnection(MONGOLAB_URI, connectOptions);
         }
         // 定期的にコネクションチェック
         // tslint:disable-next-line:no-single-line-block-comment

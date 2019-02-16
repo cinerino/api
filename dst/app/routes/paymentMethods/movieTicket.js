@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
@@ -20,7 +21,7 @@ const movieTicketPaymentMethodsRouter = express_1.Router();
 movieTicketPaymentMethodsRouter.use(authentication_1.default);
 movieTicketPaymentMethodsRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const paymentMethodRepo = new cinerino.repository.PaymentMethod(cinerino.mongoose.connection);
+        const paymentMethodRepo = new cinerino.repository.PaymentMethod(mongoose.connection);
         const searchCoinditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { _id: cinerino.factory.sortType.Ascending } });

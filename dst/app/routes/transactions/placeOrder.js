@@ -20,6 +20,7 @@ const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const ioredis = require("ioredis");
 const moment = require("moment");
+const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
@@ -126,8 +127,8 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito
                 passport: passport
             }
         })({
-            seller: new cinerino.repository.Seller(cinerino.mongoose.connection),
-            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
+            seller: new cinerino.repository.Seller(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
@@ -169,7 +170,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
                 }
             }
         })({
-            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.json(contact);
     }
@@ -197,16 +198,16 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId }
         })({
-            action: new cinerino.repository.Action(cinerino.mongoose.connection),
-            event: new cinerino.repository.Event(cinerino.mongoose.connection),
+            action: new cinerino.repository.Action(mongoose.connection),
+            event: new cinerino.repository.Event(mongoose.connection),
             eventService: eventService,
             movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
                 endpoint: process.env.MVTK_RESERVE_ENDPOINT,
                 auth: mvtkReserveAuthClient
             }),
-            seller: new cinerino.repository.Seller(cinerino.mongoose.connection),
+            seller: new cinerino.repository.Seller(mongoose.connection),
             reserveService: reserveService,
-            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED)
             .json(action);
@@ -229,8 +230,8 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatRe
             transaction: { id: req.params.transactionId },
             id: req.params.actionId
         })({
-            action: new cinerino.repository.Action(cinerino.mongoose.connection),
-            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
+            action: new cinerino.repository.Action(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection),
             reserveService: reserveService
         });
         res.status(http_status_1.NO_CONTENT)
@@ -263,9 +264,9 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId }
         })({
-            action: new cinerino.repository.Action(cinerino.mongoose.connection),
-            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
-            seller: new cinerino.repository.Seller(cinerino.mongoose.connection)
+            action: new cinerino.repository.Action(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection),
+            seller: new cinerino.repository.Seller(mongoose.connection)
         });
         res.status(http_status_1.CREATED)
             .json(action);
@@ -284,8 +285,8 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId }
         })({
-            action: new cinerino.repository.Action(cinerino.mongoose.connection),
-            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
+            action: new cinerino.repository.Action(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)
             .end();
@@ -342,9 +343,9 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId }
         })({
-            action: new cinerino.repository.Action(cinerino.mongoose.connection),
-            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
-            seller: new cinerino.repository.Seller(cinerino.mongoose.connection)
+            action: new cinerino.repository.Action(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection),
+            seller: new cinerino.repository.Seller(mongoose.connection)
         });
         if (action.result !== undefined) {
             delete action.result.entryTranArgs;
@@ -368,8 +369,8 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId }
         })({
-            action: new cinerino.repository.Action(cinerino.mongoose.connection),
-            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
+            action: new cinerino.repository.Action(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)
             .end();
@@ -408,7 +409,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
                 token: fromAccount,
                 secret: process.env.TOKEN_SECRET,
                 issuer: process.env.RESOURCE_SERVER_IDENTIFIER
-            })({ action: new cinerino.repository.Action(cinerino.mongoose.connection) });
+            })({ action: new cinerino.repository.Action(mongoose.connection) });
             const account = accountOwnershipInfo.typeOfGood;
             if (account.accountType !== cinerino.factory.accountType.Coin) {
                 throw new cinerino.factory.errors.Argument('fromAccount', 'Invalid token');
@@ -434,10 +435,10 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId }
         })({
-            action: new cinerino.repository.Action(cinerino.mongoose.connection),
-            seller: new cinerino.repository.Seller(cinerino.mongoose.connection),
-            ownershipInfo: new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection),
-            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
+            action: new cinerino.repository.Action(mongoose.connection),
+            seller: new cinerino.repository.Seller(mongoose.connection),
+            ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection),
             transferTransactionService: transferService
         });
         res.status(http_status_1.CREATED)
@@ -465,8 +466,8 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId }
         })({
-            action: new cinerino.repository.Action(cinerino.mongoose.connection),
-            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
+            action: new cinerino.repository.Action(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection),
             transferTransactionService: transferService,
             withdrawTransactionService: withdrawService
         });
@@ -510,10 +511,10 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId }
         })({
-            action: new cinerino.repository.Action(cinerino.mongoose.connection),
-            event: new cinerino.repository.Event(cinerino.mongoose.connection),
-            seller: new cinerino.repository.Seller(cinerino.mongoose.connection),
-            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
+            action: new cinerino.repository.Action(mongoose.connection),
+            event: new cinerino.repository.Event(mongoose.connection),
+            seller: new cinerino.repository.Seller(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection),
             movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
                 endpoint: process.env.MVTK_RESERVE_ENDPOINT,
                 auth: mvtkReserveAuthClient
@@ -536,8 +537,8 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId }
         })({
-            action: new cinerino.repository.Action(cinerino.mongoose.connection),
-            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection)
+            action: new cinerino.repository.Action(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)
             .end();
@@ -571,9 +572,9 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accou
             agent: { id: req.user.sub },
             object: req.body
         })({
-            action: new cinerino.repository.Action(cinerino.mongoose.connection),
-            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
-            ownershipInfo: new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection),
+            action: new cinerino.repository.Action(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection),
+            ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
             depositTransactionService: depositService
         });
         res.status(http_status_1.CREATED)
@@ -599,8 +600,8 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accoun
             transaction: { id: req.params.transactionId },
             id: req.params.actionId
         })({
-            action: new cinerino.repository.Action(cinerino.mongoose.connection),
-            transaction: new cinerino.repository.Transaction(cinerino.mongoose.connection),
+            action: new cinerino.repository.Action(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection),
             depositTransactionService: depositService
         });
         res.status(http_status_1.NO_CONTENT)
@@ -613,12 +614,12 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accoun
 placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const orderDate = new Date();
-        const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
-        const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
         const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
-        const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
-        const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+        const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const result = yield cinerino.service.transaction.placeOrderInProgress.confirm({
             id: req.params.transactionId,
             agent: { id: req.user.sub },
@@ -649,8 +650,8 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
  */
 placeOrderTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
-        const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
+        const taskRepo = new cinerino.repository.Task(mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         yield transactionRepo.cancel({ typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId });
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
         // tslint:disable-next-line:no-floating-promises
@@ -687,7 +688,7 @@ placeOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: cinerino.factory.sortType.Ascending }, typeOf: cinerino.factory.transactionType.PlaceOrder });
@@ -705,7 +706,7 @@ placeOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
  */
 placeOrderTransactionsRouter.get('/:transactionId/actions', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const actions = yield actionRepo.searchByPurpose({
             purpose: {
                 typeOf: cinerino.factory.transactionType.PlaceOrder,
@@ -724,7 +725,7 @@ placeOrderTransactionsRouter.get('/:transactionId/actions', permitScopes_1.defau
  */
 placeOrderTransactionsRouter.get('/report', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const searchConditions = {
             limit: undefined,
             page: undefined,

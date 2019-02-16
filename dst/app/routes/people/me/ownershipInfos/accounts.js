@@ -14,6 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
+const mongoose = require("mongoose");
 const permitScopes_1 = require("../../../../middlewares/permitScopes");
 const validator_1 = require("../../../../middlewares/validator");
 const redis = require("../../../../../redis");
@@ -35,7 +36,7 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['aws.cognito.signin
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
+        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const accountNumberRepo = new cinerino.repository.AccountNumber(redis.getClient());
         const accountService = new cinerino.pecorinoapi.service.Account({
             endpoint: process.env.PECORINO_ENDPOINT,
@@ -63,7 +64,7 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['aws.cognito.signin
  */
 accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
+        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const accountService = new cinerino.pecorinoapi.service.Account({
             endpoint: process.env.PECORINO_ENDPOINT,
             auth: pecorinoAuthClient
@@ -90,7 +91,7 @@ accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(
  */
 accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
+        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const accountService = new cinerino.pecorinoapi.service.Account({
             endpoint: process.env.PECORINO_ENDPOINT,
             auth: pecorinoAuthClient

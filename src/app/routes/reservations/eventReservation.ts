@@ -3,6 +3,7 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+import * as mongoose from 'mongoose';
 
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
@@ -66,8 +67,8 @@ eventReservationRouter.post(
                     token: req.body.token,
                     secret: <string>process.env.TOKEN_SECRET,
                     issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
-                })({ action: new cinerino.repository.Action(cinerino.mongoose.connection) });
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
+                })({ action: new cinerino.repository.Action(mongoose.connection) });
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const ownershipInfo = await ownershipInfoRepo.search<cinerino.factory.chevre.reservationType.EventReservation>({
                 typeOfGood: {
                     typeOf: cinerino.factory.chevre.reservationType.EventReservation,

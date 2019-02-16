@@ -16,6 +16,7 @@ const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
+const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
@@ -95,7 +96,7 @@ movieTheaterRouter.post('', permitScopes_1.default(['admin', 'organizations']), 
             areaServed: req.body.areaServed,
             makesOffer: req.body.makesOffer
         };
-        const organizationRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
+        const organizationRepo = new cinerino.repository.Seller(mongoose.connection);
         const movieTheater = yield organizationRepo.save({ attributes: attributes });
         res.status(http_status_1.CREATED)
             .json(movieTheater);
@@ -106,7 +107,7 @@ movieTheaterRouter.post('', permitScopes_1.default(['admin', 'organizations']), 
 }));
 movieTheaterRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const searchCoinditions = {
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
@@ -125,7 +126,7 @@ movieTheaterRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admi
 }));
 movieTheaterRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const movieTheater = yield sellerRepo.findById({
             id: req.params.id
         });
@@ -206,7 +207,7 @@ movieTheaterRouter.put('/:id', permitScopes_1.default(['admin', 'organizations']
             areaServed: req.body.areaServed,
             makesOffer: req.body.makesOffer
         };
-        const organizationRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
+        const organizationRepo = new cinerino.repository.Seller(mongoose.connection);
         yield organizationRepo.save({ id: req.params.id, attributes: attributes });
         res.status(http_status_1.NO_CONTENT)
             .end();
@@ -217,7 +218,7 @@ movieTheaterRouter.put('/:id', permitScopes_1.default(['admin', 'organizations']
 }));
 movieTheaterRouter.delete('/:id', permitScopes_1.default(['admin', 'organizations']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const sellerRepo = new cinerino.repository.Seller(cinerino.mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         yield sellerRepo.deleteById({
             id: req.params.id
         });

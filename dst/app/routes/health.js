@@ -11,8 +11,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * ヘルスチェックルーター
  */
-const cinerino = require("@cinerino/domain");
 const express = require("express");
+const mongoose = require("mongoose");
 const healthRouter = express.Router();
 const createDebug = require("debug");
 const http_status_1 = require("http-status");
@@ -22,7 +22,7 @@ const debug = createDebug('cinerino-api:router');
 const TIMEOUT_GIVE_UP_CHECKING_IN_MILLISECONDS = 3000;
 healthRouter.get('', (_, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield cinerino.mongoose.connection.db.admin()
+        yield mongoose.connection.db.admin()
             .ping();
         yield new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             let givenUpChecking = false;

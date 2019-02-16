@@ -4,6 +4,7 @@
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import { CREATED } from 'http-status';
+import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -33,14 +34,14 @@ paymentRouter.post(
                 agent: req.agent,
                 object: req.body
             })({
-                action: new cinerino.repository.Action(cinerino.mongoose.connection),
-                event: new cinerino.repository.Event(cinerino.mongoose.connection),
-                seller: new cinerino.repository.Seller(cinerino.mongoose.connection),
+                action: new cinerino.repository.Action(mongoose.connection),
+                event: new cinerino.repository.Event(mongoose.connection),
+                seller: new cinerino.repository.Seller(mongoose.connection),
                 movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
                     endpoint: <string>process.env.MVTK_RESERVE_ENDPOINT,
                     auth: mvtkReserveAuthClient
                 }),
-                paymentMethod: new cinerino.repository.PaymentMethod(cinerino.mongoose.connection)
+                paymentMethod: new cinerino.repository.PaymentMethod(mongoose.connection)
             });
             res.status(CREATED)
                 .json(action);

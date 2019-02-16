@@ -3,12 +3,13 @@
  */
 import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
+import * as mongoose from 'mongoose';
 
 const debug = createDebug('cinerino-api:connectMongo');
 const PING_INTERVAL = 10000;
 const MONGOLAB_URI = <string>process.env.MONGOLAB_URI;
 
-const connectOptions: cinerino.mongoose.ConnectionOptions = {
+const connectOptions: mongoose.ConnectionOptions = {
     autoReconnect: true,
     keepAlive: true,
     connectTimeoutMS: 30000,
@@ -21,13 +22,13 @@ const connectOptions: cinerino.mongoose.ConnectionOptions = {
 export async function connectMongo(params: {
     defaultConnection: boolean;
 }) {
-    let connection: cinerino.mongoose.Connection;
+    let connection: mongoose.Connection;
     if (params === undefined || params.defaultConnection) {
         // コネクション確立
-        await cinerino.mongoose.connect(MONGOLAB_URI, connectOptions);
-        connection = cinerino.mongoose.connection;
+        await mongoose.connect(MONGOLAB_URI, connectOptions);
+        connection = mongoose.connection;
     } else {
-        connection = cinerino.mongoose.createConnection(MONGOLAB_URI, connectOptions);
+        connection = mongoose.createConnection(MONGOLAB_URI, connectOptions);
     }
 
     // 定期的にコネクションチェック

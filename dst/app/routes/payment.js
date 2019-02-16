@@ -14,6 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
+const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -36,14 +37,14 @@ paymentRouter.post('/movieTicket/actions/check', permitScopes_1.default(['aws.co
             agent: req.agent,
             object: req.body
         })({
-            action: new cinerino.repository.Action(cinerino.mongoose.connection),
-            event: new cinerino.repository.Event(cinerino.mongoose.connection),
-            seller: new cinerino.repository.Seller(cinerino.mongoose.connection),
+            action: new cinerino.repository.Action(mongoose.connection),
+            event: new cinerino.repository.Event(mongoose.connection),
+            seller: new cinerino.repository.Seller(mongoose.connection),
             movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
                 endpoint: process.env.MVTK_RESERVE_ENDPOINT,
                 auth: mvtkReserveAuthClient
             }),
-            paymentMethod: new cinerino.repository.PaymentMethod(cinerino.mongoose.connection)
+            paymentMethod: new cinerino.repository.PaymentMethod(mongoose.connection)
         });
         res.status(http_status_1.CREATED)
             .json(action);

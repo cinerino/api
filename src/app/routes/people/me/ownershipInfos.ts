@@ -4,6 +4,7 @@
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import * as moment from 'moment';
+import * as mongoose from 'mongoose';
 
 import permitScopes from '../../../middlewares/permitScopes';
 import validator from '../../../middlewares/validator';
@@ -62,7 +63,7 @@ ownershipInfosRouter.get(
                     .toDate() : undefined,
                 typeOfGood: typeOfGood
             };
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const totalCount = await ownershipInfoRepo.count(searchConditions);
             switch (typeOfGood.typeOf) {
                 case cinerino.factory.ownershipInfo.AccountGoodType.Account:
@@ -112,7 +113,7 @@ ownershipInfosRouter.post(
     async (req, res, next) => {
         try {
             const codeRepo = new cinerino.repository.Code(redis.getClient());
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const ownershipInfo = await ownershipInfoRepo.findById({ id: req.params.id });
             if (ownershipInfo.ownedBy.id !== req.user.sub) {
                 throw new cinerino.factory.errors.Unauthorized();

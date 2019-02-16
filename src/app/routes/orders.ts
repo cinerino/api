@@ -6,6 +6,7 @@ import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { body } from 'express-validator/check';
 import { NO_CONTENT } from 'http-status';
+import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -40,11 +41,11 @@ ordersRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
-            const invoiceRepo = new cinerino.repository.Invoice(cinerino.mongoose.connection);
-            const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
-            const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
-            const transactionRepo = new cinerino.repository.Transaction(cinerino.mongoose.connection);
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+            const taskRepo = new cinerino.repository.Task(mongoose.connection);
+            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
             const orderNumber = <string>req.body.orderNumber;
 
@@ -104,10 +105,10 @@ ordersRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
-            const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
-            const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+            const taskRepo = new cinerino.repository.Task(mongoose.connection);
 
             const orderNumber = <string>req.params.orderNumber;
 
@@ -167,7 +168,7 @@ ordersRouter.post(
             if (customer.email !== undefined && customer.telephone !== undefined) {
                 throw new cinerino.factory.errors.Argument('customer');
             }
-            const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const order = await orderRepo.findByConfirmationNumber({
                 confirmationNumber: req.body.confirmationNumber,
                 customer: customer
@@ -198,8 +199,8 @@ ordersRouter.post(
             if (customer.email !== undefined && customer.telephone !== undefined) {
                 throw new cinerino.factory.errors.Argument('customer');
             }
-            const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
-            const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const codeRepo = new cinerino.repository.Code(redis.getClient());
 
             const order = await orderRepo.findByOrderNumber({ orderNumber: req.params.orderNumber });
@@ -248,10 +249,12 @@ ordersRouter.post(
                     .filter((o) => o.typeOfGood.typeOf === offer.itemOffered.typeOf)
                     .find((o) => (<EventReservationGoodType>o.typeOfGood).id === offer.itemOffered.id);
                 if (ownershipInfo !== undefined) {
-                    offer.itemOffered.reservedTicket.ticketToken = await codeRepo.publish({
-                        data: ownershipInfo,
-                        expiresInSeconds: CODE_EXPIRES_IN_SECONDS
-                    });
+                    if (offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
+                        offer.itemOffered.reservedTicket.ticketToken = await codeRepo.publish({
+                            data: ownershipInfo,
+                            expiresInSeconds: CODE_EXPIRES_IN_SECONDS
+                        });
+                    }
                 }
 
                 return offer;
@@ -284,7 +287,7 @@ ordersRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const actionRepo = new cinerino.repository.Action(cinerino.mongoose.connection);
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const actions = await actionRepo.searchByOrderNumber({
                 orderNumber: req.params.orderNumber,
                 sort: req.query.sort
@@ -338,7 +341,7 @@ ordersRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const orderRepo = new cinerino.repository.Order(cinerino.mongoose.connection);
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const searchConditions: cinerino.factory.order.ISearchConditions = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers

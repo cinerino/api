@@ -4,6 +4,7 @@
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import { CREATED, NO_CONTENT } from 'http-status';
+import * as mongoose from 'mongoose';
 
 import permitScopes from '../../../../middlewares/permitScopes';
 import validator from '../../../../middlewares/validator';
@@ -33,7 +34,7 @@ accountsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const accountNumberRepo = new cinerino.repository.AccountNumber(redis.getClient());
             const accountService = new cinerino.pecorinoapi.service.Account({
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
@@ -65,7 +66,7 @@ accountsRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const accountService = new cinerino.pecorinoapi.service.Account({
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
@@ -96,7 +97,7 @@ accountsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(cinerino.mongoose.connection);
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const accountService = new cinerino.pecorinoapi.service.Account({
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
