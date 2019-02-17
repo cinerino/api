@@ -44,7 +44,6 @@
     "@types/sinon": "^4.3.3",
     "@types/supertest": "^2.0.7",
     "@types/winston": "^2.4.4",
-    "aglio": "^2.3.0",
     "clear-require": "^2.0.0",
     "cpx": "^1.5.0",
     "glob": "^7.1.3",
