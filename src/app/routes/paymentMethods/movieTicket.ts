@@ -23,8 +23,7 @@ movieTicketPaymentMethodsRouter.get(
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-                sort: (req.query.sort !== undefined) ? req.query.sort : { _id: cinerino.factory.sortType.Ascending }
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
             const paymentMethods = await paymentMethodRepo.searchMovieTickets(searchCoinditions);
             const totalCount = await paymentMethodRepo.countMovieTickets(searchCoinditions);

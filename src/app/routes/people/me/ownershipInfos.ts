@@ -55,7 +55,7 @@ ownershipInfosRouter.get(
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (query.limit !== undefined) ? Math.min(query.limit, 100) : 100,
                 page: (query.page !== undefined) ? Math.max(query.page, 1) : 1,
-                sort: (query.sort !== undefined) ? query.sort : { ownedFrom: cinerino.factory.sortType.Descending },
+                sort: query.sort,
                 ownedBy: { id: req.user.sub },
                 ownedFrom: (query.ownedFrom !== undefined) ? moment(query.ownedFrom)
                     .toDate() : undefined,

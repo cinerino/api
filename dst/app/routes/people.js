@@ -13,7 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-// import { NO_CONTENT } from 'http-status';
+const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
@@ -41,6 +41,7 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
+const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 const peopleRouter = express_1.Router();
 peopleRouter.use(authentication_1.default);
 /**
@@ -50,7 +51,7 @@ peopleRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (re
     try {
         const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
         const people = yield personRepo.search({
-            userPooId: process.env.COGNITO_USER_POOL_ID,
+            userPooId: USER_POOL_ID,
             id: req.query.id,
             username: req.query.username,
             email: req.query.email,
@@ -72,7 +73,7 @@ peopleRouter.get('/:id', permitScopes_1.default(['admin']), validator_1.default,
     try {
         const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
         const person = yield personRepo.findById({
-            userPooId: process.env.COGNITO_USER_POOL_ID,
+            userPooId: USER_POOL_ID,
             userId: req.params.id
         });
         res.json(person);
@@ -95,7 +96,7 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['admin']), (_1, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (query.limit !== undefined) ? Math.min(query.limit, 100) : 100,
             page: (query.page !== undefined) ? Math.max(query.page, 1) : 1,
-            sort: (query.sort !== undefined) ? query.sort : { ownedFrom: cinerino.factory.sortType.Descending },
+            sort: query.sort,
             ownedBy: { id: req.params.id },
             ownedFrom: (query.ownedFrom !== undefined) ? moment(query.ownedFrom)
                 .toDate() : undefined,
@@ -151,38 +152,57 @@ peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['adm
 /**
  * プロフィール検索
  */
-// peopleRouter.get(
-//     '/:id/profile',
-//     permitScopes(['admin']),
-//     async (req, res, next) => {
-//         try {
-//             const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
-//             const profile = await personRepo.getUserAttributesByAccessToken(req.accessToken);
-//             res.json(profile);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
+peopleRouter.get('/:id/profile', permitScopes_1.default(['admin']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+        const person = yield personRepo.findById({
+            userPooId: USER_POOL_ID,
+            userId: req.params.id
+        });
+        if (person.memberOf === undefined) {
+            throw new cinerino.factory.errors.NotFound('Person.memberOf');
+        }
+        const username = person.memberOf.membershipNumber;
+        if (username === undefined) {
+            throw new cinerino.factory.errors.NotFound('Person.memberOf.membershipNumber');
+        }
+        const profile = yield personRepo.getUserAttributes({
+            userPooId: USER_POOL_ID,
+            username: username
+        });
+        res.json(profile);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 /**
  * プロフィール更新
  */
-// peopleRouter.patch(
-//     '/:id/profile',
-//     permitScopes(['admin']),
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
-//             await personRepo.updateProfileByAccessToken({
-//                 accessToken: req.accessToken,
-//                 profile: req.body
-//             });
-//             res.status(NO_CONTENT)
-//                 .end();
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
+peopleRouter.patch('/:id/profile', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+        const person = yield personRepo.findById({
+            userPooId: USER_POOL_ID,
+            userId: req.params.id
+        });
+        if (person.memberOf === undefined) {
+            throw new cinerino.factory.errors.NotFound('Person.memberOf');
+        }
+        const username = person.memberOf.membershipNumber;
+        if (username === undefined) {
+            throw new cinerino.factory.errors.NotFound('Person.memberOf.membershipNumber');
+        }
+        yield personRepo.updateProfile({
+            userPooId: USER_POOL_ID,
+            username: username,
+            profile: req.body
+        });
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 exports.default = peopleRouter;

@@ -24,7 +24,7 @@ movieTicketPaymentMethodsRouter.get('', permitScopes_1.default(['admin']), valid
         const paymentMethodRepo = new cinerino.repository.PaymentMethod(mongoose.connection);
         const searchCoinditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { _id: cinerino.factory.sortType.Ascending } });
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         const paymentMethods = yield paymentMethodRepo.searchMovieTickets(searchCoinditions);
         const totalCount = yield paymentMethodRepo.countMovieTickets(searchCoinditions);
         res.set('X-Total-Count', totalCount.toString());

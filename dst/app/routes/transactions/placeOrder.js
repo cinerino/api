@@ -691,7 +691,7 @@ placeOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: cinerino.factory.sortType.Ascending }, typeOf: cinerino.factory.transactionType.PlaceOrder });
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, typeOf: cinerino.factory.transactionType.PlaceOrder });
         const transactions = yield transactionRepo.search(searchConditions);
         const totalCount = yield transactionRepo.count(searchConditions);
         res.set('X-Total-Count', totalCount.toString());
@@ -729,7 +729,6 @@ placeOrderTransactionsRouter.get('/report', permitScopes_1.default(['admin']), v
         const searchConditions = {
             limit: undefined,
             page: undefined,
-            sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: cinerino.factory.sortType.Ascending },
             typeOf: cinerino.factory.transactionType.PlaceOrder,
             ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
             statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,

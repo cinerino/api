@@ -811,7 +811,6 @@ placeOrderTransactionsRouter.get(
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-                sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: cinerino.factory.sortType.Ascending },
                 typeOf: cinerino.factory.transactionType.PlaceOrder
             };
             const transactions = await transactionRepo.search(searchConditions);
@@ -861,7 +860,6 @@ placeOrderTransactionsRouter.get(
             const searchConditions: cinerino.factory.transaction.ISearchConditions<cinerino.factory.transactionType.PlaceOrder> = {
                 limit: undefined,
                 page: undefined,
-                sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: cinerino.factory.sortType.Ascending },
                 typeOf: cinerino.factory.transactionType.PlaceOrder,
                 ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
                 statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,

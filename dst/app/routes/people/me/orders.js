@@ -41,7 +41,7 @@ ordersRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']), 
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: cinerino.factory.sortType.Descending }, seller: req.query.seller, 
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, 
             // customer条件を強制的に絞る
             customer: {
                 typeOf: cinerino.factory.personType.Person,
