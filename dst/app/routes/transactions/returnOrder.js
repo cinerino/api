@@ -29,6 +29,9 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 });
 const returnOrderTransactionsRouter = express_1.Router();
 returnOrderTransactionsRouter.use(authentication_1.default);
+/**
+ * 正規表現をエスケープする
+ */
 function escapeRegExp(params) {
     return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
 }
