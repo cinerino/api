@@ -23,9 +23,16 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 const returnOrderTransactionsRouter = Router();
 returnOrderTransactionsRouter.use(authentication);
 
+/**
+ * 正規表現をエスケープする
+ */
+function escapeRegExp(params: string) {
+    return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
+}
+
 returnOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['admin', 'transactions']),
+    permitScopes(['admin', 'aws.cognito.signin.user.admin', 'transactions']),
     ...[
         body('expires')
             .not()
@@ -66,9 +73,17 @@ returnOrderTransactionsRouter.post(
                     throw new cinerino.factory.errors.ArgumentNull('Order Customer', 'Order customer info required');
                 }
 
+                // 管理者でない場合は、個人情報完全一致で承認
                 const orders = await orderRepo.search({
                     orderNumbers: [returnableOrder.orderNumber],
-                    customer: returnableOrder.customer
+                    customer: {
+                        email: (returnableOrderCustomer.email !== undefined)
+                            ? `^${escapeRegExp(returnableOrderCustomer.email)}$`
+                            : undefined,
+                        telephone: (returnableOrderCustomer.telephone !== undefined)
+                            ? `^${escapeRegExp(returnableOrderCustomer.telephone)}$`
+                            : undefined
+                    }
                 });
                 order = orders.shift();
                 if (order === undefined) {

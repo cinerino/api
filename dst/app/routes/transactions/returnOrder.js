@@ -29,7 +29,10 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 });
 const returnOrderTransactionsRouter = express_1.Router();
 returnOrderTransactionsRouter.use(authentication_1.default);
-returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'transactions']), ...[
+function escapeRegExp(params) {
+    return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
+}
+returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'aws.cognito.signin.user.admin', 'transactions']), ...[
     check_1.body('expires')
         .not()
         .isEmpty()
@@ -65,9 +68,17 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 't
             if (returnableOrderCustomer.email === undefined && returnableOrderCustomer.telephone === undefined) {
                 throw new cinerino.factory.errors.ArgumentNull('Order Customer', 'Order customer info required');
             }
+            // 管理者でない場合は、個人情報完全一致で承認
             const orders = yield orderRepo.search({
                 orderNumbers: [returnableOrder.orderNumber],
-                customer: returnableOrder.customer
+                customer: {
+                    email: (returnableOrderCustomer.email !== undefined)
+                        ? `^${escapeRegExp(returnableOrderCustomer.email)}$`
+                        : undefined,
+                    telephone: (returnableOrderCustomer.telephone !== undefined)
+                        ? `^${escapeRegExp(returnableOrderCustomer.telephone)}$`
+                        : undefined
+                }
             });
             order = orders.shift();
             if (order === undefined) {
