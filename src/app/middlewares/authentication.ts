@@ -25,14 +25,28 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                     {
                         name: 'clientId',
                         value: user.client_id
+                    },
+                    {
+                        name: 'hostname',
+                        value: req.hostname
                     }
                 ];
+
+                // リクエストユーザーの属性を識別子に追加
+                try {
+                    identifier.push(...Object.keys(user)
+                        .map((key) => {
+                            return {
+                                name: key,
+                                value: (<any>user)[key].toString()
+                            };
+                        }));
+                } catch (error) {
+                    // no op
+                }
+
                 let programMembership: cinerino.factory.programMembership.IProgramMembership | undefined;
                 if (user.username !== undefined) {
-                    identifier.push({
-                        name: 'username',
-                        value: user.username
-                    });
                     programMembership = {
                         typeOf: <cinerino.factory.programMembership.ProgramMembershipType>'ProgramMembership',
                         membershipNumber: user.username,

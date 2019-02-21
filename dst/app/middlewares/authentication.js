@@ -31,14 +31,27 @@ exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* 
                     {
                         name: 'clientId',
                         value: user.client_id
+                    },
+                    {
+                        name: 'hostname',
+                        value: req.hostname
                     }
                 ];
+                // リクエストユーザーの属性を識別子に追加
+                try {
+                    identifier.push(...Object.keys(user)
+                        .map((key) => {
+                        return {
+                            name: key,
+                            value: user[key].toString()
+                        };
+                    }));
+                }
+                catch (error) {
+                    // no op
+                }
                 let programMembership;
                 if (user.username !== undefined) {
-                    identifier.push({
-                        name: 'username',
-                        value: user.username
-                    });
                     programMembership = {
                         typeOf: 'ProgramMembership',
                         membershipNumber: user.username,
