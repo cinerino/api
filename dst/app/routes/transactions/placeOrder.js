@@ -114,6 +114,28 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito
                 secret: process.env.WAITER_SECRET
             };
         }
+        /**
+         * WAITER許可証の有効性チェック
+         */
+        function validatePassport(params) {
+            // 許可証発行者確認
+            const validIssuer = params.passport.iss === process.env.WAITER_PASSPORT_ISSUER;
+            // スコープのフォーマットは、Transaction:PlaceOrder:${sellerId}
+            const explodedScopeStrings = params.passport.scope.split(':');
+            const validScope = (explodedScopeStrings[0] === 'Transaction' && // スコープ接頭辞確認
+                explodedScopeStrings[1] === cinerino.factory.transactionType.PlaceOrder && // スコープ接頭辞確認
+                // tslint:disable-next-line:no-magic-numbers
+                explodedScopeStrings[2] === req.body.seller.id // 販売者識別子確認
+            );
+            // クライアントの有効性
+            let validClient = true;
+            if (req.user.client_id !== undefined) {
+                if (Array.isArray(params.passport.aud) && params.passport.aud.indexOf(req.user.client_id) < 0) {
+                    validClient = false;
+                }
+            }
+            return validIssuer && validScope && validClient;
+        }
         const transaction = yield cinerino.service.transaction.placeOrderInProgress.start({
             expires: moment(req.body.expires)
                 .toDate(),
@@ -125,7 +147,8 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito
             object: {
                 clientUser: req.user,
                 passport: passport
-            }
+            },
+            passportValidator: validatePassport
         })({
             seller: new cinerino.repository.Seller(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
