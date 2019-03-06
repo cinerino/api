@@ -109,6 +109,7 @@ ordersRouter.post(
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
+            const registerActionInProgressRepo = new cinerino.repository.action.RegisterProgramMembershipInProgress(redis.getClient());
 
             const orderNumber = <string>req.params.orderNumber;
 
@@ -133,6 +134,7 @@ ordersRouter.post(
                     action: actionRepo,
                     order: orderRepo,
                     ownershipInfo: ownershipInfoRepo,
+                    registerActionInProgress: registerActionInProgressRepo,
                     task: taskRepo
                 });
             }

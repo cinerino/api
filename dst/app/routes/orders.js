@@ -97,6 +97,7 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['admin']), va
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
+        const registerActionInProgressRepo = new cinerino.repository.action.RegisterProgramMembershipInProgress(redis.getClient());
         const orderNumber = req.params.orderNumber;
         // 注文検索
         const order = yield orderRepo.findByOrderNumber({
@@ -117,6 +118,7 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['admin']), va
                 action: actionRepo,
                 order: orderRepo,
                 ownershipInfo: ownershipInfoRepo,
+                registerActionInProgress: registerActionInProgressRepo,
                 task: taskRepo
             });
         }
