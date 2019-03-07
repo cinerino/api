@@ -290,7 +290,14 @@ placeOrderTransactionsRouter.put(
             })({
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
-            res.json(contact);
+
+            // Cinemasunshine対応
+            if (process.env.CUSTOMER_TELEPHONE_JP_FORMAT_ACCEPTED === '1') {
+                res.status(CREATED)
+                    .json(contact);
+            } else {
+                res.json(contact);
+            }
         } catch (error) {
             next(error);
         }
