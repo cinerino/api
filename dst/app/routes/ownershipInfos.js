@@ -63,4 +63,54 @@ ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['adm
         next(error);
     }
 }));
+/**
+ * Cinemasunshine対応
+ * @deprecated
+ */
+ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.default(['aws.cognito.signin.user.admin']), (req, __, next) => {
+    req.checkQuery('fromDate')
+        .notEmpty()
+        .isISO8601()
+        .withMessage('fromDate must be ISO8601 timestamp');
+    req.checkQuery('toDate')
+        .notEmpty()
+        .isISO8601()
+        .withMessage('toDate must be ISO8601 timestamp');
+    next();
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const fromDate = req.query.fromDate;
+        const toDate = req.query.toDate;
+        const theaterIds = req.query.theaterIds;
+        const searchConditions = {
+            createdAtFrom: new Date(fromDate),
+            createdAtTo: new Date(toDate),
+            theaterIds: theaterIds
+        };
+        const repository = new cinerino.repository.OwnershipInfo(mongoose.connection);
+        const andConditions = [
+            { 'typeOfGood.typeOf': 'ProgramMembership' }
+        ];
+        andConditions.push({
+            createdAt: {
+                $lte: searchConditions.createdAtTo,
+                $gte: searchConditions.createdAtFrom
+            }
+        });
+        if (Array.isArray(searchConditions.theaterIds)) {
+            andConditions.push({
+                'acquiredFrom.id': {
+                    $exists: true,
+                    $in: searchConditions.theaterIds
+                }
+            });
+        }
+        const count = yield repository.ownershipInfoModel.countDocuments({ $and: andConditions })
+            .exec();
+        res.json({ count });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 exports.default = ownershipInfosRouter;

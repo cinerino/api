@@ -5,6 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { body } from 'express-validator/check';
+import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
@@ -25,6 +26,51 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 });
 const ordersRouter = Router();
 ordersRouter.use(authentication);
+
+/**
+ * 確認番号と電話番号で注文照会
+ */
+ordersRouter.post(
+    '/findByOrderInquiryKey',
+    permitScopes(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']),
+    ...[
+        body('theaterCode')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('confirmationNumber')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('telephone')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            const phoneUtil = PhoneNumberUtil.getInstance();
+            const phoneNumber = phoneUtil.parse(<string>req.body.telephone, 'JP');
+            if (!phoneUtil.isValidNumber(phoneNumber)) {
+                next(new cinerino.factory.errors.Argument('telephone', 'Invalid phone number format'));
+
+                return;
+            }
+
+            const key = {
+                theaterCode: <string>req.body.theaterCode,
+                reservationNumber: Number(<string>req.body.confirmationNumber),
+                telephone: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
+            };
+            const repository = new cinerino.repository.Order(mongoose.connection);
+            const order = await repository.findByLocationBranchCodeAndReservationNumber(key);
+            res.json(order);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 
 /**
  * 注文作成

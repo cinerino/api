@@ -8,6 +8,14 @@ import { connectMongo } from '../../../connectMongo';
 export default async () => {
     const connection = await connectMongo({ defaultConnection: false });
 
+    const redisClient = cinerino.redis.createClient({
+        host: <string>process.env.REDIS_HOST,
+        // tslint:disable-next-line:no-magic-numbers
+        port: parseInt(<string>process.env.REDIS_PORT, 10),
+        password: <string>process.env.REDIS_KEY,
+        tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
+    });
+
     let count = 0;
 
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
@@ -27,7 +35,8 @@ export default async () => {
                     cinerino.factory.taskName.SendOrder
                 )({
                     taskRepo: taskRepo,
-                    connection: connection
+                    connection: connection,
+                    redisClient: redisClient
                 });
             } catch (error) {
                 console.error(error);

@@ -15,6 +15,7 @@ const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
+const google_libphonenumber_1 = require("google-libphonenumber");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
@@ -31,6 +32,43 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 });
 const ordersRouter = express_1.Router();
 ordersRouter.use(authentication_1.default);
+/**
+ * 確認番号と電話番号で注文照会
+ */
+ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']), ...[
+    check_1.body('theaterCode')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('confirmationNumber')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('telephone')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const phoneUtil = google_libphonenumber_1.PhoneNumberUtil.getInstance();
+        const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
+        if (!phoneUtil.isValidNumber(phoneNumber)) {
+            next(new cinerino.factory.errors.Argument('telephone', 'Invalid phone number format'));
+            return;
+        }
+        const key = {
+            theaterCode: req.body.theaterCode,
+            reservationNumber: Number(req.body.confirmationNumber),
+            telephone: phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.E164)
+        };
+        const repository = new cinerino.repository.Order(mongoose.connection);
+        const order = yield repository.findByLocationBranchCodeAndReservationNumber(key);
+        res.json(order);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 /**
  * 注文作成
  */

@@ -18,16 +18,16 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
     ? parseInt(process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 10)
     : 1;
 
-let holdSingletonProcess = false;
-setInterval(
-    async () => {
-        holdSingletonProcess = await singletonProcess.lock({ key: 'createImportScreeningEventsTask', ttl: 60 });
-    },
-    // tslint:disable-next-line:no-magic-numbers
-    10000
-);
-
 export default async () => {
+    let holdSingletonProcess = false;
+    setInterval(
+        async () => {
+            holdSingletonProcess = await singletonProcess.lock({ key: 'createImportScreeningEventsTask', ttl: 60 });
+        },
+        // tslint:disable-next-line:no-magic-numbers
+        10000
+    );
+
     const connection = await connectMongo({ defaultConnection: false });
 
     const job = new CronJob(

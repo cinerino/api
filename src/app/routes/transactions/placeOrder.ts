@@ -8,6 +8,7 @@ import * as createDebug from 'debug';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { body, query } from 'express-validator/check';
+import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as ioredis from 'ioredis';
 import * as moment from 'moment';
@@ -16,6 +17,8 @@ import * as mongoose from 'mongoose';
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
+
+import placeOrder4cinemasunshineRouter from './placeOrder4cinemasunshine';
 
 import * as redis from '../../../redis';
 
@@ -71,10 +74,32 @@ const rateLimit4transactionInProgress =
         // スコープ生成ロジックをカスタマイズ
         scopeGenerator: (req) => `placeOrderTransaction.${req.params.transactionId}`
     });
+
 placeOrderTransactionsRouter.use(authentication);
+
+// Cinemasunshine対応
+placeOrderTransactionsRouter.use(placeOrder4cinemasunshineRouter);
+
 placeOrderTransactionsRouter.post(
     '/start',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    // Cinemasunshine互換性維持のため
+    (req, _, next) => {
+        if (typeof req.body.sellerId === 'string') {
+            req.body.seller = {
+                typeOf: cinerino.factory.organizationType.MovieTheater,
+                id: req.body.sellerId
+            };
+        }
+
+        if (typeof req.body.passportToken === 'string') {
+            req.body.object = {
+                passport: { token: req.body.passportToken }
+            };
+        }
+
+        next();
+    },
     (req, _, next) => {
         req.checkBody('expires', 'invalid expires')
             .notEmpty()
@@ -97,6 +122,7 @@ placeOrderTransactionsRouter.post(
         next();
     },
     validator,
+    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             // WAITER有効設定であれば許可証をセット
@@ -115,22 +141,19 @@ placeOrderTransactionsRouter.post(
                 };
             }
 
-            const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
-                expires: moment(req.body.expires)
-                    .toDate(),
-                agent: {
-                    ...req.agent,
-                    identifier: [
-                        ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
-                        ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
-                    ]
-                },
-                seller: req.body.seller,
-                object: {
-                    clientUser: req.user,
-                    passport: passport
-                },
-                passportValidator: (params: { passport: cinerino.factory.waiter.passport.IPassport }) => {
+            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+
+            // パラメーターの形式をunix timestampからISO 8601フォーマットに変更したため、互換性を維持するように期限をセット
+            const expires = (/^\d+$/.test(<string>req.body.expires))
+                // tslint:disable-next-line:no-magic-numbers
+                ? moment.unix(Number(<string>req.body.expires))
+                    .toDate()
+                : moment(<string>req.body.expires)
+                    .toDate();
+
+            let passportValidator: cinerino.service.transaction.placeOrderInProgress.IPassportValidator =
+                (params: { passport: cinerino.factory.waiter.passport.IPassport }) => {
                     // 許可証発行者確認
                     const validIssuer = params.passport.iss === process.env.WAITER_PASSPORT_ISSUER;
 
@@ -152,10 +175,52 @@ placeOrderTransactionsRouter.post(
                     }
 
                     return validIssuer && validScope && validClient;
-                }
+                };
+
+            // Cinemasunshine対応として
+            if (process.env.USE_OLD_PASSPORT_VALIDATOR === '1') {
+                const seller = await sellerRepo.findById({ id: <string>req.body.sellerId });
+
+                passportValidator = (params: { passport: cinerino.factory.waiter.passport.IPassport }) => {
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    /* istanbul ignore next */
+                    if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
+                        throw new Error('WAITER_PASSPORT_ISSUER unset');
+                    }
+                    const issuers = process.env.WAITER_PASSPORT_ISSUER.split(',');
+                    const validIssuer = issuers.indexOf(params.passport.iss) >= 0;
+
+                    // スコープのフォーマットは、placeOrderTransaction.{sellerId}
+                    const explodedScopeStrings = params.passport.scope.split('.');
+                    const validScope = (
+                        // tslint:disable-next-line:no-magic-numbers
+                        explodedScopeStrings.length === 2 &&
+                        explodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
+                        explodedScopeStrings[1] === seller.identifier // 販売者識別子確認
+                    );
+
+                    return validIssuer && validScope;
+                };
+            }
+
+            const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
+                expires: expires,
+                agent: {
+                    ...req.agent,
+                    identifier: [
+                        ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
+                        ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
+                    ]
+                },
+                seller: req.body.seller,
+                object: {
+                    clientUser: req.user,
+                    passport: passport
+                },
+                passportValidator: passportValidator
             })({
-                seller: new cinerino.repository.Seller(mongoose.connection),
-                transaction: new cinerino.repository.Transaction(mongoose.connection)
+                seller: sellerRepo,
+                transaction: transactionRepo
             });
 
             // tslint:disable-next-line:no-string-literal
@@ -193,15 +258,33 @@ placeOrderTransactionsRouter.put(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
+            let formattedTelephone: string = <string>req.body.telephone;
+
+            // Cinemasunshine対応(SDKで自動的にtelephoneRegion=JPが指定されてくる)
+            if (typeof req.body.telephoneRegion === 'string'
+                || process.env.CUSTOMER_TELEPHONE_JP_FORMAT_ACCEPTED === '1') {
+                try {
+                    const phoneUtil = PhoneNumberUtil.getInstance();
+                    const phoneNumber = phoneUtil.parse(<string>req.body.telephone, 'JP');
+                    if (!phoneUtil.isValidNumber(phoneNumber)) {
+                        throw new cinerino.factory.errors.Argument('contact.telephone', 'Invalid phone number format.');
+                    }
+
+                    formattedTelephone = phoneUtil.format(phoneNumber, PhoneNumberFormat.E164);
+                } catch (error) {
+                    throw new cinerino.factory.errors.Argument('contact.telephone', error.message);
+                }
+            }
+
             const contact = await cinerino.service.transaction.placeOrderInProgress.setCustomerContact({
                 id: req.params.transactionId,
                 agent: { id: req.user.sub },
                 object: {
                     customerContact: {
-                        familyName: req.body.familyName,
-                        givenName: req.body.givenName,
-                        email: req.body.email,
-                        telephone: req.body.telephone
+                        familyName: <string>req.body.familyName,
+                        givenName: <string>req.body.givenName,
+                        email: <string>req.body.email,
+                        telephone: formattedTelephone
                     }
                 }
             })({
@@ -860,7 +943,7 @@ placeOrderTransactionsRouter.get(
             const actions = await actionRepo.searchByPurpose({
                 purpose: {
                     typeOf: cinerino.factory.transactionType.PlaceOrder,
-                    id: req.params.transactionId
+                    id: <string>req.params.transactionId
                 },
                 sort: req.query.sort
             });

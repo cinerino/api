@@ -20,7 +20,9 @@ export default async () => {
 
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 200;
+
     const taskRepo = new cinerino.repository.Task(connection);
+
     const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
         apiVersion: 'latest',
         region: 'ap-northeast-1',
@@ -28,6 +30,14 @@ export default async () => {
             accessKeyId: <string>process.env.AWS_ACCESS_KEY_ID,
             secretAccessKey: <string>process.env.AWS_SECRET_ACCESS_KEY
         })
+    });
+
+    const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
+        domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
+        clientId: <string>process.env.PECORINO_CLIENT_ID,
+        clientSecret: <string>process.env.PECORINO_CLIENT_SECRET,
+        scopes: [],
+        state: ''
     });
 
     setInterval(
@@ -45,9 +55,12 @@ export default async () => {
                     taskRepo: taskRepo,
                     connection: connection,
                     redisClient: redisClient,
-                    cognitoIdentityServiceProvider: cognitoIdentityServiceProvider
+                    cognitoIdentityServiceProvider: cognitoIdentityServiceProvider,
+                    pecorinoEndpoint: <string>process.env.PECORINO_ENDPOINT,
+                    pecorinoAuthClient: pecorinoAuthClient
                 });
             } catch (error) {
+                // tslint:disable-next-line:no-console
                 console.error(error);
             }
 

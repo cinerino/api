@@ -9,7 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 上映イベントインポートタスク作成
+ * パフォーマンス空席状況を更新する
+ * COA空席情報から空席状況を生成してredisに保管する
  */
 const cinerino = require("@cinerino/domain");
 const cron_1 = require("cron");
@@ -26,50 +27,47 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
     ? parseInt(process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 10)
     : 1;
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
+    // Cinemasunshineのみでこのタスクは使用
+    if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO !== '1') {
+        return;
+    }
     let holdSingletonProcess = false;
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
-        holdSingletonProcess = yield singletonProcess.lock({ key: 'createImportScreeningEventsTask', ttl: 60 });
+        // tslint:disable-next-line:no-magic-numbers
+        holdSingletonProcess = yield singletonProcess.lock({ key: 'updateScreeningEventAvailability', ttl: 60 });
     }), 
     // tslint:disable-next-line:no-magic-numbers
     10000);
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
-    const job = new cron_1.CronJob('*/5 * * * *', () => __awaiter(this, void 0, void 0, function* () {
+    const redisClient = cinerino.redis.createClient({
+        host: process.env.REDIS_HOST,
+        // tslint:disable-next-line:no-magic-numbers
+        port: parseInt(process.env.REDIS_PORT, 10),
+        password: process.env.REDIS_KEY,
+        tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
+    });
+    const job = new cron_1.CronJob('* * * * *', () => __awaiter(this, void 0, void 0, function* () {
         if (!holdSingletonProcess) {
             return;
         }
-        const taskRepo = new cinerino.repository.Task(connection);
+        const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redisClient);
         const sellerRepo = new cinerino.repository.Seller(connection);
-        // 全劇場組織を取得
+        // 販売者ごとにイベント在庫状況を更新
         const sellers = yield sellerRepo.search({});
-        const importFrom = moment()
+        const startFrom = moment()
             .toDate();
-        const importThrough = moment()
+        const startThrough = moment()
             .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
             .toDate();
-        const runsAt = new Date();
-        yield Promise.all(sellers.map((movieTheater) => __awaiter(this, void 0, void 0, function* () {
+        yield Promise.all(sellers.map((seller) => __awaiter(this, void 0, void 0, function* () {
             try {
-                if (Array.isArray(movieTheater.makesOffer)) {
-                    yield Promise.all(movieTheater.makesOffer.map((offer) => __awaiter(this, void 0, void 0, function* () {
-                        const taskAttributes = {
-                            name: cinerino.factory.taskName.ImportScreeningEvents,
-                            status: cinerino.factory.taskStatus.Ready,
-                            runsAt: runsAt,
-                            remainingNumberOfTries: 1,
-                            numberOfTried: 0,
-                            executionResults: [],
-                            data: {
-                                locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
-                                offeredThrough: offer.offeredThrough,
-                                importFrom: importFrom,
-                                importThrough: importThrough
-                            }
-                        };
-                        yield taskRepo.save(taskAttributes);
-                    })));
+                if (seller.location !== undefined && seller.location.branchCode !== undefined) {
+                    yield cinerino.service.offer.updateScreeningEventItemAvailability(seller.location.branchCode, startFrom, startThrough)({ itemAvailability: itemAvailabilityRepo });
+                    debug('item availability updated');
                 }
             }
             catch (error) {
+                // tslint:disable-next-line:no-console
                 console.error(error);
             }
         })));

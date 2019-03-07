@@ -3,106 +3,16 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
-// tslint:disable-next-line:no-submodule-imports
-import { body } from 'express-validator/check';
-import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
+type ICreditCardPaymentAccepted = cinerino.factory.seller.IPaymentAccepted<cinerino.factory.paymentMethodType.CreditCard>;
+
 const movieTheaterRouter = Router();
 movieTheaterRouter.use(authentication);
-
-/**
- * 劇場組織追加
- */
-movieTheaterRouter.post(
-    '',
-    permitScopes(['admin', 'organizations']),
-    ...[
-        body('name.ja')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('name.en')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('parentOrganization.typeOf')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('parentOrganization.name.ja')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('parentOrganization.name.en')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('location.typeOf')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('location.branchCode')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('location.name.ja')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('location.name.en')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('telephone')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('url')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
-            .isURL(),
-        body('paymentAccepted')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
-            .isArray(),
-        body('hasPOS')
-            .isArray(),
-        body('areaServed')
-            .isArray(),
-        body('makesOffer')
-            .isArray()
-    ],
-    validator,
-    async (req, res, next) => {
-        try {
-            const attributes: cinerino.factory.seller.IAttributes<cinerino.factory.organizationType.MovieTheater> = {
-                typeOf: cinerino.factory.organizationType.MovieTheater,
-                name: req.body.name,
-                parentOrganization: req.body.parentOrganization,
-                location: req.body.location,
-                telephone: req.body.telephone,
-                url: req.body.url,
-                paymentAccepted: req.body.paymentAccepted,
-                hasPOS: req.body.hasPOS,
-                areaServed: req.body.areaServed,
-                makesOffer: req.body.makesOffer
-            };
-            const organizationRepo = new cinerino.repository.Seller(mongoose.connection);
-            const movieTheater = await organizationRepo.save({ attributes: attributes });
-            res.status(CREATED)
-                .json(movieTheater);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
 
 movieTheaterRouter.get(
     '',
@@ -120,8 +30,53 @@ movieTheaterRouter.get(
             };
             const movieTheaters = await sellerRepo.search(searchCoinditions);
             const totalCount = await sellerRepo.count(searchCoinditions);
+
+            movieTheaters.forEach((movieTheater) => {
+                // 互換性維持のためgmoInfoをpaymentAcceptedから情報追加
+                if (Array.isArray(movieTheater.paymentAccepted)) {
+                    const creditCardPaymentAccepted = <ICreditCardPaymentAccepted>movieTheater.paymentAccepted.find((p) => {
+                        return p.paymentMethodType === cinerino.factory.paymentMethodType.CreditCard;
+                    });
+                    if (creditCardPaymentAccepted !== undefined) {
+                        (<any>movieTheater).gmoInfo = creditCardPaymentAccepted.gmoInfo;
+                    }
+                }
+            });
+
             res.set('X-Total-Count', totalCount.toString());
             res.json(movieTheaters);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+movieTheaterRouter.get(
+    '/:branchCode([0-9]{3})',
+    permitScopes(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+            const movieTheaters = await sellerRepo.search({
+                location: { branchCodes: [<string>req.params.branchCode] }
+            });
+            const movieTheater = movieTheaters.shift();
+            if (movieTheater === undefined) {
+                throw new cinerino.factory.errors.NotFound('Organization');
+            }
+
+            // 互換性維持のためgmoInfoをpaymentAcceptedから情報追加
+            if (Array.isArray(movieTheater.paymentAccepted)) {
+                const creditCardPaymentAccepted = <ICreditCardPaymentAccepted>movieTheater.paymentAccepted.find((p) => {
+                    return p.paymentMethodType === cinerino.factory.paymentMethodType.CreditCard;
+                });
+                if (creditCardPaymentAccepted !== undefined) {
+                    (<any>movieTheater).gmoInfo = creditCardPaymentAccepted.gmoInfo;
+                }
+            }
+
+            res.json(movieTheater);
         } catch (error) {
             next(error);
         }
@@ -139,110 +94,6 @@ movieTheaterRouter.get(
                 id: req.params.id
             });
             res.json(movieTheater);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-movieTheaterRouter.put(
-    '/:id',
-    permitScopes(['admin', 'organizations']),
-    ...[
-        body('name.ja')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('name.en')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('parentOrganization.typeOf')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('parentOrganization.name.ja')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('parentOrganization.name.en')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('location.typeOf')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('location.branchCode')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('location.name.ja')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('location.name.en')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('telephone')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
-        body('url')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
-            .isURL(),
-        body('paymentAccepted')
-            .not()
-            .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
-            .isArray(),
-        body('hasPOS')
-            .isArray(),
-        body('areaServed')
-            .isArray(),
-        body('makesOffer')
-            .isArray()
-    ],
-    validator,
-    async (req, res, next) => {
-        try {
-            const attributes: cinerino.factory.seller.IAttributes<cinerino.factory.organizationType.MovieTheater> = {
-                typeOf: cinerino.factory.organizationType.MovieTheater,
-                name: req.body.name,
-                parentOrganization: req.body.parentOrganization,
-                location: req.body.location,
-                telephone: req.body.telephone,
-                url: req.body.url,
-                paymentAccepted: req.body.paymentAccepted,
-                hasPOS: req.body.hasPOS,
-                areaServed: req.body.areaServed,
-                makesOffer: req.body.makesOffer
-            };
-            const organizationRepo = new cinerino.repository.Seller(mongoose.connection);
-            await organizationRepo.save({ id: req.params.id, attributes: attributes });
-            res.status(NO_CONTENT)
-                .end();
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-movieTheaterRouter.delete(
-    '/:id',
-    permitScopes(['admin', 'organizations']),
-    validator,
-    async (req, res, next) => {
-        try {
-            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-            await sellerRepo.deleteById({
-                id: req.params.id
-            });
-            res.status(NO_CONTENT)
-                .end();
         } catch (error) {
             next(error);
         }

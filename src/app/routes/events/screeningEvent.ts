@@ -7,8 +7,8 @@ import { Router } from 'express';
 import { query } from 'express-validator/check';
 import * as mongoose from 'mongoose';
 
-// import * as redis from '../../redis';
-import authentication from '../../middlewares/authentication';
+import * as redis from '../../../redis';
+
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
@@ -21,7 +21,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 });
 
 const screeningEventRouter = Router();
-screeningEventRouter.use(authentication);
 
 /**
  * イベント検索
@@ -75,14 +74,35 @@ screeningEventRouter.get(
     async (req, res, next) => {
         try {
             const eventRepo = new cinerino.repository.Event(mongoose.connection);
-            const searchCoinditions: cinerino.chevre.factory.event.screeningEvent.ISearchConditions = {
-                ...req.query,
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
-            };
-            const events = await eventRepo.searchScreeningEvents(searchCoinditions);
-            const totalCount = await eventRepo.countScreeningEvents(searchCoinditions);
+            let events: cinerino.factory.chevre.event.screeningEvent.IEvent[];
+            let totalCount: number;
+
+            // Cinemasunshine対応
+            if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
+                const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient());
+
+                const searchConditions: cinerino.factory.event.screeningEvent.ISearchConditions = {
+                    ...req.query,
+                    // tslint:disable-next-line:no-magic-numbers
+                    limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined,
+                    page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined
+                };
+                events = await cinerino.service.offer.searchScreeningEvents4cinemasunshine(searchConditions)({
+                    event: eventRepo,
+                    itemAvailability: itemAvailabilityRepo
+                });
+                totalCount = await eventRepo.countIndividualScreeningEvents(searchConditions);
+            } else {
+                const searchCoinditions: cinerino.chevre.factory.event.screeningEvent.ISearchConditions = {
+                    ...req.query,
+                    // tslint:disable-next-line:no-magic-numbers
+                    limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+                    page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
+                };
+                events = await eventRepo.searchScreeningEvents(searchCoinditions);
+                totalCount = await eventRepo.countScreeningEvents(searchCoinditions);
+            }
+
             res.set('X-Total-Count', totalCount.toString());
             res.json(events);
         } catch (error) {
@@ -101,7 +121,18 @@ screeningEventRouter.get(
     async (req, res, next) => {
         try {
             const eventRepo = new cinerino.repository.Event(mongoose.connection);
-            const event = await eventRepo.findById({ typeOf: cinerino.factory.chevre.eventType.ScreeningEvent, id: req.params.id });
+            let event: cinerino.factory.chevre.event.screeningEvent.IEvent;
+
+            // Cinemasunshine対応
+            if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
+                event = await cinerino.service.offer.findScreeningEventById4cinemasunshine(<string>req.params.id)({
+                    event: new cinerino.repository.Event(mongoose.connection),
+                    itemAvailability: new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient())
+                });
+            } else {
+                event = await eventRepo.findById({ typeOf: cinerino.factory.chevre.eventType.ScreeningEvent, id: req.params.id });
+            }
+
             res.json(event);
         } catch (error) {
             next(error);

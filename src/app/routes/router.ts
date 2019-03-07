@@ -3,6 +3,8 @@
  */
 import * as express from 'express';
 
+import accountsRouter from './accounts';
+import actionsRouter from './actions';
 import creativeWorksRouter from './creativeWorks';
 import eventsRouter from './events';
 import healthRouter from './health';
@@ -13,6 +15,8 @@ import paymentRouter from './payment';
 import paymentMethodsRouter from './paymentMethods';
 import peopleRouter from './people';
 import meRouter from './people/me';
+import placesRouter from './places';
+import programMembershipsRouter from './programMembership';
 import reservationsRouter from './reservations';
 import sellersRouter from './sellers';
 import tasksRouter from './tasks';
@@ -27,6 +31,8 @@ const router = express.Router();
 //   next()
 // })
 
+router.use('/accounts', accountsRouter);
+router.use('/actions', actionsRouter);
 router.use('/creativeWorks', creativeWorksRouter);
 router.use('/events', eventsRouter);
 router.use('/health', healthRouter);
@@ -37,6 +43,8 @@ router.use('/payment', paymentRouter);
 router.use('/paymentMethods', paymentMethodsRouter);
 router.use('/people/me', meRouter);
 router.use('/people', peopleRouter);
+router.use('/places', placesRouter);
+router.use('/programMemberships', programMembershipsRouter);
 router.use('/reservations', reservationsRouter);
 router.use('/sellers', sellersRouter);
 router.use('/tasks', tasksRouter);

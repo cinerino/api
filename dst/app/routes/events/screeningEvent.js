@@ -16,8 +16,7 @@ const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
 const mongoose = require("mongoose");
-// import * as redis from '../../redis';
-const authentication_1 = require("../../middlewares/authentication");
+const redis = require("../../../redis");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
@@ -28,7 +27,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 const screeningEventRouter = express_1.Router();
-screeningEventRouter.use(authentication_1.default);
 /**
  * イベント検索
  */
@@ -76,11 +74,27 @@ screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
-        const searchCoinditions = Object.assign({}, req.query, { 
-            // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const events = yield eventRepo.searchScreeningEvents(searchCoinditions);
-        const totalCount = yield eventRepo.countScreeningEvents(searchCoinditions);
+        let events;
+        let totalCount;
+        // Cinemasunshine対応
+        if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
+            const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient());
+            const searchConditions = Object.assign({}, req.query, { 
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined });
+            events = yield cinerino.service.offer.searchScreeningEvents4cinemasunshine(searchConditions)({
+                event: eventRepo,
+                itemAvailability: itemAvailabilityRepo
+            });
+            totalCount = yield eventRepo.countIndividualScreeningEvents(searchConditions);
+        }
+        else {
+            const searchCoinditions = Object.assign({}, req.query, { 
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
+            events = yield eventRepo.searchScreeningEvents(searchCoinditions);
+            totalCount = yield eventRepo.countScreeningEvents(searchCoinditions);
+        }
         res.set('X-Total-Count', totalCount.toString());
         res.json(events);
     }
@@ -94,7 +108,17 @@ screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
 screeningEventRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
-        const event = yield eventRepo.findById({ typeOf: cinerino.factory.chevre.eventType.ScreeningEvent, id: req.params.id });
+        let event;
+        // Cinemasunshine対応
+        if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
+            event = yield cinerino.service.offer.findScreeningEventById4cinemasunshine(req.params.id)({
+                event: new cinerino.repository.Event(mongoose.connection),
+                itemAvailability: new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient())
+            });
+        }
+        else {
+            event = yield eventRepo.findById({ typeOf: cinerino.factory.chevre.eventType.ScreeningEvent, id: req.params.id });
+        }
         res.json(event);
     }
     catch (error) {
