@@ -19,6 +19,10 @@ const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
+/**
+ * GMOメンバーIDにユーザーネームを使用するかどうか
+ */
+const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
 const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
     apiVersion: 'latest',
     region: 'ap-northeast-1',
@@ -142,7 +146,19 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['admin']), (_1, 
  */
 peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['admin']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const searchCardResults = yield cinerino.service.person.creditCard.find(req.params.id)();
+        let memberId = req.params.id;
+        if (USE_USERNAME_AS_GMO_MEMBER_ID) {
+            const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+            const person = yield personRepo.findById({
+                userPooId: USER_POOL_ID,
+                userId: req.params.id
+            });
+            if (person.memberOf === undefined) {
+                throw new cinerino.factory.errors.NotFound('Person');
+            }
+            memberId = person.memberOf.membershipNumber;
+        }
+        const searchCardResults = yield cinerino.service.person.creditCard.find(memberId)();
         res.json(searchCardResults);
     }
     catch (error) {

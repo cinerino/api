@@ -17,16 +17,19 @@ const express_1 = require("express");
 const http_status_1 = require("http-status");
 const permitScopes_1 = require("../../../../middlewares/permitScopes");
 const validator_1 = require("../../../../middlewares/validator");
+/**
+ * GMOメンバーIDにユーザーネームを使用するかどうか
+ */
+const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
 const creditCardsRouter = express_1.Router();
 const debug = createDebug('cinerino-api:router');
 /**
  * 会員クレジットカード追加
  */
-creditCardsRouter.post('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (__1, __2, next) => {
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+creditCardsRouter.post('', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const creditCard = yield cinerino.service.person.creditCard.save(req.user.sub, req.body)();
+        const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
+        const creditCard = yield cinerino.service.person.creditCard.save(memberId, req.body)();
         res.status(http_status_1.CREATED)
             .json(creditCard);
     }
@@ -39,7 +42,8 @@ creditCardsRouter.post('', permitScopes_1.default(['aws.cognito.signin.user.admi
  */
 creditCardsRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const searchCardResults = yield cinerino.service.person.creditCard.find(req.user.sub)();
+        const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
+        const searchCardResults = yield cinerino.service.person.creditCard.find(memberId)();
         debug('searchCardResults:', searchCardResults);
         res.json(searchCardResults);
     }
@@ -52,7 +56,8 @@ creditCardsRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin
  */
 creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield cinerino.service.person.creditCard.unsubscribe(req.user.sub, req.params.cardSeq)();
+        const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
+        yield cinerino.service.person.creditCard.unsubscribe(memberId, req.params.cardSeq)();
         res.status(http_status_1.NO_CONTENT)
             .end();
     }

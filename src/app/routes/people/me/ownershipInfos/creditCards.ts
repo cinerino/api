@@ -9,6 +9,11 @@ import { CREATED, NO_CONTENT } from 'http-status';
 import permitScopes from '../../../../middlewares/permitScopes';
 import validator from '../../../../middlewares/validator';
 
+/**
+ * GMOメンバーIDにユーザーネームを使用するかどうか
+ */
+const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
+
 const creditCardsRouter = Router();
 
 const debug = createDebug('cinerino-api:router');
@@ -19,13 +24,11 @@ const debug = createDebug('cinerino-api:router');
 creditCardsRouter.post(
     '',
     permitScopes(['aws.cognito.signin.user.admin']),
-    (__1, __2, next) => {
-        next();
-    },
     validator,
     async (req, res, next) => {
         try {
-            const creditCard = await cinerino.service.person.creditCard.save(req.user.sub, req.body)();
+            const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? <string>req.user.username : req.user.sub;
+            const creditCard = await cinerino.service.person.creditCard.save(memberId, req.body)();
             res.status(CREATED)
                 .json(creditCard);
         } catch (error) {
@@ -33,6 +36,7 @@ creditCardsRouter.post(
         }
     }
 );
+
 /**
  * 会員クレジットカード検索
  */
@@ -41,7 +45,8 @@ creditCardsRouter.get(
     permitScopes(['aws.cognito.signin.user.admin']),
     async (req, res, next) => {
         try {
-            const searchCardResults = await cinerino.service.person.creditCard.find(req.user.sub)();
+            const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? <string>req.user.username : req.user.sub;
+            const searchCardResults = await cinerino.service.person.creditCard.find(memberId)();
             debug('searchCardResults:', searchCardResults);
             res.json(searchCardResults);
         } catch (error) {
@@ -49,6 +54,7 @@ creditCardsRouter.get(
         }
     }
 );
+
 /**
  * 会員クレジットカード削除
  */
@@ -58,7 +64,8 @@ creditCardsRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await cinerino.service.person.creditCard.unsubscribe(req.user.sub, req.params.cardSeq)();
+            const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? <string>req.user.username : req.user.sub;
+            await cinerino.service.person.creditCard.unsubscribe(memberId, req.params.cardSeq)();
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {
@@ -66,4 +73,5 @@ creditCardsRouter.delete(
         }
     }
 );
+
 export default creditCardsRouter;

@@ -11,6 +11,11 @@ import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
+/**
+ * GMOメンバーIDにユーザーネームを使用するかどうか
+ */
+const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
+
 const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
     apiVersion: 'latest',
     region: 'ap-northeast-1',
@@ -160,7 +165,22 @@ peopleRouter.get(
     permitScopes(['admin']),
     async (req, res, next) => {
         try {
-            const searchCardResults = await cinerino.service.person.creditCard.find(req.params.id)();
+            let memberId = req.params.id;
+
+            if (USE_USERNAME_AS_GMO_MEMBER_ID) {
+                const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+                const person = await personRepo.findById({
+                    userPooId: USER_POOL_ID,
+                    userId: req.params.id
+                });
+                if (person.memberOf === undefined) {
+                    throw new cinerino.factory.errors.NotFound('Person');
+                }
+
+                memberId = <string>person.memberOf.membershipNumber;
+            }
+
+            const searchCardResults = await cinerino.service.person.creditCard.find(memberId)();
             res.json(searchCardResults);
         } catch (error) {
             next(error);
