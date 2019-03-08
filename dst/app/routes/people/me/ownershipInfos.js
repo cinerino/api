@@ -70,7 +70,7 @@ ownershipInfosRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
                     endpoint: process.env.PECORINO_ENDPOINT,
                     auth: pecorinoAuthClient
                 });
-                ownershipInfos = yield cinerino.service.account.search(Object.assign({}, searchConditions, { typeOfGood: typeOfGood }))({
+                ownershipInfos = yield cinerino.service.account.search(searchConditions)({
                     ownershipInfo: ownershipInfoRepo,
                     accountService: accountService
                 });
@@ -80,13 +80,14 @@ ownershipInfosRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
                     endpoint: process.env.CHEVRE_ENDPOINT,
                     auth: chevreAuthClient
                 });
-                ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(Object.assign({}, searchConditions, { typeOfGood: typeOfGood }))({
+                ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(searchConditions)({
                     ownershipInfo: ownershipInfoRepo,
                     reservationService: reservationService
                 });
                 break;
             default:
-                throw new cinerino.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
+                ownershipInfos = yield ownershipInfoRepo.search(searchConditions);
+            // throw new cinerino.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
         }
         res.set('X-Total-Count', totalCount.toString());
         res.json(ownershipInfos);

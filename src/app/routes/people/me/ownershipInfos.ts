@@ -64,34 +64,37 @@ ownershipInfosRouter.get(
                 typeOfGood: typeOfGood
             };
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+
             const totalCount = await ownershipInfoRepo.count(searchConditions);
+
             switch (typeOfGood.typeOf) {
                 case cinerino.factory.ownershipInfo.AccountGoodType.Account:
                     const accountService = new cinerino.pecorinoapi.service.Account({
                         endpoint: <string>process.env.PECORINO_ENDPOINT,
                         auth: pecorinoAuthClient
                     });
-                    ownershipInfos = await cinerino.service.account.search({ ...searchConditions, typeOfGood: typeOfGood })({
+                    ownershipInfos = await cinerino.service.account.search(searchConditions)({
                         ownershipInfo: ownershipInfoRepo,
                         accountService: accountService
                     });
                     break;
+
                 case cinerino.factory.chevre.reservationType.EventReservation:
                     const reservationService = new cinerino.chevre.service.Reservation({
                         endpoint: <string>process.env.CHEVRE_ENDPOINT,
                         auth: chevreAuthClient
                     });
-                    ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(
-                        { ...searchConditions, typeOfGood: typeOfGood }
-                    )({
+                    ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(searchConditions)({
                         ownershipInfo: ownershipInfoRepo,
                         reservationService: reservationService
                     });
                     break;
 
                 default:
-                    throw new cinerino.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
+                    ownershipInfos = await ownershipInfoRepo.search(searchConditions);
+                // throw new cinerino.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
             }
+
             res.set('X-Total-Count', totalCount.toString());
             res.json(ownershipInfos);
         } catch (error) {
