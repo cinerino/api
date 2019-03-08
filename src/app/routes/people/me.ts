@@ -16,11 +16,11 @@ const meRouter = Router();
 meRouter.use(authentication);
 meRouter.use(requireMember); // 自分のリソースへのアクセスなので、ログイン必須
 
-// Cinemasunshine対応
-meRouter.use(me4cinemasunshineRouter); // 自分のリソースへのアクセスなので、ログイン必須
-
 meRouter.use('/orders', ordersRouter);
 meRouter.use('/ownershipInfos', ownershipInfosRouter);
 meRouter.use('/profile', profileRouter);
+
+// Cinemasunshine対応(上記ルーターとの順番に注意)
+meRouter.use(me4cinemasunshineRouter); // 自分のリソースへのアクセスなので、ログイン必須
 
 export default meRouter;
