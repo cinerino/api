@@ -20,6 +20,7 @@ const google_libphonenumber_1 = require("google-libphonenumber");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
+const util = require("util");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
@@ -158,15 +159,16 @@ me4cinemasunshineRouter.post('/accounts', permitScopes_1.default(['aws.cognito.s
             accountService: accountService
         });
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+        const identifier = util.format('%s-%s-%s-%s', req.user.sub, cinerino.factory.pecorino.account.TypeOf.Account, account.accountType, account.accountNumber);
         // tslint:disable-next-line:max-line-length
         const ownershipInfo = {
             id: '',
             typeOf: 'OwnershipInfo',
             // 十分にユニーク
-            identifier: `${cinerino.factory.pecorino.account.TypeOf.Account}-${req.user.username}-${account.accountNumber}`,
+            identifier: identifier,
             typeOfGood: {
                 typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
-                accountType: cinerino.factory.accountType.Point,
+                accountType: account.accountType,
                 accountNumber: account.accountNumber
             },
             ownedBy: req.agent,

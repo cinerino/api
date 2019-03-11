@@ -10,6 +10,7 @@ import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { ACCEPTED, BAD_REQUEST, CREATED, FORBIDDEN, NO_CONTENT, NOT_FOUND, TOO_MANY_REQUESTS, UNAUTHORIZED } from 'http-status';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
+import * as util from 'util';
 
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
@@ -188,17 +189,26 @@ me4cinemasunshineRouter.post(
                 accountNumber: accountNumberRepo,
                 accountService: accountService
             });
+
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+
+            const identifier = util.format(
+                '%s-%s-%s-%s',
+                req.user.sub,
+                cinerino.factory.pecorino.account.TypeOf.Account,
+                account.accountType,
+                account.accountNumber
+            );
             // tslint:disable-next-line:max-line-length
             const ownershipInfo: cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.ownershipInfo.AccountGoodType.Account>>
                 = {
                 id: '',
                 typeOf: 'OwnershipInfo',
                 // 十分にユニーク
-                identifier: `${cinerino.factory.pecorino.account.TypeOf.Account}-${req.user.username}-${account.accountNumber}`,
+                identifier: identifier,
                 typeOfGood: {
                     typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
-                    accountType: cinerino.factory.accountType.Point,
+                    accountType: account.accountType,
                     accountNumber: account.accountNumber
                 },
                 ownedBy: req.agent,
