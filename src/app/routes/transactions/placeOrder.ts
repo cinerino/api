@@ -179,7 +179,7 @@ placeOrderTransactionsRouter.post(
 
             // Cinemasunshine対応として
             if (process.env.USE_OLD_PASSPORT_VALIDATOR === '1') {
-                const seller = await sellerRepo.findById({ id: <string>req.body.sellerId });
+                const seller = await sellerRepo.findById({ id: <string>req.body.seller.id });
 
                 passportValidator = (params: { passport: cinerino.factory.waiter.passport.IPassport }) => {
                     // tslint:disable-next-line:no-single-line-block-comment
@@ -190,7 +190,7 @@ placeOrderTransactionsRouter.post(
                     const issuers = process.env.WAITER_PASSPORT_ISSUER.split(',');
                     const validIssuer = issuers.indexOf(params.passport.iss) >= 0;
 
-                    // スコープのフォーマットは、placeOrderTransaction.{sellerId}
+                    // スコープのフォーマットは、placeOrderTransaction.{sellerIdentifier}
                     const explodedScopeStrings = params.passport.scope.split('.');
                     const validScope = (
                         // tslint:disable-next-line:no-magic-numbers

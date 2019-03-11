@@ -165,7 +165,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito
         };
         // Cinemasunshine対応として
         if (process.env.USE_OLD_PASSPORT_VALIDATOR === '1') {
-            const seller = yield sellerRepo.findById({ id: req.body.sellerId });
+            const seller = yield sellerRepo.findById({ id: req.body.seller.id });
             passportValidator = (params) => {
                 // tslint:disable-next-line:no-single-line-block-comment
                 /* istanbul ignore next */
@@ -174,7 +174,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito
                 }
                 const issuers = process.env.WAITER_PASSPORT_ISSUER.split(',');
                 const validIssuer = issuers.indexOf(params.passport.iss) >= 0;
-                // スコープのフォーマットは、placeOrderTransaction.{sellerId}
+                // スコープのフォーマットは、placeOrderTransaction.{sellerIdentifier}
                 const explodedScopeStrings = params.passport.scope.split('.');
                 const validScope = (
                 // tslint:disable-next-line:no-magic-numbers
