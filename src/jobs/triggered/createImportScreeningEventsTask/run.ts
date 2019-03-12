@@ -18,6 +18,11 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
     ? parseInt(process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 10)
     : 1;
 
+const MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES = 60;
+const IMPORT_EVENTS_INTERVAL_IN_MINUTES = (process.env.IMPORT_EVENTS_INTERVAL_IN_MINUTES !== undefined)
+    ? Math.min(Number(process.env.IMPORT_EVENTS_INTERVAL_IN_MINUTES), MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES)
+    : MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES;
+
 export default async () => {
     let holdSingletonProcess = false;
     setInterval(
@@ -31,7 +36,7 @@ export default async () => {
     const connection = await connectMongo({ defaultConnection: false });
 
     const job = new CronJob(
-        '*/5 * * * *',
+        `*/${IMPORT_EVENTS_INTERVAL_IN_MINUTES} * * * *`,
         async () => {
             if (!holdSingletonProcess) {
                 return;

@@ -25,6 +25,10 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
     // tslint:disable-next-line:no-magic-numbers
     ? parseInt(process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 10)
     : 1;
+const MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES = 60;
+const IMPORT_EVENTS_INTERVAL_IN_MINUTES = (process.env.IMPORT_EVENTS_INTERVAL_IN_MINUTES !== undefined)
+    ? Math.min(Number(process.env.IMPORT_EVENTS_INTERVAL_IN_MINUTES), MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES)
+    : MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES;
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     let holdSingletonProcess = false;
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
@@ -33,7 +37,7 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
     // tslint:disable-next-line:no-magic-numbers
     10000);
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
-    const job = new cron_1.CronJob('*/5 * * * *', () => __awaiter(this, void 0, void 0, function* () {
+    const job = new cron_1.CronJob(`*/${IMPORT_EVENTS_INTERVAL_IN_MINUTES} * * * *`, () => __awaiter(this, void 0, void 0, function* () {
         if (!holdSingletonProcess) {
             return;
         }
