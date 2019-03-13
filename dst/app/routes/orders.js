@@ -22,6 +22,12 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const redis = require("../../redis");
+/**
+ * 正規表現をエスケープする
+ */
+function escapeRegExp(params) {
+    return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
+}
 const CODE_EXPIRES_IN_SECONDS = Number(process.env.CODE_EXPIRES_IN_SECONDS);
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
@@ -186,10 +192,29 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['aws.cogn
             throw new cinerino.factory.errors.Argument('customer');
         }
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
-        const order = yield orderRepo.findByConfirmationNumber({
-            confirmationNumber: req.body.confirmationNumber,
-            customer: customer
+        // const order = await orderRepo.findByConfirmationNumber({
+        //     confirmationNumber: req.body.confirmationNumber,
+        //     customer: customer
+        // });
+        // 個人情報完全一致で検索する
+        const orders = yield orderRepo.search({
+            limit: 1,
+            sort: { orderDate: cinerino.factory.sortType.Descending },
+            confirmationNumbers: [req.body.confirmationNumber],
+            customer: {
+                email: (customer.email !== undefined)
+                    ? `^${escapeRegExp(customer.email)}$`
+                    : undefined,
+                telephone: (customer.telephone !== undefined)
+                    ? `^${escapeRegExp(customer.telephone)}$`
+                    : undefined
+            }
         });
+        const order = orders.shift();
+        if (order === undefined) {
+            // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
+            throw new cinerino.factory.errors.NotFound('Order');
+        }
         res.json(order);
     }
     catch (error) {
