@@ -1,11 +1,22 @@
 /**
  * Singletonプロセス管理
  */
+import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
+import * as moment from 'moment';
+import * as os from 'os';
+import * as util from 'util';
 
 import * as redis from './redis';
 
 const debug = createDebug('cinerino-api:singletonProcess');
+
+const processId = util.format(
+    '%s:%s:%s',
+    os.hostname,
+    process.pid,
+    moment().unix
+);
 
 /**
  * Signletonプロセスをロックする
@@ -15,7 +26,7 @@ export async function lock(params: { key: string; ttl: number }) {
 
     // ロック処理
     const key = `api:singletonProcess:${params.key}`;
-    const value = process.pid.toString();
+    const value = processId;
     const ttl = params.ttl;
     let locked = false;
     let self = false;
@@ -70,6 +81,20 @@ export async function lock(params: { key: string; ttl: number }) {
             });
         });
         debug('expire set', self, key);
+    }
+
+    if (process.env.DEBUG_SINGLETON_PROCESS === '1') {
+        await cinerino.service.notification.report2developers(
+            `[${process.env.PROJECT_ID}] api:singletonProcess`,
+            util.format(
+                '%s\n%s\n%s\n%s\n%s\n%s',
+                `key: ${key}`,
+                `value: ${value}`,
+                `locked: ${locked}`,
+                `os.hostname: ${os.hostname}`,
+                `pid: ${process.pid}`
+            )
+        )();
     }
 
     return locked;

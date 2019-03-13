@@ -5,8 +5,6 @@ import * as cinerino from '@cinerino/domain';
 import { CronJob } from 'cron';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
-import * as os from 'os';
-import * as util from 'util';
 
 import { connectMongo } from '../../../connectMongo';
 import * as singletonProcess from '../../../singletonProcess';
@@ -40,21 +38,6 @@ export default async () => {
     const job = new CronJob(
         `*/${IMPORT_EVENTS_INTERVAL_IN_MINUTES} * * * *`,
         async () => {
-            if (process.env.DEBUG_IMPORT_EVENTS === '1') {
-                await cinerino.service.notification.report2developers(
-                    `[${process.env.PROJECT_ID}] api:createImportScreeningEventsTask`,
-                    util.format(
-                        '%s\n%s\n%s\n%s\n%s\n%s',
-                        `holdSingletonProcess: ${holdSingletonProcess}`,
-                        `os.hostname: ${os.hostname}`,
-                        `pid: ${process.pid}`,
-                        `ppid: ${process.ppid}`,
-                        `getgid: ${process.getgid()}`,
-                        `getuid: ${process.getuid()}`
-                    )
-                )();
-            }
-
             if (process.env.IMPORT_EVENTS_STOPPED === '1') {
                 return;
             }

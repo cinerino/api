@@ -11,9 +11,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Singletonプロセス管理
  */
+const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
+const moment = require("moment");
+const os = require("os");
+const util = require("util");
 const redis = require("./redis");
 const debug = createDebug('cinerino-api:singletonProcess');
+const processId = util.format('%s:%s:%s', os.hostname, process.pid, moment().unix);
 /**
  * Signletonプロセスをロックする
  */
@@ -22,7 +27,7 @@ function lock(params) {
         const redisClient = redis.getClient();
         // ロック処理
         const key = `api:singletonProcess:${params.key}`;
-        const value = process.pid.toString();
+        const value = processId;
         const ttl = params.ttl;
         let locked = false;
         let self = false;
@@ -70,6 +75,9 @@ function lock(params) {
                 });
             });
             debug('expire set', self, key);
+        }
+        if (process.env.DEBUG_SINGLETON_PROCESS === '1') {
+            yield cinerino.service.notification.report2developers(`[${process.env.PROJECT_ID}] api:singletonProcess`, util.format('%s\n%s\n%s\n%s\n%s\n%s', `key: ${key}`, `value: ${value}`, `locked: ${locked}`, `os.hostname: ${os.hostname}`, `pid: ${process.pid}`))();
         }
         return locked;
     });
