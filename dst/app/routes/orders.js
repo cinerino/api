@@ -40,6 +40,7 @@ const ordersRouter = express_1.Router();
 ordersRouter.use(authentication_1.default);
 /**
  * 確認番号と電話番号で注文照会
+ * @deprecated 基本的にシネマサンシャイン互換性維持のためのエンドポイント
  */
 ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']), ...[
     check_1.body('theaterCode')
@@ -67,8 +68,24 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['aws.cognito
             reservationNumber: Number(req.body.confirmationNumber),
             telephone: phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.E164)
         };
-        const repository = new cinerino.repository.Order(mongoose.connection);
-        const order = yield repository.findByLocationBranchCodeAndReservationNumber(key);
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        // 劇場枝番号、予約番号、個人情報完全一致で検索する
+        const orders = yield orderRepo.search({
+            limit: 1,
+            sort: { orderDate: cinerino.factory.sortType.Descending },
+            customer: { telephone: `^${escapeRegExp(key.telephone)}$` },
+            acceptedOffers: {
+                itemOffered: {
+                    reservationFor: { superEvent: { location: { branchCodes: [key.theaterCode] } } },
+                    reservationNumbers: [key.reservationNumber.toString()]
+                }
+            }
+        });
+        const order = orders.shift();
+        if (order === undefined) {
+            // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
+            throw new cinerino.factory.errors.NotFound('Order');
+        }
         res.json(order);
     }
     catch (error) {
@@ -192,10 +209,6 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['aws.cogn
             throw new cinerino.factory.errors.Argument('customer');
         }
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
-        // const order = await orderRepo.findByConfirmationNumber({
-        //     confirmationNumber: req.body.confirmationNumber,
-        //     customer: customer
-        // });
         // 個人情報完全一致で検索する
         const orders = yield orderRepo.search({
             limit: 1,
@@ -325,7 +338,7 @@ ordersRouter.get('/:orderNumber/actions', permitScopes_1.default(['admin']), val
 /**
  * 注文検索
  */
-ordersRouter.get('', permitScopes_1.default(['admin']), (req, __2, next) => {
+ordersRouter.get('', permitScopes_1.default(['admin']), (req, _, next) => {
     req.checkQuery('orderDateFrom')
         .optional()
         .isISO8601()
@@ -363,8 +376,8 @@ ordersRouter.get('', permitScopes_1.default(['admin']), (req, __2, next) => {
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const orders = yield orderRepo.search(searchConditions);
         const totalCount = yield orderRepo.count(searchConditions);
+        const orders = yield orderRepo.search(searchConditions);
         res.set('X-Total-Count', totalCount.toString());
         res.json(orders);
     }

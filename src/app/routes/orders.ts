@@ -36,6 +36,7 @@ ordersRouter.use(authentication);
 
 /**
  * 確認番号と電話番号で注文照会
+ * @deprecated 基本的にシネマサンシャイン互換性維持のためのエンドポイント
  */
 ordersRouter.post(
     '/findByOrderInquiryKey',
@@ -70,8 +71,27 @@ ordersRouter.post(
                 reservationNumber: Number(<string>req.body.confirmationNumber),
                 telephone: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
             };
-            const repository = new cinerino.repository.Order(mongoose.connection);
-            const order = await repository.findByLocationBranchCodeAndReservationNumber(key);
+
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+
+            // 劇場枝番号、予約番号、個人情報完全一致で検索する
+            const orders = await orderRepo.search({
+                limit: 1,
+                sort: { orderDate: cinerino.factory.sortType.Descending },
+                customer: { telephone: `^${escapeRegExp(key.telephone)}$` },
+                acceptedOffers: {
+                    itemOffered: {
+                        reservationFor: { superEvent: { location: { branchCodes: [key.theaterCode] } } },
+                        reservationNumbers: [key.reservationNumber.toString()]
+                    }
+                }
+            });
+            const order = orders.shift();
+            if (order === undefined) {
+                // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
+                throw new cinerino.factory.errors.NotFound('Order');
+            }
+
             res.json(order);
         } catch (error) {
             next(error);
@@ -225,10 +245,7 @@ ordersRouter.post(
             }
 
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
-            // const order = await orderRepo.findByConfirmationNumber({
-            //     confirmationNumber: req.body.confirmationNumber,
-            //     customer: customer
-            // });
+
             // 個人情報完全一致で検索する
             const orders = await orderRepo.search({
                 limit: 1,
@@ -381,7 +398,7 @@ ordersRouter.get(
 ordersRouter.get(
     '',
     permitScopes(['admin']),
-    (req, __2, next) => {
+    (req, _, next) => {
         req.checkQuery('orderDateFrom')
             .optional()
             .isISO8601()
@@ -418,14 +435,17 @@ ordersRouter.get(
     async (req, res, next) => {
         try {
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
+
             const searchConditions: cinerino.factory.order.ISearchConditions = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
-            const orders = await orderRepo.search(searchConditions);
+
             const totalCount = await orderRepo.count(searchConditions);
+            const orders = await orderRepo.search(searchConditions);
+
             res.set('X-Total-Count', totalCount.toString());
             res.json(orders);
         } catch (error) {
