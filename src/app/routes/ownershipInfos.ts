@@ -31,6 +31,7 @@ ownershipInfosRouter.post(
                 // tslint:disable-next-line:no-magic-numbers
                 expiresIn: 1800
             })({ code: codeRepo });
+
             res.json({ token });
         } catch (error) {
             next(error);
@@ -47,22 +48,43 @@ ownershipInfosRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            const actions = await actionRepo.actionModel.find(
-                {
-                    typeOf: cinerino.factory.actionType.CheckAction,
-                    'result.typeOf': 'OwnershipInfo',
-                    'result.id': req.params.id
+            const ownershipInfoId = <string>req.params.id;
+
+            const searchConditions: any = {
+                typeOf: cinerino.factory.actionType.CheckAction,
+                'result.typeOf': {
+                    $exists: true,
+                    $eq: 'OwnershipInfo'
                 },
+                'result.id': {
+                    $exists: true,
+                    $eq: ownershipInfoId
+                }
+            };
+
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
+
+            const totalCount = await actionRepo.actionModel.countDocuments(searchConditions)
+                // .setOptions({ maxTimeMS: 10000 })
+                .exec();
+
+            const actions = await actionRepo.actionModel.find(
+                searchConditions,
                 {
                     __v: 0,
                     createdAt: 0,
                     updatedAt: 0
                 }
             )
+                .sort({ startDate: cinerino.factory.sortType.Descending })
+                // ページング未実装、いったん100限定でも要件は十分満たされるか
+                // tslint:disable-next-line:no-magic-numbers
+                .limit(100)
+                // .setOptions({ maxTimeMS: 10000 })
                 .exec()
                 .then((docs) => docs.map((doc) => doc.toObject()));
-            res.set('X-Total-Count', actions.length.toString());
+
+            res.set('X-Total-Count', totalCount.toString());
             res.json(actions);
         } catch (error) {
             next(error);

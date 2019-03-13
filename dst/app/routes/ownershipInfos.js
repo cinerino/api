@@ -44,19 +44,35 @@ ownershipInfosRouter.post('/tokens', permitScopes_1.default(['aws.cognito.signin
  */
 ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        const actions = yield actionRepo.actionModel.find({
+        const ownershipInfoId = req.params.id;
+        const searchConditions = {
             typeOf: cinerino.factory.actionType.CheckAction,
-            'result.typeOf': 'OwnershipInfo',
-            'result.id': req.params.id
-        }, {
+            'result.typeOf': {
+                $exists: true,
+                $eq: 'OwnershipInfo'
+            },
+            'result.id': {
+                $exists: true,
+                $eq: ownershipInfoId
+            }
+        };
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const totalCount = yield actionRepo.actionModel.countDocuments(searchConditions)
+            // .setOptions({ maxTimeMS: 10000 })
+            .exec();
+        const actions = yield actionRepo.actionModel.find(searchConditions, {
             __v: 0,
             createdAt: 0,
             updatedAt: 0
         })
+            .sort({ startDate: cinerino.factory.sortType.Descending })
+            // ページング未実装、いったん100限定でも要件は十分満たされるか
+            // tslint:disable-next-line:no-magic-numbers
+            .limit(100)
+            // .setOptions({ maxTimeMS: 10000 })
             .exec()
             .then((docs) => docs.map((doc) => doc.toObject()));
-        res.set('X-Total-Count', actions.length.toString());
+        res.set('X-Total-Count', totalCount.toString());
         res.json(actions);
     }
     catch (error) {
