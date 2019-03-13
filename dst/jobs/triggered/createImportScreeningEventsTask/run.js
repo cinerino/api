@@ -15,6 +15,8 @@ const cinerino = require("@cinerino/domain");
 const cron_1 = require("cron");
 const createDebug = require("debug");
 const moment = require("moment");
+const os = require("os");
+const util = require("util");
 const connectMongo_1 = require("../../../connectMongo");
 const singletonProcess = require("../../../singletonProcess");
 const debug = createDebug('cinerino-api:jobs');
@@ -38,6 +40,9 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
     10000);
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     const job = new cron_1.CronJob(`*/${IMPORT_EVENTS_INTERVAL_IN_MINUTES} * * * *`, () => __awaiter(this, void 0, void 0, function* () {
+        if (process.env.DEBUG_SINGLETON_PROCESS === '1') {
+            yield cinerino.service.notification.report2developers(`[${process.env.PROJECT_ID}] api:singletonProcess`, util.format('%s\n%s\n%s\n%s\n%s', `key: 'createImportScreeningEventsTask'`, `IMPORT_EVENTS_INTERVAL_IN_MINUTES: ${IMPORT_EVENTS_INTERVAL_IN_MINUTES}`, `holdSingletonProcess: ${holdSingletonProcess}`, `os.hostname: ${os.hostname}`, `pid: ${process.pid}`))();
+        }
         if (process.env.IMPORT_EVENTS_STOPPED === '1') {
             return;
         }

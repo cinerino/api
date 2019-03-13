@@ -1,7 +1,6 @@
 /**
  * Singletonプロセス管理
  */
-import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as os from 'os';
@@ -15,7 +14,8 @@ const processId = util.format(
     '%s:%s:%s',
     os.hostname,
     process.pid,
-    moment().unix
+    moment()
+        .valueOf()
 );
 
 /**
@@ -81,20 +81,6 @@ export async function lock(params: { key: string; ttl: number }) {
             });
         });
         debug('expire set', self, key);
-    }
-
-    if (process.env.DEBUG_SINGLETON_PROCESS === '1') {
-        await cinerino.service.notification.report2developers(
-            `[${process.env.PROJECT_ID}] api:singletonProcess`,
-            util.format(
-                '%s\n%s\n%s\n%s\n%s\n%s',
-                `key: ${key}`,
-                `value: ${value}`,
-                `locked: ${locked}`,
-                `os.hostname: ${os.hostname}`,
-                `pid: ${process.pid}`
-            )
-        )();
     }
 
     return locked;
