@@ -14,6 +14,7 @@
 | Name                                      | Required | Value          | Purpose                                     |
 | ----------------------------------------- | -------- | -------------- | ------------------------------------------- |
 | `DEBUG`                                   | false    | cinerino-api:* | Debug                                       |
+| `DEBUG_SINGLETON_PROCESS`                 | false    | 1 or 0         | Singleton Process Debug Flag                |
 | `NODE_ENV`                                | true     |                | Environment name                            |
 | `MONGOLAB_URI`                            | true     |                | MongoDB connection URI                      |
 | `REDIS_HOST`                              | true     |                | Redis Cache host                            |
@@ -53,6 +54,7 @@
 | `MVTK_RESERVE_CLIENT_ID`                  | true     |                | ムビチケ着券APIクライアントID               |
 | `MVTK_RESERVE_CLIENT_SECRET`              | true     |                | ムビチケ着券APIクライアントシークレット     |
 | `IMPORT_EVENTS_INTERVAL_IN_MINUTES`       | true     |                | イベントインポートインターバル              |
+| `IMPORT_EVENTS_STOPPED`                   | false    | 1 or 0         | イベントインポート停止フラグ                |
 | `LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS` | true     |                | イベントインポート期間                      |
 | `JOBS_STOPPED`                            | true     | 1 or 0         | 非同期ジョブ停止フラグ                      |
 | `USE_OLD_PASSPORT_VALIDATOR`              | false    | 1 or 0         | 旧許可証バリデータ使用フラグ                |
