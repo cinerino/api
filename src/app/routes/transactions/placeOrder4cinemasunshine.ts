@@ -347,16 +347,12 @@ placeOrder4cinemasunshineRouter.delete(
 placeOrder4cinemasunshineRouter.post(
     '/:transactionId/actions/authorize/mvtk',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
-    (__1, __2, next) => {
-        next();
-    },
     validator,
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
             const authorizeObject = {
                 typeOf: cinerino.factory.action.authorize.discount.mvtk.ObjectType.Mvtk,
-                // tslint:disable-next-line:no-magic-numbers
                 price: Number(req.body.price),
                 transactionId: <string>req.params.transactionId,
                 seatInfoSyncIn: {
@@ -374,7 +370,19 @@ placeOrder4cinemasunshineRouter.post(
                     skhnCd: req.body.seatInfoSyncIn.skhnCd
                 }
             };
-            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create({
+
+            // const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create({
+            //     agentId: req.user.sub,
+            //     transactionId: <string>req.params.transactionId,
+            //     authorizeObject: authorizeObject
+            // })({
+            //     action: new cinerino.repository.Action(mongoose.connection),
+            //     paymentMethod: new cinerino.repository.PaymentMethod(mongoose.connection),
+            //     transaction: new cinerino.repository.Transaction(mongoose.connection)
+            // });
+
+            const mvtkService = cinerino.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk;
+            const actions = await mvtkService.createMovieTicketPaymentAuthorization({
                 agentId: req.user.sub,
                 transactionId: <string>req.params.transactionId,
                 authorizeObject: authorizeObject
@@ -386,7 +394,9 @@ placeOrder4cinemasunshineRouter.post(
 
             res.status(CREATED)
                 .json({
-                    id: action.id
+                    // ムビチケ承認アクションが購入管理番号数分作成されるので、本来リストを返す必要があるが
+                    // シネマサンシャインでは、承認取消時にバックエンドでは何も処理していないので、いったんこれで回避
+                    id: actions[0].id
                 });
         } catch (error) {
             next(error);

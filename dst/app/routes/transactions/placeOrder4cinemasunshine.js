@@ -278,13 +278,10 @@ placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/credit
 /**
  * ムビチケ追加
  */
-placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/mvtk', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (__1, __2, next) => {
-    next();
-}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/mvtk', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const authorizeObject = {
             typeOf: cinerino.factory.action.authorize.discount.mvtk.ObjectType.Mvtk,
-            // tslint:disable-next-line:no-magic-numbers
             price: Number(req.body.price),
             transactionId: req.params.transactionId,
             seatInfoSyncIn: {
@@ -302,7 +299,17 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/mvtk', p
                 skhnCd: req.body.seatInfoSyncIn.skhnCd
             }
         };
-        const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create({
+        // const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create({
+        //     agentId: req.user.sub,
+        //     transactionId: <string>req.params.transactionId,
+        //     authorizeObject: authorizeObject
+        // })({
+        //     action: new cinerino.repository.Action(mongoose.connection),
+        //     paymentMethod: new cinerino.repository.PaymentMethod(mongoose.connection),
+        //     transaction: new cinerino.repository.Transaction(mongoose.connection)
+        // });
+        const mvtkService = cinerino.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk;
+        const actions = yield mvtkService.createMovieTicketPaymentAuthorization({
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
             authorizeObject: authorizeObject
@@ -313,7 +320,9 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/mvtk', p
         });
         res.status(http_status_1.CREATED)
             .json({
-            id: action.id
+            // ムビチケ承認アクションが購入管理番号数分作成されるので、本来リストを返す必要があるが
+            // シネマサンシャインでは、承認取消時にバックエンドでは何も処理していないので、いったんこれで回避
+            id: actions[0].id
         });
     }
     catch (error) {
