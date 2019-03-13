@@ -38,6 +38,9 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
     10000);
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     const job = new cron_1.CronJob(`*/${IMPORT_EVENTS_INTERVAL_IN_MINUTES} * * * *`, () => __awaiter(this, void 0, void 0, function* () {
+        if (process.env.DEBUG_IMPORT_EVENTS === '1') {
+            yield cinerino.service.notification.report2developers(`[${process.env.PROJECT_ID}] api:createImportScreeningEventsTask`, `holdSingletonProcess: ${holdSingletonProcess}\npid:${process.pid}`)();
+        }
         if (!holdSingletonProcess) {
             return;
         }

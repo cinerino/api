@@ -38,6 +38,13 @@ export default async () => {
     const job = new CronJob(
         `*/${IMPORT_EVENTS_INTERVAL_IN_MINUTES} * * * *`,
         async () => {
+            if (process.env.DEBUG_IMPORT_EVENTS === '1') {
+                await cinerino.service.notification.report2developers(
+                    `[${process.env.PROJECT_ID}] api:createImportScreeningEventsTask`,
+                    `holdSingletonProcess: ${holdSingletonProcess}\npid:${process.pid}`
+                )();
+            }
+
             if (!holdSingletonProcess) {
                 return;
             }
