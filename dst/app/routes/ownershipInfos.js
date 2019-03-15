@@ -74,7 +74,7 @@ ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['adm
                     : moment(now)
                         // とりあえずデフォルト直近1カ月(おそらくこれで十分)
                         // tslint:disable-next-line:no-magic-numbers
-                        .add(-3, 'month')
+                        .add(-3, 'months')
                         .toDate(),
                 $lte: (req.query.startThrough instanceof Date)
                     ? req.query.startThrough
