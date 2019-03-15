@@ -13,6 +13,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+// tslint:disable-next-line:no-submodule-imports
+const check_1 = require("express-validator/check");
+const moment = require("moment");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -42,8 +45,18 @@ ownershipInfosRouter.post('/tokens', permitScopes_1.default(['aws.cognito.signin
 /**
  * 所有権に対するトークン検証アクションを検索する
  */
-ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['admin']), ...[
+    check_1.query('startFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('startThrough')
+        .optional()
+        .isISO8601()
+        .toDate()
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const now = new Date();
         const ownershipInfoId = req.params.id;
         const searchConditions = {
             typeOf: cinerino.factory.actionType.CheckAction,
@@ -54,11 +67,23 @@ ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['adm
             'result.id': {
                 $exists: true,
                 $eq: ownershipInfoId
+            },
+            startDate: {
+                $gte: (req.query.startFrom instanceof Date)
+                    ? req.query.startFrom
+                    : moment(now)
+                        // とりあえずデフォルト直近1カ月(おそらくこれで十分)
+                        // tslint:disable-next-line:no-magic-numbers
+                        .add(-3, 'month')
+                        .toDate(),
+                $lte: (req.query.startThrough instanceof Date)
+                    ? req.query.startThrough
+                    : now
             }
         };
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const totalCount = yield actionRepo.actionModel.countDocuments(searchConditions)
-            // .setOptions({ maxTimeMS: 10000 })
+            .setOptions({ maxTimeMS: 10000 })
             .exec();
         const actions = yield actionRepo.actionModel.find(searchConditions, {
             __v: 0,

@@ -3,6 +3,9 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+// tslint:disable-next-line:no-submodule-imports
+import { query } from 'express-validator/check';
+import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
@@ -45,9 +48,20 @@ ownershipInfosRouter.post(
 ownershipInfosRouter.get(
     '/:id/actions/checkToken',
     permitScopes(['admin']),
+    ...[
+        query('startFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('startThrough')
+            .optional()
+            .isISO8601()
+            .toDate()
+    ],
     validator,
     async (req, res, next) => {
         try {
+            const now = new Date();
             const ownershipInfoId = <string>req.params.id;
 
             const searchConditions: any = {
@@ -59,13 +73,25 @@ ownershipInfosRouter.get(
                 'result.id': {
                     $exists: true,
                     $eq: ownershipInfoId
+                },
+                startDate: {
+                    $gte: (req.query.startFrom instanceof Date)
+                        ? req.query.startFrom
+                        : moment(now)
+                            // とりあえずデフォルト直近1カ月(おそらくこれで十分)
+                            // tslint:disable-next-line:no-magic-numbers
+                            .add(-3, 'months')
+                            .toDate(),
+                    $lte: (req.query.startThrough instanceof Date)
+                        ? req.query.startThrough
+                        : now
                 }
             };
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
 
             const totalCount = await actionRepo.actionModel.countDocuments(searchConditions)
-                // .setOptions({ maxTimeMS: 10000 })
+                .setOptions({ maxTimeMS: 10000 })
                 .exec();
 
             const actions = await actionRepo.actionModel.find(
