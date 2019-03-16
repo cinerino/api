@@ -493,6 +493,7 @@ placeOrderTransactionsRouter.post(
 
             debug('authorizing credit card...', req.body.creditCard);
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
+                project: { id: <string>process.env.PROJECT_ID },
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.CreditCard,
                     additionalProperty: req.body.additionalProperty,

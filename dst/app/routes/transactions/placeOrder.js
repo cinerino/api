@@ -426,6 +426,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         debug('authorizing credit card...', creditCard);
         debug('authorizing credit card...', req.body.creditCard);
         const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
+            project: { id: process.env.PROJECT_ID },
             object: {
                 typeOf: cinerino.factory.paymentMethodType.CreditCard,
                 additionalProperty: req.body.additionalProperty,
