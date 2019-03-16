@@ -91,7 +91,7 @@ screeningEventRouter.get(
                     event: eventRepo,
                     itemAvailability: itemAvailabilityRepo
                 });
-                totalCount = await eventRepo.countIndividualScreeningEvents(searchConditions);
+                totalCount = await eventRepo.countScreeningEvents(searchConditions);
             } else {
                 const searchCoinditions: cinerino.chevre.factory.event.screeningEvent.ISearchConditions = {
                     ...req.query,

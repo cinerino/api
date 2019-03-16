@@ -86,7 +86,7 @@ screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
                 event: eventRepo,
                 itemAvailability: itemAvailabilityRepo
             });
-            totalCount = yield eventRepo.countIndividualScreeningEvents(searchConditions);
+            totalCount = yield eventRepo.countScreeningEvents(searchConditions);
         }
         else {
             const searchCoinditions = Object.assign({}, req.query, { 

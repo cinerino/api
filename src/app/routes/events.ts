@@ -84,7 +84,7 @@ eventsRouter.get(
                 event: eventRepo,
                 itemAvailability: itemAvailabilityRepo
             });
-            const totalCount = await eventRepo.countIndividualScreeningEvents(searchConditions);
+            const totalCount = await eventRepo.countScreeningEvents(searchConditions);
 
             res.set('X-Total-Count', totalCount.toString());
             res.json(events);
