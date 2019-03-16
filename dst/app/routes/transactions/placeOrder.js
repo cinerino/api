@@ -17,7 +17,6 @@ const createDebug = require("debug");
 const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
-const google_libphonenumber_1 = require("google-libphonenumber");
 const http_status_1 = require("http-status");
 const ioredis = require("ioredis");
 const moment = require("moment");
@@ -200,37 +199,34 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito
 /**
  * 購入者情報を変更する
  */
-placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, _, next) => {
-    req.checkBody('familyName')
-        .notEmpty()
-        .withMessage('required');
-    req.checkBody('givenName')
-        .notEmpty()
-        .withMessage('required');
-    req.checkBody('telephone')
-        .notEmpty()
-        .withMessage('required');
-    req.checkBody('email')
-        .notEmpty()
-        .withMessage('required');
-    next();
-}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), ...[
+    check_1.body('familyName')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('givenName')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('telephone')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('email')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
+], validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        let formattedTelephone = req.body.telephone;
-        // Cinemasunshine対応(SDKで自動的にtelephoneRegion=JPが指定されてくる)
-        if (typeof req.body.telephoneRegion === 'string'
-            || process.env.CUSTOMER_TELEPHONE_JP_FORMAT_ACCEPTED === '1') {
-            try {
-                const phoneUtil = google_libphonenumber_1.PhoneNumberUtil.getInstance();
-                const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
-                if (!phoneUtil.isValidNumber(phoneNumber)) {
-                    throw new cinerino.factory.errors.Argument('contact.telephone', 'Invalid phone number format.');
-                }
-                formattedTelephone = phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.E164);
+        let requestedNumber = req.body.telephone;
+        try {
+            // cinemasunshine対応として、国内向け電話番号フォーマットであれば、強制的に日本国番号を追加
+            if (requestedNumber.slice(0, 1) === '0') {
+                requestedNumber = `+81${requestedNumber.slice(1)}`;
             }
-            catch (error) {
-                throw new cinerino.factory.errors.Argument('contact.telephone', error.message);
-            }
+        }
+        catch (error) {
+            throw new cinerino.factory.errors.Argument('Telephone', `Unexpected value: ${error.message}`);
         }
         const contact = yield cinerino.service.transaction.placeOrderInProgress.setCustomerContact({
             id: req.params.transactionId,
@@ -240,7 +236,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
                     familyName: req.body.familyName,
                     givenName: req.body.givenName,
                     email: req.body.email,
-                    telephone: formattedTelephone
+                    telephone: requestedNumber
                 }
             }
         })({

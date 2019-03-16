@@ -8,7 +8,6 @@ import * as createDebug from 'debug';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { body, query } from 'express-validator/check';
-import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as ioredis from 'ioredis';
 import * as moment from 'moment';
@@ -226,41 +225,37 @@ placeOrderTransactionsRouter.post(
 placeOrderTransactionsRouter.put(
     '/:transactionId/customerContact',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
-    (req, _, next) => {
-        req.checkBody('familyName')
-            .notEmpty()
-            .withMessage('required');
-        req.checkBody('givenName')
-            .notEmpty()
-            .withMessage('required');
-        req.checkBody('telephone')
-            .notEmpty()
-            .withMessage('required');
-        req.checkBody('email')
-            .notEmpty()
-            .withMessage('required');
-        next();
-    },
+    ...[
+        body('familyName')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('givenName')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('telephone')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`),
+        body('email')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
+    ],
     validator,
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
-            let formattedTelephone: string = <string>req.body.telephone;
+            let requestedNumber = <string>req.body.telephone;
 
-            // Cinemasunshine対応(SDKで自動的にtelephoneRegion=JPが指定されてくる)
-            if (typeof req.body.telephoneRegion === 'string'
-                || process.env.CUSTOMER_TELEPHONE_JP_FORMAT_ACCEPTED === '1') {
-                try {
-                    const phoneUtil = PhoneNumberUtil.getInstance();
-                    const phoneNumber = phoneUtil.parse(<string>req.body.telephone, 'JP');
-                    if (!phoneUtil.isValidNumber(phoneNumber)) {
-                        throw new cinerino.factory.errors.Argument('contact.telephone', 'Invalid phone number format.');
-                    }
-
-                    formattedTelephone = phoneUtil.format(phoneNumber, PhoneNumberFormat.E164);
-                } catch (error) {
-                    throw new cinerino.factory.errors.Argument('contact.telephone', error.message);
+            try {
+                // cinemasunshine対応として、国内向け電話番号フォーマットであれば、強制的に日本国番号を追加
+                if (requestedNumber.slice(0, 1) === '0') {
+                    requestedNumber = `+81${requestedNumber.slice(1)}`;
                 }
+            } catch (error) {
+                throw new cinerino.factory.errors.Argument('Telephone', `Unexpected value: ${error.message}`);
             }
 
             const contact = await cinerino.service.transaction.placeOrderInProgress.setCustomerContact({
@@ -271,7 +266,7 @@ placeOrderTransactionsRouter.put(
                         familyName: <string>req.body.familyName,
                         givenName: <string>req.body.givenName,
                         email: <string>req.body.email,
-                        telephone: formattedTelephone
+                        telephone: requestedNumber
                     }
                 }
             })({
