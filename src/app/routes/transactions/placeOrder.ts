@@ -152,19 +152,32 @@ placeOrderTransactionsRouter.post(
                 : moment(<string>req.body.expires)
                     .toDate();
 
-            let passportValidator: cinerino.service.transaction.placeOrderInProgress.IPassportValidator =
-                (params: { passport: cinerino.factory.waiter.passport.IPassport }) => {
+            const seller = await sellerRepo.findById({ id: <string>req.body.seller.id });
+
+            const passportValidator: cinerino.service.transaction.placeOrderInProgress.IPassportValidator =
+                (params) => {
                     // 許可証発行者確認
                     const validIssuer = params.passport.iss === process.env.WAITER_PASSPORT_ISSUER;
 
                     // スコープのフォーマットは、Transaction:PlaceOrder:${sellerId}
-                    const explodedScopeStrings = params.passport.scope.split(':');
-                    const validScope = (
-                        explodedScopeStrings[0] === 'Transaction' && // スコープ接頭辞確認
-                        explodedScopeStrings[1] === cinerino.factory.transactionType.PlaceOrder && // スコープ接頭辞確認
+                    const newExplodedScopeStrings = params.passport.scope.split(':');
+                    const newValidScope = (
+                        newExplodedScopeStrings[0] === 'Transaction' && // スコープ接頭辞確認
+                        newExplodedScopeStrings[1] === cinerino.factory.transactionType.PlaceOrder && // スコープ接頭辞確認
                         // tslint:disable-next-line:no-magic-numbers
-                        explodedScopeStrings[2] === req.body.seller.id // 販売者識別子確認
+                        newExplodedScopeStrings[2] === req.body.seller.id // 販売者識別子確認
                     );
+
+                    // スコープのフォーマットは、placeOrderTransaction.${sellerIdentifier}
+                    // cinemasunshine対応
+                    const oldExplodedScopeStrings = params.passport.scope.split('.');
+                    const oldValidScope = (
+                        oldExplodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
+                        oldExplodedScopeStrings[1] === seller.identifier // 販売者識別子確認
+                    );
+
+                    // スコープスタイルは新旧どちらか一方有効であれok
+                    const validScope = newValidScope || oldValidScope;
 
                     // クライアントの有効性
                     let validClient = true;
@@ -176,32 +189,6 @@ placeOrderTransactionsRouter.post(
 
                     return validIssuer && validScope && validClient;
                 };
-
-            // Cinemasunshine対応として
-            if (process.env.USE_OLD_PASSPORT_VALIDATOR === '1') {
-                const seller = await sellerRepo.findById({ id: <string>req.body.seller.id });
-
-                passportValidator = (params: { passport: cinerino.factory.waiter.passport.IPassport }) => {
-                    // tslint:disable-next-line:no-single-line-block-comment
-                    /* istanbul ignore next */
-                    if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
-                        throw new Error('WAITER_PASSPORT_ISSUER unset');
-                    }
-                    const issuers = process.env.WAITER_PASSPORT_ISSUER.split(',');
-                    const validIssuer = issuers.indexOf(params.passport.iss) >= 0;
-
-                    // スコープのフォーマットは、placeOrderTransaction.{sellerIdentifier}
-                    const explodedScopeStrings = params.passport.scope.split('.');
-                    const validScope = (
-                        // tslint:disable-next-line:no-magic-numbers
-                        explodedScopeStrings.length === 2 &&
-                        explodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
-                        explodedScopeStrings[1] === seller.identifier // 販売者識別子確認
-                    );
-
-                    return validIssuer && validScope;
-                };
-            }
 
             const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
                 expires: expires,

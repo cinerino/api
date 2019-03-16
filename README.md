@@ -57,7 +57,6 @@
 | `IMPORT_EVENTS_STOPPED`                   | false    | 1 or 0         | イベントインポート停止フラグ                |
 | `LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS` | true     |                | イベントインポート期間                      |
 | `JOBS_STOPPED`                            | true     | 1 or 0         | 非同期ジョブ停止フラグ                      |
-| `USE_OLD_PASSPORT_VALIDATOR`              | false    | 1 or 0         | 旧許可証バリデータ使用フラグ                |
 | `USE_IN_MEMORY_OFFER_REPO`                | false    | 1 or 0         | インメモリオファーリポジトリ使用フラグ      |
 | `USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO`  | false    | 1 or 0         | イベント在庫状況Redisリポジトリ使用フラグ   |
 | `OWNERSHIP_INFO_UUID_DISABLED`            | false    | 1 or 0         | 所有権UUID使用無効化フラグ                  |
