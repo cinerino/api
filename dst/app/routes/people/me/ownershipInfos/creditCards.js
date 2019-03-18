@@ -29,7 +29,15 @@ const debug = createDebug('cinerino-api:router');
 creditCardsRouter.post('', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
-        const creditCard = yield cinerino.service.person.creditCard.save(memberId, req.body)();
+        const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            cardService: new cinerino.GMO.service.Card({ endpoint: process.env.GMO_ENDPOINT })
+        });
+        const creditCard = yield creditCardRepo.save({
+            personId: memberId,
+            creditCard: req.body
+        });
         res.status(http_status_1.CREATED)
             .json(creditCard);
     }
@@ -43,7 +51,12 @@ creditCardsRouter.post('', permitScopes_1.default(['aws.cognito.signin.user.admi
 creditCardsRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
-        const searchCardResults = yield cinerino.service.person.creditCard.find(memberId)();
+        const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            cardService: new cinerino.GMO.service.Card({ endpoint: process.env.GMO_ENDPOINT })
+        });
+        const searchCardResults = yield creditCardRepo.search({ personId: memberId });
         debug('searchCardResults:', searchCardResults);
         res.json(searchCardResults);
     }
@@ -57,7 +70,15 @@ creditCardsRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin
 creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
-        yield cinerino.service.person.creditCard.unsubscribe(memberId, req.params.cardSeq)();
+        const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            cardService: new cinerino.GMO.service.Card({ endpoint: process.env.GMO_ENDPOINT })
+        });
+        yield creditCardRepo.remove({
+            personId: memberId,
+            cardSeq: req.params.cardSeq
+        });
         res.status(http_status_1.NO_CONTENT)
             .end();
     }

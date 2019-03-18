@@ -97,7 +97,12 @@ me4cinemasunshineRouter.put('/contacts', permitScopes_1.default(['aws.cognito.si
  */
 me4cinemasunshineRouter.get('/creditCards', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.creditCards', 'people.creditCards.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const searchCardResults = yield cinerino.service.person.creditCard.find(req.user.username)();
+        const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            cardService: new cinerino.GMO.service.Card({ endpoint: process.env.GMO_ENDPOINT })
+        });
+        const searchCardResults = yield creditCardRepo.search({ personId: req.user.username });
         debug('searchCardResults:', searchCardResults);
         res.json(searchCardResults);
     }
@@ -109,11 +114,17 @@ me4cinemasunshineRouter.get('/creditCards', permitScopes_1.default(['aws.cognito
  * 会員クレジットカード追加
  * @deprecated Use /people/me/ownershipInfos/creditCards
  */
-me4cinemasunshineRouter.post('/creditCards', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.creditCards']), (__1, __2, next) => {
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+me4cinemasunshineRouter.post('/creditCards', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.creditCards']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const creditCard = yield cinerino.service.person.creditCard.save(req.user.username, req.body)();
+        const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            cardService: new cinerino.GMO.service.Card({ endpoint: process.env.GMO_ENDPOINT })
+        });
+        const creditCard = yield creditCardRepo.save({
+            personId: req.user.username,
+            creditCard: req.body
+        });
         res.status(http_status_1.CREATED)
             .json(creditCard);
     }
@@ -127,7 +138,15 @@ me4cinemasunshineRouter.post('/creditCards', permitScopes_1.default(['aws.cognit
  */
 me4cinemasunshineRouter.delete('/creditCards/:cardSeq', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.creditCards']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield cinerino.service.person.creditCard.unsubscribe(req.user.username, req.params.cardSeq)();
+        const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            cardService: new cinerino.GMO.service.Card({ endpoint: process.env.GMO_ENDPOINT })
+        });
+        yield creditCardRepo.remove({
+            personId: req.user.username,
+            cardSeq: req.params.cardSeq
+        });
         res.status(http_status_1.NO_CONTENT)
             .end();
     }

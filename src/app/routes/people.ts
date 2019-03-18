@@ -183,7 +183,13 @@ peopleRouter.get(
                 memberId = <string>person.memberOf.membershipNumber;
             }
 
-            const searchCardResults = await cinerino.service.person.creditCard.find(memberId)();
+            const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
+                siteId: <string>process.env.GMO_SITE_ID,
+                sitePass: <string>process.env.GMO_SITE_PASS,
+                cardService: new cinerino.GMO.service.Card({ endpoint: <string>process.env.GMO_ENDPOINT })
+            });
+            const searchCardResults = await creditCardRepo.search({ personId: memberId });
+
             res.json(searchCardResults);
         } catch (error) {
             next(error);

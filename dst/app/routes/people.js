@@ -159,7 +159,12 @@ peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['adm
             }
             memberId = person.memberOf.membershipNumber;
         }
-        const searchCardResults = yield cinerino.service.person.creditCard.find(memberId)();
+        const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            cardService: new cinerino.GMO.service.Card({ endpoint: process.env.GMO_ENDPOINT })
+        });
+        const searchCardResults = yield creditCardRepo.search({ personId: memberId });
         res.json(searchCardResults);
     }
     catch (error) {

@@ -111,8 +111,15 @@ me4cinemasunshineRouter.get(
     permitScopes(['aws.cognito.signin.user.admin', 'people.creditCards', 'people.creditCards.read-only']),
     async (req, res, next) => {
         try {
-            const searchCardResults = await cinerino.service.person.creditCard.find(<string>req.user.username)();
+            const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
+                siteId: <string>process.env.GMO_SITE_ID,
+                sitePass: <string>process.env.GMO_SITE_PASS,
+                cardService: new cinerino.GMO.service.Card({ endpoint: <string>process.env.GMO_ENDPOINT })
+            });
+
+            const searchCardResults = await creditCardRepo.search({ personId: <string>req.user.username });
             debug('searchCardResults:', searchCardResults);
+
             res.json(searchCardResults);
         } catch (error) {
             next(error);
@@ -127,13 +134,20 @@ me4cinemasunshineRouter.get(
 me4cinemasunshineRouter.post(
     '/creditCards',
     permitScopes(['aws.cognito.signin.user.admin', 'people.creditCards']),
-    (__1, __2, next) => {
-        next();
-    },
     validator,
     async (req, res, next) => {
         try {
-            const creditCard = await cinerino.service.person.creditCard.save(<string>req.user.username, req.body)();
+            const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
+                siteId: <string>process.env.GMO_SITE_ID,
+                sitePass: <string>process.env.GMO_SITE_PASS,
+                cardService: new cinerino.GMO.service.Card({ endpoint: <string>process.env.GMO_ENDPOINT })
+            });
+
+            const creditCard = await creditCardRepo.save({
+                personId: <string>req.user.username,
+                creditCard: req.body
+            });
+
             res.status(CREATED)
                 .json(creditCard);
         } catch (error) {
@@ -152,7 +166,17 @@ me4cinemasunshineRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await cinerino.service.person.creditCard.unsubscribe(<string>req.user.username, req.params.cardSeq)();
+            const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
+                siteId: <string>process.env.GMO_SITE_ID,
+                sitePass: <string>process.env.GMO_SITE_PASS,
+                cardService: new cinerino.GMO.service.Card({ endpoint: <string>process.env.GMO_ENDPOINT })
+            });
+
+            await creditCardRepo.remove({
+                personId: <string>req.user.username,
+                cardSeq: req.params.cardSeq
+            });
+
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {

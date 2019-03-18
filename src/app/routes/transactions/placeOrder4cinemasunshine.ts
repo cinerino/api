@@ -288,7 +288,13 @@ placeOrder4cinemasunshineRouter.post(
 
             debug('authorizing credit card...', req.body.creditCard);
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
-                project: { id: <string>process.env.PROJECT_ID },
+                project: {
+                    id: <string>process.env.PROJECT_ID,
+                    gmoInfo: {
+                        siteId: <string>process.env.GMO_SITE_ID,
+                        sitePass: <string>process.env.GMO_SITE_PASS
+                    }
+                },
                 agent: { id: req.user.sub },
                 transaction: { id: <string>req.params.transactionId },
                 object: {

@@ -53,7 +53,12 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
                 redisClient: redisClient,
                 cognitoIdentityServiceProvider: cognitoIdentityServiceProvider,
                 pecorinoEndpoint: process.env.PECORINO_ENDPOINT,
-                pecorinoAuthClient: pecorinoAuthClient
+                pecorinoAuthClient: pecorinoAuthClient,
+                gmo: {
+                    endpoint: process.env.GMO_ENDPOINT,
+                    siteId: process.env.GMO_SITE_ID,
+                    sitePass: process.env.GMO_SITE_PASS
+                }
             });
         }
         catch (error) {
