@@ -59,7 +59,6 @@
 | `JOBS_STOPPED`                            | true     | 1 or 0         | 非同期ジョブ停止フラグ                      |
 | `USE_IN_MEMORY_OFFER_REPO`                | false    | 1 or 0         | インメモリオファーリポジトリ使用フラグ      |
 | `USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO`  | false    | 1 or 0         | イベント在庫状況Redisリポジトリ使用フラグ   |
-| `OWNERSHIP_INFO_UUID_DISABLED`            | false    | 1 or 0         | 所有権UUID使用無効化フラグ                  |
 | `CUSTOMER_TELEPHONE_JP_FORMAT_ACCEPTED`   | false    | 1 or 0         | 日本フォーマットの電話番号許容フラグ        |
 | `USE_USERNAME_AS_GMO_MEMBER_ID`           | false    | 1 or 0         | GMO会員IDにユーザーネームを使用するかどうか |
 
