@@ -65,15 +65,23 @@ export interface ICOATicket extends cinerino.COA.services.master.ITicketResult {
 let coaTickets: ICOATicket[];
 
 function initializeCOATickets() {
-    return async (repos: { place: cinerino.repository.Place }) => {
+    return async (repos: { seller: cinerino.repository.Seller }) => {
         try {
             const tickets: ICOATicket[] = [];
-            const movieTheaters = await repos.place.searchMovieTheaters({});
-            await Promise.all(movieTheaters.map(async (movieTheater) => {
-                const ticketResults = await cinerino.COA.services.master.ticket({ theaterCode: movieTheater.branchCode });
-                debug(movieTheater.branchCode, ticketResults.length, 'COA Tickets found');
+
+            const branchCodes: string[] = [];
+            const sellers = await repos.seller.search({});
+            sellers.forEach(async (seller) => {
+                if (Array.isArray(seller.makesOffer)) {
+                    branchCodes.push(...seller.makesOffer.map((o) => o.itemOffered.reservationFor.location.branchCode));
+                }
+            });
+
+            await Promise.all(branchCodes.map(async (branchCode) => {
+                const ticketResults = await cinerino.COA.services.master.ticket({ theaterCode: branchCode });
+                debug(branchCode, ticketResults.length, 'COA Tickets found');
                 tickets.push(...ticketResults.map((t) => {
-                    return { ...t, theaterCode: movieTheater.branchCode };
+                    return { ...t, theaterCode: branchCode };
                 }));
             }));
 
@@ -86,7 +94,7 @@ function initializeCOATickets() {
 
 const USE_IN_MEMORY_OFFER_REPO = (process.env.USE_IN_MEMORY_OFFER_REPO === '1') ? true : false;
 if (USE_IN_MEMORY_OFFER_REPO) {
-    initializeCOATickets()({ place: new cinerino.repository.Place(mongoose.connection) })
+    initializeCOATickets()({ seller: new cinerino.repository.Seller(mongoose.connection) })
         .then()
         // tslint:disable-next-line:no-console
         .catch(console.error);
@@ -95,7 +103,7 @@ if (USE_IN_MEMORY_OFFER_REPO) {
     setInterval(
         async () => {
             try {
-                await initializeCOATickets()({ place: new cinerino.repository.Place(mongoose.connection) });
+                await initializeCOATickets()({ seller: new cinerino.repository.Seller(mongoose.connection) });
             } catch (error) {
                 // tslint:disable-next-line:no-console
                 console.error(error);

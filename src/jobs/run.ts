@@ -8,6 +8,7 @@ import retryTasks from './continuous/retryTasks/run';
 
 import onCanceledPlaceOrder from './continuous/onCanceledPlaceOrder/run';
 import onCanceledReturnOrder from './continuous/onCanceledReturnOrder/run';
+import onConfirmedMoneyTransfer from './continuous/onConfirmedMoneyTransfer/run';
 import onConfirmedPlaceOrder from './continuous/onConfirmedPlaceOrder/run';
 import onConfirmedReturnOrder from './continuous/onConfirmedReturnOrder/run';
 import onExpiredPlaceOrder from './continuous/onExpiredPlaceOrder/run';
@@ -20,6 +21,7 @@ import cancelSeatReservation from './continuous/cancelSeatReservation/run';
 import confirmReservation from './continuous/confirmReservation/run';
 import givePointAward from './continuous/givePointAward/run';
 import importScreeningEvents from './continuous/importScreeningEvents/run';
+import moneyTransfer from './continuous/moneyTransfer/run';
 import payAccount from './continuous/payAccount/run';
 import payCreditCard from './continuous/payCreditCard/run';
 import payMovieTicket from './continuous/payMovieTicket/run';
@@ -46,6 +48,7 @@ export default async () => {
 
     await onCanceledPlaceOrder();
     await onCanceledReturnOrder();
+    await onConfirmedMoneyTransfer();
     await onConfirmedPlaceOrder();
     await onConfirmedReturnOrder();
     await onExpiredPlaceOrder();
@@ -58,6 +61,7 @@ export default async () => {
     await confirmReservation();
     await givePointAward();
     await importScreeningEvents();
+    await moneyTransfer();
     await payAccount();
     await payCreditCard();
     await payMovieTicket();

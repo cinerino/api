@@ -65,12 +65,18 @@ function initializeCOATickets() {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
         try {
             const tickets = [];
-            const movieTheaters = yield repos.place.searchMovieTheaters({});
-            yield Promise.all(movieTheaters.map((movieTheater) => __awaiter(this, void 0, void 0, function* () {
-                const ticketResults = yield cinerino.COA.services.master.ticket({ theaterCode: movieTheater.branchCode });
-                debug(movieTheater.branchCode, ticketResults.length, 'COA Tickets found');
+            const branchCodes = [];
+            const sellers = yield repos.seller.search({});
+            sellers.forEach((seller) => __awaiter(this, void 0, void 0, function* () {
+                if (Array.isArray(seller.makesOffer)) {
+                    branchCodes.push(...seller.makesOffer.map((o) => o.itemOffered.reservationFor.location.branchCode));
+                }
+            }));
+            yield Promise.all(branchCodes.map((branchCode) => __awaiter(this, void 0, void 0, function* () {
+                const ticketResults = yield cinerino.COA.services.master.ticket({ theaterCode: branchCode });
+                debug(branchCode, ticketResults.length, 'COA Tickets found');
                 tickets.push(...ticketResults.map((t) => {
-                    return Object.assign({}, t, { theaterCode: movieTheater.branchCode });
+                    return Object.assign({}, t, { theaterCode: branchCode });
                 }));
             })));
             coaTickets = tickets;
@@ -82,14 +88,14 @@ function initializeCOATickets() {
 }
 const USE_IN_MEMORY_OFFER_REPO = (process.env.USE_IN_MEMORY_OFFER_REPO === '1') ? true : false;
 if (USE_IN_MEMORY_OFFER_REPO) {
-    initializeCOATickets()({ place: new cinerino.repository.Place(mongoose.connection) })
+    initializeCOATickets()({ seller: new cinerino.repository.Seller(mongoose.connection) })
         .then()
         // tslint:disable-next-line:no-console
         .catch(console.error);
     const HOUR = 3600000;
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
         try {
-            yield initializeCOATickets()({ place: new cinerino.repository.Place(mongoose.connection) });
+            yield initializeCOATickets()({ seller: new cinerino.repository.Seller(mongoose.connection) });
         }
         catch (error) {
             // tslint:disable-next-line:no-console
