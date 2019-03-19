@@ -285,15 +285,30 @@ placeOrderTransactionsRouter.put(
         }
     }
 );
+
 /**
  * 座席仮予約
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/offer/seatReservation',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
-    (__1, __2, next) => {
-        next();
-    },
+    ...[
+        body('object.acceptedOffer.additionalProperty')
+            .optional()
+            .isArray(),
+        body('object.acceptedOffer.additionalProperty.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
+            .isString(),
+        body('object.acceptedOffer.additionalProperty.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
+            .isString()
+    ],
     validator,
     rateLimit4transactionInProgress,
     async (req, res, next) => {
@@ -309,7 +324,7 @@ placeOrderTransactionsRouter.post(
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create({
                 object: req.body,
                 agent: { id: req.user.sub },
-                transaction: { id: req.params.transactionId }
+                transaction: { id: <string>req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 event: new cinerino.repository.Event(mongoose.connection),
@@ -330,6 +345,7 @@ placeOrderTransactionsRouter.post(
         }
     }
 );
+
 /**
  * 座席仮予約取消
  */

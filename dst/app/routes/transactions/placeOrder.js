@@ -258,9 +258,23 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
 /**
  * 座席仮予約
  */
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatReservation', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (__1, __2, next) => {
-    next();
-}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatReservation', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), ...[
+    check_1.body('object.acceptedOffer.additionalProperty')
+        .optional()
+        .isArray(),
+    check_1.body('object.acceptedOffer.additionalProperty.*.name')
+        .optional()
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
+        .isString(),
+    check_1.body('object.acceptedOffer.additionalProperty.*.value')
+        .optional()
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`)
+        .isString()
+], validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const eventService = new cinerino.chevre.service.Event({
             endpoint: process.env.CHEVRE_ENDPOINT,
