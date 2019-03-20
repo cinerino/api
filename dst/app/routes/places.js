@@ -10,24 +10,39 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 場所ルーター
+ * @deprecated フロントエンドが使用を停止し次第、廃止
  */
 const express_1 = require("express");
 const placesRouter = express_1.Router();
 const cinerino = require("@cinerino/domain");
-// import * as mongoose from 'mongoose';
+const google_libphonenumber_1 = require("google-libphonenumber");
+const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 placesRouter.use(authentication_1.default);
 placesRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['aws.cognito.signin.user.admin', 'places', 'places.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const movieTheater = cinerino.service.masterSync.createMovieTheaterFromCOA(yield cinerino.COA.services.master.theater({ theaterCode: req.params.branchCode }), yield cinerino.COA.services.master.screen({ theaterCode: req.params.branchCode }));
+        // const movieTheater = cinerino.service.masterSync.createMovieTheaterFromCOA(
+        //     await cinerino.COA.services.master.theater({ theaterCode: req.params.branchCode }),
+        //     await cinerino.COA.services.master.screen({ theaterCode: req.params.branchCode })
+        // );
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+        const sellers = yield sellerRepo.search({
+            limit: 1,
+            location: { branchCodes: [req.params.branchCode] }
+        });
+        const seller = sellers.shift();
+        if (seller === undefined) {
+            throw new cinerino.factory.errors.NotFound('Seller');
+        }
+        if (seller.location === undefined) {
+            throw new cinerino.factory.errors.NotFound('Seller Location');
+        }
+        const phoneUtil = google_libphonenumber_1.PhoneNumberUtil.getInstance();
+        const phoneNumber = phoneUtil.parse(seller.telephone);
+        const movieTheater = Object.assign({}, seller.location, { telephone: phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.NATIONAL) });
         res.json(movieTheater);
-        // const repository = new cinerino.repository.Place(mongoose.connection);
-        // await repository.findMovieTheaterByBranchCode(req.params.branchCode)
-        //     .then((theater) => {
-        //         res.json(theater);
-        //     });
     }
     catch (error) {
         next(error);
