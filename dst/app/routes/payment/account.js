@@ -19,6 +19,7 @@ const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
+const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
 const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
@@ -45,9 +46,12 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'aws.co
         .not()
         .isEmpty()
         .withMessage((_, options) => `${options.path} is required`)
-], validator_1.default, 
-// rateLimit4transactionInProgress,
-(req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: req.body.purpose.typeOf,
+        id: req.body.purpose.id
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         let fromAccount = req.body.object.fromAccount;
         // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
@@ -127,9 +131,12 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'aws.co
 /**
  * 口座承認取消
  */
-accountPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['admin', 'aws.cognito.signin.user.admin', 'transactions']), validator_1.default, 
-// rateLimit4transactionInProgress,
-(req, res, next) => __awaiter(this, void 0, void 0, function* () {
+accountPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['admin', 'aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: req.body.purpose.typeOf,
+        id: req.body.purpose.id
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const withdrawService = new cinerino.pecorinoapi.service.transaction.Withdraw({
             endpoint: process.env.PECORINO_ENDPOINT,

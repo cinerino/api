@@ -3,18 +3,17 @@
  */
 import * as cinerino from '@cinerino/domain';
 
-import * as middlewares from '@motionpicture/express-middleware';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { query } from 'express-validator/check';
 import { NO_CONTENT } from 'http-status';
-import * as ioredis from 'ioredis';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
+import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
@@ -27,32 +26,6 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-const UNIT_IN_SECONDS = Number(<string>process.env.TRANSACTION_RATE_LIMIT_UNIT_IN_SECONDS);
-const THRESHOLD = Number(<string>process.env.TRANSACTION_RATE_LIMIT_THRESHOLD);
-/**
- * 進行中取引の接続回数制限ミドルウェア
- * 取引IDを使用して動的にスコープを作成する
- */
-const rateLimit4transactionInProgress =
-    middlewares.rateLimit({
-        redisClient: new ioredis({
-            host: <string>process.env.REDIS_HOST,
-            // tslint:disable-next-line:no-magic-numbers
-            port: Number(<string>process.env.REDIS_PORT),
-            password: <string>process.env.REDIS_KEY,
-            tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
-        }),
-        aggregationUnitInSeconds: UNIT_IN_SECONDS,
-        threshold: THRESHOLD,
-        // 制限超過時の動作をカスタマイズ
-        limitExceededHandler: (__0, __1, res, next) => {
-            res.setHeader('Retry-After', UNIT_IN_SECONDS);
-            const message = `Retry after ${UNIT_IN_SECONDS} seconds for your transaction`;
-            next(new cinerino.factory.errors.RateLimitExceeded(message));
-        },
-        // スコープ生成ロジックをカスタマイズ
-        scopeGenerator: (req) => `api:${cinerino.factory.transactionType.MoneyTransfer}:${req.params.transactionId}`
-    });
 
 moneyTransferTransactionsRouter.use(authentication);
 
@@ -133,7 +106,12 @@ moneyTransferTransactionsRouter.put(
     '/:transactionId/confirm',
     permitScopes(['admin', 'aws.cognito.signin.user.admin', 'transactions']),
     validator,
-    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.MoneyTransfer,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);

@@ -5,16 +5,15 @@
  */
 import * as cinerino from '@cinerino/domain';
 
-import * as middlewares from '@motionpicture/express-middleware';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 // import { query } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
-import * as ioredis from 'ioredis';
 import * as mongoose from 'mongoose';
 
 import permitScopes from '../../middlewares/permitScopes';
+import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
 import * as redis from '../../../redis';
@@ -28,35 +27,6 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-
-// tslint:disable-next-line:no-magic-numbers
-const UNIT_IN_SECONDS = parseInt(<string>process.env.TRANSACTION_RATE_LIMIT_UNIT_IN_SECONDS, 10);
-// tslint:disable-next-line:no-magic-numbers
-const THRESHOLD = parseInt(<string>process.env.TRANSACTION_RATE_LIMIT_THRESHOLD, 10);
-/**
- * 進行中取引の接続回数制限ミドルウェア
- * 取引IDを使用して動的にスコープを作成する
- */
-const rateLimit4transactionInProgress =
-    middlewares.rateLimit({
-        redisClient: new ioredis({
-            host: <string>process.env.REDIS_HOST,
-            // tslint:disable-next-line:no-magic-numbers
-            port: parseInt(<string>process.env.REDIS_PORT, 10),
-            password: <string>process.env.REDIS_KEY,
-            tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
-        }),
-        aggregationUnitInSeconds: UNIT_IN_SECONDS,
-        threshold: THRESHOLD,
-        // 制限超過時の動作をカスタマイズ
-        limitExceededHandler: (__0, __1, res, next) => {
-            res.setHeader('Retry-After', UNIT_IN_SECONDS);
-            const message = `Retry after ${UNIT_IN_SECONDS} seconds for your transaction.`;
-            next(new cinerino.factory.errors.RateLimitExceeded(message));
-        },
-        // スコープ生成ロジックをカスタマイズ
-        scopeGenerator: (req) => `placeOrderTransaction.${<string>req.params.transactionId}`
-    });
 
 export interface ICOATicket extends cinerino.COA.services.master.ITicketResult {
     theaterCode: string;
@@ -128,7 +98,12 @@ placeOrder4cinemasunshineRouter.post(
     '/:transactionId/actions/authorize/seatReservation',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
-    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (req, res, next) => {
         try {
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4coa.create({
@@ -160,7 +135,12 @@ placeOrder4cinemasunshineRouter.delete(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
-    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (req, res, next) => {
         try {
             await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4coa.cancel({
@@ -187,7 +167,12 @@ placeOrder4cinemasunshineRouter.patch(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
-    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (req, res, next) => {
         try {
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4coa.changeOffers({
@@ -222,7 +207,12 @@ placeOrder4cinemasunshineRouter.post(
         next();
     },
     validator,
-    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (_, res, next) => {
         try {
             // tslint:disable-next-line:no-suspicious-comment
@@ -245,7 +235,12 @@ placeOrder4cinemasunshineRouter.delete(
         next();
     },
     validator,
-    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (_, res, next) => {
         try {
             // tslint:disable-next-line:no-suspicious-comment
@@ -281,7 +276,12 @@ placeOrder4cinemasunshineRouter.post(
         next();
     },
     validator,
-    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (req, res, next) => {
         try {
             // 会員IDを強制的にログイン中の人物IDに変更
@@ -336,7 +336,12 @@ placeOrder4cinemasunshineRouter.delete(
     '/:transactionId/actions/authorize/creditCard/:actionId',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
-    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (req, res, next) => {
         try {
             await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel({
@@ -363,7 +368,12 @@ placeOrder4cinemasunshineRouter.post(
     '/:transactionId/actions/authorize/mvtk',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
-    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (req, res, next) => {
         try {
             const authorizeObject = {
@@ -426,7 +436,12 @@ placeOrder4cinemasunshineRouter.delete(
     '/:transactionId/actions/authorize/mvtk/:actionId',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
-    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (req, res, next) => {
         try {
             await cinerino.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.cancel({
@@ -463,7 +478,12 @@ placeOrder4cinemasunshineRouter.post(
         next();
     },
     validator,
-    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (req, res, next) => {
         try {
             const now = new Date();
@@ -524,7 +544,12 @@ placeOrder4cinemasunshineRouter.delete(
     '/:transactionId/actions/authorize/paymentMethod/pecorino/:actionId',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
-    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (req, res, next) => {
         try {
             // pecorino転送取引サービスクライアントを生成
@@ -566,7 +591,12 @@ placeOrder4cinemasunshineRouter.post(
         next();
     },
     validator,
-    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (req, res, next) => {
         try {
             const now = new Date();
@@ -623,7 +653,12 @@ placeOrder4cinemasunshineRouter.delete(
         next();
     },
     validator,
-    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (req, res, next) => {
         try {
             const depositService = new cinerino.pecorinoapi.service.transaction.Deposit({
@@ -651,7 +686,12 @@ placeOrder4cinemasunshineRouter.post(
     '/:transactionId/confirm',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
     validator,
-    rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (req, res, next) => {
         try {
             const orderDate = new Date();

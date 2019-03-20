@@ -12,17 +12,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * 注文取引ルーター
  */
 const cinerino = require("@cinerino/domain");
-const middlewares = require("@motionpicture/express-middleware");
 const createDebug = require("debug");
 const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
-const ioredis = require("ioredis");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
+const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
 const placeOrder4cinemasunshine_1 = require("./placeOrder4cinemasunshine");
 const redis = require("../../../redis");
@@ -49,33 +48,6 @@ const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials
     clientSecret: process.env.MVTK_RESERVE_CLIENT_SECRET,
     scopes: [],
     state: ''
-});
-// tslint:disable-next-line:no-magic-numbers
-const UNIT_IN_SECONDS = parseInt(process.env.TRANSACTION_RATE_LIMIT_UNIT_IN_SECONDS, 10);
-// tslint:disable-next-line:no-magic-numbers
-const THRESHOLD = parseInt(process.env.TRANSACTION_RATE_LIMIT_THRESHOLD, 10);
-/**
- * 進行中取引の接続回数制限ミドルウェア
- * 取引IDを使用して動的にスコープを作成する
- */
-const rateLimit4transactionInProgress = middlewares.rateLimit({
-    redisClient: new ioredis({
-        host: process.env.REDIS_HOST,
-        // tslint:disable-next-line:no-magic-numbers
-        port: parseInt(process.env.REDIS_PORT, 10),
-        password: process.env.REDIS_KEY,
-        tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
-    }),
-    aggregationUnitInSeconds: UNIT_IN_SECONDS,
-    threshold: THRESHOLD,
-    // 制限超過時の動作をカスタマイズ
-    limitExceededHandler: (__0, __1, res, next) => {
-        res.setHeader('Retry-After', UNIT_IN_SECONDS);
-        const message = `Retry after ${UNIT_IN_SECONDS} seconds for your transaction`;
-        next(new cinerino.factory.errors.RateLimitExceeded(message));
-    },
-    // スコープ生成ロジックをカスタマイズ
-    scopeGenerator: (req) => `placeOrderTransaction.${req.params.transactionId}`
 });
 placeOrderTransactionsRouter.use(authentication_1.default);
 // Cinemasunshine対応
@@ -216,7 +188,12 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
         .not()
         .isEmpty()
         .withMessage((_, options) => `${options.path} is required`)
-], validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: cinerino.factory.transactionType.PlaceOrder,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         let requestedNumber = req.body.telephone;
         try {
@@ -274,7 +251,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         .isEmpty()
         .withMessage((_, options) => `${options.path} is required`)
         .isString()
-], validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: cinerino.factory.transactionType.PlaceOrder,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const eventService = new cinerino.chevre.service.Event({
             endpoint: process.env.CHEVRE_ENDPOINT,
@@ -310,7 +292,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
 /**
  * 座席仮予約取消
  */
-placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatReservation/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatReservation/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: cinerino.factory.transactionType.PlaceOrder,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const reserveService = new cinerino.chevre.service.transaction.Reserve({
             endpoint: process.env.CHEVRE_ENDPOINT,
@@ -348,7 +335,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     check_1.body('additionalProperty')
         .optional()
         .isArray()
-], validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: cinerino.factory.transactionType.PlaceOrder,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.any.create({
             object: req.body,
@@ -369,7 +361,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
 /**
  * 汎用決済承認取消
  */
-placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel', permitScopes_1.default(['admin']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: cinerino.factory.transactionType.PlaceOrder,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.any.cancel({
             id: req.params.actionId,
@@ -417,7 +414,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         .not()
         .isEmpty()
         .withMessage((_, options) => `${options.path} is required`)
-], validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: cinerino.factory.transactionType.PlaceOrder,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const creditCard = Object.assign({}, req.body.creditCard, { memberId: req.user.sub });
         debug('authorizing credit card...', creditCard);
@@ -460,7 +462,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
 /**
  * クレジットカードオーソリ取消
  */
-placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/creditCard/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/creditCard/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: cinerino.factory.transactionType.PlaceOrder,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel({
             id: req.params.actionId,
@@ -497,7 +504,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         .not()
         .isEmpty()
         .withMessage((_, options) => `${options.path} is required`)
-], validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: cinerino.factory.transactionType.PlaceOrder,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         let fromAccount = req.body.fromAccount;
         // トークン化された口座情報に対応
@@ -549,7 +561,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
 /**
  * 口座承認取消
  */
-placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/account/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/account/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: cinerino.factory.transactionType.PlaceOrder,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const withdrawService = new cinerino.pecorinoapi.service.transaction.Withdraw({
             endpoint: process.env.PECORINO_ENDPOINT,
@@ -597,7 +614,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         .isEmpty()
         .withMessage((_, options) => `${options.path} is required`)
         .isArray()
-], validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: cinerino.factory.transactionType.PlaceOrder,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.movieTicket.create({
             object: {
@@ -628,7 +650,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
 /**
  * ムビチケ承認取消
  */
-placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/movieTicket/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/movieTicket/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: cinerino.factory.transactionType.PlaceOrder,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.movieTicket.cancel({
             id: req.params.actionId,
@@ -658,7 +685,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accou
         .notEmpty()
         .withMessage('toAccountNumber is required');
     next();
-}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: cinerino.factory.transactionType.PlaceOrder,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // pecorino転送取引サービスクライアントを生成
         const depositService = new cinerino.pecorinoapi.service.transaction.Deposit({
@@ -687,7 +719,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accou
  */
 placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accounts/point/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (__1, __2, next) => {
     next();
-}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: cinerino.factory.transactionType.PlaceOrder,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const depositService = new cinerino.pecorinoapi.service.transaction.Deposit({
             endpoint: process.env.PECORINO_ENDPOINT,
@@ -709,7 +746,12 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accoun
         next(error);
     }
 }));
-placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: cinerino.factory.transactionType.PlaceOrder,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const orderDate = new Date();
         const actionRepo = new cinerino.repository.Action(mongoose.connection);

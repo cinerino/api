@@ -10,6 +10,7 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
+import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
 const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
@@ -44,7 +45,12 @@ accountPaymentRouter.post(
             .withMessage((_, options) => `${options.path} is required`)
     ],
     validator,
-    // rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: req.body.purpose.typeOf,
+            id: <string>req.body.purpose.id
+        })(req, res, next);
+    },
     async (req, res, next) => {
         try {
             let fromAccount: cinerino.factory.action.authorize.paymentMethod.account.IFromAccount<cinerino.factory.accountType>
@@ -137,7 +143,12 @@ accountPaymentRouter.put(
     '/authorize/:actionId/void',
     permitScopes(['admin', 'aws.cognito.signin.user.admin', 'transactions']),
     validator,
-    // rateLimit4transactionInProgress,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: req.body.purpose.typeOf,
+            id: <string>req.body.purpose.id
+        })(req, res, next);
+    },
     async (req, res, next) => {
         try {
             const withdrawService = new cinerino.pecorinoapi.service.transaction.Withdraw({
