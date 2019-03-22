@@ -295,7 +295,7 @@ placeOrder4cinemasunshineRouter.post(
             debug('authorizing credit card...', creditCard);
 
             debug('authorizing credit card...', req.body.creditCard);
-            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
+            const action = await cinerino.service.payment.creditCard.authorize({
                 project: {
                     id: <string>process.env.PROJECT_ID,
                     gmoInfo: {
@@ -304,7 +304,6 @@ placeOrder4cinemasunshineRouter.post(
                     }
                 },
                 agent: { id: req.user.sub },
-                transaction: { id: <string>req.params.transactionId },
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.CreditCard,
                     additionalProperty: req.body.additionalProperty,
@@ -312,7 +311,8 @@ placeOrder4cinemasunshineRouter.post(
                     amount: Number(<string>req.body.amount),
                     method: req.body.method,
                     creditCard: creditCard
-                }
+                },
+                purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: <string>req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection),
@@ -344,10 +344,10 @@ placeOrder4cinemasunshineRouter.delete(
     },
     async (req, res, next) => {
         try {
-            await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel({
+            await cinerino.service.payment.creditCard.voidTransaction({
                 agent: { id: req.user.sub },
-                transaction: { id: <string>req.params.transactionId },
-                id: <string>req.params.actionId
+                id: <string>req.params.actionId,
+                purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: <string>req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
@@ -509,9 +509,40 @@ placeOrder4cinemasunshineRouter.post(
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
+
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+
+            // 注文取引の場合、販売者の口座を検索して、toAccountにセット
+            let toAccount: cinerino.factory.action.authorize.paymentMethod.account.IToAccount<cinerino.factory.accountType>;
+
+            const transaction = await transactionRepo.findById({
+                typeOf: cinerino.factory.transactionType.PlaceOrder,
+                id: req.params.transactionId
+            });
+            const seller = await sellerRepo.findById({
+                id: transaction.seller.id
+            });
+
+            if (seller.paymentAccepted === undefined) {
+                throw new cinerino.factory.errors.Argument('object', 'Account payment not accepted.');
+            }
+            const accountPaymentsAccepted = <cinerino.factory.seller.IPaymentAccepted<cinerino.factory.paymentMethodType.Account>[]>
+                seller.paymentAccepted.filter((a) => a.paymentMethodType === cinerino.factory.paymentMethodType.Account);
+            const paymentAccepted = accountPaymentsAccepted.find((a) => a.accountType === cinerino.factory.accountType.Point);
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore if */
+            if (paymentAccepted === undefined) {
+                throw new cinerino.factory.errors.Argument('object', `${cinerino.factory.accountType.Point} payment not accepted`);
+            }
+            toAccount = {
+                accountNumber: paymentAccepted.accountNumber,
+                accountType: paymentAccepted.accountType
+            };
+
+            const action = await cinerino.service.payment.account.authorize({
                 agent: { id: req.user.sub },
-                transaction: { id: <string>req.params.transactionId },
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.Account,
                     amount: Number(req.body.amount),
@@ -520,13 +551,13 @@ placeOrder4cinemasunshineRouter.post(
                         accountType: cinerino.factory.accountType.Point,
                         accountNumber: <string>req.body.fromAccountNumber
                     },
+                    toAccount: toAccount,
                     notes: <string>req.body.notes
-                }
+                },
+                purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: <string>req.params.transactionId }
             })({
-                action: new cinerino.repository.Action(mongoose.connection),
-                seller: new cinerino.repository.Seller(mongoose.connection),
-                ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
-                transaction: new cinerino.repository.Transaction(mongoose.connection),
+                action: actionRepo,
+                transaction: transactionRepo,
                 transferTransactionService: transferService
             });
             res.status(CREATED)
@@ -557,10 +588,10 @@ placeOrder4cinemasunshineRouter.delete(
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.cancel({
-                id: <string>req.params.actionId,
+            await cinerino.service.payment.account.voidTransaction({
                 agent: { id: req.user.sub },
-                transaction: { id: <string>req.params.transactionId }
+                id: <string>req.params.actionId,
+                purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: <string>req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection),

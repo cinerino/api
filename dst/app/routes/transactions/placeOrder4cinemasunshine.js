@@ -238,7 +238,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/creditCa
         });
         debug('authorizing credit card...', creditCard);
         debug('authorizing credit card...', req.body.creditCard);
-        const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
+        const action = yield cinerino.service.payment.creditCard.authorize({
             project: {
                 id: process.env.PROJECT_ID,
                 gmoInfo: {
@@ -247,7 +247,6 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/creditCa
                 }
             },
             agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId },
             object: {
                 typeOf: cinerino.factory.paymentMethodType.CreditCard,
                 additionalProperty: req.body.additionalProperty,
@@ -255,7 +254,8 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/creditCa
                 amount: Number(req.body.amount),
                 method: req.body.method,
                 creditCard: creditCard
-            }
+            },
+            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection),
@@ -280,10 +280,10 @@ placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/credit
     })(req, res, next);
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel({
+        yield cinerino.service.payment.creditCard.voidTransaction({
             agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId },
-            id: req.params.actionId
+            id: req.params.actionId,
+            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
@@ -419,9 +419,34 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/paymentM
             endpoint: process.env.PECORINO_ENDPOINT,
             auth: pecorinoAuthClient
         });
-        const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+        // 注文取引の場合、販売者の口座を検索して、toAccountにセット
+        let toAccount;
+        const transaction = yield transactionRepo.findById({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        });
+        const seller = yield sellerRepo.findById({
+            id: transaction.seller.id
+        });
+        if (seller.paymentAccepted === undefined) {
+            throw new cinerino.factory.errors.Argument('object', 'Account payment not accepted.');
+        }
+        const accountPaymentsAccepted = seller.paymentAccepted.filter((a) => a.paymentMethodType === cinerino.factory.paymentMethodType.Account);
+        const paymentAccepted = accountPaymentsAccepted.find((a) => a.accountType === cinerino.factory.accountType.Point);
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
+        if (paymentAccepted === undefined) {
+            throw new cinerino.factory.errors.Argument('object', `${cinerino.factory.accountType.Point} payment not accepted`);
+        }
+        toAccount = {
+            accountNumber: paymentAccepted.accountNumber,
+            accountType: paymentAccepted.accountType
+        };
+        const action = yield cinerino.service.payment.account.authorize({
             agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId },
             object: {
                 typeOf: cinerino.factory.paymentMethodType.Account,
                 amount: Number(req.body.amount),
@@ -430,13 +455,13 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/paymentM
                     accountType: cinerino.factory.accountType.Point,
                     accountNumber: req.body.fromAccountNumber
                 },
+                toAccount: toAccount,
                 notes: req.body.notes
-            }
+            },
+            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            seller: new cinerino.repository.Seller(mongoose.connection),
-            ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
+            action: actionRepo,
+            transaction: transactionRepo,
             transferTransactionService: transferService
         });
         res.status(http_status_1.CREATED)
@@ -461,10 +486,10 @@ placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/paymen
             endpoint: process.env.PECORINO_ENDPOINT,
             auth: pecorinoAuthClient
         });
-        yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.cancel({
-            id: req.params.actionId,
+        yield cinerino.service.payment.account.voidTransaction({
             agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId }
+            id: req.params.actionId,
+            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection),

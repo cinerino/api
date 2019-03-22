@@ -51,9 +51,12 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'aws.co
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id
     })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}), 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         let fromAccount = req.body.object.fromAccount;
+        let toAccount = req.body.object.toAccount;
         // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
         if (typeof fromAccount === 'string') {
             const accountOwnershipInfo = yield cinerino.service.code.verifyToken({
@@ -88,7 +91,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'aws.co
                 }
             }
         }
-        const toAccount = req.body.object.toAccount;
+        const accountType = fromAccount.accountType;
         // pecorino転送取引サービスクライアントを生成
         const transferService = new cinerino.pecorinoapi.service.transaction.Transfer({
             endpoint: process.env.PECORINO_ENDPOINT,
@@ -98,26 +101,49 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'aws.co
             endpoint: process.env.PECORINO_ENDPOINT,
             auth: pecorinoAuthClient
         });
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+        // 注文取引、かつ、toAccount未指定の場合、販売者の口座を検索して、toAccountにセット
+        if (toAccount === undefined) {
+            const transaction = yield transactionRepo.findById({
+                typeOf: req.body.purpose.typeOf,
+                id: req.body.purpose.id
+            });
+            if (transaction.typeOf === cinerino.factory.transactionType.PlaceOrder) {
+                const seller = yield sellerRepo.findById({
+                    id: transaction.seller.id
+                });
+                if (seller.paymentAccepted === undefined) {
+                    throw new cinerino.factory.errors.Argument('object', 'Account payment not accepted');
+                }
+                const accountPaymentsAccepted = seller.paymentAccepted.filter((a) => a.paymentMethodType === cinerino.factory.paymentMethodType.Account);
+                const paymentAccepted = accountPaymentsAccepted.find((a) => a.accountType === accountType);
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore if */
+                if (paymentAccepted === undefined) {
+                    throw new cinerino.factory.errors.Argument('object', `${accountType} payment not accepted`);
+                }
+                toAccount = {
+                    accountNumber: paymentAccepted.accountNumber,
+                    accountType: paymentAccepted.accountType
+                };
+            }
+        }
         const action = yield cinerino.service.payment.account.authorize({
             object: {
                 typeOf: cinerino.factory.paymentMethodType.Account,
                 amount: req.body.object.amount,
                 additionalProperty: req.body.object.additionalProperty,
-                fromAccount: {
-                    accountType: fromAccount.accountType,
-                    accountNumber: fromAccount.accountNumber
-                },
-                toAccount: {
-                    accountType: toAccount.accountType,
-                    accountNumber: toAccount.accountNumber
-                },
+                fromAccount: fromAccount,
+                toAccount: toAccount,
                 notes: req.body.object.notes
             },
             agent: { id: req.user.sub },
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
+            action: actionRepo,
+            transaction: transactionRepo,
             transferTransactionService: transferService,
             withdrawTransactionService: withdrawService
         });

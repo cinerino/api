@@ -25,6 +25,10 @@ const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4t
 const validator_1 = require("../../middlewares/validator");
 const placeOrder4cinemasunshine_1 = require("./placeOrder4cinemasunshine");
 const redis = require("../../../redis");
+/**
+ * GMOメンバーIDにユーザーネームを使用するかどうか
+ */
+const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const placeOrderTransactionsRouter = express_1.Router();
 const debug = createDebug('cinerino-api:router');
@@ -321,6 +325,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatRe
 }));
 /**
  * 汎用決済承認
+ * @deprecated /payment
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/any', permitScopes_1.default(['admin']), ...[
     check_1.body('typeOf')
@@ -342,10 +347,10 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     })(req, res, next);
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.any.create({
-            object: req.body,
+        const action = yield cinerino.service.payment.any.authorize({
             agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId }
+            object: req.body,
+            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection),
@@ -360,6 +365,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
 }));
 /**
  * 汎用決済承認取消
+ * @deprecated /payment
  */
 placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
@@ -368,10 +374,10 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
     })(req, res, next);
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.any.cancel({
-            id: req.params.actionId,
+        yield cinerino.service.payment.any.voidTransaction({
             agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId }
+            id: req.params.actionId,
+            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
@@ -385,6 +391,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
 }));
 /**
  * クレジットカードオーソリ
+ * @deprecated /payment
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/creditCard', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), ...[
     check_1.body('typeOf')
@@ -401,8 +408,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         .isArray(),
     check_1.body('orderId')
         .not()
-        .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .optional()
         .isString()
         .withMessage((_, options) => `${options.path} must be string`)
         .isLength({ max: 27 }),
@@ -421,10 +427,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     })(req, res, next);
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const creditCard = Object.assign({}, req.body.creditCard, { memberId: req.user.sub });
+        const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
+        const creditCard = Object.assign({}, req.body.creditCard, { memberId: memberId });
         debug('authorizing credit card...', creditCard);
         debug('authorizing credit card...', req.body.creditCard);
-        const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
+        const action = yield cinerino.service.payment.creditCard.authorize({
             project: {
                 id: process.env.PROJECT_ID,
                 gmoInfo: {
@@ -432,6 +439,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
                     sitePass: process.env.GMO_SITE_PASS
                 }
             },
+            agent: { id: req.user.sub },
             object: {
                 typeOf: cinerino.factory.paymentMethodType.CreditCard,
                 additionalProperty: req.body.additionalProperty,
@@ -440,8 +448,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
                 method: req.body.method,
                 creditCard: creditCard
             },
-            agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId }
+            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection),
@@ -461,6 +468,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
 }));
 /**
  * クレジットカードオーソリ取消
+ * @deprecated /payment
  */
 placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/creditCard/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
@@ -469,10 +477,10 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
     })(req, res, next);
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel({
+        yield cinerino.service.payment.creditCard.voidTransaction({
             id: req.params.actionId,
             agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId }
+            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
@@ -486,6 +494,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
 }));
 /**
  * 口座確保
+ * @deprecated /payment
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/account', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), ...[
     check_1.body('typeOf')
@@ -512,6 +521,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         let fromAccount = req.body.fromAccount;
+        let toAccount = req.body.toAccount;
         // トークン化された口座情報に対応
         if (typeof fromAccount === 'string') {
             const accountOwnershipInfo = yield cinerino.service.code.verifyToken({
@@ -526,29 +536,51 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             }
             fromAccount = account;
         }
+        const accountType = fromAccount.accountType;
         // pecorino転送取引サービスクライアントを生成
         const transferService = new cinerino.pecorinoapi.service.transaction.Transfer({
             endpoint: process.env.PECORINO_ENDPOINT,
             auth: pecorinoAuthClient
         });
-        const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+        // 注文取引の場合、販売者の口座を検索して、toAccountにセット
+        const transaction = yield transactionRepo.findById({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        });
+        const seller = yield sellerRepo.findById({
+            id: transaction.seller.id
+        });
+        if (seller.paymentAccepted === undefined) {
+            throw new cinerino.factory.errors.Argument('object', 'Pecorino payment not accepted.');
+        }
+        const accountPaymentsAccepted = seller.paymentAccepted.filter((a) => a.paymentMethodType === cinerino.factory.paymentMethodType.Account);
+        const paymentAccepted = accountPaymentsAccepted.find((a) => a.accountType === accountType);
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
+        if (paymentAccepted === undefined) {
+            throw new cinerino.factory.errors.Argument('object', `${accountType} payment not accepted`);
+        }
+        toAccount = {
+            accountNumber: paymentAccepted.accountNumber,
+            accountType: paymentAccepted.accountType
+        };
+        const action = yield cinerino.service.payment.account.authorize({
+            agent: { id: req.user.sub },
             object: {
                 typeOf: cinerino.factory.paymentMethodType.Account,
                 amount: req.body.amount,
                 additionalProperty: req.body.additionalProperty,
-                fromAccount: {
-                    accountType: fromAccount.accountType,
-                    accountNumber: fromAccount.accountNumber
-                },
+                fromAccount: fromAccount,
+                toAccount: toAccount,
                 notes: req.body.notes
             },
-            agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId }
+            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            seller: new cinerino.repository.Seller(mongoose.connection),
-            ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
+            action: actionRepo,
+            transaction: transactionRepo,
             transferTransactionService: transferService
         });
         res.status(http_status_1.CREATED)
@@ -560,6 +592,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
 }));
 /**
  * 口座承認取消
+ * @deprecated /payment
  */
 placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/account/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
@@ -576,10 +609,10 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
             endpoint: process.env.PECORINO_ENDPOINT,
             auth: pecorinoAuthClient
         });
-        yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.cancel({
-            id: req.params.actionId,
+        yield cinerino.service.payment.account.voidTransaction({
             agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId }
+            id: req.params.actionId,
+            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection),
@@ -595,6 +628,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
 }));
 /**
  * ムビチケ承認
+ * @deprecated /payment
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/movieTicket', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), ...[
     check_1.body('typeOf')
@@ -621,15 +655,15 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     })(req, res, next);
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.movieTicket.create({
+        const action = yield cinerino.service.payment.movieTicket.authorize({
+            agent: { id: req.user.sub },
             object: {
                 typeOf: cinerino.factory.paymentMethodType.MovieTicket,
                 amount: 0,
                 additionalProperty: req.body.additionalProperty,
                 movieTickets: req.body.movieTickets
             },
-            agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId }
+            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             event: new cinerino.repository.Event(mongoose.connection),
@@ -649,6 +683,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
 }));
 /**
  * ムビチケ承認取消
+ * @deprecated /payment
  */
 placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/movieTicket/:actionId/cancel', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
@@ -657,10 +692,10 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
     })(req, res, next);
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.movieTicket.cancel({
+        yield cinerino.service.payment.movieTicket.voidTransaction({
             id: req.params.actionId,
             agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId }
+            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)

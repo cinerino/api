@@ -51,6 +51,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'a
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const cancelReservationService = new cinerino.chevre.service.transaction.CancelReservation({
             endpoint: process.env.CHEVRE_ENDPOINT,
@@ -101,13 +102,15 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'a
                 cancellationFee: 0,
                 // forcibly: true,
                 reason: cinerino.factory.transaction.returnOrder.Reason.Seller
-            }
+            },
+            seller: order.seller
         })({
             action: actionRepo,
+            cancelReservationService: cancelReservationService,
             invoice: invoiceRepo,
-            transaction: transactionRepo,
+            seller: sellerRepo,
             order: orderRepo,
-            cancelReservationService: cancelReservationService
+            transaction: transactionRepo
         });
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];

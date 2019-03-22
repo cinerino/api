@@ -43,6 +43,12 @@ moneyTransferTransactionsRouter.post(
         req.checkBody('recipient.typeOf', 'invalid recipient type')
             .notEmpty()
             .withMessage('recipient.typeOf is required');
+        req.checkBody('seller.typeOf', 'invalid seller type')
+            .notEmpty()
+            .withMessage('seller.typeOf is required');
+        req.checkBody('seller.id', 'invalid seller id')
+            .notEmpty()
+            .withMessage('seller.id is required');
         if (!WAITER_DISABLED) {
             //     req.checkBody('object.passport.token', 'invalid passport token')
             //         .notEmpty()
@@ -59,13 +65,13 @@ moneyTransferTransactionsRouter.post(
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
+            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
             const expires = moment(<string>req.body.expires)
                 .toDate();
 
             const transaction = await cinerino.service.transaction.moneyTransfer.start({
-                typeOf: cinerino.factory.transactionType.MoneyTransfer,
                 expires: expires,
                 agent: {
                     ...req.agent,
@@ -74,21 +80,23 @@ moneyTransferTransactionsRouter.post(
                         ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
                     ]
                 },
-                recipient: {
-                    typeOf: req.body.recipient.typeOf,
-                    id: req.body.recipient.id,
-                    name: req.body.recipient.name,
-                    url: req.body.recipient.url
-                },
                 object: {
                     clientUser: req.user,
                     amount: Number(req.body.object.amount),
                     toLocation: req.body.object.toLocation,
                     authorizeActions: [],
                     description: req.body.object.description
-                }
+                },
+                recipient: {
+                    typeOf: req.body.recipient.typeOf,
+                    id: req.body.recipient.id,
+                    name: req.body.recipient.name,
+                    url: req.body.recipient.url
+                },
+                seller: req.body.seller
             })({
                 accountService: accountService,
+                seller: sellerRepo,
                 transaction: transactionRepo
             });
 

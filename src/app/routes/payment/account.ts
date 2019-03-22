@@ -51,10 +51,13 @@ accountPaymentRouter.post(
             id: <string>req.body.purpose.id
         })(req, res, next);
     },
+    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             let fromAccount: cinerino.factory.action.authorize.paymentMethod.account.IFromAccount<cinerino.factory.accountType>
                 = req.body.object.fromAccount;
+            let toAccount: cinerino.factory.action.authorize.paymentMethod.account.IToAccount<cinerino.factory.accountType> | undefined
+                = req.body.object.toAccount;
 
             // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
             if (typeof fromAccount === 'string') {
@@ -92,7 +95,7 @@ accountPaymentRouter.post(
                 }
             }
 
-            const toAccount = req.body.object.toAccount;
+            const accountType = fromAccount.accountType;
 
             // pecorino転送取引サービスクライアントを生成
             const transferService = new cinerino.pecorinoapi.service.transaction.Transfer({
@@ -104,26 +107,54 @@ accountPaymentRouter.post(
                 auth: pecorinoAuthClient
             });
 
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+
+            // 注文取引、かつ、toAccount未指定の場合、販売者の口座を検索して、toAccountにセット
+            if (toAccount === undefined) {
+                const transaction = await transactionRepo.findById({
+                    typeOf: req.body.purpose.typeOf,
+                    id: <string>req.body.purpose.id
+                });
+
+                if (transaction.typeOf === cinerino.factory.transactionType.PlaceOrder) {
+                    const seller = await sellerRepo.findById({
+                        id: transaction.seller.id
+                    });
+
+                    if (seller.paymentAccepted === undefined) {
+                        throw new cinerino.factory.errors.Argument('object', 'Account payment not accepted');
+                    }
+                    const accountPaymentsAccepted = <cinerino.factory.seller.IPaymentAccepted<cinerino.factory.paymentMethodType.Account>[]>
+                        seller.paymentAccepted.filter((a) => a.paymentMethodType === cinerino.factory.paymentMethodType.Account);
+                    const paymentAccepted = accountPaymentsAccepted.find((a) => a.accountType === accountType);
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    /* istanbul ignore if */
+                    if (paymentAccepted === undefined) {
+                        throw new cinerino.factory.errors.Argument('object', `${accountType} payment not accepted`);
+                    }
+                    toAccount = {
+                        accountNumber: paymentAccepted.accountNumber,
+                        accountType: paymentAccepted.accountType
+                    };
+                }
+            }
+
             const action = await cinerino.service.payment.account.authorize({
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.Account,
                     amount: req.body.object.amount,
                     additionalProperty: req.body.object.additionalProperty,
-                    fromAccount: {
-                        accountType: fromAccount.accountType,
-                        accountNumber: fromAccount.accountNumber
-                    },
-                    toAccount: {
-                        accountType: toAccount.accountType,
-                        accountNumber: toAccount.accountNumber
-                    },
+                    fromAccount: fromAccount,
+                    toAccount: toAccount,
                     notes: req.body.object.notes
                 },
                 agent: { id: req.user.sub },
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({
-                action: new cinerino.repository.Action(mongoose.connection),
-                transaction: new cinerino.repository.Transaction(mongoose.connection),
+                action: actionRepo,
+                transaction: transactionRepo,
                 transferTransactionService: transferService,
                 withdrawTransactionService: withdrawService
             });

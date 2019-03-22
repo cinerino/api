@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * ムビチケ決済ルーター
+ * クレジットカード決済ルーター
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
@@ -21,45 +21,16 @@ const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
-const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials({
-    domain: process.env.MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.MVTK_RESERVE_CLIENT_ID,
-    clientSecret: process.env.MVTK_RESERVE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
-const movieTicketPaymentRouter = express_1.Router();
-movieTicketPaymentRouter.use(authentication_1.default);
 /**
- * ムビチケ購入番号確認
+ * GMOメンバーIDにユーザーネームを使用するかどうか
  */
-movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['aws.cognito.signin.user.admin', 'tokens']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    try {
-        const action = yield cinerino.service.payment.movieTicket.checkMovieTicket({
-            typeOf: cinerino.factory.actionType.CheckAction,
-            agent: req.agent,
-            object: req.body
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            event: new cinerino.repository.Event(mongoose.connection),
-            seller: new cinerino.repository.Seller(mongoose.connection),
-            movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                endpoint: process.env.MVTK_RESERVE_ENDPOINT,
-                auth: mvtkReserveAuthClient
-            }),
-            paymentMethod: new cinerino.repository.PaymentMethod(mongoose.connection)
-        });
-        res.status(http_status_1.CREATED)
-            .json(action);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
+const creditCardPaymentRouter = express_1.Router();
+creditCardPaymentRouter.use(authentication_1.default);
 /**
- * ムビチケ決済承認
+ * クレジットカード決済承認
  */
-movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), ...[
+creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'aws.cognito.signin.user.admin', 'transactions']), ...[
     check_1.body('object.typeOf')
         .not()
         .isEmpty()
@@ -72,11 +43,19 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['aws.cognito
     check_1.body('object.additionalProperty')
         .optional()
         .isArray(),
-    check_1.body('object.movieTickets')
+    check_1.body('object.orderId')
+        .optional()
+        .isString()
+        .withMessage((_, options) => `${options.path} must be string`)
+        .isLength({ max: 27 }),
+    check_1.body('object.method')
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} is required`),
+    check_1.body('object.creditCard')
         .not()
         .isEmpty()
         .withMessage((_, options) => `${options.path} is required`)
-        .isArray()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,
@@ -84,25 +63,37 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['aws.cognito
     })(req, res, next);
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const action = yield cinerino.service.payment.movieTicket.authorize({
+        const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
+        const creditCard = Object.assign({}, req.body.object.creditCard, { memberId: memberId });
+        const action = yield cinerino.service.payment.creditCard.authorize({
+            project: {
+                id: process.env.PROJECT_ID,
+                gmoInfo: {
+                    siteId: process.env.GMO_SITE_ID,
+                    sitePass: process.env.GMO_SITE_PASS
+                }
+            },
             agent: { id: req.user.sub },
             object: {
-                typeOf: cinerino.factory.paymentMethodType.MovieTicket,
-                amount: 0,
+                typeOf: cinerino.factory.paymentMethodType.CreditCard,
                 additionalProperty: req.body.object.additionalProperty,
-                movieTickets: req.body.object.movieTickets
+                orderId: req.body.object.orderId,
+                amount: req.body.object.amount,
+                method: req.body.object.method,
+                creditCard: creditCard
             },
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            event: new cinerino.repository.Event(mongoose.connection),
-            seller: new cinerino.repository.Seller(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection),
-            movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                endpoint: process.env.MVTK_RESERVE_ENDPOINT,
-                auth: mvtkReserveAuthClient
-            })
+            seller: new cinerino.repository.Seller(mongoose.connection)
         });
+        if (action.result !== undefined) {
+            delete action.result.entryTranArgs;
+            delete action.result.entryTranResult;
+            delete action.result.execTranArgs;
+            delete action.result.execTranResult;
+        }
         res.status(http_status_1.CREATED)
             .json(action);
     }
@@ -111,16 +102,16 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['aws.cognito
     }
 }));
 /**
- * ムビチケ決済承認取消
+ * クレジットカード決済承認取消
  */
-movieTicketPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+creditCardPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['admin', 'aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id
     })(req, res, next);
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield cinerino.service.payment.movieTicket.voidTransaction({
+        yield cinerino.service.payment.creditCard.voidTransaction({
             agent: { id: req.user.sub },
             id: req.params.actionId,
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
@@ -135,4 +126,4 @@ movieTicketPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default
         next(error);
     }
 }));
-exports.default = movieTicketPaymentRouter;
+exports.default = creditCardPaymentRouter;

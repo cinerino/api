@@ -45,6 +45,12 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 
     req.checkBody('recipient.typeOf', 'invalid recipient type')
         .notEmpty()
         .withMessage('recipient.typeOf is required');
+    req.checkBody('seller.typeOf', 'invalid seller type')
+        .notEmpty()
+        .withMessage('seller.typeOf is required');
+    req.checkBody('seller.id', 'invalid seller id')
+        .notEmpty()
+        .withMessage('seller.id is required');
     if (!WAITER_DISABLED) {
         //     req.checkBody('object.passport.token', 'invalid passport token')
         //         .notEmpty()
@@ -59,31 +65,33 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 
             endpoint: process.env.PECORINO_ENDPOINT,
             auth: pecorinoAuthClient
         });
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const expires = moment(req.body.expires)
             .toDate();
         const transaction = yield cinerino.service.transaction.moneyTransfer.start({
-            typeOf: cinerino.factory.transactionType.MoneyTransfer,
             expires: expires,
             agent: Object.assign({}, req.agent, { identifier: [
                     ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
                     ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
                 ] }),
-            recipient: {
-                typeOf: req.body.recipient.typeOf,
-                id: req.body.recipient.id,
-                name: req.body.recipient.name,
-                url: req.body.recipient.url
-            },
             object: {
                 clientUser: req.user,
                 amount: Number(req.body.object.amount),
                 toLocation: req.body.object.toLocation,
                 authorizeActions: [],
                 description: req.body.object.description
-            }
+            },
+            recipient: {
+                typeOf: req.body.recipient.typeOf,
+                id: req.body.recipient.id,
+                name: req.body.recipient.name,
+                url: req.body.recipient.url
+            },
+            seller: req.body.seller
         })({
             accountService: accountService,
+            seller: sellerRepo,
             transaction: transactionRepo
         });
         // tslint:disable-next-line:no-string-literal
