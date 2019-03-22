@@ -130,10 +130,14 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'aws.co
                 };
             }
         }
+        const currency = (accountType === cinerino.factory.accountType.Coin)
+            ? cinerino.factory.priceCurrency.JPY
+            : accountType;
         const action = yield cinerino.service.payment.account.authorize({
             object: {
                 typeOf: cinerino.factory.paymentMethodType.Account,
-                amount: req.body.object.amount,
+                amount: Number(req.body.object.amount),
+                currency: currency,
                 additionalProperty: req.body.object.additionalProperty,
                 fromAccount: fromAccount,
                 toAccount: toAccount,

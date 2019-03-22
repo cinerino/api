@@ -665,11 +665,15 @@ placeOrderTransactionsRouter.post(
                 accountType: paymentAccepted.accountType
             };
 
+            const currency = (accountType === cinerino.factory.accountType.Coin)
+                ? cinerino.factory.priceCurrency.JPY
+                : accountType;
             const action = await cinerino.service.payment.account.authorize({
                 agent: { id: req.user.sub },
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.Account,
-                    amount: req.body.amount,
+                    amount: Number(req.body.amount),
+                    currency: currency,
                     additionalProperty: req.body.additionalProperty,
                     fromAccount: fromAccount,
                     toAccount: toAccount,
