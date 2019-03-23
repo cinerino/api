@@ -203,9 +203,6 @@ placeOrder4cinemasunshineRouter.patch(
 placeOrder4cinemasunshineRouter.post(
     '/:transactionId/actions/authorize/offer/programMembership',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
-    (__1, __2, next) => {
-        next();
-    },
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -217,6 +214,7 @@ placeOrder4cinemasunshineRouter.post(
         try {
             // tslint:disable-next-line:no-suspicious-comment
             // TODO 実装
+
             res.status(CREATED)
                 .json({});
         } catch (error) {
@@ -231,9 +229,6 @@ placeOrder4cinemasunshineRouter.post(
 placeOrder4cinemasunshineRouter.delete(
     '/:transactionId/actions/authorize/offer/programMembership/:actionId',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
-    (__1, __2, next) => {
-        next();
-    },
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -245,6 +240,7 @@ placeOrder4cinemasunshineRouter.delete(
         try {
             // tslint:disable-next-line:no-suspicious-comment
             // TODO 実装
+
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {
@@ -395,16 +391,6 @@ placeOrder4cinemasunshineRouter.post(
                     skhnCd: req.body.seatInfoSyncIn.skhnCd
                 }
             };
-
-            // const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create({
-            //     agentId: req.user.sub,
-            //     transactionId: <string>req.params.transactionId,
-            //     authorizeObject: authorizeObject
-            // })({
-            //     action: new cinerino.repository.Action(mongoose.connection),
-            //     paymentMethod: new cinerino.repository.PaymentMethod(mongoose.connection),
-            //     transaction: new cinerino.repository.Transaction(mongoose.connection)
-            // });
 
             const mvtkService = cinerino.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk;
             const actions = await mvtkService.createMovieTicketPaymentAuthorization({
@@ -606,7 +592,7 @@ placeOrder4cinemasunshineRouter.delete(
 );
 
 /**
- * Pecorino賞金承認アクション
+ * ポイントインセンティブ承認アクション
  */
 placeOrder4cinemasunshineRouter.post(
     '/:transactionId/actions/authorize/award/pecorino',
@@ -675,14 +661,11 @@ placeOrder4cinemasunshineRouter.post(
 );
 
 /**
- * Pecorino賞金承認アクション取消
+ * ポイントインセンティブ承認アクション取消
  */
 placeOrder4cinemasunshineRouter.delete(
     '/:transactionId/actions/authorize/award/pecorino/:actionId',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
-    (__1, __2, next) => {
-        next();
-    },
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({

@@ -831,7 +831,10 @@ placeOrderTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.defaul
     try {
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        yield transactionRepo.cancel({ typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId });
+        yield transactionRepo.cancel({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        });
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
         // tslint:disable-next-line:no-floating-promises
         cinerino.service.transaction.placeOrder.exportTasks(cinerino.factory.transactionStatusType.Canceled)({
