@@ -19,16 +19,15 @@ const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const movieTheaterRouter = express_1.Router();
 movieTheaterRouter.use(authentication_1.default);
+/**
+ * @deprecated Use /sellers
+ */
 movieTheaterRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-        const searchCoinditions = {
+        const searchCoinditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-            page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-            sort: req.query.sort,
-            name: req.query.name
-        };
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const movieTheaters = yield sellerRepo.search(searchCoinditions);
         const totalCount = yield sellerRepo.count(searchCoinditions);
         movieTheaters.forEach((movieTheater) => {
@@ -49,6 +48,9 @@ movieTheaterRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admi
         next(error);
     }
 }));
+/**
+ * @deprecated Use /sellers
+ */
 movieTheaterRouter.get('/:branchCode([0-9]{3})', permitScopes_1.default(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
@@ -74,6 +76,9 @@ movieTheaterRouter.get('/:branchCode([0-9]{3})', permitScopes_1.default(['aws.co
         next(error);
     }
 }));
+/**
+ * @deprecated Use /sellers
+ */
 movieTheaterRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);

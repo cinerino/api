@@ -14,20 +14,23 @@ type ICreditCardPaymentAccepted = cinerino.factory.seller.IPaymentAccepted<ciner
 const movieTheaterRouter = Router();
 movieTheaterRouter.use(authentication);
 
+/**
+ * @deprecated Use /sellers
+ */
 movieTheaterRouter.get(
     '',
     permitScopes(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']),
     validator,
     async (req, res, next) => {
         try {
-            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const searchCoinditions: cinerino.factory.seller.ISearchConditions = {
+                ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-                sort: req.query.sort,
-                name: req.query.name
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
+
+            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const movieTheaters = await sellerRepo.search(searchCoinditions);
             const totalCount = await sellerRepo.count(searchCoinditions);
 
@@ -51,6 +54,9 @@ movieTheaterRouter.get(
     }
 );
 
+/**
+ * @deprecated Use /sellers
+ */
 movieTheaterRouter.get(
     '/:branchCode([0-9]{3})',
     permitScopes(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']),
@@ -83,6 +89,9 @@ movieTheaterRouter.get(
     }
 );
 
+/**
+ * @deprecated Use /sellers
+ */
 movieTheaterRouter.get(
     '/:id',
     permitScopes(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']),
