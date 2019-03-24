@@ -239,16 +239,14 @@ placeOrderTransactionsRouter.put(
                 throw new cinerino.factory.errors.Argument('Telephone', `Unexpected value: ${error.message}`);
             }
 
-            const contact = await cinerino.service.transaction.placeOrderInProgress.setCustomerContact({
+            const contact = await cinerino.service.transaction.placeOrderInProgress.updateCustomerProfile({
                 id: req.params.transactionId,
-                agent: { id: req.user.sub },
-                object: {
-                    customerContact: {
-                        familyName: <string>req.body.familyName,
-                        givenName: <string>req.body.givenName,
-                        email: <string>req.body.email,
-                        telephone: requestedNumber
-                    }
+                agent: {
+                    id: req.user.sub,
+                    familyName: <string>req.body.familyName,
+                    givenName: <string>req.body.givenName,
+                    email: <string>req.body.email,
+                    telephone: requestedNumber
                 }
             })({
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
