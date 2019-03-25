@@ -405,7 +405,6 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         .optional()
         .isArray(),
     check_1.body('orderId')
-        .not()
         .optional()
         .isString()
         .withMessage((_, options) => `${options.path} must be string`)
