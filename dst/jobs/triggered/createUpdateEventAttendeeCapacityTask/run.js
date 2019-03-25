@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * イベント残席数を更新する
+ * イベント席数更新タスク作成
  */
 const cinerino = require("@cinerino/domain");
 const cron_1 = require("cron");
@@ -27,55 +27,46 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     let holdSingletonProcess = false;
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
-        // tslint:disable-next-line:no-magic-numbers
-        holdSingletonProcess = yield singletonProcess.lock({ key: 'updateEventAttendeeCapacity', ttl: 60 });
+        holdSingletonProcess = yield singletonProcess.lock({ key: 'createUpdateEventAttendeeCapacityTask', ttl: 60 });
     }), 
     // tslint:disable-next-line:no-magic-numbers
     10000);
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
-    const redisClient = cinerino.redis.createClient({
-        host: process.env.REDIS_HOST,
-        port: Number(process.env.REDIS_PORT),
-        password: process.env.REDIS_KEY,
-        tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
-    });
-    const job = new cron_1.CronJob('* * * * *', () => __awaiter(this, void 0, void 0, function* () {
+    const job = new cron_1.CronJob(`* * * * *`, () => __awaiter(this, void 0, void 0, function* () {
+        if (process.env.IMPORT_EVENTS_STOPPED === '1') {
+            return;
+        }
         if (!holdSingletonProcess) {
             return;
         }
-        const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redisClient);
+        const taskRepo = new cinerino.repository.Task(connection);
         const sellerRepo = new cinerino.repository.Seller(connection);
-        const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-            domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-            clientId: process.env.CHEVRE_CLIENT_ID,
-            clientSecret: process.env.CHEVRE_CLIENT_SECRET,
-            scopes: [],
-            state: ''
-        });
-        const eventService = new cinerino.chevre.service.Event({
-            endpoint: process.env.CHEVRE_ENDPOINT,
-            auth: chevreAuthClient
-        });
         const sellers = yield sellerRepo.search({});
         const importFrom = moment()
             .toDate();
         const importThrough = moment()
             .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
             .toDate();
-        // const runsAt = new Date();
+        const runsAt = new Date();
         yield Promise.all(sellers.map((seller) => __awaiter(this, void 0, void 0, function* () {
             try {
                 if (Array.isArray(seller.makesOffer)) {
                     yield Promise.all(seller.makesOffer.map((offer) => __awaiter(this, void 0, void 0, function* () {
-                        yield cinerino.service.stock.updateEventRemainingAttendeeCapacities({
-                            locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
-                            offeredThrough: offer.offeredThrough,
-                            importFrom: importFrom,
-                            importThrough: importThrough
-                        })({
-                            attendeeCapacity: attendeeCapacityRepo,
-                            eventService: eventService
-                        });
+                        const taskAttributes = {
+                            name: cinerino.factory.taskName.UpdateEventAttendeeCapacity,
+                            status: cinerino.factory.taskStatus.Ready,
+                            runsAt: runsAt,
+                            remainingNumberOfTries: 1,
+                            numberOfTried: 0,
+                            executionResults: [],
+                            data: {
+                                locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
+                                offeredThrough: offer.offeredThrough,
+                                importFrom: importFrom,
+                                importThrough: importThrough
+                            }
+                        };
+                        yield taskRepo.save(taskAttributes);
                     })));
                 }
             }

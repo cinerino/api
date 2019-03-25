@@ -78,11 +78,13 @@ screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
         let totalCount;
         // Cinemasunshine対応
         if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
+            const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
             const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient());
             const searchConditions = Object.assign({}, req.query, { 
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined });
             events = yield cinerino.service.offer.searchScreeningEvents4cinemasunshine(searchConditions)({
+                attendeeCapacity: attendeeCapacityRepo,
                 event: eventRepo,
                 itemAvailability: itemAvailabilityRepo
             });
@@ -107,11 +109,13 @@ screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
  */
 screeningEventRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
         let event;
         // Cinemasunshine対応
         if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
             event = yield cinerino.service.offer.findScreeningEventById4cinemasunshine(req.params.id)({
+                attendeeCapacity: attendeeCapacityRepo,
                 event: new cinerino.repository.Event(mongoose.connection),
                 itemAvailability: new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient())
             });

@@ -79,6 +79,7 @@ screeningEventRouter.get(
 
             // Cinemasunshine対応
             if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
+                const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
                 const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient());
 
                 const searchConditions: cinerino.factory.event.screeningEvent.ISearchConditions = {
@@ -88,6 +89,7 @@ screeningEventRouter.get(
                     page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined
                 };
                 events = await cinerino.service.offer.searchScreeningEvents4cinemasunshine(searchConditions)({
+                    attendeeCapacity: attendeeCapacityRepo,
                     event: eventRepo,
                     itemAvailability: itemAvailabilityRepo
                 });
@@ -120,12 +122,15 @@ screeningEventRouter.get(
     validator,
     async (req, res, next) => {
         try {
+            const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
             const eventRepo = new cinerino.repository.Event(mongoose.connection);
+
             let event: cinerino.factory.chevre.event.screeningEvent.IEvent;
 
             // Cinemasunshine対応
             if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
                 event = await cinerino.service.offer.findScreeningEventById4cinemasunshine(<string>req.params.id)({
+                    attendeeCapacity: attendeeCapacityRepo,
                     event: new cinerino.repository.Event(mongoose.connection),
                     itemAvailability: new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient())
                 });

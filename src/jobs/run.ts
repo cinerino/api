@@ -36,9 +36,10 @@ import sendEmailMessage from './continuous/sendEmailMessage/run';
 import sendOrder from './continuous/sendOrder/run';
 import triggerWebhook from './continuous/triggerWebhook/run';
 import unRegisterProgramMembership from './continuous/unRegisterProgramMembership/run';
+import updateEventAttendeeCapacity from './continuous/updateEventAttendeeCapacity/run';
 
 import createImportScreeningEventsTask from './triggered/createImportScreeningEventsTask/run';
-import updateEventAttendeeCapacity from './triggered/updateEventAttendeeCapacity/run';
+import createUpdateEventAttendeeCapacityTask from './triggered/createUpdateEventAttendeeCapacityTask/run';
 import updateScreeningEventAvailability from './triggered/updateScreeningEventAvailability/run';
 
 export default async () => {
@@ -77,8 +78,9 @@ export default async () => {
     await sendOrder();
     await triggerWebhook();
     await unRegisterProgramMembership();
+    await updateEventAttendeeCapacity();
 
     await createImportScreeningEventsTask();
-    await updateEventAttendeeCapacity();
+    await createUpdateEventAttendeeCapacityTask();
     await updateScreeningEventAvailability();
 };

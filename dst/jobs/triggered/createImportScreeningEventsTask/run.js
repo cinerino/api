@@ -50,7 +50,6 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         }
         const taskRepo = new cinerino.repository.Task(connection);
         const sellerRepo = new cinerino.repository.Seller(connection);
-        // 全劇場組織を取得
         const sellers = yield sellerRepo.search({});
         const importFrom = moment()
             .toDate();
