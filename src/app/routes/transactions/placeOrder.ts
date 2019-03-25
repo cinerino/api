@@ -467,7 +467,6 @@ placeOrderTransactionsRouter.post(
             .optional()
             .isArray(),
         body('orderId')
-            .not()
             .optional()
             .isString()
             .withMessage((_, options) => `${options.path} must be string`)
