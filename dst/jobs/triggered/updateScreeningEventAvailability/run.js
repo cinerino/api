@@ -23,8 +23,7 @@ const debug = createDebug('cinerino-api:jobs');
  * 上映イベントを何週間後までインポートするか
  */
 const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS !== undefined)
-    // tslint:disable-next-line:no-magic-numbers
-    ? parseInt(process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 10)
+    ? Number(process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS)
     : 1;
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     // Cinemasunshineのみでこのタスクは使用
@@ -42,7 +41,7 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const redisClient = cinerino.redis.createClient({
         host: process.env.REDIS_HOST,
         // tslint:disable-next-line:no-magic-numbers
-        port: parseInt(process.env.REDIS_PORT, 10),
+        port: Number(process.env.REDIS_PORT),
         password: process.env.REDIS_KEY,
         tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
     });

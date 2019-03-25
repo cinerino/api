@@ -31,8 +31,7 @@ setInterval(
 function createClient() {
     const c = cinerino.redis.createClient({
         host: <string>process.env.REDIS_HOST,
-        // tslint:disable-next-line:no-magic-numbers
-        port: parseInt(<string>process.env.REDIS_PORT, 10),
+        port: Number(<string>process.env.REDIS_PORT),
         password: <string>process.env.REDIS_KEY,
         tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined,
         // If you return a number from this function, the retry will happen exactly after that time in milliseconds.

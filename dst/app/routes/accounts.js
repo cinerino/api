@@ -57,7 +57,7 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['admin']), 
                 url: ''
             },
             recipient: req.body.recipient,
-            amount: parseInt(req.body.amount, 10),
+            amount: Number(req.body.amount),
             notes: (req.body.notes !== undefined) ? req.body.notes : '入金'
         })({
             depositService: depositService

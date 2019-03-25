@@ -9,8 +9,7 @@ const UNIT_IN_SECONDS = Number(process.env.TRANSACTION_RATE_LIMIT_UNIT_IN_SECOND
 const THRESHOLD = Number(process.env.TRANSACTION_RATE_LIMIT_THRESHOLD);
 const redisClient = new ioredis({
     host: process.env.REDIS_HOST,
-    // tslint:disable-next-line:no-magic-numbers
-    port: parseInt(process.env.REDIS_PORT, 10),
+    port: Number(process.env.REDIS_PORT),
     password: process.env.REDIS_KEY,
     tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
 });

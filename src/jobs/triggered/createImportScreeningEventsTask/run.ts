@@ -16,8 +16,7 @@ const debug = createDebug('cinerino-api:jobs');
  * 上映イベントを何週間後までインポートするか
  */
 const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS !== undefined)
-    // tslint:disable-next-line:no-magic-numbers
-    ? parseInt(process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 10)
+    ? Number(process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS)
     : 1;
 
 const MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES = 60;
@@ -73,10 +72,10 @@ export default async () => {
                 .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
                 .toDate();
             const runsAt = new Date();
-            await Promise.all(sellers.map(async (movieTheater) => {
+            await Promise.all(sellers.map(async (seller) => {
                 try {
-                    if (Array.isArray(movieTheater.makesOffer)) {
-                        await Promise.all(movieTheater.makesOffer.map(async (offer) => {
+                    if (Array.isArray(seller.makesOffer)) {
+                        await Promise.all(seller.makesOffer.map(async (offer) => {
                             const taskAttributes: cinerino.factory.task.IAttributes<cinerino.factory.taskName.ImportScreeningEvents> = {
                                 name: cinerino.factory.taskName.ImportScreeningEvents,
                                 status: cinerino.factory.taskStatus.Ready,

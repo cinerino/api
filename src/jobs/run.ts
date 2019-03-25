@@ -38,6 +38,7 @@ import triggerWebhook from './continuous/triggerWebhook/run';
 import unRegisterProgramMembership from './continuous/unRegisterProgramMembership/run';
 
 import createImportScreeningEventsTask from './triggered/createImportScreeningEventsTask/run';
+import updateEventAttendeeCapacity from './triggered/updateEventAttendeeCapacity/run';
 import updateScreeningEventAvailability from './triggered/updateScreeningEventAvailability/run';
 
 export default async () => {
@@ -78,5 +79,6 @@ export default async () => {
     await unRegisterProgramMembership();
 
     await createImportScreeningEventsTask();
+    await updateEventAttendeeCapacity();
     await updateScreeningEventAvailability();
 };

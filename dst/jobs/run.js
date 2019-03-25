@@ -45,7 +45,8 @@ const run_31 = require("./continuous/sendOrder/run");
 const run_32 = require("./continuous/triggerWebhook/run");
 const run_33 = require("./continuous/unRegisterProgramMembership/run");
 const run_34 = require("./triggered/createImportScreeningEventsTask/run");
-const run_35 = require("./triggered/updateScreeningEventAvailability/run");
+const run_35 = require("./triggered/updateEventAttendeeCapacity/run");
+const run_36 = require("./triggered/updateScreeningEventAvailability/run");
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     yield run_1.default();
     yield run_2.default();
@@ -82,4 +83,5 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
     yield run_33.default();
     yield run_34.default();
     yield run_35.default();
+    yield run_36.default();
 });

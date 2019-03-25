@@ -17,8 +17,7 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     const redisClient = cinerino.redis.createClient({
         host: process.env.REDIS_HOST,
-        // tslint:disable-next-line:no-magic-numbers
-        port: parseInt(process.env.REDIS_PORT, 10),
+        port: Number(process.env.REDIS_PORT),
         password: process.env.REDIS_KEY,
         tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
     });
