@@ -34,11 +34,11 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'aws
     check_1.body('object.typeOf')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`),
+        .withMessage((_, __) => 'required'),
     check_1.body('object.amount')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
         .isInt(),
     check_1.body('object.additionalProperty')
         .optional()
@@ -51,11 +51,11 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'aws
     check_1.body('object.method')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`),
+        .withMessage((_, __) => 'required'),
     check_1.body('object.creditCard')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,

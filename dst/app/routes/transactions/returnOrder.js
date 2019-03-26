@@ -39,13 +39,13 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'a
     check_1.body('expires')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
         .isISO8601()
         .toDate(),
     check_1.body('object.order.orderNumber')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);

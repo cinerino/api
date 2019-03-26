@@ -158,11 +158,11 @@ screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['aws.cogn
     check_1.query('seller')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`),
+        .withMessage((_, __) => 'required'),
     check_1.query('store')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const eventRepo = new cinerino.repository.Event(mongoose.connection);

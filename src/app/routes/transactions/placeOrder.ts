@@ -205,19 +205,19 @@ placeOrderTransactionsRouter.put(
         body('familyName')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('givenName')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('telephone')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('email')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
     ],
     validator,
     async (req, res, next) => {
@@ -279,13 +279,13 @@ placeOrderTransactionsRouter.post(
             .optional()
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
             .isString(),
         body('object.acceptedOffer.additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
             .isString()
     ],
     validator,
@@ -378,11 +378,11 @@ placeOrderTransactionsRouter.post(
         body('typeOf')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('amount')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
             .isInt(),
         body('additionalProperty')
             .optional()
@@ -457,11 +457,11 @@ placeOrderTransactionsRouter.post(
         body('typeOf')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('amount')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
             .isInt(),
         body('additionalProperty')
             .optional()
@@ -474,11 +474,11 @@ placeOrderTransactionsRouter.post(
         body('method')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('creditCard')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
     ],
     validator,
     async (req, res, next) => {
@@ -580,11 +580,11 @@ placeOrderTransactionsRouter.post(
         body('typeOf')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('amount')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
             .isInt(),
         body('additionalProperty')
             .optional()
@@ -592,7 +592,7 @@ placeOrderTransactionsRouter.post(
         body('fromAccount')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
     ],
     validator,
     async (req, res, next) => {
@@ -744,11 +744,11 @@ placeOrderTransactionsRouter.post(
         body('typeOf')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('amount')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
             .isInt(),
         body('additionalProperty')
             .optional()
@@ -756,7 +756,7 @@ placeOrderTransactionsRouter.post(
         body('movieTickets')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
             .isArray()
     ],
     validator,

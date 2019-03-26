@@ -37,13 +37,13 @@ returnOrderTransactionsRouter.post(
         body('expires')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
             .isISO8601()
             .toDate(),
         body('object.order.orderNumber')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
     ],
     validator,
     async (req, res, next) => {

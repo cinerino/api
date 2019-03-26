@@ -63,11 +63,11 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['aws.cognito
     check_1.body('object.typeOf')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`),
+        .withMessage((_, __) => 'required'),
     check_1.body('object.amount')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
         .isInt(),
     check_1.body('object.additionalProperty')
         .optional()
@@ -75,7 +75,7 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['aws.cognito
     check_1.body('object.movieTickets')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
         .isArray()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({

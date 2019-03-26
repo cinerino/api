@@ -183,11 +183,11 @@ screeningEventRouter.get(
         query('seller')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         query('store')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
     ],
     validator,
     async (req, res, next) => {

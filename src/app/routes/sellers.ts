@@ -25,56 +25,56 @@ sellersRouter.post(
         body('typeOf')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('name.ja')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('name.en')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('parentOrganization.typeOf')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('parentOrganization.name.ja')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('parentOrganization.name.en')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('location.typeOf')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('location.branchCode')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('location.name.ja')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('location.name.en')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('telephone')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('url')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
             .isURL(),
         body('paymentAccepted')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
             .isArray(),
         body('hasPOS')
             .isArray(),
@@ -155,56 +155,56 @@ sellersRouter.put(
         body('typeOf')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('name.ja')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('name.en')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('parentOrganization.typeOf')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('parentOrganization.name.ja')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('parentOrganization.name.en')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('location.typeOf')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('location.branchCode')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('location.name.ja')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('location.name.en')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('telephone')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('url')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
             .isURL(),
         body('paymentAccepted')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
             .isArray(),
         body('hasPOS')
             .isArray(),

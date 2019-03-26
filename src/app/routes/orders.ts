@@ -4,9 +4,10 @@
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
-import { body } from 'express-validator/check';
+import { body, query } from 'express-validator/check';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { NO_CONTENT } from 'http-status';
+import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
@@ -45,15 +46,15 @@ ordersRouter.post(
         body('theaterCode')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('confirmationNumber')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('telephone')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
     ],
     validator,
     async (req, res, next) => {
@@ -109,7 +110,7 @@ ordersRouter.post(
         body('orderNumber')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
     ],
     validator,
     async (req, res, next) => {
@@ -227,14 +228,22 @@ ordersRouter.post(
     '/findByConfirmationNumber',
     permitScopes(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']),
     ...[
+        query('orderDateFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('orderDateThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
         body('confirmationNumber')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('customer')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
     ],
     validator,
     async (req, res, next) => {
@@ -244,9 +253,20 @@ ordersRouter.post(
                 throw new cinerino.factory.errors.Argument('customer');
             }
 
+            // 個人情報完全一致で検索する
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
 
-            // 個人情報完全一致で検索する
+            const orderDateThrough = (req.query.orderDateThrough instanceof Date)
+                ? req.query.orderDateThrough
+                : moment()
+                    .toDate();
+            const orderDateFrom = (req.query.orderDateFrom instanceof Date)
+                ? req.query.orderDateFrom
+                : moment(orderDateThrough)
+                    // tslint:disable-next-line:no-magic-numbers
+                    .add(-3, 'months') // とりあえず直近3カ月をデフォルト動作に設定
+                    .toDate();
+
             const orders = await orderRepo.search({
                 limit: 1,
                 sort: { orderDate: cinerino.factory.sortType.Descending },
@@ -258,8 +278,11 @@ ordersRouter.post(
                     telephone: (customer.telephone !== undefined)
                         ? `^${escapeRegExp(customer.telephone)}$`
                         : undefined
-                }
+                },
+                orderDateFrom: orderDateFrom,
+                orderDateThrough: orderDateThrough
             });
+
             const order = orders.shift();
             if (order === undefined) {
                 // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
@@ -283,7 +306,7 @@ ordersRouter.post(
         body('customer')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
     ],
     validator,
     async (req, res, next) => {
@@ -398,39 +421,32 @@ ordersRouter.get(
 ordersRouter.get(
     '',
     permitScopes(['admin']),
-    (req, _, next) => {
-        req.checkQuery('orderDateFrom')
+    ...[
+        query('orderDateFrom')
             .optional()
             .isISO8601()
-            .withMessage('must be ISO8601')
-            .toDate();
-        req.checkQuery('orderDateThrough')
+            .toDate(),
+        query('orderDateThrough')
             .optional()
             .isISO8601()
-            .withMessage('must be ISO8601')
-            .toDate();
-        req.checkQuery('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
+            .toDate(),
+        query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
             .optional()
             .isISO8601()
-            .withMessage('must be ISO8601')
-            .toDate();
-        req.checkQuery('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
+            .toDate(),
+        query('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
             .optional()
             .isISO8601()
-            .withMessage('must be ISO8601')
-            .toDate();
-        req.checkQuery('acceptedOffers.itemOffered.reservationFor.startFrom')
+            .toDate(),
+        query('acceptedOffers.itemOffered.reservationFor.startFrom')
             .optional()
             .isISO8601()
-            .withMessage('must be ISO8601')
-            .toDate();
-        req.checkQuery('acceptedOffers.itemOffered.reservationFor.startThrough')
+            .toDate(),
+        query('acceptedOffers.itemOffered.reservationFor.startThrough')
             .optional()
             .isISO8601()
-            .withMessage('must be ISO8601')
-            .toDate();
-        next();
-    },
+            .toDate()
+    ],
     validator,
     async (req, res, next) => {
         try {

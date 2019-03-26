@@ -179,19 +179,19 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
     check_1.body('familyName')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`),
+        .withMessage((_, __) => 'required'),
     check_1.body('givenName')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`),
+        .withMessage((_, __) => 'required'),
     check_1.body('telephone')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`),
+        .withMessage((_, __) => 'required'),
     check_1.body('email')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
@@ -245,13 +245,13 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         .optional()
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
         .isString(),
     check_1.body('object.acceptedOffer.additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
         .isString()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
@@ -329,11 +329,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     check_1.body('typeOf')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`),
+        .withMessage((_, __) => 'required'),
     check_1.body('amount')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
         .isInt(),
     check_1.body('additionalProperty')
         .optional()
@@ -395,11 +395,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     check_1.body('typeOf')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`),
+        .withMessage((_, __) => 'required'),
     check_1.body('amount')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
         .isInt(),
     check_1.body('additionalProperty')
         .optional()
@@ -412,11 +412,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     check_1.body('method')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`),
+        .withMessage((_, __) => 'required'),
     check_1.body('creditCard')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
@@ -497,11 +497,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     check_1.body('typeOf')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`),
+        .withMessage((_, __) => 'required'),
     check_1.body('amount')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
         .isInt(),
     check_1.body('additionalProperty')
         .optional()
@@ -509,7 +509,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     check_1.body('fromAccount')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
@@ -635,11 +635,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     check_1.body('typeOf')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`),
+        .withMessage((_, __) => 'required'),
     check_1.body('amount')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
         .isInt(),
     check_1.body('additionalProperty')
         .optional()
@@ -647,7 +647,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     check_1.body('movieTickets')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
         .isArray()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({

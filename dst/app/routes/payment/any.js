@@ -30,11 +30,11 @@ anyPaymentRouter.post('/authorize', permitScopes_1.default(['admin']), ...[
     check_1.body('object.typeOf')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`),
+        .withMessage((_, __) => 'required'),
     check_1.body('object.amount')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
         .isInt(),
     check_1.body('object.additionalProperty')
         .optional()

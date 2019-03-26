@@ -65,11 +65,11 @@ movieTicketPaymentRouter.post(
         body('object.typeOf')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`),
+            .withMessage((_, __) => 'required'),
         body('object.amount')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
             .isInt(),
         body('object.additionalProperty')
             .optional()
@@ -77,7 +77,7 @@ movieTicketPaymentRouter.post(
         body('object.movieTickets')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
             .isArray()
     ],
     validator,

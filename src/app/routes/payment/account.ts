@@ -34,7 +34,7 @@ accountPaymentRouter.post(
         body('object.amount')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
             .isInt(),
         body('object.additionalProperty')
             .optional()
@@ -42,7 +42,7 @@ accountPaymentRouter.post(
         body('object.fromAccount')
             .not()
             .isEmpty()
-            .withMessage((_, options) => `${options.path} is required`)
+            .withMessage((_, __) => 'required')
     ],
     validator,
     async (req, res, next) => {

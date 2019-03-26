@@ -17,6 +17,7 @@ const express_1 = require("express");
 const check_1 = require("express-validator/check");
 const google_libphonenumber_1 = require("google-libphonenumber");
 const http_status_1 = require("http-status");
+const moment = require("moment");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -46,15 +47,15 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['aws.cognito
     check_1.body('theaterCode')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`),
+        .withMessage((_, __) => 'required'),
     check_1.body('confirmationNumber')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`),
+        .withMessage((_, __) => 'required'),
     check_1.body('telephone')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const phoneUtil = google_libphonenumber_1.PhoneNumberUtil.getInstance();
@@ -99,7 +100,7 @@ ordersRouter.post('', permitScopes_1.default(['admin']), ...[
     check_1.body('orderNumber')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
@@ -194,22 +195,40 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['admin']), va
  * 確認番号で注文照会
  */
 ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']), ...[
+    check_1.query('orderDateFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('orderDateThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
     check_1.body('confirmationNumber')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`),
+        .withMessage((_, __) => 'required'),
     check_1.body('customer')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const customer = req.body.customer;
         if (customer.email !== undefined && customer.telephone !== undefined) {
             throw new cinerino.factory.errors.Argument('customer');
         }
-        const orderRepo = new cinerino.repository.Order(mongoose.connection);
         // 個人情報完全一致で検索する
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        const orderDateThrough = (req.query.orderDateThrough instanceof Date)
+            ? req.query.orderDateThrough
+            : moment()
+                .toDate();
+        const orderDateFrom = (req.query.orderDateFrom instanceof Date)
+            ? req.query.orderDateFrom
+            : moment(orderDateThrough)
+                // tslint:disable-next-line:no-magic-numbers
+                .add(-3, 'months') // とりあえず直近3カ月をデフォルト動作に設定
+                .toDate();
         const orders = yield orderRepo.search({
             limit: 1,
             sort: { orderDate: cinerino.factory.sortType.Descending },
@@ -221,7 +240,9 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['aws.cogn
                 telephone: (customer.telephone !== undefined)
                     ? `^${escapeRegExp(customer.telephone)}$`
                     : undefined
-            }
+            },
+            orderDateFrom: orderDateFrom,
+            orderDateThrough: orderDateThrough
         });
         const order = orders.shift();
         if (order === undefined) {
@@ -241,7 +262,7 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
     check_1.body('customer')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const customer = req.body.customer;
@@ -338,39 +359,32 @@ ordersRouter.get('/:orderNumber/actions', permitScopes_1.default(['admin']), val
 /**
  * 注文検索
  */
-ordersRouter.get('', permitScopes_1.default(['admin']), (req, _, next) => {
-    req.checkQuery('orderDateFrom')
+ordersRouter.get('', permitScopes_1.default(['admin']), ...[
+    check_1.query('orderDateFrom')
         .optional()
         .isISO8601()
-        .withMessage('must be ISO8601')
-        .toDate();
-    req.checkQuery('orderDateThrough')
+        .toDate(),
+    check_1.query('orderDateThrough')
         .optional()
         .isISO8601()
-        .withMessage('must be ISO8601')
-        .toDate();
-    req.checkQuery('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
+        .toDate(),
+    check_1.query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
         .optional()
         .isISO8601()
-        .withMessage('must be ISO8601')
-        .toDate();
-    req.checkQuery('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
+        .toDate(),
+    check_1.query('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
         .optional()
         .isISO8601()
-        .withMessage('must be ISO8601')
-        .toDate();
-    req.checkQuery('acceptedOffers.itemOffered.reservationFor.startFrom')
+        .toDate(),
+    check_1.query('acceptedOffers.itemOffered.reservationFor.startFrom')
         .optional()
         .isISO8601()
-        .withMessage('must be ISO8601')
-        .toDate();
-    req.checkQuery('acceptedOffers.itemOffered.reservationFor.startThrough')
+        .toDate(),
+    check_1.query('acceptedOffers.itemOffered.reservationFor.startThrough')
         .optional()
         .isISO8601()
-        .withMessage('must be ISO8601')
-        .toDate();
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+        .toDate()
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const searchConditions = Object.assign({}, req.query, { 

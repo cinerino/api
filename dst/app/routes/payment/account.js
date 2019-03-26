@@ -37,7 +37,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'aws.co
     check_1.body('object.amount')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
         .isInt(),
     check_1.body('object.additionalProperty')
         .optional()
@@ -45,7 +45,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'aws.co
     check_1.body('object.fromAccount')
         .not()
         .isEmpty()
-        .withMessage((_, options) => `${options.path} is required`)
+        .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,

@@ -41,14 +41,13 @@
 | `WAITER_DISABLED`                         | false    | 1 or 0         | WAITER Disable Flag                         |
 | `WAITER_SECRET`                           | true     |                | WAITER Pasport Token Secret                 |
 | `WAITER_PASSPORT_ISSUER`                  | true     |                | WAITER Pasport Issuer                       |
-| `ORDER_INQUIRY_ENDPOINT`                  | true     |                | Order inquiry endpoint                      |
 | `BASIC_AUTH_NAME`                         | false    |                | Basic authentication user name              |
 | `BASIC_AUTH_PASS`                         | false    |                | Basic authentication user password          |
 | `AWS_ACCESS_KEY_ID`                       | true     |                | AWS access key                              |
 | `AWS_SECRET_ACCESS_KEY`                   | true     |                | AWS secret access key                       |
 | `COGNITO_USER_POOL_ID`                    | true     |                | Cognito user pool ID                        |
-| `CODE_EXPIRES_IN_SECONDS`                 | true     |                | 所有権コード期限                            |
-| `SENDGRID_API_KEY`                        | true     |                | SendGrid APIキー                            |
+| `CODE_EXPIRES_IN_SECONDS`                 | true     |                | OwnershipInfo code expiration               |
+| `SENDGRID_API_KEY`                        | true     |                | SendGrid API key                            |
 | `MVTK_RESERVE_ENDPOINT`                   | true     |                | ムビチケ着券APIエンドポイント               |
 | `MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN`    | true     |                | ムビチケ着券API認可サーバードメイン         |
 | `MVTK_RESERVE_CLIENT_ID`                  | true     |                | ムビチケ着券APIクライアントID               |
