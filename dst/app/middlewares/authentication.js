@@ -40,10 +40,11 @@ exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* 
                 // リクエストユーザーの属性を識別子に追加
                 try {
                     identifier.push(...Object.keys(user)
+                        .filter((key) => key !== 'scopes') // scopeとデータ内容は重複するので省く
                         .map((key) => {
                         return {
-                            name: key,
-                            value: user[key].toString()
+                            name: String(key),
+                            value: String(user[key])
                         };
                     }));
                 }

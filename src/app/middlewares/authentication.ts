@@ -35,10 +35,11 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 // リクエストユーザーの属性を識別子に追加
                 try {
                     identifier.push(...Object.keys(user)
+                        .filter((key) => key !== 'scopes') // scopeとデータ内容は重複するので省く
                         .map((key) => {
                             return {
-                                name: key,
-                                value: (<any>user)[key].toString()
+                                name: String(key),
+                                value: String((<any>user)[key])
                             };
                         }));
                 } catch (error) {
