@@ -800,7 +800,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             id: req.params.transactionId,
             agent: { id: req.user.sub },
             result: { order: { orderDate: orderDate } },
-            options: Object.assign({}, req.body, { sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false })
+            options: Object.assign({}, req.body, { sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false, validateMovieTicket: (process.env.VALIDATE_MOVIE_TICKET === '1') })
         })({
             action: actionRepo,
             transaction: transactionRepo,
