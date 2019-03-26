@@ -61,6 +61,7 @@
 | `USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO`  | false    | 1 or 0         | イベント在庫状況Redisリポジトリ使用フラグ   |
 | `CUSTOMER_TELEPHONE_JP_FORMAT_ACCEPTED`   | false    | 1 or 0         | 日本フォーマットの電話番号許容フラグ        |
 | `USE_USERNAME_AS_GMO_MEMBER_ID`           | false    | 1 or 0         | GMO会員IDにユーザーネームを使用するかどうか |
+| `VALIDATE_MOVIE_TICKET`                   | false    | 1 or 0         | Validation flag for movie tickets           |
 
 ## License
 

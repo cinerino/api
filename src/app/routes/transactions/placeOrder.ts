@@ -885,7 +885,8 @@ placeOrderTransactionsRouter.put(
                 result: { order: { orderDate: orderDate } },
                 options: {
                     ...req.body,
-                    sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false
+                    sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false,
+                    validateMovieTicket: (process.env.VALIDATE_MOVIE_TICKET === '1')
                 }
             })({
                 action: actionRepo,
