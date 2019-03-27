@@ -721,7 +721,7 @@ placeOrder4cinemasunshineRouter.post(
                             // COAに適合させるため、座席予約の場合、確認番号をCOA予約番号に強制変換
                             if (firstOffer !== undefined
                                 && firstOffer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
-                                return Number(firstOffer.itemOffered.reservationNumber);
+                                return String(firstOffer.itemOffered.reservationNumber);
                             } else {
                                 return params.confirmationNumber;
                             }
