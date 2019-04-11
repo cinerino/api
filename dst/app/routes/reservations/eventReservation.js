@@ -36,7 +36,7 @@ eventReservationRouter.get('/screeningEvent', permitScopes_1.default(['admin']),
             endpoint: process.env.CHEVRE_ENDPOINT,
             auth: chevreAuthClient
         });
-        const searchResult = yield reservationService.searchScreeningEventReservations(req.query);
+        const searchResult = yield reservationService.search(Object.assign({}, req.query, { typeOf: cinerino.factory.chevre.reservationType.EventReservation }));
         res.set('X-Total-Count', searchResult.totalCount.toString());
         res.json(searchResult.data);
     }
@@ -77,7 +77,7 @@ eventReservationRouter.post('/screeningEvent/findByToken', permitScopes_1.defaul
             endpoint: process.env.CHEVRE_ENDPOINT,
             auth: chevreAuthClient
         });
-        const reservation = yield reservationService.findScreeningEventReservationById({ id: ownershipInfo.typeOfGood.id });
+        const reservation = yield reservationService.findById({ id: ownershipInfo.typeOfGood.id });
         // 入場
         yield reservationService.attendScreeningEvent(reservation);
         res.json(Object.assign({}, ownershipInfo, { typeOfGood: reservation }));

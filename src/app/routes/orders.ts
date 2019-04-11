@@ -348,8 +348,9 @@ ordersRouter.post(
                 endpoint: <string>process.env.CHEVRE_ENDPOINT,
                 auth: chevreAuthClient
             });
-            const searchReservationsResult = await reservationService.searchScreeningEventReservations({
+            const searchReservationsResult = await reservationService.search({
                 limit: reservationIds.length,
+                typeOf: cinerino.factory.chevre.reservationType.EventReservation,
                 ids: reservationIds
             });
             // 所有権に対してコード発行

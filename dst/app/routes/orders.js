@@ -299,8 +299,9 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
             endpoint: process.env.CHEVRE_ENDPOINT,
             auth: chevreAuthClient
         });
-        const searchReservationsResult = yield reservationService.searchScreeningEventReservations({
+        const searchReservationsResult = yield reservationService.search({
             limit: reservationIds.length,
+            typeOf: cinerino.factory.chevre.reservationType.EventReservation,
             ids: reservationIds
         });
         // 所有権に対してコード発行
