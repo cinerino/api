@@ -1097,10 +1097,14 @@ placeOrderTransactionsRouter.get(
                 object: req.query.object,
                 result: req.query.result
             };
-            const stream = await cinerino.service.report.transaction.download({
+
+            const format = req.query.format;
+
+            const stream = await cinerino.service.report.transaction.stream({
                 conditions: searchConditions,
-                format: req.query.format
+                format: format
             })({ transaction: transactionRepo });
+
             res.type(`${req.query.format}; charset=utf-8`);
             stream.pipe(res);
         } catch (error) {
