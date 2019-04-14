@@ -73,21 +73,23 @@ screeningEventRouter.get(
     validator,
     async (req, res, next) => {
         try {
+            const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
             const eventRepo = new cinerino.repository.Event(mongoose.connection);
+
             let events: cinerino.factory.chevre.event.screeningEvent.IEvent[];
             let totalCount: number;
 
             // Cinemasunshine対応
             if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
-                const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
                 // const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient());
 
-                const searchConditions: cinerino.factory.event.screeningEvent.ISearchConditions = {
+                const searchConditions: cinerino.chevre.factory.event.screeningEvent.ISearchConditions = {
                     ...req.query,
                     // tslint:disable-next-line:no-magic-numbers
                     limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined,
                     page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined
                 };
+
                 events = await cinerino.service.offer.searchEvents4cinemasunshine(searchConditions)({
                     attendeeCapacity: attendeeCapacityRepo,
                     event: eventRepo
@@ -101,12 +103,16 @@ screeningEventRouter.get(
                     limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                     page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
                 };
-                events = await eventRepo.searchScreeningEvents(searchCoinditions);
+
+                events = await cinerino.service.offer.searchEvents(searchCoinditions)({
+                    event: eventRepo,
+                    attendeeCapacity: attendeeCapacityRepo
+                });
                 totalCount = await eventRepo.countScreeningEvents(searchCoinditions);
             }
 
-            res.set('X-Total-Count', totalCount.toString());
-            res.json(events);
+            res.set('X-Total-Count', totalCount.toString())
+                .json(events);
         } catch (error) {
             next(error);
         }

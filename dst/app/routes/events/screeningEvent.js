@@ -73,12 +73,12 @@ screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
         let events;
         let totalCount;
         // Cinemasunshine対応
         if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
-            const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
             // const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient());
             const searchConditions = Object.assign({}, req.query, { 
                 // tslint:disable-next-line:no-magic-numbers
@@ -94,11 +94,14 @@ screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
             const searchCoinditions = Object.assign({}, req.query, { 
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-            events = yield eventRepo.searchScreeningEvents(searchCoinditions);
+            events = yield cinerino.service.offer.searchEvents(searchCoinditions)({
+                event: eventRepo,
+                attendeeCapacity: attendeeCapacityRepo
+            });
             totalCount = yield eventRepo.countScreeningEvents(searchCoinditions);
         }
-        res.set('X-Total-Count', totalCount.toString());
-        res.json(events);
+        res.set('X-Total-Count', totalCount.toString())
+            .json(events);
     }
     catch (error) {
         next(error);
