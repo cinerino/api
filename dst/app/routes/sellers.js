@@ -105,7 +105,9 @@ sellersRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin', '
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-        const sellers = yield sellerRepo.search(searchCoinditions);
+        const sellers = yield sellerRepo.search(searchCoinditions, 
+        // 管理者以外にセキュアな情報を露出しないように
+        (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined);
         const totalCount = yield sellerRepo.count(searchCoinditions);
         res.set('X-Total-Count', totalCount.toString());
         res.json(sellers);
@@ -122,7 +124,9 @@ sellersRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.user.admin
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const seller = yield sellerRepo.findById({
             id: req.params.id
-        });
+        }, 
+        // 管理者以外にセキュアな情報を露出しないように
+        (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined);
         res.json(seller);
     }
     catch (error) {

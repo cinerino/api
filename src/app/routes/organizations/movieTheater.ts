@@ -31,7 +31,11 @@ movieTheaterRouter.get(
             };
 
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-            const movieTheaters = await sellerRepo.search(searchCoinditions);
+            const movieTheaters = await sellerRepo.search(
+                searchCoinditions,
+                // 管理者以外にセキュアな情報を露出しないように
+                (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined
+            );
             const totalCount = await sellerRepo.count(searchCoinditions);
 
             movieTheaters.forEach((movieTheater) => {
@@ -64,9 +68,13 @@ movieTheaterRouter.get(
     async (req, res, next) => {
         try {
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-            const movieTheaters = await sellerRepo.search({
-                location: { branchCodes: [<string>req.params.branchCode] }
-            });
+            const movieTheaters = await sellerRepo.search(
+                {
+                    location: { branchCodes: [<string>req.params.branchCode] }
+                },
+                // 管理者以外にセキュアな情報を露出しないように
+                (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined
+            );
             const movieTheater = movieTheaters.shift();
             if (movieTheater === undefined) {
                 throw new cinerino.factory.errors.NotFound('Organization');
@@ -99,9 +107,13 @@ movieTheaterRouter.get(
     async (req, res, next) => {
         try {
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-            const movieTheater = await sellerRepo.findById({
-                id: req.params.id
-            });
+            const movieTheater = await sellerRepo.findById(
+                {
+                    id: req.params.id
+                },
+                // 管理者以外にセキュアな情報を露出しないように
+                (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined
+            );
             res.json(movieTheater);
         } catch (error) {
             next(error);

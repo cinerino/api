@@ -28,7 +28,9 @@ movieTheaterRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admi
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-        const movieTheaters = yield sellerRepo.search(searchCoinditions);
+        const movieTheaters = yield sellerRepo.search(searchCoinditions, 
+        // 管理者以外にセキュアな情報を露出しないように
+        (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined);
         const totalCount = yield sellerRepo.count(searchCoinditions);
         movieTheaters.forEach((movieTheater) => {
             // 互換性維持のためgmoInfoをpaymentAcceptedから情報追加
@@ -56,7 +58,9 @@ movieTheaterRouter.get('/:branchCode([0-9]{3})', permitScopes_1.default(['aws.co
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const movieTheaters = yield sellerRepo.search({
             location: { branchCodes: [req.params.branchCode] }
-        });
+        }, 
+        // 管理者以外にセキュアな情報を露出しないように
+        (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined);
         const movieTheater = movieTheaters.shift();
         if (movieTheater === undefined) {
             throw new cinerino.factory.errors.NotFound('Organization');
@@ -84,7 +88,9 @@ movieTheaterRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.user.
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const movieTheater = yield sellerRepo.findById({
             id: req.params.id
-        });
+        }, 
+        // 管理者以外にセキュアな情報を露出しないように
+        (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined);
         res.json(movieTheater);
     }
     catch (error) {

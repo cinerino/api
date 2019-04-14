@@ -114,7 +114,11 @@ sellersRouter.get(
             };
 
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-            const sellers = await sellerRepo.search(searchCoinditions);
+            const sellers = await sellerRepo.search(
+                searchCoinditions,
+                // 管理者以外にセキュアな情報を露出しないように
+                (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined
+            );
             const totalCount = await sellerRepo.count(searchCoinditions);
 
             res.set('X-Total-Count', totalCount.toString());
@@ -135,9 +139,13 @@ sellersRouter.get(
     async (req, res, next) => {
         try {
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-            const seller = await sellerRepo.findById({
-                id: req.params.id
-            });
+            const seller = await sellerRepo.findById(
+                {
+                    id: req.params.id
+                },
+                // 管理者以外にセキュアな情報を露出しないように
+                (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined
+            );
             res.json(seller);
         } catch (error) {
             next(error);
