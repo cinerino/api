@@ -80,7 +80,7 @@ screeningEventRouter.get(
             // Cinemasunshine対応
             if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
                 const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
-                const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient());
+                // const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient());
 
                 const searchConditions: cinerino.factory.event.screeningEvent.ISearchConditions = {
                     ...req.query,
@@ -88,10 +88,10 @@ screeningEventRouter.get(
                     limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined,
                     page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined
                 };
-                events = await cinerino.service.offer.searchScreeningEvents4cinemasunshine(searchConditions)({
+                events = await cinerino.service.offer.searchEvents4cinemasunshine(searchConditions)({
                     attendeeCapacity: attendeeCapacityRepo,
-                    event: eventRepo,
-                    itemAvailability: itemAvailabilityRepo
+                    event: eventRepo
+                    // itemAvailability: itemAvailabilityRepo
                 });
                 totalCount = await eventRepo.countScreeningEvents(searchConditions);
             } else {
@@ -129,10 +129,10 @@ screeningEventRouter.get(
 
             // Cinemasunshine対応
             if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
-                event = await cinerino.service.offer.findScreeningEventById4cinemasunshine(<string>req.params.id)({
+                event = await cinerino.service.offer.findEventById4cinemasunshine(<string>req.params.id)({
                     attendeeCapacity: attendeeCapacityRepo,
-                    event: new cinerino.repository.Event(mongoose.connection),
-                    itemAvailability: new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient())
+                    event: new cinerino.repository.Event(mongoose.connection)
+                    // itemAvailability: new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient())
                 });
             } else {
                 event = await eventRepo.findById({ typeOf: cinerino.factory.chevre.eventType.ScreeningEvent, id: req.params.id });
@@ -159,7 +159,7 @@ screeningEventRouter.get(
                 endpoint: <string>process.env.CHEVRE_ENDPOINT,
                 auth: chevreAuthClient
             });
-            const offers = await cinerino.service.offer.searchScreeningEventOffers({
+            const offers = await cinerino.service.offer.searchEventOffers({
                 event: { id: req.params.id }
             })({
                 event: eventRepo,
@@ -198,7 +198,7 @@ screeningEventRouter.get(
                 endpoint: <string>process.env.CHEVRE_ENDPOINT,
                 auth: chevreAuthClient
             });
-            const offers = await cinerino.service.offer.searchScreeningEventTicketOffers({
+            const offers = await cinerino.service.offer.searchEventTicketOffers({
                 event: { id: req.params.id },
                 seller: req.query.seller,
                 store: req.query.store

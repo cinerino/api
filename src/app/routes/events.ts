@@ -30,9 +30,10 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            await cinerino.service.offer.findScreeningEventById4cinemasunshine(<string>req.params.id)({
-                event: new cinerino.repository.Event(mongoose.connection),
-                itemAvailability: new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient())
+            await cinerino.service.offer.findEventById4cinemasunshine(<string>req.params.id)({
+                attendeeCapacity: new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient()),
+                event: new cinerino.repository.Event(mongoose.connection)
+                // itemAvailability: new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient())
             })
                 .then((event) => {
                     res.json(event);
@@ -71,7 +72,8 @@ eventsRouter.get(
     async (req, res, next) => {
         try {
             const eventRepo = new cinerino.repository.Event(mongoose.connection);
-            const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient());
+            const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
+            // const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient());
 
             const searchConditions: cinerino.factory.event.screeningEvent.ISearchConditions = {
                 ...req.query,
@@ -80,9 +82,10 @@ eventsRouter.get(
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined,
                 sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: cinerino.factory.sortType.Ascending }
             };
-            const events = await cinerino.service.offer.searchScreeningEvents4cinemasunshine(searchConditions)({
-                event: eventRepo,
-                itemAvailability: itemAvailabilityRepo
+            const events = await cinerino.service.offer.searchEvents4cinemasunshine(searchConditions)({
+                attendeeCapacity: attendeeCapacityRepo,
+                event: eventRepo
+                // itemAvailability: itemAvailabilityRepo
             });
             const totalCount = await eventRepo.countScreeningEvents(searchConditions);
 

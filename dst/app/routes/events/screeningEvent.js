@@ -79,14 +79,14 @@ screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
         // Cinemasunshine対応
         if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
             const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
-            const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient());
+            // const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient());
             const searchConditions = Object.assign({}, req.query, { 
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined });
-            events = yield cinerino.service.offer.searchScreeningEvents4cinemasunshine(searchConditions)({
+            events = yield cinerino.service.offer.searchEvents4cinemasunshine(searchConditions)({
                 attendeeCapacity: attendeeCapacityRepo,
-                event: eventRepo,
-                itemAvailability: itemAvailabilityRepo
+                event: eventRepo
+                // itemAvailability: itemAvailabilityRepo
             });
             totalCount = yield eventRepo.countScreeningEvents(searchConditions);
         }
@@ -114,10 +114,10 @@ screeningEventRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.use
         let event;
         // Cinemasunshine対応
         if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
-            event = yield cinerino.service.offer.findScreeningEventById4cinemasunshine(req.params.id)({
+            event = yield cinerino.service.offer.findEventById4cinemasunshine(req.params.id)({
                 attendeeCapacity: attendeeCapacityRepo,
-                event: new cinerino.repository.Event(mongoose.connection),
-                itemAvailability: new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient())
+                event: new cinerino.repository.Event(mongoose.connection)
+                // itemAvailability: new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient())
             });
         }
         else {
@@ -139,7 +139,7 @@ screeningEventRouter.get('/:id/offers', permitScopes_1.default(['aws.cognito.sig
             endpoint: process.env.CHEVRE_ENDPOINT,
             auth: chevreAuthClient
         });
-        const offers = yield cinerino.service.offer.searchScreeningEventOffers({
+        const offers = yield cinerino.service.offer.searchEventOffers({
             event: { id: req.params.id }
         })({
             event: eventRepo,
@@ -171,7 +171,7 @@ screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['aws.cogn
             endpoint: process.env.CHEVRE_ENDPOINT,
             auth: chevreAuthClient
         });
-        const offers = yield cinerino.service.offer.searchScreeningEventTicketOffers({
+        const offers = yield cinerino.service.offer.searchEventTicketOffers({
             event: { id: req.params.id },
             seller: req.query.seller,
             store: req.query.store

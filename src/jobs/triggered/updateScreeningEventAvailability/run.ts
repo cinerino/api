@@ -65,7 +65,7 @@ export default async () => {
             await Promise.all(sellers.map(async (seller) => {
                 try {
                     if (seller.location !== undefined && seller.location.branchCode !== undefined) {
-                        await cinerino.service.offer.updateScreeningEventItemAvailability(
+                        await cinerino.service.offer.updateEventItemAvailability(
                             seller.location.branchCode,
                             startFrom,
                             startThrough

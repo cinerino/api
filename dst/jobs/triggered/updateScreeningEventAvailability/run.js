@@ -61,7 +61,7 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         yield Promise.all(sellers.map((seller) => __awaiter(this, void 0, void 0, function* () {
             try {
                 if (seller.location !== undefined && seller.location.branchCode !== undefined) {
-                    yield cinerino.service.offer.updateScreeningEventItemAvailability(seller.location.branchCode, startFrom, startThrough)({ itemAvailability: itemAvailabilityRepo });
+                    yield cinerino.service.offer.updateEventItemAvailability(seller.location.branchCode, startFrom, startThrough)({ itemAvailability: itemAvailabilityRepo });
                     debug('item availability updated');
                 }
             }
