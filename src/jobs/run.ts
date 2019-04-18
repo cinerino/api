@@ -40,7 +40,6 @@ import updateEventAttendeeCapacity from './continuous/updateEventAttendeeCapacit
 
 import createImportScreeningEventsTask from './triggered/createImportScreeningEventsTask/run';
 import createUpdateEventAttendeeCapacityTask from './triggered/createUpdateEventAttendeeCapacityTask/run';
-import updateScreeningEventAvailability from './triggered/updateScreeningEventAvailability/run';
 
 export default async () => {
     await abortTasks();
@@ -82,5 +81,4 @@ export default async () => {
 
     await createImportScreeningEventsTask();
     await createUpdateEventAttendeeCapacityTask();
-    await updateScreeningEventAvailability();
 };

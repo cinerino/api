@@ -30,6 +30,10 @@ const redis = require("../../../redis");
  */
 const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
+const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== undefined)
+    ? Number(process.env.NUM_ORDER_ITEMS_MAX_VALUE)
+    // tslint:disable-next-line:no-magic-numbers
+    : 50;
 const placeOrderTransactionsRouter = express_1.Router();
 const debug = createDebug('cinerino-api:router');
 const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
@@ -799,7 +803,13 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
         const result = yield cinerino.service.transaction.placeOrderInProgress.confirm({
             id: req.params.transactionId,
             agent: { id: req.user.sub },
-            result: { order: { orderDate: orderDate } },
+            result: Object.assign({}, req.body.result, { order: {
+                    orderDate: orderDate,
+                    numItems: {
+                        maxValue: NUM_ORDER_ITEMS_MAX_VALUE
+                        // minValue: 0
+                    }
+                } }),
             options: Object.assign({}, req.body, { sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false, validateMovieTicket: (process.env.VALIDATE_MOVIE_TICKET === '1') })
         })({
             action: actionRepo,

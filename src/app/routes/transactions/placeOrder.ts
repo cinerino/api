@@ -26,6 +26,12 @@ import * as redis from '../../../redis';
 const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
 
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
+
+const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== undefined)
+    ? Number(process.env.NUM_ORDER_ITEMS_MAX_VALUE)
+    // tslint:disable-next-line:no-magic-numbers
+    : 50;
+
 const placeOrderTransactionsRouter = Router();
 const debug = createDebug('cinerino-api:router');
 const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
@@ -939,7 +945,16 @@ placeOrderTransactionsRouter.put(
             const result = await cinerino.service.transaction.placeOrderInProgress.confirm({
                 id: req.params.transactionId,
                 agent: { id: req.user.sub },
-                result: { order: { orderDate: orderDate } },
+                result: {
+                    ...req.body.result,
+                    order: {
+                        orderDate: orderDate,
+                        numItems: {
+                            maxValue: NUM_ORDER_ITEMS_MAX_VALUE
+                            // minValue: 0
+                        }
+                    }
+                },
                 options: {
                     ...req.body,
                     sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false,
