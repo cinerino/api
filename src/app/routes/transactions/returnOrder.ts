@@ -139,9 +139,9 @@ returnOrderTransactionsRouter.put(
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             await cinerino.service.transaction.returnOrder.confirm({
+                ...req.body,
                 id: req.params.transactionId,
-                agent: { id: req.user.sub },
-                potentialActions: req.body.potentialActions
+                agent: { id: req.user.sub }
             })({
                 action: actionRepo,
                 transaction: transactionRepo,

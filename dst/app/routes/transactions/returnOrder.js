@@ -126,11 +126,7 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        yield cinerino.service.transaction.returnOrder.confirm({
-            id: req.params.transactionId,
-            agent: { id: req.user.sub },
-            potentialActions: req.body.potentialActions
-        })({
+        yield cinerino.service.transaction.returnOrder.confirm(Object.assign({}, req.body, { id: req.params.transactionId, agent: { id: req.user.sub } }))({
             action: actionRepo,
             transaction: transactionRepo,
             seller: sellerRepo

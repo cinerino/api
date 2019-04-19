@@ -943,6 +943,7 @@ placeOrderTransactionsRouter.put(
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
 
             const result = await cinerino.service.transaction.placeOrderInProgress.confirm({
+                ...req.body,
                 id: req.params.transactionId,
                 agent: { id: req.user.sub },
                 result: {
