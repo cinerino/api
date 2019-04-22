@@ -14,6 +14,8 @@ const ISSUERS = (<string>process.env.TOKEN_ISSUERS).split(',');
 /* istanbul ignore next */
 export default async (req: Request, res: Response, next: NextFunction) => {
     try {
+        req.project = { typeOf: 'Project', id: <string>process.env.PROJECT_ID };
+
         await cognitoAuth({
             issuers: ISSUERS,
             authorizedHandler: async (user, token) => {

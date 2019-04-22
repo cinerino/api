@@ -32,7 +32,10 @@ movieRouter.get(
                 endpoint: <string>process.env.CHEVRE_ENDPOINT,
                 auth: chevreAuthClient
             });
-            const { totalCount, data } = await creativeWorkService.searchMovies(req.query);
+            const { totalCount, data } = await creativeWorkService.searchMovies({
+                ...req.query,
+                project: { ids: [req.project.id] }
+            });
             res.set('X-Total-Count', totalCount.toString());
             res.json(data);
         } catch (error) {

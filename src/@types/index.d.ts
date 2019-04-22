@@ -11,6 +11,7 @@ declare global {
         export type IUser = cinerino.factory.clientUser.IClientUser;
         // tslint:disable-next-line:interface-name
         export interface Request {
+            project: cinerino.factory.project.IProject;
             agent: cinerino.factory.person.IPerson;
             user: IUser;
             accessToken: string;

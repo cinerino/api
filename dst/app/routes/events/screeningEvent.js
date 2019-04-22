@@ -143,6 +143,7 @@ screeningEventRouter.get('/:id/offers', permitScopes_1.default(['aws.cognito.sig
             auth: chevreAuthClient
         });
         const offers = yield cinerino.service.offer.searchEventOffers({
+            project: req.project,
             event: { id: req.params.id }
         })({
             event: eventRepo,
@@ -175,6 +176,7 @@ screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['aws.cogn
             auth: chevreAuthClient
         });
         const offers = yield cinerino.service.offer.searchEventTicketOffers({
+            project: req.project,
             event: { id: req.params.id },
             seller: req.query.seller,
             store: req.query.store

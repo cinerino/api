@@ -166,6 +166,7 @@ screeningEventRouter.get(
                 auth: chevreAuthClient
             });
             const offers = await cinerino.service.offer.searchEventOffers({
+                project: req.project,
                 event: { id: req.params.id }
             })({
                 event: eventRepo,
@@ -205,6 +206,7 @@ screeningEventRouter.get(
                 auth: chevreAuthClient
             });
             const offers = await cinerino.service.offer.searchEventTicketOffers({
+                project: req.project,
                 event: { id: req.params.id },
                 seller: req.query.seller,
                 store: req.query.store

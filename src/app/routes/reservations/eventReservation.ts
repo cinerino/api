@@ -39,6 +39,7 @@ eventReservationRouter.get(
             });
             const searchResult = await reservationService.search({
                 ...req.query,
+                project: { ids: [req.project.id] },
                 typeOf: cinerino.factory.chevre.reservationType.EventReservation
             });
             res.set('X-Total-Count', searchResult.totalCount.toString());

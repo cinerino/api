@@ -273,6 +273,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
             auth: chevreAuthClient
         });
         const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create({
+            project: req.project,
             object: req.body,
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId }
@@ -800,7 +801,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
         const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
-        const result = yield cinerino.service.transaction.placeOrderInProgress.confirm(Object.assign({}, req.body, { id: req.params.transactionId, agent: { id: req.user.sub }, result: Object.assign({}, req.body.result, { order: {
+        const result = yield cinerino.service.transaction.placeOrderInProgress.confirm(Object.assign({}, req.body, { project: req.project, id: req.params.transactionId, agent: { id: req.user.sub }, result: Object.assign({}, req.body.result, { order: {
                     orderDate: orderDate,
                     numItems: {
                         maxValue: NUM_ORDER_ITEMS_MAX_VALUE

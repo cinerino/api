@@ -20,6 +20,7 @@ const ISSUERS = process.env.TOKEN_ISSUERS.split(',');
 /* istanbul ignore next */
 exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        req.project = { typeOf: 'Project', id: process.env.PROJECT_ID };
         yield express_middleware_1.cognitoAuth({
             issuers: ISSUERS,
             authorizedHandler: (user, token) => __awaiter(this, void 0, void 0, function* () {

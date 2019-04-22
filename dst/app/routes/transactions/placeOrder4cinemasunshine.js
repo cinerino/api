@@ -588,6 +588,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/confirm', permitScopes_1.d
     try {
         const orderDate = new Date();
         const { order } = yield cinerino.service.transaction.placeOrderInProgress.confirm({
+            project: req.project,
             id: req.params.transactionId,
             agent: { id: req.user.sub },
             result: {

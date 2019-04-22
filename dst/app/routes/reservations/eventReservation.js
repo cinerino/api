@@ -36,7 +36,7 @@ eventReservationRouter.get('/screeningEvent', permitScopes_1.default(['admin']),
             endpoint: process.env.CHEVRE_ENDPOINT,
             auth: chevreAuthClient
         });
-        const searchResult = yield reservationService.search(Object.assign({}, req.query, { typeOf: cinerino.factory.chevre.reservationType.EventReservation }));
+        const searchResult = yield reservationService.search(Object.assign({}, req.query, { project: { ids: [req.project.id] }, typeOf: cinerino.factory.chevre.reservationType.EventReservation }));
         res.set('X-Total-Count', searchResult.totalCount.toString());
         res.json(searchResult.data);
     }

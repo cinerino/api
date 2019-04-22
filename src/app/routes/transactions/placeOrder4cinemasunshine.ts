@@ -710,6 +710,7 @@ placeOrder4cinemasunshineRouter.post(
         try {
             const orderDate = new Date();
             const { order } = await cinerino.service.transaction.placeOrderInProgress.confirm({
+                project: req.project,
                 id: <string>req.params.transactionId,
                 agent: { id: req.user.sub },
                 result: {
