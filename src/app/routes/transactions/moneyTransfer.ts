@@ -72,6 +72,7 @@ moneyTransferTransactionsRouter.post(
                 .toDate();
 
             const transaction = await cinerino.service.transaction.moneyTransfer.start({
+                project: req.project,
                 expires: expires,
                 agent: {
                     ...req.agent,

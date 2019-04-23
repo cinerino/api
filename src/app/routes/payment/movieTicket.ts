@@ -34,6 +34,7 @@ movieTicketPaymentRouter.post(
     async (req, res, next) => {
         try {
             const action = await cinerino.service.payment.movieTicket.checkMovieTicket({
+                project: req.project,
                 typeOf: cinerino.factory.actionType.CheckAction,
                 agent: req.agent,
                 object: req.body

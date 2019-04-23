@@ -86,7 +86,7 @@ sellersRouter.post('', permitScopes_1.default(['admin', 'sellers']), ...[
         .isArray()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const attributes = req.body;
+        const attributes = Object.assign({}, req.body, { project: req.project });
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const seller = yield sellerRepo.save({ attributes: attributes });
         res.status(http_status_1.CREATED)
@@ -197,7 +197,7 @@ sellersRouter.put('/:id', permitScopes_1.default(['admin', 'sellers']), ...[
         .isArray()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const attributes = req.body;
+        const attributes = Object.assign({}, req.body, { project: req.project });
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         yield sellerRepo.save({ id: req.params.id, attributes: attributes });
         res.status(http_status_1.NO_CONTENT)

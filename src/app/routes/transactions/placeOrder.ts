@@ -172,6 +172,7 @@ placeOrderTransactionsRouter.post(
                 };
 
             const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
+                project: req.project,
                 expires: expires,
                 agent: {
                     ...req.agent,

@@ -70,6 +70,7 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 
         const expires = moment(req.body.expires)
             .toDate();
         const transaction = yield cinerino.service.transaction.moneyTransfer.start({
+            project: req.project,
             expires: expires,
             agent: Object.assign({}, req.agent, { identifier: [
                     ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],

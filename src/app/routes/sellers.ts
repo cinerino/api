@@ -84,7 +84,10 @@ sellersRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const attributes: cinerino.factory.seller.IAttributes<typeof req.body.typeOf> = req.body;
+            const attributes: cinerino.factory.seller.IAttributes<typeof req.body.typeOf> = {
+                ...req.body,
+                project: req.project
+            };
 
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const seller = await sellerRepo.save({ attributes: attributes });
@@ -222,7 +225,10 @@ sellersRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const attributes: cinerino.factory.seller.IAttributes<typeof req.body.typeOf> = req.body;
+            const attributes: cinerino.factory.seller.IAttributes<typeof req.body.typeOf> = {
+                ...req.body,
+                project: req.project
+            };
 
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             await sellerRepo.save({ id: req.params.id, attributes: attributes });

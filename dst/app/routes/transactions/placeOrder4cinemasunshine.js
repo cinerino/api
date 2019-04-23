@@ -322,6 +322,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/mvtk', p
         };
         const mvtkService = cinerino.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk;
         const actions = yield mvtkService.createMovieTicketPaymentAuthorization({
+            project: req.project,
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
             authorizeObject: authorizeObject

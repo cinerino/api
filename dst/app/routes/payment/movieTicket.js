@@ -36,6 +36,7 @@ movieTicketPaymentRouter.use(authentication_1.default);
 movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['aws.cognito.signin.user.admin', 'tokens']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const action = yield cinerino.service.payment.movieTicket.checkMovieTicket({
+            project: req.project,
             typeOf: cinerino.factory.actionType.CheckAction,
             agent: req.agent,
             object: req.body
