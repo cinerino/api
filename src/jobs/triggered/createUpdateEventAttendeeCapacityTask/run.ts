@@ -9,6 +9,8 @@ import * as moment from 'moment';
 import { connectMongo } from '../../../connectMongo';
 import * as singletonProcess from '../../../singletonProcess';
 
+const project: cinerino.factory.project.IProject = { typeOf: 'Project', id: <string>process.env.PROJECT_ID };
+
 const debug = createDebug('cinerino-api:jobs');
 /**
  * 上映イベントを何週間後までインポートするか
@@ -67,7 +69,8 @@ export default async () => {
                                     offeredThrough: offer.offeredThrough,
                                     importFrom: importFrom,
                                     importThrough: importThrough
-                                }
+                                },
+                                project: project
                             };
                             await taskRepo.save(taskAttributes);
                         }));

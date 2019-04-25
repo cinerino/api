@@ -44,7 +44,6 @@ tasksRouter.post('/:name', permitScopes_1.default(['admin']), ...[
         .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const attributes = {
             name: req.params.name,
             status: cinerino.factory.taskStatus.Ready,
@@ -53,8 +52,10 @@ tasksRouter.post('/:name', permitScopes_1.default(['admin']), ...[
             remainingNumberOfTries: Number(req.body.remainingNumberOfTries),
             numberOfTried: 0,
             executionResults: [],
-            data: req.body.data
+            data: req.body.data,
+            project: req.project
         };
+        const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const task = yield taskRepo.save(attributes);
         res.status(http_status_1.CREATED)
             .json(task);

@@ -12,6 +12,9 @@ import { connectMongo } from '../../../connectMongo';
 import * as singletonProcess from '../../../singletonProcess';
 
 const debug = createDebug('cinerino-api:jobs');
+
+const project: cinerino.factory.project.IProject = { typeOf: 'Project', id: <string>process.env.PROJECT_ID };
+
 /**
  * 上映イベントを何週間後までインポートするか
  */
@@ -83,11 +86,13 @@ export default async () => {
                                 numberOfTried: 0,
                                 executionResults: [],
                                 data: {
+                                    project: project,
                                     locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
                                     offeredThrough: offer.offeredThrough,
                                     importFrom: importFrom,
                                     importThrough: importThrough
-                                }
+                                },
+                                project: project
                             };
                             await taskRepo.save(taskAttributes);
                         }));

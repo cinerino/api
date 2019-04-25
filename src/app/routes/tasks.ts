@@ -43,7 +43,6 @@ tasksRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const attributes: cinerino.factory.task.IAttributes<cinerino.factory.taskName> = {
                 name: req.params.name,
                 status: cinerino.factory.taskStatus.Ready,
@@ -52,9 +51,13 @@ tasksRouter.post(
                 remainingNumberOfTries: Number(req.body.remainingNumberOfTries),
                 numberOfTried: 0,
                 executionResults: [],
-                data: req.body.data
+                data: req.body.data,
+                project: req.project
             };
+
+            const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const task = await taskRepo.save(attributes);
+
             res.status(CREATED)
                 .json(task);
         } catch (error) {

@@ -17,6 +17,7 @@ const createDebug = require("debug");
 const moment = require("moment");
 const connectMongo_1 = require("../../../connectMongo");
 const singletonProcess = require("../../../singletonProcess");
+const project = { typeOf: 'Project', id: process.env.PROJECT_ID };
 const debug = createDebug('cinerino-api:jobs');
 /**
  * 上映イベントを何週間後までインポートするか
@@ -64,7 +65,8 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
                                 offeredThrough: offer.offeredThrough,
                                 importFrom: importFrom,
                                 importThrough: importThrough
-                            }
+                            },
+                            project: project
                         };
                         yield taskRepo.save(taskAttributes);
                     })));
