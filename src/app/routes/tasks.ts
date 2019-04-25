@@ -13,6 +13,8 @@ import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
+const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
+
 const tasksRouter = Router();
 tasksRouter.use(authentication);
 
@@ -116,6 +118,7 @@ tasksRouter.get(
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const searchConditions: cinerino.factory.task.ISearchConditions<cinerino.factory.taskName> = {
                 ...req.query,
+                project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1

@@ -62,6 +62,7 @@
 | `CUSTOMER_TELEPHONE_JP_FORMAT_ACCEPTED`   | false    | 1 or 0         | 日本フォーマットの電話番号許容フラグ        |
 | `USE_USERNAME_AS_GMO_MEMBER_ID`           | false    | 1 or 0         | GMO会員IDにユーザーネームを使用するかどうか |
 | `VALIDATE_MOVIE_TICKET`                   | false    | 1 or 0         | Validation flag for movie tickets           |
+| `MULTI_TENANT_SUPPORTED`                  | false    | 1 or 0         | マルチテナント対応フラグ                    |
 
 ## License
 

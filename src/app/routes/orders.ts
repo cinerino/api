@@ -16,6 +16,8 @@ import validator from '../middlewares/validator';
 
 import * as redis from '../../redis';
 
+const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
+
 /**
  * 正規表現をエスケープする
  */
@@ -455,6 +457,7 @@ ordersRouter.get(
 
             const searchConditions: cinerino.factory.order.ISearchConditions = {
                 ...req.query,
+                project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1

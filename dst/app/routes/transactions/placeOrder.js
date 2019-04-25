@@ -25,6 +25,7 @@ const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4t
 const validator_1 = require("../../middlewares/validator");
 const placeOrder4cinemasunshine_1 = require("./placeOrder4cinemasunshine");
 const redis = require("../../../redis");
+const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 /**
  * GMOメンバーIDにユーザーネームを使用するかどうか
  */
@@ -875,7 +876,7 @@ placeOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        const searchConditions = Object.assign({}, req.query, { 
+        const searchConditions = Object.assign({}, req.query, { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, typeOf: cinerino.factory.transactionType.PlaceOrder });
         const transactions = yield transactionRepo.search(searchConditions);
@@ -915,6 +916,7 @@ placeOrderTransactionsRouter.get('/report', permitScopes_1.default(['admin']), v
         const searchConditions = {
             limit: undefined,
             page: undefined,
+            project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
             typeOf: cinerino.factory.transactionType.PlaceOrder,
             ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
             statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,
