@@ -17,7 +17,6 @@ const createDebug = require("debug");
 const moment = require("moment");
 const connectMongo_1 = require("../../../connectMongo");
 const singletonProcess = require("../../../singletonProcess");
-const project = { typeOf: 'Project', id: process.env.PROJECT_ID };
 const debug = createDebug('cinerino-api:jobs');
 /**
  * 上映イベントを何週間後までインポートするか
@@ -25,7 +24,7 @@ const debug = createDebug('cinerino-api:jobs');
 const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS !== undefined)
     ? Number(process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS)
     : 1;
-exports.default = () => __awaiter(this, void 0, void 0, function* () {
+exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     let holdSingletonProcess = false;
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
         holdSingletonProcess = yield singletonProcess.lock({ key: 'createUpdateEventAttendeeCapacityTask', ttl: 60 });
@@ -42,7 +41,9 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         }
         const taskRepo = new cinerino.repository.Task(connection);
         const sellerRepo = new cinerino.repository.Seller(connection);
-        const sellers = yield sellerRepo.search({});
+        const sellers = yield sellerRepo.search({
+            project: (params.project !== undefined) ? { ids: [params.project.id] } : undefined
+        });
         const importFrom = moment()
             .toDate();
         const importThrough = moment()
@@ -66,7 +67,7 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
                                 importFrom: importFrom,
                                 importThrough: importThrough
                             },
-                            project: project
+                            project: params.project
                         };
                         yield taskRepo.save(taskAttributes);
                     })));

@@ -20,7 +20,6 @@ const util = require("util");
 const connectMongo_1 = require("../../../connectMongo");
 const singletonProcess = require("../../../singletonProcess");
 const debug = createDebug('cinerino-api:jobs');
-const project = { typeOf: 'Project', id: process.env.PROJECT_ID };
 /**
  * 上映イベントを何週間後までインポートするか
  */
@@ -31,7 +30,7 @@ const MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES = 60;
 const IMPORT_EVENTS_INTERVAL_IN_MINUTES = (process.env.IMPORT_EVENTS_INTERVAL_IN_MINUTES !== undefined)
     ? Math.min(Number(process.env.IMPORT_EVENTS_INTERVAL_IN_MINUTES), MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES)
     : MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES;
-exports.default = () => __awaiter(this, void 0, void 0, function* () {
+exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     let holdSingletonProcess = false;
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
         holdSingletonProcess = yield singletonProcess.lock({ key: 'createImportScreeningEventsTask', ttl: 60 });
@@ -51,7 +50,9 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         }
         const taskRepo = new cinerino.repository.Task(connection);
         const sellerRepo = new cinerino.repository.Seller(connection);
-        const sellers = yield sellerRepo.search({});
+        const sellers = yield sellerRepo.search({
+            project: (params.project !== undefined) ? { ids: [params.project.id] } : undefined
+        });
         const importFrom = moment()
             .toDate();
         const importThrough = moment()
@@ -70,13 +71,13 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
                             numberOfTried: 0,
                             executionResults: [],
                             data: {
-                                project: project,
+                                project: params.project,
                                 locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
                                 offeredThrough: offer.offeredThrough,
                                 importFrom: importFrom,
                                 importThrough: importThrough
                             },
-                            project: project
+                            project: params.project
                         };
                         yield taskRepo.save(taskAttributes);
                     })));

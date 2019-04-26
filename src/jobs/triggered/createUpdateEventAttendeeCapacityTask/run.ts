@@ -9,8 +9,6 @@ import * as moment from 'moment';
 import { connectMongo } from '../../../connectMongo';
 import * as singletonProcess from '../../../singletonProcess';
 
-const project: cinerino.factory.project.IProject = { typeOf: 'Project', id: <string>process.env.PROJECT_ID };
-
 const debug = createDebug('cinerino-api:jobs');
 /**
  * 上映イベントを何週間後までインポートするか
@@ -19,7 +17,9 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
     ? Number(process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS)
     : 1;
 
-export default async () => {
+export default async (params: {
+    project?: cinerino.factory.project.IProject;
+}) => {
     let holdSingletonProcess = false;
     setInterval(
         async () => {
@@ -45,7 +45,9 @@ export default async () => {
             const taskRepo = new cinerino.repository.Task(connection);
             const sellerRepo = new cinerino.repository.Seller(connection);
 
-            const sellers = await sellerRepo.search({});
+            const sellers = await sellerRepo.search({
+                project: (params.project !== undefined) ? { ids: [params.project.id] } : undefined
+            });
             const importFrom = moment()
                 .toDate();
             const importThrough = moment()
@@ -70,7 +72,7 @@ export default async () => {
                                     importFrom: importFrom,
                                     importThrough: importThrough
                                 },
-                                project: project
+                                project: params.project
                             };
                             await taskRepo.save(taskAttributes);
                         }));

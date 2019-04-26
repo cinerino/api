@@ -13,8 +13,6 @@ import * as singletonProcess from '../../../singletonProcess';
 
 const debug = createDebug('cinerino-api:jobs');
 
-const project: cinerino.factory.project.IProject = { typeOf: 'Project', id: <string>process.env.PROJECT_ID };
-
 /**
  * 上映イベントを何週間後までインポートするか
  */
@@ -27,7 +25,9 @@ const IMPORT_EVENTS_INTERVAL_IN_MINUTES = (process.env.IMPORT_EVENTS_INTERVAL_IN
     ? Math.min(Number(process.env.IMPORT_EVENTS_INTERVAL_IN_MINUTES), MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES)
     : MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES;
 
-export default async () => {
+export default async (params: {
+    project?: cinerino.factory.project.IProject;
+}) => {
     let holdSingletonProcess = false;
     setInterval(
         async () => {
@@ -67,7 +67,9 @@ export default async () => {
             const taskRepo = new cinerino.repository.Task(connection);
             const sellerRepo = new cinerino.repository.Seller(connection);
 
-            const sellers = await sellerRepo.search({});
+            const sellers = await sellerRepo.search({
+                project: (params.project !== undefined) ? { ids: [params.project.id] } : undefined
+            });
             const importFrom = moment()
                 .toDate();
             const importThrough = moment()
@@ -86,13 +88,13 @@ export default async () => {
                                 numberOfTried: 0,
                                 executionResults: [],
                                 data: {
-                                    project: project,
+                                    project: params.project,
                                     locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
                                     offeredThrough: offer.offeredThrough,
                                     importFrom: importFrom,
                                     importThrough: importThrough
                                 },
-                                project: project
+                                project: params.project
                             };
                             await taskRepo.save(taskAttributes);
                         }));
