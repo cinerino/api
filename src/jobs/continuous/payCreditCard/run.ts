@@ -8,7 +8,9 @@ import { connectMongo } from '../../../connectMongo';
 
 const debug = createDebug('cinerino-api');
 
-export default async () => {
+export default async (params: {
+    project?: cinerino.factory.project.IProject;
+}) => {
     const connection = await connectMongo({ defaultConnection: false });
 
     let count = 0;
@@ -27,9 +29,10 @@ export default async () => {
 
             try {
                 debug('count:', count);
-                await cinerino.service.task.executeByName(
-                    cinerino.factory.taskName.PayCreditCard
-                )({
+                await cinerino.service.task.executeByName({
+                    project: params.project,
+                    name: cinerino.factory.taskName.PayCreditCard
+                })({
                     taskRepo: taskRepo,
                     connection: connection
                 });

@@ -13,7 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const connectMongo_1 = require("../../../connectMongo");
-exports.default = () => __awaiter(this, void 0, void 0, function* () {
+exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
@@ -25,7 +25,10 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         }
         count += 1;
         try {
-            yield cinerino.service.task.executeByName(cinerino.factory.taskName.RefundCreditCard)({
+            yield cinerino.service.task.executeByName({
+                project: params.project,
+                name: cinerino.factory.taskName.RefundCreditCard
+            })({
                 taskRepo: taskRepo,
                 connection: connection
             });

@@ -15,7 +15,7 @@ const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
 const connectMongo_1 = require("../../../connectMongo");
 const debug = createDebug('cinerino-api');
-exports.default = () => __awaiter(this, void 0, void 0, function* () {
+exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
@@ -28,7 +28,10 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         count += 1;
         try {
             debug('count:', count);
-            yield cinerino.service.task.executeByName(cinerino.factory.taskName.PayCreditCard)({
+            yield cinerino.service.task.executeByName({
+                project: params.project,
+                name: cinerino.factory.taskName.PayCreditCard
+            })({
                 taskRepo: taskRepo,
                 connection: connection
             });

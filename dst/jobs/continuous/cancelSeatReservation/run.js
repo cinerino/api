@@ -13,7 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const connectMongo_1 = require("../../../connectMongo");
-exports.default = () => __awaiter(this, void 0, void 0, function* () {
+exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
         domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
@@ -32,7 +32,10 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         }
         count += 1;
         try {
-            yield cinerino.service.task.executeByName(cinerino.factory.taskName.CancelSeatReservation)({
+            yield cinerino.service.task.executeByName({
+                project: params.project,
+                name: cinerino.factory.taskName.CancelSeatReservation
+            })({
                 taskRepo: taskRepo,
                 connection: connection,
                 chevreEndpoint: process.env.CHEVRE_ENDPOINT,

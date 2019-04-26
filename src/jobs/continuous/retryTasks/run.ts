@@ -5,7 +5,9 @@ import * as cinerino from '@cinerino/domain';
 
 import { connectMongo } from '../../../connectMongo';
 
-export default async () => {
+export default async (params: {
+    project?: cinerino.factory.project.IProject;
+}) => {
     const connection = await connectMongo({ defaultConnection: false });
 
     let count = 0;
@@ -24,7 +26,10 @@ export default async () => {
             count += 1;
 
             try {
-                await cinerino.service.task.retry(RETRY_INTERVAL_MINUTES)({ task: taskRepo });
+                await cinerino.service.task.retry({
+                    project: params.project,
+                    intervalInMinutes: RETRY_INTERVAL_MINUTES
+                })({ task: taskRepo });
             } catch (error) {
                 console.error(error);
             }

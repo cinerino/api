@@ -8,7 +8,9 @@ import { connectMongo } from '../../../connectMongo';
 
 const debug = createDebug('cinerino-api');
 
-export default async () => {
+export default async (params: {
+    project?: cinerino.factory.project.IProject;
+}) => {
     const connection = await connectMongo({ defaultConnection: false });
 
     let countRetry = 0;
@@ -28,7 +30,7 @@ export default async () => {
 
             try {
                 debug('reexporting tasks...');
-                await transactionRepo.reexportTasks({ intervalInMinutes: RETRY_INTERVAL_MINUTES });
+                await transactionRepo.reexportTasks({ project: params.project, intervalInMinutes: RETRY_INTERVAL_MINUTES });
             } catch (error) {
                 console.error(error);
             }

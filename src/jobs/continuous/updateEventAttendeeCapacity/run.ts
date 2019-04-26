@@ -5,7 +5,9 @@ import * as cinerino from '@cinerino/domain';
 
 import { connectMongo } from '../../../connectMongo';
 
-export default async () => {
+export default async (params: {
+    project?: cinerino.factory.project.IProject;
+}) => {
     const connection = await connectMongo({ defaultConnection: false });
 
     const redisClient = cinerino.redis.createClient({
@@ -37,9 +39,10 @@ export default async () => {
             count += 1;
 
             try {
-                await cinerino.service.task.executeByName(
-                    cinerino.factory.taskName.UpdateEventAttendeeCapacity
-                )({
+                await cinerino.service.task.executeByName({
+                    project: params.project,
+                    name: cinerino.factory.taskName.UpdateEventAttendeeCapacity
+                })({
                     taskRepo: taskRepo,
                     connection: connection,
                     chevreEndpoint: <string>process.env.CHEVRE_ENDPOINT,

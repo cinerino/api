@@ -8,7 +8,9 @@ import { connectMongo } from '../../../connectMongo';
 
 const debug = createDebug('cinerino-api');
 
-export default async () => {
+export default async (params: {
+    project?: cinerino.factory.project.IProject;
+}) => {
     const connection = await connectMongo({ defaultConnection: false });
 
     let count = 0;
@@ -27,7 +29,7 @@ export default async () => {
 
             try {
                 debug('transaction expiring...');
-                await transactionRepo.makeExpired();
+                await transactionRepo.makeExpired({ project: params.project });
             } catch (error) {
                 console.error(error);
             }

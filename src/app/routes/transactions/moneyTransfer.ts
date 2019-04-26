@@ -139,7 +139,10 @@ moneyTransferTransactionsRouter.put(
 
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
             // tslint:disable-next-line:no-floating-promises
-            cinerino.service.transaction.moneyTransfer.exportTasks(cinerino.factory.transactionStatusType.Confirmed)({
+            cinerino.service.transaction.moneyTransfer.exportTasks({
+                project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
+                status: cinerino.factory.transactionStatusType.Confirmed
+            })({
                 task: taskRepo,
                 transaction: transactionRepo
             });
@@ -171,7 +174,10 @@ moneyTransferTransactionsRouter.put(
 
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
             // tslint:disable-next-line:no-floating-promises
-            cinerino.service.transaction.moneyTransfer.exportTasks(cinerino.factory.transactionStatusType.Canceled)({
+            cinerino.service.transaction.moneyTransfer.exportTasks({
+                project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
+                status: cinerino.factory.transactionStatusType.Canceled
+            })({
                 task: taskRepo,
                 transaction: transactionRepo
             });

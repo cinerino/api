@@ -13,7 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const connectMongo_1 = require("../../../connectMongo");
-exports.default = () => __awaiter(this, void 0, void 0, function* () {
+exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     const redisClient = cinerino.redis.createClient({
         host: process.env.REDIS_HOST,
@@ -46,7 +46,10 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         }
         count += 1;
         try {
-            yield cinerino.service.task.executeByName(cinerino.factory.taskName.RegisterProgramMembership)({
+            yield cinerino.service.task.executeByName({
+                project: params.project,
+                name: cinerino.factory.taskName.RegisterProgramMembership
+            })({
                 taskRepo: taskRepo,
                 connection: connection,
                 redisClient: redisClient,

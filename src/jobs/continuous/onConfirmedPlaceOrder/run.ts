@@ -8,7 +8,9 @@ import { connectMongo } from '../../../connectMongo';
 
 const debug = createDebug('cinerino-api');
 
-export default async () => {
+export default async (params: {
+    project?: cinerino.factory.project.IProject;
+}) => {
     const connection = await connectMongo({ defaultConnection: false });
 
     let countExecute = 0;
@@ -28,9 +30,10 @@ export default async () => {
 
             try {
                 debug('exporting tasks...');
-                await cinerino.service.transaction.placeOrder.exportTasks(
-                    cinerino.factory.transactionStatusType.Confirmed
-                )({
+                await cinerino.service.transaction.placeOrder.exportTasks({
+                    project: params.project,
+                    status: cinerino.factory.transactionStatusType.Confirmed
+                })({
                     task: taskRepo,
                     transaction: transactionRepo
                 });

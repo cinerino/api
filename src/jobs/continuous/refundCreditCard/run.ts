@@ -6,7 +6,9 @@ import * as cinerino from '@cinerino/domain';
 
 import { connectMongo } from '../../../connectMongo';
 
-export default async () => {
+export default async (params: {
+    project?: cinerino.factory.project.IProject;
+}) => {
     const connection = await connectMongo({ defaultConnection: false });
 
     let count = 0;
@@ -24,9 +26,10 @@ export default async () => {
             count += 1;
 
             try {
-                await cinerino.service.task.executeByName(
-                    cinerino.factory.taskName.RefundCreditCard
-                )({
+                await cinerino.service.task.executeByName({
+                    project: params.project,
+                    name: cinerino.factory.taskName.RefundCreditCard
+                })({
                     taskRepo: taskRepo,
                     connection: connection
                 });
