@@ -27,7 +27,11 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
 exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     let holdSingletonProcess = false;
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
-        holdSingletonProcess = yield singletonProcess.lock({ key: 'createUpdateEventAttendeeCapacityTask', ttl: 60 });
+        holdSingletonProcess = yield singletonProcess.lock({
+            project: params.project,
+            key: 'createUpdateEventAttendeeCapacityTask',
+            ttl: 60
+        });
     }), 
     // tslint:disable-next-line:no-magic-numbers
     10000);

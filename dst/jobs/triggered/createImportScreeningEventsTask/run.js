@@ -33,7 +33,11 @@ const IMPORT_EVENTS_INTERVAL_IN_MINUTES = (process.env.IMPORT_EVENTS_INTERVAL_IN
 exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     let holdSingletonProcess = false;
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
-        holdSingletonProcess = yield singletonProcess.lock({ key: 'createImportScreeningEventsTask', ttl: 60 });
+        holdSingletonProcess = yield singletonProcess.lock({
+            project: params.project,
+            key: 'createImportScreeningEventsTask',
+            ttl: 60
+        });
     }), 
     // tslint:disable-next-line:no-magic-numbers
     10000);

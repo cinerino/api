@@ -1,6 +1,7 @@
 /**
  * Singletonプロセス管理
  */
+import { factory } from '@cinerino/domain';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as os from 'os';
@@ -21,11 +22,15 @@ const processId = util.format(
 /**
  * Signletonプロセスをロックする
  */
-export async function lock(params: { key: string; ttl: number }) {
+export async function lock(params: {
+    project?: factory.project.IProject;
+    key: string;
+    ttl: number;
+}) {
     const redisClient = redis.getClient();
 
     // ロック処理
-    const key = `api:singletonProcess:${params.key}`;
+    const key = `api:${(params.project !== undefined) ? params.project.id : 'undefined'}:singletonProcess:${params.key}`;
     const value = processId;
     const ttl = params.ttl;
     let locked = false;

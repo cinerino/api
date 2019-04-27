@@ -31,7 +31,11 @@ export default async (params: {
     let holdSingletonProcess = false;
     setInterval(
         async () => {
-            holdSingletonProcess = await singletonProcess.lock({ key: 'createImportScreeningEventsTask', ttl: 60 });
+            holdSingletonProcess = await singletonProcess.lock({
+                project: params.project,
+                key: 'createImportScreeningEventsTask',
+                ttl: 60
+            });
         },
         // tslint:disable-next-line:no-magic-numbers
         10000

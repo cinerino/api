@@ -8,9 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * Singletonプロセス管理
- */
 const createDebug = require("debug");
 const moment = require("moment");
 const os = require("os");
@@ -26,7 +23,7 @@ function lock(params) {
     return __awaiter(this, void 0, void 0, function* () {
         const redisClient = redis.getClient();
         // ロック処理
-        const key = `api:singletonProcess:${params.key}`;
+        const key = `api:${(params.project !== undefined) ? params.project.id : 'undefined'}:singletonProcess:${params.key}`;
         const value = processId;
         const ttl = params.ttl;
         let locked = false;
