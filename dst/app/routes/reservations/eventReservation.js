@@ -55,6 +55,7 @@ eventReservationRouter.post('/screeningEvent/findByToken', permitScopes_1.defaul
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const payload = yield cinerino.service.code.verifyToken({
+            project: req.project,
             agent: req.agent,
             token: req.body.token,
             secret: process.env.TOKEN_SECRET,

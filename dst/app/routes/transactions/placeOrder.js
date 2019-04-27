@@ -529,6 +529,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         // トークン化された口座情報に対応
         if (typeof fromAccount === 'string') {
             const accountOwnershipInfo = yield cinerino.service.code.verifyToken({
+                project: req.project,
                 agent: req.agent,
                 token: fromAccount,
                 secret: process.env.TOKEN_SECRET,

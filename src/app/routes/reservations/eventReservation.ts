@@ -67,6 +67,7 @@ eventReservationRouter.post(
         try {
             const payload =
                 await cinerino.service.code.verifyToken<IPayload>({
+                    project: req.project,
                     agent: req.agent,
                     token: req.body.token,
                     secret: <string>process.env.TOKEN_SECRET,

@@ -60,6 +60,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'aws.co
         // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
         if (typeof fromAccount === 'string') {
             const accountOwnershipInfo = yield cinerino.service.code.verifyToken({
+                project: req.project,
                 agent: req.agent,
                 token: fromAccount,
                 secret: process.env.TOKEN_SECRET,

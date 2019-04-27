@@ -28,7 +28,7 @@ actionsRouter.post('/print/ticket', permitScopes_1.default(['aws.cognito.signin.
         const ticket = {
             ticketToken: req.body.ticketToken
         };
-        const action = yield new cinerino.repository.Action(mongoose.connection).printTicket(req.user.sub, ticket);
+        const action = yield new cinerino.repository.Action(mongoose.connection).printTicket(req.user.sub, ticket, req.project);
         res.status(http_status_1.CREATED)
             .json(action);
     }

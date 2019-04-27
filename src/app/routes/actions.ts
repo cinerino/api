@@ -28,7 +28,8 @@ actionsRouter.post(
 
             const action = await new cinerino.repository.Action(mongoose.connection).printTicket(
                 req.user.sub,
-                ticket
+                ticket,
+                req.project
             );
 
             res.status(CREATED)

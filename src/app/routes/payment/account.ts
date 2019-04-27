@@ -64,6 +64,7 @@ accountPaymentRouter.post(
                 // tslint:disable-next-line:max-line-length
                 type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.ownershipInfo.AccountGoodType.Account>>;
                 const accountOwnershipInfo = await cinerino.service.code.verifyToken<IPayload>({
+                    project: req.project,
                     agent: req.agent,
                     token: fromAccount,
                     secret: <string>process.env.TOKEN_SECRET,
