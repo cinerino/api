@@ -26,7 +26,7 @@ ownershipInfosRouter.use(authentication_1.default);
 /**
  * コードから所有権に対するアクセストークンを発行する
  */
-ownershipInfosRouter.post('/tokens', permitScopes_1.default(['aws.cognito.signin.user.admin', 'tokens']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+ownershipInfosRouter.post('/tokens', permitScopes_1.default(['customer', 'tokens']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const codeRepo = new cinerino.repository.Code(redis.getClient());
         const token = yield cinerino.service.code.getToken({
@@ -108,7 +108,7 @@ ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['adm
  * Cinemasunshine対応
  * @deprecated
  */
-ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.default(['aws.cognito.signin.user.admin']), (req, __, next) => {
+ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.default(['customer']), (req, __, next) => {
     req.checkQuery('fromDate')
         .notEmpty()
         .isISO8601()

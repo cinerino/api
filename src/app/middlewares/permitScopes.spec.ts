@@ -86,20 +86,4 @@ describe('permitScopes.default()', () => {
         assert.equal(result, undefined);
         sandbox.verify();
     });
-
-    it('aws.cognito.signin.user.adminスコープが許可リストにあれば、許可されるはず', async () => {
-        const scopes = ['aws.cognito.signin.user.admin'];
-        const params = {
-            req: { user: { scopes: scopes } },
-            res: {},
-            next: () => undefined
-        };
-
-        sandbox.mock(params).expects('next').once()
-            .withExactArgs();
-
-        const result = await permitScopes.default(scopes)(<any>params.req, <any>params.res, params.next);
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
 });

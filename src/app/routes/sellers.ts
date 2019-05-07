@@ -107,7 +107,7 @@ sellersRouter.post(
  */
 sellersRouter.get(
     '',
-    permitScopes(['aws.cognito.signin.user.admin', 'sellers', 'sellers.read-only']),
+    permitScopes(['customer', 'sellers', 'sellers.read-only']),
     validator,
     async (req, res, next) => {
         try {
@@ -140,7 +140,7 @@ sellersRouter.get(
  */
 sellersRouter.get(
     '/:id',
-    permitScopes(['aws.cognito.signin.user.admin', 'sellers', 'sellers.read-only']),
+    permitScopes(['customer', 'sellers', 'sellers.read-only']),
     validator,
     async (req, res, next) => {
         try {

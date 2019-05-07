@@ -33,7 +33,7 @@ moneyTransferTransactionsRouter.use(authentication);
 
 moneyTransferTransactionsRouter.post(
     '/start',
-    permitScopes(['admin', 'aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['admin', 'customer', 'transactions']),
     (req, _, next) => {
         req.checkBody('expires', 'invalid expires')
             .notEmpty()
@@ -115,7 +115,7 @@ moneyTransferTransactionsRouter.post(
 
 moneyTransferTransactionsRouter.put(
     '/:transactionId/confirm',
-    permitScopes(['admin', 'aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['admin', 'customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -160,7 +160,7 @@ moneyTransferTransactionsRouter.put(
  */
 moneyTransferTransactionsRouter.put(
     '/:transactionId/cancel',
-    permitScopes(['admin', 'aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['admin', 'customer', 'transactions']),
     validator,
     async (req, res, next) => {
         try {

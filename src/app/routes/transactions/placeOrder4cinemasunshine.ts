@@ -96,7 +96,7 @@ const placeOrder4cinemasunshineRouter = Router();
  */
 placeOrder4cinemasunshineRouter.post(
     '/:transactionId/actions/authorize/seatReservation',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -133,7 +133,7 @@ placeOrder4cinemasunshineRouter.post(
  */
 placeOrder4cinemasunshineRouter.delete(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -165,7 +165,7 @@ placeOrder4cinemasunshineRouter.delete(
  */
 placeOrder4cinemasunshineRouter.patch(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -202,7 +202,7 @@ placeOrder4cinemasunshineRouter.patch(
  */
 placeOrder4cinemasunshineRouter.post(
     '/:transactionId/actions/authorize/offer/programMembership',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -228,7 +228,7 @@ placeOrder4cinemasunshineRouter.post(
  */
 placeOrder4cinemasunshineRouter.delete(
     '/:transactionId/actions/authorize/offer/programMembership/:actionId',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -254,7 +254,7 @@ placeOrder4cinemasunshineRouter.delete(
  */
 placeOrder4cinemasunshineRouter.post(
     '/:transactionId/actions/authorize/creditCard',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     (req, __2, next) => {
         req.checkBody('orderId', 'invalid orderId')
             .notEmpty()
@@ -330,7 +330,7 @@ placeOrder4cinemasunshineRouter.post(
  */
 placeOrder4cinemasunshineRouter.delete(
     '/:transactionId/actions/authorize/creditCard/:actionId',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -362,7 +362,7 @@ placeOrder4cinemasunshineRouter.delete(
  */
 placeOrder4cinemasunshineRouter.post(
     '/:transactionId/actions/authorize/mvtk',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -421,7 +421,7 @@ placeOrder4cinemasunshineRouter.post(
  */
 placeOrder4cinemasunshineRouter.delete(
     '/:transactionId/actions/authorize/mvtk/:actionId',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -453,7 +453,7 @@ placeOrder4cinemasunshineRouter.delete(
  */
 placeOrder4cinemasunshineRouter.post(
     '/:transactionId/actions/authorize/paymentMethod/pecorino',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     (req, __, next) => {
         req.checkBody('amount', 'invalid amount')
             .notEmpty()
@@ -560,7 +560,7 @@ placeOrder4cinemasunshineRouter.post(
  */
 placeOrder4cinemasunshineRouter.delete(
     '/:transactionId/actions/authorize/paymentMethod/pecorino/:actionId',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -597,7 +597,7 @@ placeOrder4cinemasunshineRouter.delete(
  */
 placeOrder4cinemasunshineRouter.post(
     '/:transactionId/actions/authorize/award/pecorino',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     (req, __2, next) => {
         req.checkBody('amount', 'invalid amount')
             .notEmpty()
@@ -666,7 +666,7 @@ placeOrder4cinemasunshineRouter.post(
  */
 placeOrder4cinemasunshineRouter.delete(
     '/:transactionId/actions/authorize/award/pecorino/:actionId',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -699,7 +699,7 @@ placeOrder4cinemasunshineRouter.delete(
 
 placeOrder4cinemasunshineRouter.post(
     '/:transactionId/confirm',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -765,7 +765,7 @@ placeOrder4cinemasunshineRouter.post(
  */
 placeOrder4cinemasunshineRouter.post(
     '/:transactionId/cancel',
-    permitScopes(['admin', 'aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['admin', 'customer', 'transactions']),
     validator,
     async (req, res, next) => {
         try {
@@ -785,7 +785,7 @@ placeOrder4cinemasunshineRouter.post(
 
 placeOrder4cinemasunshineRouter.post(
     '/:transactionId/tasks/sendEmailNotification',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         try {

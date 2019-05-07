@@ -26,7 +26,7 @@ const debug = createDebug('cinerino-api:router');
 /**
  * 会員クレジットカード追加
  */
-creditCardsRouter.post('', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+creditCardsRouter.post('', permitScopes_1.default(['customer']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
@@ -48,7 +48,7 @@ creditCardsRouter.post('', permitScopes_1.default(['aws.cognito.signin.user.admi
 /**
  * 会員クレジットカード検索
  */
-creditCardsRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+creditCardsRouter.get('', permitScopes_1.default(['customer']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
@@ -67,7 +67,7 @@ creditCardsRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin
 /**
  * 会員クレジットカード削除
  */
-creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['customer']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({

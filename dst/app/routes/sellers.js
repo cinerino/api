@@ -100,7 +100,7 @@ sellersRouter.post('', permitScopes_1.default(['admin', 'sellers']), ...[
 /**
  * 販売者検索
  */
-sellersRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin', 'sellers', 'sellers.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+sellersRouter.get('', permitScopes_1.default(['customer', 'sellers', 'sellers.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const searchCoinditions = Object.assign({}, req.query, { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
             // tslint:disable-next-line:no-magic-numbers
@@ -120,7 +120,7 @@ sellersRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin', '
 /**
  * IDで販売者検索
  */
-sellersRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.user.admin', 'sellers', 'sellers.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+sellersRouter.get('/:id', permitScopes_1.default(['customer', 'sellers', 'sellers.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const seller = yield sellerRepo.findById({

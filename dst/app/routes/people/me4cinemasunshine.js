@@ -45,7 +45,7 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
  * 連絡先検索
  * @deprecated
  */
-me4cinemasunshineRouter.get('/contacts', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.contacts', 'people.contacts.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+me4cinemasunshineRouter.get('/contacts', permitScopes_1.default(['customer', 'people.contacts', 'people.contacts.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
         const contact = yield personRepo.getUserAttributesByAccessToken(req.accessToken);
@@ -63,7 +63,7 @@ me4cinemasunshineRouter.get('/contacts', permitScopes_1.default(['aws.cognito.si
  * 会員プロフィール更新
  * @deprecated
  */
-me4cinemasunshineRouter.put('/contacts', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.contacts']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+me4cinemasunshineRouter.put('/contacts', permitScopes_1.default(['customer', 'people.contacts']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // 日本語フォーマットで電話番号が渡される想定なので変換
         let formatedPhoneNumber;
@@ -95,7 +95,7 @@ me4cinemasunshineRouter.put('/contacts', permitScopes_1.default(['aws.cognito.si
  * 会員クレジットカード検索
  * @deprecated Use /people/me/ownershipInfos/creditCards
  */
-me4cinemasunshineRouter.get('/creditCards', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.creditCards', 'people.creditCards.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+me4cinemasunshineRouter.get('/creditCards', permitScopes_1.default(['customer', 'people.creditCards', 'people.creditCards.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
             siteId: process.env.GMO_SITE_ID,
@@ -114,7 +114,7 @@ me4cinemasunshineRouter.get('/creditCards', permitScopes_1.default(['aws.cognito
  * 会員クレジットカード追加
  * @deprecated Use /people/me/ownershipInfos/creditCards
  */
-me4cinemasunshineRouter.post('/creditCards', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.creditCards']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+me4cinemasunshineRouter.post('/creditCards', permitScopes_1.default(['customer', 'people.creditCards']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
             siteId: process.env.GMO_SITE_ID,
@@ -136,7 +136,7 @@ me4cinemasunshineRouter.post('/creditCards', permitScopes_1.default(['aws.cognit
  * 会員クレジットカード削除
  * @deprecated Use /people/me/ownershipInfos/creditCards/:cardSeq
  */
-me4cinemasunshineRouter.delete('/creditCards/:cardSeq', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.creditCards']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+me4cinemasunshineRouter.delete('/creditCards/:cardSeq', permitScopes_1.default(['customer', 'people.creditCards']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
             siteId: process.env.GMO_SITE_ID,
@@ -157,7 +157,7 @@ me4cinemasunshineRouter.delete('/creditCards/:cardSeq', permitScopes_1.default([
 /**
  * ポイント口座開設
  */
-me4cinemasunshineRouter.post('/accounts', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts']), (req, _, next) => {
+me4cinemasunshineRouter.post('/accounts', permitScopes_1.default(['customer', 'people.accounts']), (req, _, next) => {
     req.checkBody('name', 'invalid name')
         .notEmpty()
         .withMessage('name is required');
@@ -209,7 +209,7 @@ me4cinemasunshineRouter.post('/accounts', permitScopes_1.default(['aws.cognito.s
  * ポイント口座解約
  * 口座の状態を変更するだけで、所有口座リストから削除はしない
  */
-me4cinemasunshineRouter.put('/accounts/:accountNumber/close', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+me4cinemasunshineRouter.put('/accounts/:accountNumber/close', permitScopes_1.default(['customer', 'people.accounts']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // 口座所有権を検索
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
@@ -268,7 +268,7 @@ me4cinemasunshineRouter.put('/accounts/:accountNumber/close', permitScopes_1.def
 /**
  * ポイント口座削除
  */
-me4cinemasunshineRouter.delete('/accounts/:accountNumber', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+me4cinemasunshineRouter.delete('/accounts/:accountNumber', permitScopes_1.default(['customer', 'people.accounts']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const now = new Date();
         // 口座所有権を検索
@@ -301,7 +301,7 @@ me4cinemasunshineRouter.delete('/accounts/:accountNumber', permitScopes_1.defaul
 /**
  * ポイント口座検索
  */
-me4cinemasunshineRouter.get('/accounts', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+me4cinemasunshineRouter.get('/accounts', permitScopes_1.default(['customer', 'people.accounts.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const now = new Date();
         // 口座所有権を検索
@@ -339,7 +339,7 @@ me4cinemasunshineRouter.get('/accounts', permitScopes_1.default(['aws.cognito.si
 /**
  * ポイント口座取引履歴検索
  */
-me4cinemasunshineRouter.get('/accounts/:accountNumber/actions/moneyTransfer', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts.actions.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+me4cinemasunshineRouter.get('/accounts/:accountNumber/actions/moneyTransfer', permitScopes_1.default(['customer', 'people.accounts.actions.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const now = new Date();
         // 口座所有権を検索
@@ -376,7 +376,7 @@ me4cinemasunshineRouter.get('/accounts/:accountNumber/actions/moneyTransfer', pe
 /**
  * ユーザーの所有権検索
  */
-me4cinemasunshineRouter.get('/ownershipInfos/:goodType', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.ownershipInfos', 'people.ownershipInfos.read-only']), (_1, _2, next) => {
+me4cinemasunshineRouter.get('/ownershipInfos/:goodType', permitScopes_1.default(['customer', 'people.ownershipInfos', 'people.ownershipInfos.read-only']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -401,7 +401,7 @@ me4cinemasunshineRouter.get('/ownershipInfos/:goodType', permitScopes_1.default(
 /**
  * 会員プログラム登録
  */
-me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.ownershipInfos']), (_1, _2, next) => {
+me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.default(['customer', 'people.ownershipInfos']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -430,7 +430,7 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
  * 会員プログラム登録解除
  * 所有権のidentifierをURLで指定
  */
-me4cinemasunshineRouter.put('/ownershipInfos/programMembership/:identifier/unRegister', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.ownershipInfos']), (_1, _2, next) => {
+me4cinemasunshineRouter.put('/ownershipInfos/programMembership/:identifier/unRegister', permitScopes_1.default(['customer', 'people.ownershipInfos']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {

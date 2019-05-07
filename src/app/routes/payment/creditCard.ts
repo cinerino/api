@@ -26,7 +26,7 @@ creditCardPaymentRouter.use(authentication);
  */
 creditCardPaymentRouter.post(
     '/authorize',
-    permitScopes(['admin', 'aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['admin', 'customer', 'transactions']),
     ...[
         body('object.typeOf')
             .not()
@@ -115,7 +115,7 @@ creditCardPaymentRouter.post(
  */
 creditCardPaymentRouter.put(
     '/authorize/:actionId/void',
-    permitScopes(['admin', 'aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['admin', 'customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({

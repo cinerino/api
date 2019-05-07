@@ -28,7 +28,7 @@ const profileRouter = express_1.Router();
 /**
  * プロフィール検索
  */
-profileRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+profileRouter.get('', permitScopes_1.default(['customer']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
         const profile = yield personRepo.getUserAttributesByAccessToken(req.accessToken);
@@ -42,7 +42,7 @@ profileRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']),
  * プロフィール更新
  * @deprecated Use patch method
  */
-profileRouter.put('', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+profileRouter.put('', permitScopes_1.default(['customer']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
         yield personRepo.updateProfileByAccessToken({
@@ -59,7 +59,7 @@ profileRouter.put('', permitScopes_1.default(['aws.cognito.signin.user.admin']),
 /**
  * プロフィール更新
  */
-profileRouter.patch('', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+profileRouter.patch('', permitScopes_1.default(['customer']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
         yield personRepo.updateProfileByAccessToken({

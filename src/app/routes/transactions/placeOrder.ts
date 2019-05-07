@@ -58,7 +58,7 @@ placeOrderTransactionsRouter.use(placeOrder4cinemasunshineRouter);
 
 placeOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     // Cinemasunshine互換性維持のため
     (req, _, next) => {
         if (typeof req.body.sellerId === 'string') {
@@ -202,7 +202,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.put(
     '/:transactionId/customerContact',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     ...[
         body('familyName')
             .not()
@@ -272,7 +272,7 @@ placeOrderTransactionsRouter.put(
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/offer/seatReservation',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     ...[
         body('object.acceptedOffer.additionalProperty')
             .optional()
@@ -332,7 +332,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.put(
     '/:transactionId/actions/authorize/offer/seatReservation/:actionId/cancel',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -446,7 +446,7 @@ placeOrderTransactionsRouter.put(
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/paymentMethod/creditCard',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     ...[
         body('typeOf')
             .not()
@@ -536,7 +536,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.put(
     '/:transactionId/actions/authorize/paymentMethod/creditCard/:actionId/cancel',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -569,7 +569,7 @@ placeOrderTransactionsRouter.put(
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/paymentMethod/account',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     ...[
         body('typeOf')
             .not()
@@ -692,7 +692,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.put(
     '/:transactionId/actions/authorize/paymentMethod/account/:actionId/cancel',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -734,7 +734,7 @@ placeOrderTransactionsRouter.put(
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/paymentMethod/movieTicket',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     ...[
         body('typeOf')
             .not()
@@ -799,7 +799,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.put(
     '/:transactionId/actions/authorize/paymentMethod/movieTicket/:actionId/cancel',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -830,7 +830,7 @@ placeOrderTransactionsRouter.put(
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/award/accounts/point',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     (req, __2, next) => {
         req.checkBody('amount', 'invalid amount')
             .notEmpty()
@@ -879,7 +879,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.put(
     '/:transactionId/actions/authorize/award/accounts/point/:actionId/cancel',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     (__1, __2, next) => {
         next();
     },
@@ -915,7 +915,7 @@ placeOrderTransactionsRouter.put(
 
 placeOrderTransactionsRouter.put(
     '/:transactionId/confirm',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -985,7 +985,7 @@ placeOrderTransactionsRouter.put(
  */
 placeOrderTransactionsRouter.put(
     '/:transactionId/cancel',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         try {

@@ -29,7 +29,7 @@ returnOrderTransactionsRouter.use(authentication_1.default);
 function escapeRegExp(params) {
     return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
 }
-returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'aws.cognito.signin.user.admin', 'transactions']), ...[
+returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'customer', 'transactions']), ...[
     check_1.body('expires')
         .not()
         .isEmpty()

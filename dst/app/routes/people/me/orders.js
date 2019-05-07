@@ -22,7 +22,7 @@ ordersRouter.use(authentication_1.default);
 /**
  * 注文検索
  */
-ordersRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (req, __2, next) => {
+ordersRouter.get('', permitScopes_1.default(['customer']), (req, __2, next) => {
     req.checkQuery('orderDateFrom')
         .notEmpty()
         .withMessage('required')

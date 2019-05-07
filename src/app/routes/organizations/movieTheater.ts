@@ -19,7 +19,7 @@ movieTheaterRouter.use(authentication);
  */
 movieTheaterRouter.get(
     '',
-    permitScopes(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']),
+    permitScopes(['customer', 'organizations', 'organizations.read-only']),
     validator,
     async (req, res, next) => {
         try {
@@ -63,7 +63,7 @@ movieTheaterRouter.get(
  */
 movieTheaterRouter.get(
     '/:branchCode([0-9]{3})',
-    permitScopes(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']),
+    permitScopes(['customer', 'organizations', 'organizations.read-only']),
     validator,
     async (req, res, next) => {
         try {
@@ -102,7 +102,7 @@ movieTheaterRouter.get(
  */
 movieTheaterRouter.get(
     '/:id',
-    permitScopes(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']),
+    permitScopes(['customer', 'organizations', 'organizations.read-only']),
     validator,
     async (req, res, next) => {
         try {

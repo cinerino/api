@@ -33,6 +33,7 @@
 | `CHEVRE_CLIENT_SECRET`                    | true     |                | Chevre client secret                        |
 | `COA_ENDPOINT`                            | true     |                | COA endpoint                                |
 | `COA_REFRESH_TOKEN`                       | true     |                | COA refresh token                           |
+| `CUSTOMER_ADDITIONAL_PERMITTED_SCOPES`    | true     |                | 会員追加許可スコープ                        |
 | `TRANSACTION_RATE_LIMIT_UNIT_IN_SECONDS`  | true     |                | Transaction rate limit unit                 |
 | `TRANSACTION_RATE_LIMIT_THRESHOLD`        | true     |                | Transaction rate limit threshold            |
 | `RESOURCE_SERVER_IDENTIFIER`              | true     |                | Resource server identifier                  |

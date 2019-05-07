@@ -40,7 +40,7 @@ ownershipInfosRouter.use('/reservations', reservationsRouter);
  */
 ownershipInfosRouter.get(
     '',
-    permitScopes(['aws.cognito.signin.user.admin']),
+    permitScopes(['customer']),
     (_1, _2, next) => {
         next();
     },
@@ -105,7 +105,7 @@ ownershipInfosRouter.get(
  */
 ownershipInfosRouter.post(
     '/:id/authorize',
-    permitScopes(['aws.cognito.signin.user.admin']),
+    permitScopes(['customer']),
     (_1, _2, next) => {
         next();
     },

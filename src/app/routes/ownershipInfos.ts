@@ -22,7 +22,7 @@ ownershipInfosRouter.use(authentication);
  */
 ownershipInfosRouter.post(
     '/tokens',
-    permitScopes(['aws.cognito.signin.user.admin', 'tokens']),
+    permitScopes(['customer', 'tokens']),
     validator,
     async (req, res, next) => {
         try {
@@ -124,7 +124,7 @@ ownershipInfosRouter.get(
  */
 ownershipInfosRouter.get(
     '/countByRegisterDateAndTheater',
-    permitScopes(['aws.cognito.signin.user.admin']),
+    permitScopes(['customer']),
     (req, __, next) => {
         req.checkQuery('fromDate')
             .notEmpty()

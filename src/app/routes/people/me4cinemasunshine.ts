@@ -42,7 +42,7 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
  */
 me4cinemasunshineRouter.get(
     '/contacts',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.contacts', 'people.contacts.read-only']),
+    permitScopes(['customer', 'people.contacts', 'people.contacts.read-only']),
     async (req, res, next) => {
         try {
             const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
@@ -66,7 +66,7 @@ me4cinemasunshineRouter.get(
  */
 me4cinemasunshineRouter.put(
     '/contacts',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.contacts']),
+    permitScopes(['customer', 'people.contacts']),
     validator,
     async (req, res, next) => {
         try {
@@ -108,7 +108,7 @@ me4cinemasunshineRouter.put(
  */
 me4cinemasunshineRouter.get(
     '/creditCards',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.creditCards', 'people.creditCards.read-only']),
+    permitScopes(['customer', 'people.creditCards', 'people.creditCards.read-only']),
     async (req, res, next) => {
         try {
             const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
@@ -133,7 +133,7 @@ me4cinemasunshineRouter.get(
  */
 me4cinemasunshineRouter.post(
     '/creditCards',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.creditCards']),
+    permitScopes(['customer', 'people.creditCards']),
     validator,
     async (req, res, next) => {
         try {
@@ -162,7 +162,7 @@ me4cinemasunshineRouter.post(
  */
 me4cinemasunshineRouter.delete(
     '/creditCards/:cardSeq',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.creditCards']),
+    permitScopes(['customer', 'people.creditCards']),
     validator,
     async (req, res, next) => {
         try {
@@ -190,7 +190,7 @@ me4cinemasunshineRouter.delete(
  */
 me4cinemasunshineRouter.post(
     '/accounts',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.accounts']),
+    permitScopes(['customer', 'people.accounts']),
     (req, _, next) => {
         req.checkBody('name', 'invalid name')
             .notEmpty()
@@ -257,7 +257,7 @@ me4cinemasunshineRouter.post(
  */
 me4cinemasunshineRouter.put(
     '/accounts/:accountNumber/close',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.accounts']),
+    permitScopes(['customer', 'people.accounts']),
     validator,
     async (req, res, next) => {
         try {
@@ -323,7 +323,7 @@ me4cinemasunshineRouter.put(
  */
 me4cinemasunshineRouter.delete(
     '/accounts/:accountNumber',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.accounts']),
+    permitScopes(['customer', 'people.accounts']),
     validator,
     async (req, res, next) => {
         try {
@@ -365,7 +365,7 @@ me4cinemasunshineRouter.delete(
  */
 me4cinemasunshineRouter.get(
     '/accounts',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.accounts.read-only']),
+    permitScopes(['customer', 'people.accounts.read-only']),
     validator,
     async (req, res, next) => {
         try {
@@ -410,7 +410,7 @@ me4cinemasunshineRouter.get(
  */
 me4cinemasunshineRouter.get(
     '/accounts/:accountNumber/actions/moneyTransfer',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.accounts.actions.read-only']),
+    permitScopes(['customer', 'people.accounts.actions.read-only']),
     validator,
     async (req, res, next) => {
         try {
@@ -453,7 +453,7 @@ me4cinemasunshineRouter.get(
  */
 me4cinemasunshineRouter.get(
     '/ownershipInfos/:goodType',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.ownershipInfos', 'people.ownershipInfos.read-only']),
+    permitScopes(['customer', 'people.ownershipInfos', 'people.ownershipInfos.read-only']),
     (_1, _2, next) => {
         next();
     },
@@ -484,7 +484,7 @@ me4cinemasunshineRouter.get(
  */
 me4cinemasunshineRouter.put(
     '/ownershipInfos/programMembership/register',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.ownershipInfos']),
+    permitScopes(['customer', 'people.ownershipInfos']),
     (_1, _2, next) => {
         next();
     },
@@ -519,7 +519,7 @@ me4cinemasunshineRouter.put(
  */
 me4cinemasunshineRouter.put(
     '/ownershipInfos/programMembership/:identifier/unRegister',
-    permitScopes(['aws.cognito.signin.user.admin', 'people.ownershipInfos']),
+    permitScopes(['customer', 'people.ownershipInfos']),
     (_1, _2, next) => {
         next();
     },

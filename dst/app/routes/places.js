@@ -21,7 +21,7 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 placesRouter.use(authentication_1.default);
-placesRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['aws.cognito.signin.user.admin', 'places', 'places.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placesRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['customer', 'places', 'places.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // const movieTheater = cinerino.service.masterSync.createMovieTheaterFromCOA(
         //     await cinerino.COA.services.master.theater({ theaterCode: req.params.branchCode }),
@@ -52,7 +52,7 @@ placesRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['aws.cogni
 // もし使用していれば戻す
 // placesRouter.get(
 //     '/movieTheater',
-//     permitScopes(['aws.cognito.signin.user.admin', 'places', 'places.read-only']),
+//     permitScopes(['customer', 'places', 'places.read-only']),
 //     validator,
 //     async (__, res, next) => {
 //         try {

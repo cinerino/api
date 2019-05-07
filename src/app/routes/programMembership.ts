@@ -15,7 +15,7 @@ programMembershipsRouter.use(authentication);
 
 programMembershipsRouter.get(
     '',
-    permitScopes(['aws.cognito.signin.user.admin', 'programMemberships', 'programMemberships.read-only']),
+    permitScopes(['customer', 'programMemberships', 'programMemberships.read-only']),
     validator,
     async (__, res, next) => {
         try {

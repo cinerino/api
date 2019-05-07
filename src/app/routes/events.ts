@@ -26,7 +26,7 @@ eventsRouter.use('/screeningEvent', screeningEventRouter);
  */
 eventsRouter.get(
     '/individualScreeningEvent/:id',
-    permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
+    permitScopes(['customer', 'events', 'events.read-only']),
     validator,
     async (req, res, next) => {
         try {
@@ -49,7 +49,7 @@ eventsRouter.get(
  */
 eventsRouter.get(
     '/individualScreeningEvent',
-    permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
+    permitScopes(['customer', 'events', 'events.read-only']),
     ...[
         query('startFrom')
             .optional()

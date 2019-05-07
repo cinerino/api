@@ -28,7 +28,7 @@ eventsRouter.use('/screeningEvent', screeningEvent_1.default);
  * Cinemasunshine対応
  * @deprecated Use /screeningEvent/:id
  */
-eventsRouter.get('/individualScreeningEvent/:id', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+eventsRouter.get('/individualScreeningEvent/:id', permitScopes_1.default(['customer', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield cinerino.service.offer.findEventById4cinemasunshine(req.params.id)({
             attendeeCapacity: new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient()),
@@ -47,7 +47,7 @@ eventsRouter.get('/individualScreeningEvent/:id', permitScopes_1.default(['aws.c
  * Cinemasunshine対応
  * @deprecated Use /screeningEvent
  */
-eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), ...[
+eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['customer', 'events', 'events.read-only']), ...[
     check_1.query('startFrom')
         .optional()
         .isISO8601()

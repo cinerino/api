@@ -24,7 +24,7 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
  */
 accountsRouter.post(
     '/:accountType',
-    permitScopes(['aws.cognito.signin.user.admin']),
+    permitScopes(['customer']),
     (req, _, next) => {
         req.checkBody('name', 'invalid name')
             .notEmpty()
@@ -62,7 +62,7 @@ accountsRouter.post(
  */
 accountsRouter.put(
     '/:accountType/:accountNumber/close',
-    permitScopes(['aws.cognito.signin.user.admin']),
+    permitScopes(['customer']),
     validator,
     async (req, res, next) => {
         try {
@@ -93,7 +93,7 @@ accountsRouter.put(
  */
 accountsRouter.get(
     '/actions/moneyTransfer',
-    permitScopes(['aws.cognito.signin.user.admin']),
+    permitScopes(['customer']),
     validator,
     async (req, res, next) => {
         try {

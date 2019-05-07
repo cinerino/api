@@ -23,7 +23,7 @@ actionsRouter.use(authentication_1.default);
 /**
  * チケット印刷アクション追加
  */
-actionsRouter.post('/print/ticket', permitScopes_1.default(['aws.cognito.signin.user.admin', 'actions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+actionsRouter.post('/print/ticket', permitScopes_1.default(['customer', 'actions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const ticket = {
             ticketToken: req.body.ticketToken
@@ -39,7 +39,7 @@ actionsRouter.post('/print/ticket', permitScopes_1.default(['aws.cognito.signin.
 /**
  * チケット印刷アクション検索
  */
-actionsRouter.get('/print/ticket', permitScopes_1.default(['aws.cognito.signin.user.admin', 'actions', 'actions.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+actionsRouter.get('/print/ticket', permitScopes_1.default(['customer', 'actions', 'actions.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const actions = yield new cinerino.repository.Action(mongoose.connection).searchPrintTicket({
             agentId: req.user.sub,

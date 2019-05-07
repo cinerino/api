@@ -24,7 +24,7 @@ const profileRouter = Router();
  */
 profileRouter.get(
     '',
-    permitScopes(['aws.cognito.signin.user.admin']),
+    permitScopes(['customer']),
     async (req, res, next) => {
         try {
             const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
@@ -42,7 +42,7 @@ profileRouter.get(
  */
 profileRouter.put(
     '',
-    permitScopes(['aws.cognito.signin.user.admin']),
+    permitScopes(['customer']),
     validator,
     async (req, res, next) => {
         try {
@@ -64,7 +64,7 @@ profileRouter.put(
  */
 profileRouter.patch(
     '',
-    permitScopes(['aws.cognito.signin.user.admin']),
+    permitScopes(['customer']),
     validator,
     async (req, res, next) => {
         try {

@@ -29,7 +29,7 @@ movieTicketPaymentRouter.use(authentication);
  */
 movieTicketPaymentRouter.post(
     '/actions/check',
-    permitScopes(['aws.cognito.signin.user.admin', 'tokens']),
+    permitScopes(['customer', 'tokens']),
     validator,
     async (req, res, next) => {
         try {
@@ -64,7 +64,7 @@ movieTicketPaymentRouter.post(
  */
 movieTicketPaymentRouter.post(
     '/authorize',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     ...[
         body('object.typeOf')
             .not()
@@ -128,7 +128,7 @@ movieTicketPaymentRouter.post(
  */
 movieTicketPaymentRouter.put(
     '/authorize/:actionId/void',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({

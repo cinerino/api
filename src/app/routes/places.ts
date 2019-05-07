@@ -17,7 +17,7 @@ placesRouter.use(authentication);
 
 placesRouter.get(
     '/movieTheater/:branchCode',
-    permitScopes(['aws.cognito.signin.user.admin', 'places', 'places.read-only']),
+    permitScopes(['customer', 'places', 'places.read-only']),
     validator,
     async (req, res, next) => {
         try {
@@ -57,7 +57,7 @@ placesRouter.get(
 // もし使用していれば戻す
 // placesRouter.get(
 //     '/movieTheater',
-//     permitScopes(['aws.cognito.signin.user.admin', 'places', 'places.read-only']),
+//     permitScopes(['customer', 'places', 'places.read-only']),
 //     validator,
 //     async (__, res, next) => {
 //         try {

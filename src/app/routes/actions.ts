@@ -18,7 +18,7 @@ actionsRouter.use(authentication);
  */
 actionsRouter.post(
     '/print/ticket',
-    permitScopes(['aws.cognito.signin.user.admin', 'actions']),
+    permitScopes(['customer', 'actions']),
     validator,
     async (req, res, next) => {
         try {
@@ -44,7 +44,7 @@ actionsRouter.post(
  */
 actionsRouter.get(
     '/print/ticket',
-    permitScopes(['aws.cognito.signin.user.admin', 'actions', 'actions.read-only']),
+    permitScopes(['customer', 'actions', 'actions.read-only']),
     validator,
     async (req, res, next) => {
         try {

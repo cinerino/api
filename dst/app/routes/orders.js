@@ -44,7 +44,7 @@ ordersRouter.use(authentication_1.default);
  * 確認番号と電話番号で注文照会
  * @deprecated 基本的にシネマサンシャイン互換性維持のためのエンドポイント
  */
-ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']), ...[
+ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['customer', 'orders', 'orders.read-only']), ...[
     check_1.body('theaterCode')
         .not()
         .isEmpty()
@@ -195,7 +195,7 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['admin']), va
 /**
  * 確認番号で注文照会
  */
-ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']), ...[
+ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['customer', 'orders', 'orders.read-only']), ...[
     check_1.query('orderDateFrom')
         .optional()
         .isISO8601()
@@ -259,7 +259,7 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['aws.cogn
 /**
  * 確認番号で注文アイテムに対してコードを発行する
  */
-ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.default(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']), ...[
+ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.default(['customer', 'orders', 'orders.read-only']), ...[
     check_1.body('customer')
         .not()
         .isEmpty()

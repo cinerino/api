@@ -23,7 +23,7 @@ const debug = createDebug('cinerino-api:router');
  */
 creditCardsRouter.post(
     '',
-    permitScopes(['aws.cognito.signin.user.admin']),
+    permitScopes(['customer']),
     validator,
     async (req, res, next) => {
         try {
@@ -51,7 +51,7 @@ creditCardsRouter.post(
  */
 creditCardsRouter.get(
     '',
-    permitScopes(['aws.cognito.signin.user.admin']),
+    permitScopes(['customer']),
     async (req, res, next) => {
         try {
             const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? <string>req.user.username : req.user.sub;
@@ -75,7 +75,7 @@ creditCardsRouter.get(
  */
 creditCardsRouter.delete(
     '/:cardSeq',
-    permitScopes(['aws.cognito.signin.user.admin']),
+    permitScopes(['customer']),
     validator,
     async (req, res, next) => {
         try {

@@ -43,7 +43,7 @@ ordersRouter.use(authentication);
  */
 ordersRouter.post(
     '/findByOrderInquiryKey',
-    permitScopes(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']),
+    permitScopes(['customer', 'orders', 'orders.read-only']),
     ...[
         body('theaterCode')
             .not()
@@ -228,7 +228,7 @@ ordersRouter.post(
  */
 ordersRouter.post(
     '/findByConfirmationNumber',
-    permitScopes(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']),
+    permitScopes(['customer', 'orders', 'orders.read-only']),
     ...[
         query('orderDateFrom')
             .optional()
@@ -303,7 +303,7 @@ ordersRouter.post(
  */
 ordersRouter.post(
     '/:orderNumber/ownershipInfos/authorize',
-    permitScopes(['aws.cognito.signin.user.admin', 'orders', 'orders.read-only']),
+    permitScopes(['customer', 'orders', 'orders.read-only']),
     ...[
         body('customer')
             .not()

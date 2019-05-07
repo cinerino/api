@@ -30,7 +30,7 @@ creditCardPaymentRouter.use(authentication_1.default);
 /**
  * クレジットカード決済承認
  */
-creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'aws.cognito.signin.user.admin', 'transactions']), ...[
+creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'customer', 'transactions']), ...[
     check_1.body('object.typeOf')
         .not()
         .isEmpty()
@@ -104,7 +104,7 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'aws
 /**
  * クレジットカード決済承認取消
  */
-creditCardPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['admin', 'aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+creditCardPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['admin', 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id

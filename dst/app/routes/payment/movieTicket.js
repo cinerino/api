@@ -33,7 +33,7 @@ movieTicketPaymentRouter.use(authentication_1.default);
 /**
  * ムビチケ購入番号確認
  */
-movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['aws.cognito.signin.user.admin', 'tokens']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['customer', 'tokens']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -62,7 +62,7 @@ movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['aws.cog
 /**
  * ムビチケ決済承認
  */
-movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), ...[
+movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['customer', 'transactions']), ...[
     check_1.body('object.typeOf')
         .not()
         .isEmpty()
@@ -118,7 +118,7 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['aws.cognito
 /**
  * ムビチケ決済承認取消
  */
-movieTicketPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+movieTicketPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id

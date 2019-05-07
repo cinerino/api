@@ -7,6 +7,10 @@ const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
 const debug = createDebug('cinerino-api:middlewares');
 exports.SCOPE_ADMIN = 'admin';
+exports.SCOPE_CUSTOMER = 'customer';
+const CUSTOMER_ADDITIONAL_PERMITTED_SCOPES = (process.env.CUSTOMER_ADDITIONAL_PERMITTED_SCOPES !== undefined)
+    ? process.env.CUSTOMER_ADDITIONAL_PERMITTED_SCOPES.split(',')
+    : [];
 exports.default = (permittedScopes) => {
     return (req, __, next) => {
         if (process.env.RESOURCE_SERVER_IDENTIFIER === undefined) {
@@ -20,9 +24,9 @@ exports.default = (permittedScopes) => {
             ...permittedScopes.map((permittedScope) => `${process.env.RESOURCE_SERVER_IDENTIFIER}/${permittedScope}`),
             ...permittedScopes.map((permittedScope) => `${process.env.RESOURCE_SERVER_IDENTIFIER}/auth/${permittedScope}`)
         ];
-        // cognitoユーザー管理スコープは単体で特別扱い
-        if (permittedScopes.indexOf('aws.cognito.signin.user.admin') >= 0) {
-            permittedScopesWithResourceServerIdentifier.push('aws.cognito.signin.user.admin');
+        // 会員の場合、追加許可スコープをセット
+        if (permittedScopes.indexOf(exports.SCOPE_CUSTOMER) >= 0) {
+            permittedScopesWithResourceServerIdentifier.push(...CUSTOMER_ADDITIONAL_PERMITTED_SCOPES);
         }
         debug('permittedScopesWithResourceServerIdentifier:', permittedScopesWithResourceServerIdentifier);
         // スコープチェック

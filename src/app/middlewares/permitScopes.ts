@@ -8,6 +8,10 @@ import { NextFunction, Request, Response } from 'express';
 const debug = createDebug('cinerino-api:middlewares');
 
 export const SCOPE_ADMIN = 'admin';
+export const SCOPE_CUSTOMER = 'customer';
+const CUSTOMER_ADDITIONAL_PERMITTED_SCOPES: string[] = (process.env.CUSTOMER_ADDITIONAL_PERMITTED_SCOPES !== undefined)
+    ? /* istanbul ignore next */ process.env.CUSTOMER_ADDITIONAL_PERMITTED_SCOPES.split(',')
+    : [];
 
 /**
  * スコープインターフェース
@@ -30,10 +34,14 @@ export default (permittedScopes: IScope[]) => {
             ...permittedScopes.map((permittedScope) => `${process.env.RESOURCE_SERVER_IDENTIFIER}/${permittedScope}`),
             ...permittedScopes.map((permittedScope) => `${process.env.RESOURCE_SERVER_IDENTIFIER}/auth/${permittedScope}`)
         ];
-        // cognitoユーザー管理スコープは単体で特別扱い
-        if (permittedScopes.indexOf('aws.cognito.signin.user.admin') >= 0) {
-            permittedScopesWithResourceServerIdentifier.push('aws.cognito.signin.user.admin');
+
+        // 会員の場合、追加許可スコープをセット
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
+        if (permittedScopes.indexOf(SCOPE_CUSTOMER) >= 0) {
+            permittedScopesWithResourceServerIdentifier.push(...CUSTOMER_ADDITIONAL_PERMITTED_SCOPES);
         }
+
         debug('permittedScopesWithResourceServerIdentifier:', permittedScopesWithResourceServerIdentifier);
 
         // スコープチェック

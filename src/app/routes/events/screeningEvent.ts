@@ -21,7 +21,7 @@ const screeningEventRouter = Router();
  */
 screeningEventRouter.get(
     '',
-    permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
+    permitScopes(['customer', 'events', 'events.read-only']),
     ...[
         query('inSessionFrom')
             .optional()
@@ -119,7 +119,7 @@ screeningEventRouter.get(
  */
 screeningEventRouter.get(
     '/:id',
-    permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
+    permitScopes(['customer', 'events', 'events.read-only']),
     validator,
     async (req, res, next) => {
         try {
@@ -151,7 +151,7 @@ screeningEventRouter.get(
  */
 screeningEventRouter.get(
     '/:id/offers',
-    permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
+    permitScopes(['customer', 'events', 'events.read-only']),
     validator,
     async (req, res, next) => {
         try {
@@ -178,7 +178,7 @@ screeningEventRouter.get(
  */
 screeningEventRouter.get(
     '/:id/offers/ticket',
-    permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
+    permitScopes(['customer', 'events', 'events.read-only']),
     ...[
         query('seller')
             .not()

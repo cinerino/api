@@ -26,7 +26,7 @@ function escapeRegExp(params: string) {
 
 returnOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['admin', 'aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['admin', 'customer', 'transactions']),
     ...[
         body('expires')
             .not()

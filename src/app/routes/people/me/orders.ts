@@ -16,7 +16,7 @@ ordersRouter.use(authentication);
  */
 ordersRouter.get(
     '',
-    permitScopes(['aws.cognito.signin.user.admin']),
+    permitScopes(['customer']),
     (req, __2, next) => {
         req.checkQuery('orderDateFrom')
             .notEmpty()

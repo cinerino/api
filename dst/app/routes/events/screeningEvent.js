@@ -24,7 +24,7 @@ const screeningEventRouter = express_1.Router();
 /**
  * イベント検索
  */
-screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), ...[
+screeningEventRouter.get('', permitScopes_1.default(['customer', 'events', 'events.read-only']), ...[
     check_1.query('inSessionFrom')
         .optional()
         .isISO8601()
@@ -104,7 +104,7 @@ screeningEventRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
 /**
  * IDでイベント検索
  */
-screeningEventRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+screeningEventRouter.get('/:id', permitScopes_1.default(['customer', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
@@ -129,7 +129,7 @@ screeningEventRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.use
 /**
  * イベントに対するオファー検索
  */
-screeningEventRouter.get('/:id/offers', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+screeningEventRouter.get('/:id/offers', permitScopes_1.default(['customer', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -149,7 +149,7 @@ screeningEventRouter.get('/:id/offers', permitScopes_1.default(['aws.cognito.sig
 /**
  * イベントに対する券種オファー検索
  */
-screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), ...[
+screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['customer', 'events', 'events.read-only']), ...[
     check_1.query('seller')
         .not()
         .isEmpty()

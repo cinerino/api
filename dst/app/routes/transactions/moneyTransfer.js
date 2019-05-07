@@ -35,7 +35,7 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     state: ''
 });
 moneyTransferTransactionsRouter.use(authentication_1.default);
-moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'aws.cognito.signin.user.admin', 'transactions']), (req, _, next) => {
+moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'customer', 'transactions']), (req, _, next) => {
     req.checkBody('expires', 'invalid expires')
         .notEmpty()
         .withMessage('expires is required')
@@ -105,7 +105,7 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 
         next(error);
     }
 }));
-moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin', 'aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin', 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.MoneyTransfer,
         id: req.params.transactionId
@@ -141,7 +141,7 @@ moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.de
 /**
  * 取引を明示的に中止
  */
-moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.default(['admin', 'aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.default(['admin', 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);

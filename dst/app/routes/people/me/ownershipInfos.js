@@ -43,7 +43,7 @@ ownershipInfosRouter.use('/reservations', reservations_1.default);
 /**
  * 所有権検索
  */
-ownershipInfosRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (_1, _2, next) => {
+ownershipInfosRouter.get('', permitScopes_1.default(['customer']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -96,7 +96,7 @@ ownershipInfosRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
 /**
  * 所有権に対して認可コードを発行する
  */
-ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['aws.cognito.signin.user.admin']), (_1, _2, next) => {
+ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['customer']), (_1, _2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
