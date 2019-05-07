@@ -9,7 +9,7 @@ const debug = createDebug('cinerino-api:middlewares');
 exports.SCOPE_ADMIN = 'admin';
 exports.SCOPE_CUSTOMER = 'customer';
 const CUSTOMER_ADDITIONAL_PERMITTED_SCOPES = (process.env.CUSTOMER_ADDITIONAL_PERMITTED_SCOPES !== undefined)
-    ? process.env.CUSTOMER_ADDITIONAL_PERMITTED_SCOPES.split(',')
+    ? /* istanbul ignore next */ process.env.CUSTOMER_ADDITIONAL_PERMITTED_SCOPES.split(',')
     : [];
 exports.default = (permittedScopes) => {
     return (req, __, next) => {
@@ -25,6 +25,8 @@ exports.default = (permittedScopes) => {
             ...permittedScopes.map((permittedScope) => `${process.env.RESOURCE_SERVER_IDENTIFIER}/auth/${permittedScope}`)
         ];
         // 会員の場合、追加許可スコープをセット
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (permittedScopes.indexOf(exports.SCOPE_CUSTOMER) >= 0) {
             permittedScopesWithResourceServerIdentifier.push(...CUSTOMER_ADDITIONAL_PERMITTED_SCOPES);
         }
