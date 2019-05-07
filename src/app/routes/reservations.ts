@@ -55,6 +55,37 @@ reservationsRouter.get(
 );
 
 /**
+ * 管理者として予約検索
+ * @deprecated Use /reservations
+ */
+reservationsRouter.get(
+    '/eventReservation/screeningEvent',
+    permitScopes(['admin']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+
+            // クエリをそのままChevre検索へパス
+            const reservationService = new cinerino.chevre.service.Reservation({
+                endpoint: project.settings.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const searchResult = await reservationService.search({
+                ...req.query,
+                project: { ids: [req.project.id] },
+                typeOf: cinerino.factory.chevre.reservationType.EventReservation
+            });
+            res.set('X-Total-Count', searchResult.totalCount.toString());
+            res.json(searchResult.data);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
  * トークンで予約照会
  */
 reservationsRouter.post(

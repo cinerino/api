@@ -47,6 +47,27 @@ reservationsRouter.get('', permitScopes_1.default(['admin']), validator_1.defaul
     }
 }));
 /**
+ * 管理者として予約検索
+ * @deprecated Use /reservations
+ */
+reservationsRouter.get('/eventReservation/screeningEvent', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        // クエリをそのままChevre検索へパス
+        const reservationService = new cinerino.chevre.service.Reservation({
+            endpoint: project.settings.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const searchResult = yield reservationService.search(Object.assign({}, req.query, { project: { ids: [req.project.id] }, typeOf: cinerino.factory.chevre.reservationType.EventReservation }));
+        res.set('X-Total-Count', searchResult.totalCount.toString());
+        res.json(searchResult.data);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
  * トークンで予約照会
  */
 reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitScopes_1.default(['admin', 'tokens', 'tokens.read-only']), (req, _, next) => {
