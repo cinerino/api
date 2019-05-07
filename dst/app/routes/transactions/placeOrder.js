@@ -44,13 +44,6 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.CHEVRE_CLIENT_ID,
-    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
 const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials({
     domain: process.env.MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.MVTK_RESERVE_CLIENT_ID,
@@ -266,14 +259,8 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
     })(req, res, next);
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const eventService = new cinerino.chevre.service.Event({
-            endpoint: process.env.CHEVRE_ENDPOINT,
-            auth: chevreAuthClient
-        });
-        const reserveService = new cinerino.chevre.service.transaction.Reserve({
-            endpoint: process.env.CHEVRE_ENDPOINT,
-            auth: chevreAuthClient
-        });
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
         const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create({
             project: req.project,
             object: req.body,
@@ -282,13 +269,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             event: new cinerino.repository.Event(mongoose.connection),
-            eventService: eventService,
             movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                endpoint: process.env.MVTK_RESERVE_ENDPOINT,
+                endpoint: project.settings.mvtkReserve.endpoint,
                 auth: mvtkReserveAuthClient
             }),
+            project: projectRepo,
             seller: new cinerino.repository.Seller(mongoose.connection),
-            reserveService: reserveService,
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED)
@@ -308,18 +294,15 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatRe
     })(req, res, next);
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const reserveService = new cinerino.chevre.service.transaction.Reserve({
-            endpoint: process.env.CHEVRE_ENDPOINT,
-            auth: chevreAuthClient
-        });
         yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.cancel({
+            project: req.project,
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId },
             id: req.params.actionId
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
-            reserveService: reserveService
+            project: new cinerino.repository.Project(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)
             .end();
@@ -664,6 +647,8 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     })(req, res, next);
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
         const action = yield cinerino.service.payment.movieTicket.authorize({
             agent: { id: req.user.sub },
             object: {
@@ -679,7 +664,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             seller: new cinerino.repository.Seller(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection),
             movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                endpoint: process.env.MVTK_RESERVE_ENDPOINT,
+                endpoint: project.settings.mvtkReserve.endpoint,
                 auth: mvtkReserveAuthClient
             })
         });

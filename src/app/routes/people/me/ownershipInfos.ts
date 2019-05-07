@@ -64,6 +64,7 @@ ownershipInfosRouter.get(
                 typeOfGood: typeOfGood
             };
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
             const totalCount = await ownershipInfoRepo.count(searchConditions);
 
@@ -80,13 +81,9 @@ ownershipInfosRouter.get(
                     break;
 
                 case cinerino.factory.chevre.reservationType.EventReservation:
-                    const reservationService = new cinerino.chevre.service.Reservation({
-                        endpoint: <string>process.env.CHEVRE_ENDPOINT,
-                        auth: chevreAuthClient
-                    });
                     ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(searchConditions)({
                         ownershipInfo: ownershipInfoRepo,
-                        reservationService: reservationService
+                        project: projectRepo
                     });
                     break;
 
@@ -115,6 +112,9 @@ ownershipInfosRouter.post(
     validator,
     async (req, res, next) => {
         try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+
             const codeRepo = new cinerino.repository.Code(redis.getClient());
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const ownershipInfo = await ownershipInfoRepo.findById({ id: req.params.id });
@@ -129,7 +129,7 @@ ownershipInfosRouter.post(
             // 座席予約に対する所有権であれば、Chevreでチェックイン
             if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
                 const reservationService = new cinerino.chevre.service.Reservation({
-                    endpoint: <string>process.env.CHEVRE_ENDPOINT,
+                    endpoint: project.settings.chevre.endpoint,
                     auth: chevreAuthClient
                 });
                 await reservationService.checkInScreeningEventReservations({ id: ownershipInfo.typeOfGood.id });

@@ -20,13 +20,6 @@ const redis = require("../../../redis");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.CHEVRE_CLIENT_ID,
-    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
 const screeningEventRouter = express_1.Router();
 /**
  * イベント検索
@@ -139,16 +132,13 @@ screeningEventRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.use
 screeningEventRouter.get('/:id/offers', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
-        const eventService = new cinerino.chevre.service.Event({
-            endpoint: process.env.CHEVRE_ENDPOINT,
-            auth: chevreAuthClient
-        });
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const offers = yield cinerino.service.offer.searchEventOffers({
             project: req.project,
             event: { id: req.params.id }
         })({
             event: eventRepo,
-            eventService: eventService
+            project: projectRepo
         });
         res.json(offers);
     }
@@ -171,11 +161,8 @@ screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['aws.cogn
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-        const eventService = new cinerino.chevre.service.Event({
-            endpoint: process.env.CHEVRE_ENDPOINT,
-            auth: chevreAuthClient
-        });
         const offers = yield cinerino.service.offer.searchEventTicketOffers({
             project: req.project,
             event: { id: req.params.id },
@@ -183,7 +170,7 @@ screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['aws.cogn
             store: req.query.store
         })({
             event: eventRepo,
-            eventService: eventService,
+            project: projectRepo,
             seller: sellerRepo
         });
         res.json(offers);

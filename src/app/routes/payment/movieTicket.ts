@@ -33,6 +33,9 @@ movieTicketPaymentRouter.post(
     validator,
     async (req, res, next) => {
         try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+
             const action = await cinerino.service.payment.movieTicket.checkMovieTicket({
                 project: req.project,
                 typeOf: cinerino.factory.actionType.CheckAction,
@@ -43,7 +46,7 @@ movieTicketPaymentRouter.post(
                 event: new cinerino.repository.Event(mongoose.connection),
                 seller: new cinerino.repository.Seller(mongoose.connection),
                 movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                    endpoint: <string>process.env.MVTK_RESERVE_ENDPOINT,
+                    endpoint: project.settings.mvtkReserve.endpoint,
                     auth: mvtkReserveAuthClient
                 }),
                 paymentMethod: new cinerino.repository.PaymentMethod(mongoose.connection)
@@ -90,6 +93,9 @@ movieTicketPaymentRouter.post(
     },
     async (req, res, next) => {
         try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+
             const action = await cinerino.service.payment.movieTicket.authorize({
                 agent: { id: req.user.sub },
                 object: {
@@ -105,7 +111,7 @@ movieTicketPaymentRouter.post(
                 seller: new cinerino.repository.Seller(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection),
                 movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                    endpoint: <string>process.env.MVTK_RESERVE_ENDPOINT,
+                    endpoint: project.settings.mvtkReserve.endpoint,
                     auth: mvtkReserveAuthClient
                 })
             });

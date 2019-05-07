@@ -3,6 +3,7 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+import * as mongoose from 'mongoose';
 
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
@@ -28,8 +29,11 @@ movieRouter.get(
     validator,
     async (req, res, next) => {
         try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+
             const creativeWorkService = new cinerino.chevre.service.CreativeWork({
-                endpoint: <string>process.env.CHEVRE_ENDPOINT,
+                endpoint: project.settings.chevre.endpoint,
                 auth: chevreAuthClient
             });
             const { totalCount, data } = await creativeWorkService.searchMovies({

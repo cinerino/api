@@ -17,13 +17,6 @@ export default async (params: {
         tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
     });
 
-    const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-        domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-        clientId: <string>process.env.CHEVRE_CLIENT_ID,
-        clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-        scopes: [],
-        state: ''
-    });
     let count = 0;
 
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
@@ -45,8 +38,6 @@ export default async (params: {
                 })({
                     taskRepo: taskRepo,
                     connection: connection,
-                    chevreEndpoint: <string>process.env.CHEVRE_ENDPOINT,
-                    chevreAuthClient: chevreAuthClient,
                     redisClient: redisClient
                 });
             } catch (error) {

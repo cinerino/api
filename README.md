@@ -28,7 +28,6 @@
 | `PECORINO_AUTHORIZE_SERVER_DOMAIN`        | true     |                | Pecorino authorize server domain            |
 | `PECORINO_CLIENT_ID`                      | true     |                | Pecorino client id                          |
 | `PECORINO_CLIENT_SECRET`                  | true     |                | Pecorino client secret                      |
-| `CHEVRE_ENDPOINT`                         | true     |                | Chevre endpoint                             |
 | `CHEVRE_AUTHORIZE_SERVER_DOMAIN`          | true     |                | Chevre authorize server domain              |
 | `CHEVRE_CLIENT_ID`                        | true     |                | Chevre client id                            |
 | `CHEVRE_CLIENT_SECRET`                    | true     |                | Chevre client secret                        |
@@ -49,7 +48,6 @@
 | `ADMIN_USER_POOL_ID`                      | true     |                | Admin user pool ID                          |
 | `CODE_EXPIRES_IN_SECONDS`                 | true     |                | OwnershipInfo code expiration               |
 | `SENDGRID_API_KEY`                        | true     |                | SendGrid API key                            |
-| `MVTK_RESERVE_ENDPOINT`                   | true     |                | ムビチケ着券APIエンドポイント               |
 | `MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN`    | true     |                | ムビチケ着券API認可サーバードメイン         |
 | `MVTK_RESERVE_CLIENT_ID`                  | true     |                | ムビチケ着券APIクライアントID               |
 | `MVTK_RESERVE_CLIENT_SECRET`              | true     |                | ムビチケ着券APIクライアントシークレット     |

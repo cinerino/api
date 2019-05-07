@@ -31,13 +31,6 @@ const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServicePr
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
     })
 });
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.CHEVRE_CLIENT_ID,
-    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
 const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.PECORINO_CLIENT_ID,
@@ -109,6 +102,7 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['admin']), (_1, 
             typeOfGood: typeOfGood
         };
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const totalCount = yield ownershipInfoRepo.count(searchConditions);
         switch (typeOfGood.typeOf) {
             case cinerino.factory.ownershipInfo.AccountGoodType.Account:
@@ -122,13 +116,9 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['admin']), (_1, 
                 });
                 break;
             case cinerino.factory.chevre.reservationType.EventReservation:
-                const reservationService = new cinerino.chevre.service.Reservation({
-                    endpoint: process.env.CHEVRE_ENDPOINT,
-                    auth: chevreAuthClient
-                });
                 ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(searchConditions)({
                     ownershipInfo: ownershipInfoRepo,
-                    reservationService: reservationService
+                    project: projectRepo
                 });
                 break;
             default:

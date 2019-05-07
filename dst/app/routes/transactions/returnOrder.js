@@ -21,13 +21,6 @@ const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.CHEVRE_CLIENT_ID,
-    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
 const returnOrderTransactionsRouter = express_1.Router();
 returnOrderTransactionsRouter.use(authentication_1.default);
 /**
@@ -52,12 +45,9 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'a
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        const cancelReservationService = new cinerino.chevre.service.transaction.CancelReservation({
-            endpoint: process.env.CHEVRE_ENDPOINT,
-            auth: chevreAuthClient
-        });
         let order;
         let returnableOrder = req.body.object.order;
         // APIユーザーが管理者の場合、顧客情報を自動取得
@@ -108,10 +98,10 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'a
             seller: order.seller
         })({
             action: actionRepo,
-            cancelReservationService: cancelReservationService,
             invoice: invoiceRepo,
             seller: sellerRepo,
             order: orderRepo,
+            project: projectRepo,
             transaction: transactionRepo
         });
         // tslint:disable-next-line:no-string-literal

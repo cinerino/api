@@ -14,14 +14,6 @@ import validator from '../../middlewares/validator';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.CHEVRE_CLIENT_ID,
-    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
-
 const screeningEventRouter = Router();
 
 /**
@@ -164,16 +156,14 @@ screeningEventRouter.get(
     async (req, res, next) => {
         try {
             const eventRepo = new cinerino.repository.Event(mongoose.connection);
-            const eventService = new cinerino.chevre.service.Event({
-                endpoint: <string>process.env.CHEVRE_ENDPOINT,
-                auth: chevreAuthClient
-            });
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+
             const offers = await cinerino.service.offer.searchEventOffers({
                 project: req.project,
                 event: { id: req.params.id }
             })({
                 event: eventRepo,
-                eventService: eventService
+                project: projectRepo
             });
 
             res.json(offers);
@@ -203,11 +193,9 @@ screeningEventRouter.get(
     async (req, res, next) => {
         try {
             const eventRepo = new cinerino.repository.Event(mongoose.connection);
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-            const eventService = new cinerino.chevre.service.Event({
-                endpoint: <string>process.env.CHEVRE_ENDPOINT,
-                auth: chevreAuthClient
-            });
+
             const offers = await cinerino.service.offer.searchEventTicketOffers({
                 project: req.project,
                 event: { id: req.params.id },
@@ -215,7 +203,7 @@ screeningEventRouter.get(
                 store: req.query.store
             })({
                 event: eventRepo,
-                eventService: eventService,
+                project: projectRepo,
                 seller: sellerRepo
             });
             res.json(offers);

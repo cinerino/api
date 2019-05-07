@@ -33,9 +33,12 @@ reservationsRouter.get(
     validator,
     async (req, res, next) => {
         try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+
             // クエリをそのままChevre検索へパス
             const reservationService = new cinerino.chevre.service.Reservation({
-                endpoint: <string>process.env.CHEVRE_ENDPOINT,
+                endpoint: project.settings.chevre.endpoint,
                 auth: chevreAuthClient
             });
             const searchResult = await reservationService.search({
@@ -66,6 +69,9 @@ reservationsRouter.post(
     validator,
     async (req, res, next) => {
         try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+
             const payload =
                 await cinerino.service.code.verifyToken<IPayload>({
                     project: req.project,
@@ -90,7 +96,7 @@ reservationsRouter.post(
                 });
 
             const reservationService = new cinerino.chevre.service.Reservation({
-                endpoint: <string>process.env.CHEVRE_ENDPOINT,
+                endpoint: project.settings.chevre.endpoint,
                 auth: chevreAuthClient
             });
             const reservation = await reservationService.findById({ id: ownershipInfo.typeOfGood.id });

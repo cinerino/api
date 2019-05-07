@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
@@ -30,8 +31,10 @@ movieRouter.use(authentication_1.default);
  */
 movieRouter.get('', permitScopes_1.default(['admin', 'creativeWorks', 'creativeWorks.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
         const creativeWorkService = new cinerino.chevre.service.CreativeWork({
-            endpoint: process.env.CHEVRE_ENDPOINT,
+            endpoint: project.settings.chevre.endpoint,
             auth: chevreAuthClient
         });
         const { totalCount, data } = yield creativeWorkService.searchMovies(Object.assign({}, req.query, { project: { ids: [req.project.id] } }));

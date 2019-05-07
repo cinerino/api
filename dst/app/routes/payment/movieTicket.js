@@ -35,6 +35,8 @@ movieTicketPaymentRouter.use(authentication_1.default);
  */
 movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['aws.cognito.signin.user.admin', 'tokens']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
         const action = yield cinerino.service.payment.movieTicket.checkMovieTicket({
             project: req.project,
             typeOf: cinerino.factory.actionType.CheckAction,
@@ -45,7 +47,7 @@ movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['aws.cog
             event: new cinerino.repository.Event(mongoose.connection),
             seller: new cinerino.repository.Seller(mongoose.connection),
             movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                endpoint: process.env.MVTK_RESERVE_ENDPOINT,
+                endpoint: project.settings.mvtkReserve.endpoint,
                 auth: mvtkReserveAuthClient
             }),
             paymentMethod: new cinerino.repository.PaymentMethod(mongoose.connection)
@@ -85,6 +87,8 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['aws.cognito
     })(req, res, next);
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
         const action = yield cinerino.service.payment.movieTicket.authorize({
             agent: { id: req.user.sub },
             object: {
@@ -100,7 +104,7 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['aws.cognito
             seller: new cinerino.repository.Seller(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection),
             movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                endpoint: process.env.MVTK_RESERVE_ENDPOINT,
+                endpoint: project.settings.mvtkReserve.endpoint,
                 auth: mvtkReserveAuthClient
             })
         });

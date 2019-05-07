@@ -19,13 +19,6 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 1000;
     const taskRepo = new cinerino.repository.Task(connection);
-    const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-        domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-        clientId: process.env.CHEVRE_CLIENT_ID,
-        clientSecret: process.env.CHEVRE_CLIENT_SECRET,
-        scopes: [],
-        state: ''
-    });
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
             return;
@@ -37,9 +30,7 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
                 name: cinerino.factory.taskName.ReturnOrder
             })({
                 taskRepo: taskRepo,
-                connection: connection,
-                chevreEndpoint: process.env.CHEVRE_ENDPOINT,
-                chevreAuthClient: chevreAuthClient
+                connection: connection
             });
         }
         catch (error) {

@@ -266,6 +266,8 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
         .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
         const customer = req.body.customer;
         if (customer.email !== undefined && customer.telephone !== undefined) {
             throw new cinerino.factory.errors.Argument('customer');
@@ -297,7 +299,7 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
             .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
             .map((o) => o.typeOfGood.id);
         const reservationService = new cinerino.chevre.service.Reservation({
-            endpoint: process.env.CHEVRE_ENDPOINT,
+            endpoint: project.settings.chevre.endpoint,
             auth: chevreAuthClient
         });
         const searchReservationsResult = yield reservationService.search({

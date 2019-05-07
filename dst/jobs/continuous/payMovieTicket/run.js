@@ -19,13 +19,6 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 1000;
     const taskRepo = new cinerino.repository.Task(connection);
-    const authClient = new cinerino.mvtkreserveapi.auth.ClientCredentials({
-        domain: process.env.MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN,
-        clientId: process.env.MVTK_RESERVE_CLIENT_ID,
-        clientSecret: process.env.MVTK_RESERVE_CLIENT_SECRET,
-        scopes: [],
-        state: ''
-    });
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
             return;
@@ -37,9 +30,7 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
                 name: cinerino.factory.taskName.PayMovieTicket
             })({
                 taskRepo: taskRepo,
-                connection: connection,
-                mvtkReserveEndpoint: process.env.MVTK_RESERVE_ENDPOINT,
-                mvtkReserveAuthClient: authClient
+                connection: connection
             });
         }
         catch (error) {

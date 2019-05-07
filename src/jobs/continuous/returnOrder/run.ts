@@ -15,13 +15,6 @@ export default async (params: {
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 1000;
     const taskRepo = new cinerino.repository.Task(connection);
-    const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-        domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-        clientId: <string>process.env.CHEVRE_CLIENT_ID,
-        clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-        scopes: [],
-        state: ''
-    });
 
     setInterval(
         async () => {
@@ -37,9 +30,7 @@ export default async (params: {
                     name: cinerino.factory.taskName.ReturnOrder
                 })({
                     taskRepo: taskRepo,
-                    connection: connection,
-                    chevreEndpoint: <string>process.env.CHEVRE_ENDPOINT,
-                    chevreAuthClient: chevreAuthClient
+                    connection: connection
                 });
             } catch (error) {
                 console.error(error);

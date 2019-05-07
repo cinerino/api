@@ -31,9 +31,11 @@ reservationsRouter.use(authentication_1.default);
  */
 reservationsRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
         // クエリをそのままChevre検索へパス
         const reservationService = new cinerino.chevre.service.Reservation({
-            endpoint: process.env.CHEVRE_ENDPOINT,
+            endpoint: project.settings.chevre.endpoint,
             auth: chevreAuthClient
         });
         const searchResult = yield reservationService.search(Object.assign({}, req.query, { project: { ids: [req.project.id] }, typeOf: cinerino.factory.chevre.reservationType.EventReservation }));
@@ -54,6 +56,8 @@ reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitSc
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
         const payload = yield cinerino.service.code.verifyToken({
             project: req.project,
             agent: req.agent,
@@ -75,7 +79,7 @@ reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitSc
             return infos[0];
         });
         const reservationService = new cinerino.chevre.service.Reservation({
-            endpoint: process.env.CHEVRE_ENDPOINT,
+            endpoint: project.settings.chevre.endpoint,
             auth: chevreAuthClient
         });
         const reservation = yield reservationService.findById({ id: ownershipInfo.typeOfGood.id });

@@ -14,14 +14,6 @@ import validator from '../../middlewares/validator';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.CHEVRE_CLIENT_ID,
-    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
-
 const returnOrderTransactionsRouter = Router();
 returnOrderTransactionsRouter.use(authentication);
 
@@ -53,12 +45,9 @@ returnOrderTransactionsRouter.post(
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-            const cancelReservationService = new cinerino.chevre.service.transaction.CancelReservation({
-                endpoint: <string>process.env.CHEVRE_ENDPOINT,
-                auth: chevreAuthClient
-            });
 
             let order: cinerino.factory.order.IOrder | undefined;
             let returnableOrder: cinerino.factory.transaction.returnOrder.IReturnableOrder = req.body.object.order;
@@ -115,10 +104,10 @@ returnOrderTransactionsRouter.post(
                 seller: order.seller
             })({
                 action: actionRepo,
-                cancelReservationService: cancelReservationService,
                 invoice: invoiceRepo,
                 seller: sellerRepo,
                 order: orderRepo,
+                project: projectRepo,
                 transaction: transactionRepo
             });
 

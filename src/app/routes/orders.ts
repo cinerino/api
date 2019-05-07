@@ -313,6 +313,9 @@ ordersRouter.post(
     validator,
     async (req, res, next) => {
         try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+
             const customer = req.body.customer;
             if (customer.email !== undefined && customer.telephone !== undefined) {
                 throw new cinerino.factory.errors.Argument('customer');
@@ -347,7 +350,7 @@ ordersRouter.post(
                 .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
                 .map((o) => (<EventReservationGoodType>o.typeOfGood).id);
             const reservationService = new cinerino.chevre.service.Reservation({
-                endpoint: <string>process.env.CHEVRE_ENDPOINT,
+                endpoint: project.settings.chevre.endpoint,
                 auth: chevreAuthClient
             });
             const searchReservationsResult = await reservationService.search({

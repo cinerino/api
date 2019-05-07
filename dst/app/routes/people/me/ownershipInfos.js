@@ -63,6 +63,7 @@ ownershipInfosRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
             typeOfGood: typeOfGood
         };
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const totalCount = yield ownershipInfoRepo.count(searchConditions);
         switch (typeOfGood.typeOf) {
             case cinerino.factory.ownershipInfo.AccountGoodType.Account:
@@ -76,13 +77,9 @@ ownershipInfosRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
                 });
                 break;
             case cinerino.factory.chevre.reservationType.EventReservation:
-                const reservationService = new cinerino.chevre.service.Reservation({
-                    endpoint: process.env.CHEVRE_ENDPOINT,
-                    auth: chevreAuthClient
-                });
                 ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(searchConditions)({
                     ownershipInfo: ownershipInfoRepo,
-                    reservationService: reservationService
+                    project: projectRepo
                 });
                 break;
             default:
@@ -103,6 +100,8 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['aws.cognito
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
         const codeRepo = new cinerino.repository.Code(redis.getClient());
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const ownershipInfo = yield ownershipInfoRepo.findById({ id: req.params.id });
@@ -116,7 +115,7 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['aws.cognito
         // 座席予約に対する所有権であれば、Chevreでチェックイン
         if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
             const reservationService = new cinerino.chevre.service.Reservation({
-                endpoint: process.env.CHEVRE_ENDPOINT,
+                endpoint: project.settings.chevre.endpoint,
                 auth: chevreAuthClient
             });
             yield reservationService.checkInScreeningEventReservations({ id: ownershipInfo.typeOfGood.id });
