@@ -26,6 +26,9 @@ export default (permittedScopes: IScope[]) => {
             return;
         }
 
+        // SCOPE_ADMINは全アクセス許可
+        permittedScopes.push(SCOPE_ADMIN);
+
         debug('req.user.scopes:', req.user.scopes);
         req.isAdmin = req.user.scopes.indexOf(`${process.env.RESOURCE_SERVER_IDENTIFIER}/${SCOPE_ADMIN}`) >= 0;
 
