@@ -21,6 +21,7 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const redis = require("../../redis");
+const TOKEN_EXPIRES_IN = 1800;
 const ownershipInfosRouter = express_1.Router();
 ownershipInfosRouter.use(authentication_1.default);
 /**
@@ -36,8 +37,7 @@ ownershipInfosRouter.post('/tokens', permitScopes_1.default(['customer', 'tokens
                 code: req.body.code,
                 secret: process.env.TOKEN_SECRET,
                 issuer: process.env.RESOURCE_SERVER_IDENTIFIER,
-                // tslint:disable-next-line:no-magic-numbers
-                expiresIn: 1800
+                expiresIn: TOKEN_EXPIRES_IN
             })({ code: codeRepo });
         }
         catch (error) {
@@ -46,8 +46,7 @@ ownershipInfosRouter.post('/tokens', permitScopes_1.default(['customer', 'tokens
                 code: req.body.code,
                 secret: process.env.TOKEN_SECRET,
                 issuer: process.env.RESOURCE_SERVER_IDENTIFIER,
-                // tslint:disable-next-line:no-magic-numbers
-                expiresIn: 1800
+                expiresIn: TOKEN_EXPIRES_IN
             })({ code: tmpCodeRepo });
         }
         res.json({ token });

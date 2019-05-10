@@ -14,6 +14,8 @@ import validator from '../middlewares/validator';
 
 import * as redis from '../../redis';
 
+const TOKEN_EXPIRES_IN = 1800;
+
 const ownershipInfosRouter = Router();
 ownershipInfosRouter.use(authentication);
 
@@ -35,8 +37,7 @@ ownershipInfosRouter.post(
                     code: req.body.code,
                     secret: <string>process.env.TOKEN_SECRET,
                     issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER,
-                    // tslint:disable-next-line:no-magic-numbers
-                    expiresIn: 1800
+                    expiresIn: TOKEN_EXPIRES_IN
                 })({ code: codeRepo });
             } catch (error) {
                 // コードリポジトリにコードがなければ、一時コードリポジトリで確認
@@ -44,8 +45,7 @@ ownershipInfosRouter.post(
                     code: req.body.code,
                     secret: <string>process.env.TOKEN_SECRET,
                     issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER,
-                    // tslint:disable-next-line:no-magic-numbers
-                    expiresIn: 1800
+                    expiresIn: TOKEN_EXPIRES_IN
                 })({ code: tmpCodeRepo });
             }
 
