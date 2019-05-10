@@ -113,16 +113,22 @@ ownershipInfosRouter.post(
     async (req, res, next) => {
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const codeRepo = (process.env.USE_TMP_CODE_REPO === '1')
+                ? new cinerino.repository.TemporaryCode(redis.getClient())
+                : new cinerino.repository.Code(mongoose.connection);
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+
             const project = await projectRepo.findById({ id: req.project.id });
 
-            const codeRepo = new cinerino.repository.Code(redis.getClient());
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const ownershipInfo = await ownershipInfoRepo.findById({ id: req.params.id });
             if (ownershipInfo.ownedBy.id !== req.user.sub) {
                 throw new cinerino.factory.errors.Unauthorized();
             }
+
             const code = await codeRepo.publish({
+                project: req.project,
                 data: ownershipInfo,
+                validFrom: new Date(),
                 expiresInSeconds: CODE_EXPIRES_IN_SECONDS
             });
 

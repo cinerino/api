@@ -26,14 +26,28 @@ ownershipInfosRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const codeRepo = new cinerino.repository.Code(redis.getClient());
-            const token = await cinerino.service.code.getToken({
-                code: req.body.code,
-                secret: <string>process.env.TOKEN_SECRET,
-                issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER,
-                // tslint:disable-next-line:no-magic-numbers
-                expiresIn: 1800
-            })({ code: codeRepo });
+            let token: string;
+            const codeRepo = new cinerino.repository.Code(mongoose.connection);
+            const tmpCodeRepo = new cinerino.repository.TemporaryCode(redis.getClient());
+
+            try {
+                token = await cinerino.service.code.getToken({
+                    code: req.body.code,
+                    secret: <string>process.env.TOKEN_SECRET,
+                    issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER,
+                    // tslint:disable-next-line:no-magic-numbers
+                    expiresIn: 1800
+                })({ code: codeRepo });
+            } catch (error) {
+                // コードリポジトリにコードがなければ、一時コードリポジトリで確認
+                token = await cinerino.service.code.getToken({
+                    code: req.body.code,
+                    secret: <string>process.env.TOKEN_SECRET,
+                    issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER,
+                    // tslint:disable-next-line:no-magic-numbers
+                    expiresIn: 1800
+                })({ code: tmpCodeRepo });
+            }
 
             res.json({ token });
         } catch (error) {

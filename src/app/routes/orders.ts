@@ -313,6 +313,8 @@ ordersRouter.post(
     validator,
     async (req, res, next) => {
         try {
+            const now = new Date();
+
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
 
@@ -322,7 +324,9 @@ ordersRouter.post(
             }
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
-            const codeRepo = new cinerino.repository.Code(redis.getClient());
+            const codeRepo = (process.env.USE_TMP_CODE_REPO === '1')
+                ? new cinerino.repository.TemporaryCode(redis.getClient())
+                : new cinerino.repository.Code(mongoose.connection);
 
             const order = await orderRepo.findByOrderNumber({ orderNumber: req.params.orderNumber });
             if (order.customer.email !== customer.email && order.customer.telephone !== customer.telephone) {
@@ -373,7 +377,9 @@ ordersRouter.post(
                 if (ownershipInfo !== undefined) {
                     if (offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
                         offer.itemOffered.reservedTicket.ticketToken = await codeRepo.publish({
+                            project: req.project,
                             data: ownershipInfo,
+                            validFrom: now,
                             expiresInSeconds: CODE_EXPIRES_IN_SECONDS
                         });
                     }

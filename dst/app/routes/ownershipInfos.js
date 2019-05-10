@@ -28,14 +28,28 @@ ownershipInfosRouter.use(authentication_1.default);
  */
 ownershipInfosRouter.post('/tokens', permitScopes_1.default(['customer', 'tokens']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const codeRepo = new cinerino.repository.Code(redis.getClient());
-        const token = yield cinerino.service.code.getToken({
-            code: req.body.code,
-            secret: process.env.TOKEN_SECRET,
-            issuer: process.env.RESOURCE_SERVER_IDENTIFIER,
-            // tslint:disable-next-line:no-magic-numbers
-            expiresIn: 1800
-        })({ code: codeRepo });
+        let token;
+        const codeRepo = new cinerino.repository.Code(mongoose.connection);
+        const tmpCodeRepo = new cinerino.repository.TemporaryCode(redis.getClient());
+        try {
+            token = yield cinerino.service.code.getToken({
+                code: req.body.code,
+                secret: process.env.TOKEN_SECRET,
+                issuer: process.env.RESOURCE_SERVER_IDENTIFIER,
+                // tslint:disable-next-line:no-magic-numbers
+                expiresIn: 1800
+            })({ code: codeRepo });
+        }
+        catch (error) {
+            // コードリポジトリにコードがなければ、一時コードリポジトリで確認
+            token = yield cinerino.service.code.getToken({
+                code: req.body.code,
+                secret: process.env.TOKEN_SECRET,
+                issuer: process.env.RESOURCE_SERVER_IDENTIFIER,
+                // tslint:disable-next-line:no-magic-numbers
+                expiresIn: 1800
+            })({ code: tmpCodeRepo });
+        }
         res.json({ token });
     }
     catch (error) {
