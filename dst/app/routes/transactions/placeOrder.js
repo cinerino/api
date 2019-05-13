@@ -466,11 +466,13 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield cinerino.service.payment.creditCard.voidTransaction({
+            project: { id: req.project.id },
             id: req.params.actionId,
             agent: { id: req.user.sub },
             purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
+            project: new cinerino.repository.Project(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)

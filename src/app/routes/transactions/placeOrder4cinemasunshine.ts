@@ -336,11 +336,13 @@ placeOrder4cinemasunshineRouter.delete(
     async (req, res, next) => {
         try {
             await cinerino.service.payment.creditCard.voidTransaction({
+                project: { id: req.project.id },
                 agent: { id: req.user.sub },
                 id: <string>req.params.actionId,
                 purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: <string>req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
+                project: new cinerino.repository.Project(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
