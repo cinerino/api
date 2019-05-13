@@ -107,11 +107,13 @@ creditCardPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield cinerino.service.payment.creditCard.voidTransaction({
+            project: { id: req.project.id },
             agent: { id: req.user.sub },
             id: req.params.actionId,
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
+            project: new cinerino.repository.Project(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)
