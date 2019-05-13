@@ -301,6 +301,12 @@ placeOrderTransactionsRouter.post(
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+            if (project.settings.mvtkReserve === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+            }
 
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create({
                 project: req.project,
@@ -494,13 +500,7 @@ placeOrderTransactionsRouter.post(
 
             debug('authorizing credit card...', req.body.creditCard);
             const action = await cinerino.service.payment.creditCard.authorize({
-                project: {
-                    id: <string>process.env.PROJECT_ID,
-                    gmoInfo: {
-                        siteId: <string>process.env.GMO_SITE_ID,
-                        sitePass: <string>process.env.GMO_SITE_PASS
-                    }
-                },
+                project: { id: <string>process.env.PROJECT_ID },
                 agent: { id: req.user.sub },
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.CreditCard,
@@ -513,6 +513,7 @@ placeOrderTransactionsRouter.post(
                 purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
+                project: new cinerino.repository.Project(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection),
                 seller: new cinerino.repository.Seller(mongoose.connection)
             });
@@ -765,6 +766,12 @@ placeOrderTransactionsRouter.post(
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+            if (project.settings.mvtkReserve === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+            }
 
             const action = await cinerino.service.payment.movieTicket.authorize({
                 agent: { id: req.user.sub },

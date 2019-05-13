@@ -33,6 +33,12 @@ movieRouter.get('', permitScopes_1.default(['admin', 'creativeWorks', 'creativeW
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        if (project.settings.chevre === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+        }
         const creativeWorkService = new cinerino.chevre.service.CreativeWork({
             endpoint: project.settings.chevre.endpoint,
             auth: chevreAuthClient

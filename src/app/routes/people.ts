@@ -159,6 +159,15 @@ peopleRouter.get(
     permitScopes(['admin']),
     async (req, res, next) => {
         try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+            if (project.settings.gmo === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+            }
+
             let memberId = req.params.id;
 
             if (USE_USERNAME_AS_GMO_MEMBER_ID) {
@@ -175,9 +184,9 @@ peopleRouter.get(
             }
 
             const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
-                siteId: <string>process.env.GMO_SITE_ID,
-                sitePass: <string>process.env.GMO_SITE_PASS,
-                cardService: new cinerino.GMO.service.Card({ endpoint: <string>process.env.GMO_ENDPOINT })
+                siteId: project.settings.gmo.siteId,
+                sitePass: project.settings.gmo.sitePass,
+                cardService: new cinerino.GMO.service.Card({ endpoint: project.settings.gmo.endpoint })
             });
             const searchCardResults = await creditCardRepo.search({ personId: memberId });
 

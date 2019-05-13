@@ -97,10 +97,18 @@ me4cinemasunshineRouter.put('/contacts', permitScopes_1.default(['customer', 'pe
  */
 me4cinemasunshineRouter.get('/creditCards', permitScopes_1.default(['customer', 'people.creditCards', 'people.creditCards.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        if (project.settings.gmo === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+        }
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
-            siteId: process.env.GMO_SITE_ID,
-            sitePass: process.env.GMO_SITE_PASS,
-            cardService: new cinerino.GMO.service.Card({ endpoint: process.env.GMO_ENDPOINT })
+            siteId: project.settings.gmo.siteId,
+            sitePass: project.settings.gmo.sitePass,
+            cardService: new cinerino.GMO.service.Card({ endpoint: project.settings.gmo.endpoint })
         });
         const searchCardResults = yield creditCardRepo.search({ personId: req.user.username });
         debug('searchCardResults:', searchCardResults);
@@ -116,10 +124,18 @@ me4cinemasunshineRouter.get('/creditCards', permitScopes_1.default(['customer', 
  */
 me4cinemasunshineRouter.post('/creditCards', permitScopes_1.default(['customer', 'people.creditCards']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        if (project.settings.gmo === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+        }
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
-            siteId: process.env.GMO_SITE_ID,
-            sitePass: process.env.GMO_SITE_PASS,
-            cardService: new cinerino.GMO.service.Card({ endpoint: process.env.GMO_ENDPOINT })
+            siteId: project.settings.gmo.siteId,
+            sitePass: project.settings.gmo.sitePass,
+            cardService: new cinerino.GMO.service.Card({ endpoint: project.settings.gmo.endpoint })
         });
         const creditCard = yield creditCardRepo.save({
             personId: req.user.username,
@@ -138,10 +154,18 @@ me4cinemasunshineRouter.post('/creditCards', permitScopes_1.default(['customer',
  */
 me4cinemasunshineRouter.delete('/creditCards/:cardSeq', permitScopes_1.default(['customer', 'people.creditCards']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        if (project.settings.gmo === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+        }
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
-            siteId: process.env.GMO_SITE_ID,
-            sitePass: process.env.GMO_SITE_PASS,
-            cardService: new cinerino.GMO.service.Card({ endpoint: process.env.GMO_ENDPOINT })
+            siteId: project.settings.gmo.siteId,
+            sitePass: project.settings.gmo.sitePass,
+            cardService: new cinerino.GMO.service.Card({ endpoint: project.settings.gmo.endpoint })
         });
         yield creditCardRepo.remove({
             personId: req.user.username,

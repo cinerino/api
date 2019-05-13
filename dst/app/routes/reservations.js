@@ -33,6 +33,12 @@ reservationsRouter.get('', permitScopes_1.default(['admin']), validator_1.defaul
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        if (project.settings.chevre === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+        }
         // クエリをそのままChevre検索へパス
         const reservationService = new cinerino.chevre.service.Reservation({
             endpoint: project.settings.chevre.endpoint,
@@ -54,6 +60,12 @@ reservationsRouter.get('/eventReservation/screeningEvent', permitScopes_1.defaul
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        if (project.settings.chevre === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+        }
         // クエリをそのままChevre検索へパス
         const reservationService = new cinerino.chevre.service.Reservation({
             endpoint: project.settings.chevre.endpoint,
@@ -79,6 +91,12 @@ reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitSc
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        if (project.settings.chevre === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+        }
         const payload = yield cinerino.service.code.verifyToken({
             project: req.project,
             agent: req.agent,

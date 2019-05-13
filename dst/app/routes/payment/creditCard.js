@@ -66,13 +66,7 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'cus
         const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
         const creditCard = Object.assign({}, req.body.object.creditCard, { memberId: memberId });
         const action = yield cinerino.service.payment.creditCard.authorize({
-            project: {
-                id: process.env.PROJECT_ID,
-                gmoInfo: {
-                    siteId: process.env.GMO_SITE_ID,
-                    sitePass: process.env.GMO_SITE_PASS
-                }
-            },
+            project: { id: process.env.PROJECT_ID },
             agent: { id: req.user.sub },
             object: {
                 typeOf: cinerino.factory.paymentMethodType.CreditCard,
@@ -85,6 +79,7 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'cus
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
+            project: new cinerino.repository.Project(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection),
             seller: new cinerino.repository.Seller(mongoose.connection)
         });

@@ -137,6 +137,14 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['admin']), (_1, 
  */
 peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['admin']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        if (project.settings.gmo === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+        }
         let memberId = req.params.id;
         if (USE_USERNAME_AS_GMO_MEMBER_ID) {
             const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
@@ -150,9 +158,9 @@ peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['adm
             memberId = person.memberOf.membershipNumber;
         }
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
-            siteId: process.env.GMO_SITE_ID,
-            sitePass: process.env.GMO_SITE_PASS,
-            cardService: new cinerino.GMO.service.Card({ endpoint: process.env.GMO_ENDPOINT })
+            siteId: project.settings.gmo.siteId,
+            sitePass: project.settings.gmo.sitePass,
+            cardService: new cinerino.GMO.service.Card({ endpoint: project.settings.gmo.endpoint })
         });
         const searchCardResults = yield creditCardRepo.search({ personId: memberId });
         res.json(searchCardResults);

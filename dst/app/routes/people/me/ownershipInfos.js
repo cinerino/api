@@ -118,6 +118,12 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['customer'])
         });
         // 座席予約に対する所有権であれば、Chevreでチェックイン
         if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
+            if (project.settings === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+            if (project.settings.chevre === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+            }
             const reservationService = new cinerino.chevre.service.Reservation({
                 endpoint: project.settings.chevre.endpoint,
                 auth: chevreAuthClient

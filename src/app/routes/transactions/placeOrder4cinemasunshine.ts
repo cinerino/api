@@ -292,13 +292,7 @@ placeOrder4cinemasunshineRouter.post(
 
             debug('authorizing credit card...', req.body.creditCard);
             const action = await cinerino.service.payment.creditCard.authorize({
-                project: {
-                    id: <string>process.env.PROJECT_ID,
-                    gmoInfo: {
-                        siteId: <string>process.env.GMO_SITE_ID,
-                        sitePass: <string>process.env.GMO_SITE_PASS
-                    }
-                },
+                project: { id: <string>process.env.PROJECT_ID },
                 agent: { id: req.user.sub },
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.CreditCard,
@@ -311,6 +305,7 @@ placeOrder4cinemasunshineRouter.post(
                 purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: <string>req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
+                project: new cinerino.repository.Project(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection),
                 seller: new cinerino.repository.Seller(mongoose.connection)
             });

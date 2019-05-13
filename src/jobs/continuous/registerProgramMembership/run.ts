@@ -59,12 +59,7 @@ export default async (params: {
                     redisClient: redisClient,
                     cognitoIdentityServiceProvider: cognitoIdentityServiceProvider,
                     pecorinoEndpoint: <string>process.env.PECORINO_ENDPOINT,
-                    pecorinoAuthClient: pecorinoAuthClient,
-                    gmo: {
-                        endpoint: <string>process.env.GMO_ENDPOINT,
-                        siteId: <string>process.env.GMO_SITE_ID,
-                        sitePass: <string>process.env.GMO_SITE_PASS
-                    }
+                    pecorinoAuthClient: pecorinoAuthClient
                 });
             } catch (error) {
                 // tslint:disable-next-line:no-console

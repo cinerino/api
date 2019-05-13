@@ -21,9 +21,6 @@
 | `REDIS_PORT`                              | true     |                | Redis Cache port                            |
 | `REDIS_KEY`                               | true     |                | Redis Cache key                             |
 | `REDIS_TLS_SERVERNAME`                    | false    |                | Redis Cache host                            |
-| `GMO_ENDPOINT`                            | true     |                | GMO API endpoint                            |
-| `GMO_SITE_ID`                             | true     |                | GMO SiteID                                  |
-| `GMO_SITE_PASS`                           | true     |                | GMO SitePass                                |
 | `PECORINO_ENDPOINT`                       | true     |                | Pecorino endpoint                           |
 | `PECORINO_AUTHORIZE_SERVER_DOMAIN`        | true     |                | Pecorino authorize server domain            |
 | `PECORINO_CLIENT_ID`                      | true     |                | Pecorino client id                          |

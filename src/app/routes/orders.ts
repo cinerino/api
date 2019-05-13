@@ -353,6 +353,13 @@ ordersRouter.post(
             const reservationIds = ownershipInfos
                 .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
                 .map((o) => (<EventReservationGoodType>o.typeOfGood).id);
+
+            if (project.settings === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+            if (project.settings.chevre === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+            }
             const reservationService = new cinerino.chevre.service.Reservation({
                 endpoint: project.settings.chevre.endpoint,
                 auth: chevreAuthClient

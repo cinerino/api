@@ -35,6 +35,12 @@ movieTicketPaymentRouter.post(
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+            if (project.settings.mvtkReserve === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+            }
 
             const action = await cinerino.service.payment.movieTicket.checkMovieTicket({
                 project: req.project,
@@ -95,6 +101,12 @@ movieTicketPaymentRouter.post(
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+            if (project.settings.mvtkReserve === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+            }
 
             const action = await cinerino.service.payment.movieTicket.authorize({
                 agent: { id: req.user.sub },

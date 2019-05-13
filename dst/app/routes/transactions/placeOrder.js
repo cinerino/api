@@ -261,6 +261,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        if (project.settings.mvtkReserve === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+        }
         const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create({
             project: req.project,
             object: req.body,
@@ -419,13 +425,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         debug('authorizing credit card...', creditCard);
         debug('authorizing credit card...', req.body.creditCard);
         const action = yield cinerino.service.payment.creditCard.authorize({
-            project: {
-                id: process.env.PROJECT_ID,
-                gmoInfo: {
-                    siteId: process.env.GMO_SITE_ID,
-                    sitePass: process.env.GMO_SITE_PASS
-                }
-            },
+            project: { id: process.env.PROJECT_ID },
             agent: { id: req.user.sub },
             object: {
                 typeOf: cinerino.factory.paymentMethodType.CreditCard,
@@ -438,6 +438,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
+            project: new cinerino.repository.Project(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection),
             seller: new cinerino.repository.Seller(mongoose.connection)
         });
@@ -649,6 +650,12 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        if (project.settings.mvtkReserve === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+        }
         const action = yield cinerino.service.payment.movieTicket.authorize({
             agent: { id: req.user.sub },
             object: {
