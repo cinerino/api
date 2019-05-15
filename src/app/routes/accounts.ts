@@ -5,6 +5,7 @@ import * as cinerino from '@cinerino/domain';
 // import * as createDebug from 'debug';
 import { Router } from 'express';
 import { NO_CONTENT } from 'http-status';
+import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -13,13 +14,6 @@ import validator from '../middlewares/validator';
 const accountsRouter = Router();
 
 // const debug = createDebug('cinerino-api:routes:accounts');
-const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
-    domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.PECORINO_CLIENT_ID,
-    clientSecret: <string>process.env.PECORINO_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
 
 accountsRouter.use(authentication);
 
@@ -45,11 +39,10 @@ accountsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const depositService = new cinerino.pecorinoapi.service.transaction.Deposit({
-                endpoint: <string>process.env.PECORINO_ENDPOINT,
-                auth: pecorinoAuthClient
-            });
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+
             await cinerino.service.account.deposit({
+                project: req.project,
                 toAccountNumber: req.body.toAccountNumber,
                 agent: {
                     id: req.user.sub,
@@ -60,8 +53,9 @@ accountsRouter.post(
                 amount: Number(req.body.amount),
                 notes: (req.body.notes !== undefined) ? req.body.notes : '入金'
             })({
-                depositService: depositService
+                project: projectRepo
             });
+
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {

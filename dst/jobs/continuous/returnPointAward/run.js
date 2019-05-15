@@ -19,13 +19,6 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 200;
     const taskRepo = new cinerino.repository.Task(connection);
-    const authClient = new cinerino.pecorinoapi.auth.ClientCredentials({
-        domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
-        clientId: process.env.PECORINO_CLIENT_ID,
-        clientSecret: process.env.PECORINO_CLIENT_SECRET,
-        scopes: [],
-        state: ''
-    });
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
             return;
@@ -37,8 +30,7 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
                 name: cinerino.factory.taskName.ReturnPointAward
             })({
                 taskRepo: taskRepo,
-                connection: connection,
-                pecorinoAuthClient: authClient
+                connection: connection
             });
         }
         catch (error) {

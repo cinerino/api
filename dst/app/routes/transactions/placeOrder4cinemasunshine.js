@@ -25,13 +25,6 @@ const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4t
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
 const debug = createDebug('cinerino-api:router');
-const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
-    domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.PECORINO_CLIENT_ID,
-    clientSecret: process.env.PECORINO_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
 let coaTickets;
 function initializeCOATickets() {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
@@ -399,12 +392,8 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/paymentM
         if (pecorinoPaymentAward === undefined) {
             throw new cinerino.factory.errors.Forbidden('Membership program requirements not satisfied');
         }
-        // pecorino転送取引サービスクライアントを生成
-        const transferService = new cinerino.pecorinoapi.service.transaction.Transfer({
-            endpoint: process.env.PECORINO_ENDPOINT,
-            auth: pecorinoAuthClient
-        });
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         // 注文取引の場合、販売者の口座を検索して、toAccountにセット
@@ -431,6 +420,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/paymentM
             accountType: paymentAccepted.accountType
         };
         const action = yield cinerino.service.payment.account.authorize({
+            project: req.project,
             agent: { id: req.user.sub },
             object: {
                 typeOf: cinerino.factory.paymentMethodType.Account,
@@ -446,8 +436,8 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/paymentM
             purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
             action: actionRepo,
-            transaction: transactionRepo,
-            transferTransactionService: transferService
+            project: projectRepo,
+            transaction: transactionRepo
         });
         res.status(http_status_1.CREATED)
             .json(action);
@@ -466,19 +456,15 @@ placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/paymen
     })(req, res, next);
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        // pecorino転送取引サービスクライアントを生成
-        const transferService = new cinerino.pecorinoapi.service.transaction.Transfer({
-            endpoint: process.env.PECORINO_ENDPOINT,
-            auth: pecorinoAuthClient
-        });
         yield cinerino.service.payment.account.voidTransaction({
+            project: req.project,
             agent: { id: req.user.sub },
             id: req.params.actionId,
             purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
-            transferTransactionService: transferService
+            project: new cinerino.repository.Project(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)
             .end();
@@ -521,11 +507,6 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/award/pe
         if (pecorinoPaymentAward === undefined) {
             throw new cinerino.factory.errors.Forbidden('Membership program requirements not satisfied');
         }
-        // pecorino転送取引サービスクライアントを生成
-        const depositService = new cinerino.pecorinoapi.service.transaction.Deposit({
-            endpoint: process.env.PECORINO_ENDPOINT,
-            auth: pecorinoAuthClient
-        });
         const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.create({
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId },
@@ -536,9 +517,9 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/award/pe
             }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
             ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
-            depositTransactionService: depositService
+            project: new cinerino.repository.Project(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED)
             .json(action);
@@ -557,18 +538,14 @@ placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/award/
     })(req, res, next);
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const depositService = new cinerino.pecorinoapi.service.transaction.Deposit({
-            endpoint: process.env.PECORINO_ENDPOINT,
-            auth: pecorinoAuthClient
-        });
         yield cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId },
             id: req.params.actionId
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
-            depositTransactionService: depositService
+            project: new cinerino.repository.Project(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)
             .end();
@@ -585,6 +562,13 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/confirm', permitScopes_1.d
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const orderDate = new Date();
+        // 互換性維持のため、テンプレートオプションを変換
+        if (req.body.email === undefined) {
+            req.body.email = {};
+        }
+        if (req.body.emailTemplate !== undefined) {
+            req.body.email.template = req.body.emailTemplate;
+        }
         const { order } = yield cinerino.service.transaction.placeOrderInProgress.confirm({
             project: req.project,
             id: req.params.transactionId,

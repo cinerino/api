@@ -15,18 +15,12 @@ const cinerino = require("@cinerino/domain");
 // import * as createDebug from 'debug';
 const express_1 = require("express");
 const http_status_1 = require("http-status");
+const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const accountsRouter = express_1.Router();
 // const debug = createDebug('cinerino-api:routes:accounts');
-const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
-    domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.PECORINO_CLIENT_ID,
-    clientSecret: process.env.PECORINO_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
 accountsRouter.use(authentication_1.default);
 /**
  * 管理者として口座に入金する
@@ -45,11 +39,9 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['admin']), 
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const depositService = new cinerino.pecorinoapi.service.transaction.Deposit({
-            endpoint: process.env.PECORINO_ENDPOINT,
-            auth: pecorinoAuthClient
-        });
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         yield cinerino.service.account.deposit({
+            project: req.project,
             toAccountNumber: req.body.toAccountNumber,
             agent: {
                 id: req.user.sub,
@@ -60,7 +52,7 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['admin']), 
             amount: Number(req.body.amount),
             notes: (req.body.notes !== undefined) ? req.body.notes : '入金'
         })({
-            depositService: depositService
+            project: projectRepo
         });
         res.status(http_status_1.NO_CONTENT)
             .end();

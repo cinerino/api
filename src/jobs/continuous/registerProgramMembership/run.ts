@@ -33,14 +33,6 @@ export default async (params: {
         })
     });
 
-    const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
-        domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
-        clientId: <string>process.env.PECORINO_CLIENT_ID,
-        clientSecret: <string>process.env.PECORINO_CLIENT_SECRET,
-        scopes: [],
-        state: ''
-    });
-
     setInterval(
         async () => {
             if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
@@ -57,9 +49,7 @@ export default async (params: {
                     taskRepo: taskRepo,
                     connection: connection,
                     redisClient: redisClient,
-                    cognitoIdentityServiceProvider: cognitoIdentityServiceProvider,
-                    pecorinoEndpoint: <string>process.env.PECORINO_ENDPOINT,
-                    pecorinoAuthClient: pecorinoAuthClient
+                    cognitoIdentityServiceProvider: cognitoIdentityServiceProvider
                 });
             } catch (error) {
                 // tslint:disable-next-line:no-console

@@ -33,13 +33,6 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
             secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
         })
     });
-    const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
-        domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
-        clientId: process.env.PECORINO_CLIENT_ID,
-        clientSecret: process.env.PECORINO_CLIENT_SECRET,
-        scopes: [],
-        state: ''
-    });
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
             return;
@@ -53,9 +46,7 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
                 taskRepo: taskRepo,
                 connection: connection,
                 redisClient: redisClient,
-                cognitoIdentityServiceProvider: cognitoIdentityServiceProvider,
-                pecorinoEndpoint: process.env.PECORINO_ENDPOINT,
-                pecorinoAuthClient: pecorinoAuthClient
+                cognitoIdentityServiceProvider: cognitoIdentityServiceProvider
             });
         }
         catch (error) {

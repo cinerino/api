@@ -21,13 +21,6 @@ const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
-const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
-    domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.PECORINO_CLIENT_ID,
-    clientSecret: process.env.PECORINO_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
 const accountPaymentRouter = express_1.Router();
 accountPaymentRouter.use(authentication_1.default);
 /**
@@ -93,16 +86,8 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'custom
             }
         }
         const accountType = fromAccount.accountType;
-        // pecorino転送取引サービスクライアントを生成
-        const transferService = new cinerino.pecorinoapi.service.transaction.Transfer({
-            endpoint: process.env.PECORINO_ENDPOINT,
-            auth: pecorinoAuthClient
-        });
-        const withdrawService = new cinerino.pecorinoapi.service.transaction.Withdraw({
-            endpoint: process.env.PECORINO_ENDPOINT,
-            auth: pecorinoAuthClient
-        });
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         // 注文取引、かつ、toAccount未指定の場合、販売者の口座を検索して、toAccountにセット
@@ -135,6 +120,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'custom
             ? cinerino.factory.priceCurrency.JPY
             : accountType;
         const action = yield cinerino.service.payment.account.authorize({
+            project: req.project,
             object: {
                 typeOf: cinerino.factory.paymentMethodType.Account,
                 amount: Number(req.body.object.amount),
@@ -148,9 +134,8 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'custom
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: actionRepo,
-            transaction: transactionRepo,
-            transferTransactionService: transferService,
-            withdrawTransactionService: withdrawService
+            project: projectRepo,
+            transaction: transactionRepo
         });
         res.status(http_status_1.CREATED)
             .json(action);
@@ -169,23 +154,15 @@ accountPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['a
     })(req, res, next);
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const withdrawService = new cinerino.pecorinoapi.service.transaction.Withdraw({
-            endpoint: process.env.PECORINO_ENDPOINT,
-            auth: pecorinoAuthClient
-        });
-        const transferService = new cinerino.pecorinoapi.service.transaction.Transfer({
-            endpoint: process.env.PECORINO_ENDPOINT,
-            auth: pecorinoAuthClient
-        });
         yield cinerino.service.payment.account.voidTransaction({
+            project: req.project,
             id: req.params.actionId,
             agent: { id: req.user.sub },
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
-            transferTransactionService: transferService,
-            withdrawTransactionService: withdrawService
+            project: new cinerino.repository.Project(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)
             .end();

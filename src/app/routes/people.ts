@@ -25,14 +25,6 @@ const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServicePr
     })
 });
 
-const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
-    domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.PECORINO_CLIENT_ID,
-    clientSecret: <string>process.env.PECORINO_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
-
 const USER_POOL_ID = <string>process.env.COGNITO_USER_POOL_ID;
 
 const peopleRouter = Router();
@@ -121,14 +113,14 @@ peopleRouter.get(
 
             switch (typeOfGood.typeOf) {
                 case cinerino.factory.ownershipInfo.AccountGoodType.Account:
-                    const accountService = new cinerino.pecorinoapi.service.Account({
-                        endpoint: <string>process.env.PECORINO_ENDPOINT,
-                        auth: pecorinoAuthClient
-                    });
-                    ownershipInfos = await cinerino.service.account.search(searchConditions)({
+                    ownershipInfos = await cinerino.service.account.search({
+                        project: req.project,
+                        conditions: searchConditions
+                    })({
                         ownershipInfo: ownershipInfoRepo,
-                        accountService: accountService
+                        project: projectRepo
                     });
+
                     break;
 
                 case cinerino.factory.chevre.reservationType.EventReservation:
@@ -136,6 +128,7 @@ peopleRouter.get(
                         ownershipInfo: ownershipInfoRepo,
                         project: projectRepo
                     });
+
                     break;
 
                 default:

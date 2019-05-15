@@ -29,13 +29,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
-    domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.PECORINO_CLIENT_ID,
-    clientSecret: process.env.PECORINO_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
 const ownershipInfosRouter = express_1.Router();
 ownershipInfosRouter.use('/accounts', accounts_1.default);
 ownershipInfosRouter.use('/creditCards', creditCards_1.default);
@@ -67,13 +60,12 @@ ownershipInfosRouter.get('', permitScopes_1.default(['customer']), (_1, _2, next
         const totalCount = yield ownershipInfoRepo.count(searchConditions);
         switch (typeOfGood.typeOf) {
             case cinerino.factory.ownershipInfo.AccountGoodType.Account:
-                const accountService = new cinerino.pecorinoapi.service.Account({
-                    endpoint: process.env.PECORINO_ENDPOINT,
-                    auth: pecorinoAuthClient
-                });
-                ownershipInfos = yield cinerino.service.account.search(searchConditions)({
+                ownershipInfos = yield cinerino.service.account.search({
+                    project: req.project,
+                    conditions: searchConditions
+                })({
                     ownershipInfo: ownershipInfoRepo,
-                    accountService: accountService
+                    project: projectRepo
                 });
                 break;
             case cinerino.factory.chevre.reservationType.EventReservation:

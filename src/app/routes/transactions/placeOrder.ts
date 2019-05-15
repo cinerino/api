@@ -36,13 +36,7 @@ const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== und
 
 const placeOrderTransactionsRouter = Router();
 const debug = createDebug('cinerino-api:router');
-const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
-    domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.PECORINO_CLIENT_ID,
-    clientSecret: <string>process.env.PECORINO_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
+
 const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials({
     domain: <string>process.env.MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.MVTK_RESERVE_CLIENT_ID,
@@ -625,13 +619,8 @@ placeOrderTransactionsRouter.post(
 
             const accountType = fromAccount.accountType;
 
-            // pecorino転送取引サービスクライアントを生成
-            const transferService = new cinerino.pecorinoapi.service.transaction.Transfer({
-                endpoint: <string>process.env.PECORINO_ENDPOINT,
-                auth: pecorinoAuthClient
-            });
-
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
@@ -664,6 +653,7 @@ placeOrderTransactionsRouter.post(
                 ? cinerino.factory.priceCurrency.JPY
                 : accountType;
             const action = await cinerino.service.payment.account.authorize({
+                project: req.project,
                 agent: { id: req.user.sub },
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.Account,
@@ -677,8 +667,8 @@ placeOrderTransactionsRouter.post(
                 purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
             })({
                 action: actionRepo,
-                transaction: transactionRepo,
-                transferTransactionService: transferService
+                project: projectRepo,
+                transaction: transactionRepo
             });
 
             res.status(CREATED)
@@ -705,24 +695,17 @@ placeOrderTransactionsRouter.put(
     },
     async (req, res, next) => {
         try {
-            const withdrawService = new cinerino.pecorinoapi.service.transaction.Withdraw({
-                endpoint: <string>process.env.PECORINO_ENDPOINT,
-                auth: pecorinoAuthClient
-            });
-            const transferService = new cinerino.pecorinoapi.service.transaction.Transfer({
-                endpoint: <string>process.env.PECORINO_ENDPOINT,
-                auth: pecorinoAuthClient
-            });
             await cinerino.service.payment.account.voidTransaction({
+                project: req.project,
                 agent: { id: req.user.sub },
                 id: req.params.actionId,
                 purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                transaction: new cinerino.repository.Transaction(mongoose.connection),
-                transferTransactionService: transferService,
-                withdrawTransactionService: withdrawService
+                project: new cinerino.repository.Project(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
+
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {
@@ -860,21 +843,17 @@ placeOrderTransactionsRouter.post(
     },
     async (req, res, next) => {
         try {
-            // pecorino転送取引サービスクライアントを生成
-            const depositService = new cinerino.pecorinoapi.service.transaction.Deposit({
-                endpoint: <string>process.env.PECORINO_ENDPOINT,
-                auth: pecorinoAuthClient
-            });
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.create({
                 transaction: { id: req.params.transactionId },
                 agent: { id: req.user.sub },
                 object: req.body
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                transaction: new cinerino.repository.Transaction(mongoose.connection),
                 ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
-                depositTransactionService: depositService
+                project: new cinerino.repository.Project(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
+
             res.status(CREATED)
                 .json(action);
         } catch (error) {
@@ -901,19 +880,16 @@ placeOrderTransactionsRouter.put(
     },
     async (req, res, next) => {
         try {
-            const depositService = new cinerino.pecorinoapi.service.transaction.Deposit({
-                endpoint: <string>process.env.PECORINO_ENDPOINT,
-                auth: pecorinoAuthClient
-            });
             await cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId },
                 id: req.params.actionId
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                transaction: new cinerino.repository.Transaction(mongoose.connection),
-                depositTransactionService: depositService
+                project: new cinerino.repository.Project(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
+
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {
@@ -942,6 +918,14 @@ placeOrderTransactionsRouter.put(
             const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
+
+            // 互換性維持のため、テンプレートオプションを変換
+            if (req.body.email === undefined) {
+                req.body.email = {};
+            }
+            if (req.body.emailTemplate !== undefined) {
+                req.body.email.template = req.body.emailTemplate;
+            }
 
             const result = await cinerino.service.transaction.placeOrderInProgress.confirm({
                 ...req.body,

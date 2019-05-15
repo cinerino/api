@@ -190,16 +190,14 @@ me4cinemasunshineRouter.post('/accounts', permitScopes_1.default(['customer', 'p
     try {
         const now = new Date();
         const accountNumberRepo = new cinerino.repository.AccountNumber(redis.getClient());
-        const accountService = new cinerino.pecorinoapi.service.Account({
-            endpoint: process.env.PECORINO_ENDPOINT,
-            auth: pecorinoAuthClient
-        });
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const account = yield cinerino.service.account.openWithoutOwnershipInfo({
+            project: req.project,
             name: req.body.name,
             accountType: cinerino.factory.accountType.Point
         })({
             accountNumber: accountNumberRepo,
-            accountService: accountService
+            project: projectRepo
         });
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const identifier = util.format('%s-%s-%s-%s', req.user.sub, cinerino.factory.pecorino.account.TypeOf.Account, account.accountType, account.accountNumber);

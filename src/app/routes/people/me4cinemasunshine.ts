@@ -228,17 +228,17 @@ me4cinemasunshineRouter.post(
     async (req, res, next) => {
         try {
             const now = new Date();
+
             const accountNumberRepo = new cinerino.repository.AccountNumber(redis.getClient());
-            const accountService = new cinerino.pecorinoapi.service.Account({
-                endpoint: <string>process.env.PECORINO_ENDPOINT,
-                auth: pecorinoAuthClient
-            });
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+
             const account = await cinerino.service.account.openWithoutOwnershipInfo({
+                project: req.project,
                 name: req.body.name,
                 accountType: cinerino.factory.accountType.Point
             })({
                 accountNumber: accountNumberRepo,
-                accountService: accountService
+                project: projectRepo
             });
 
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
