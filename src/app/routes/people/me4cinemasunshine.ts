@@ -304,14 +304,24 @@ me4cinemasunshineRouter.put(
                 throw new cinerino.factory.errors.NotFound('Account');
             }
 
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+            if (project.settings.pecorino === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+            }
+
             const accountService = new cinerino.pecorinoapi.service.Account({
-                endpoint: <string>process.env.PECORINO_ENDPOINT,
+                endpoint: project.settings.pecorino.endpoint,
                 auth: pecorinoAuthClient
             });
             await accountService.close({
                 accountType: cinerino.factory.accountType.Point,
                 accountNumber: accountOwnershipInfo.typeOfGood.accountNumber
             });
+
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {
@@ -413,8 +423,17 @@ me4cinemasunshineRouter.get(
             });
             let accounts: cinerino.factory.pecorino.account.IAccount<cinerino.factory.accountType.Point>[] = [];
             if (accountOwnershipInfos.length > 0) {
+                const projectRepo = new cinerino.repository.Project(mongoose.connection);
+                const project = await projectRepo.findById({ id: req.project.id });
+                if (project.settings === undefined) {
+                    throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+                }
+                if (project.settings.pecorino === undefined) {
+                    throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+                }
+
                 const accountService = new cinerino.pecorinoapi.service.Account({
-                    endpoint: <string>process.env.PECORINO_ENDPOINT,
+                    endpoint: project.settings.pecorino.endpoint,
                     auth: pecorinoAuthClient
                 });
 
@@ -425,6 +444,7 @@ me4cinemasunshineRouter.get(
                     limit: 100
                 });
             }
+
             res.json(accounts);
         } catch (error) {
             next(error);
@@ -460,14 +480,24 @@ me4cinemasunshineRouter.get(
                 throw new cinerino.factory.errors.NotFound('Account');
             }
 
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+            if (project.settings.pecorino === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+            }
+
             const accountService = new cinerino.pecorinoapi.service.Account({
-                endpoint: <string>process.env.PECORINO_ENDPOINT,
+                endpoint: project.settings.pecorino.endpoint,
                 auth: pecorinoAuthClient
             });
             const actions = await accountService.searchMoneyTransferActions({
                 accountType: cinerino.factory.accountType.Point,
                 accountNumber: accountOwnershipInfo.typeOfGood.accountNumber
             });
+
             res.json(actions);
         } catch (error) {
             next(error);

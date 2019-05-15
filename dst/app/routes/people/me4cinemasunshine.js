@@ -248,8 +248,16 @@ me4cinemasunshineRouter.put('/accounts/:accountNumber/close', permitScopes_1.def
         if (accountOwnershipInfo === undefined) {
             throw new cinerino.factory.errors.NotFound('Account');
         }
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        if (project.settings.pecorino === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+        }
         const accountService = new cinerino.pecorinoapi.service.Account({
-            endpoint: process.env.PECORINO_ENDPOINT,
+            endpoint: project.settings.pecorino.endpoint,
             auth: pecorinoAuthClient
         });
         yield accountService.close({
@@ -341,8 +349,16 @@ me4cinemasunshineRouter.get('/accounts', permitScopes_1.default(['customer', 'pe
         });
         let accounts = [];
         if (accountOwnershipInfos.length > 0) {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = yield projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+            if (project.settings.pecorino === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+            }
             const accountService = new cinerino.pecorinoapi.service.Account({
-                endpoint: process.env.PECORINO_ENDPOINT,
+                endpoint: project.settings.pecorino.endpoint,
                 auth: pecorinoAuthClient
             });
             accounts = yield accountService.search({
@@ -381,8 +397,16 @@ me4cinemasunshineRouter.get('/accounts/:accountNumber/actions/moneyTransfer', pe
         if (accountOwnershipInfo === undefined) {
             throw new cinerino.factory.errors.NotFound('Account');
         }
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        if (project.settings.pecorino === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+        }
         const accountService = new cinerino.pecorinoapi.service.Account({
-            endpoint: process.env.PECORINO_ENDPOINT,
+            endpoint: project.settings.pecorino.endpoint,
             auth: pecorinoAuthClient
         });
         const actions = yield accountService.searchMoneyTransferActions({
