@@ -71,6 +71,7 @@ export default async (params: {
                                 numberOfTried: 0,
                                 executionResults: [],
                                 data: {
+                                    project: params.project,
                                     locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
                                     offeredThrough: offer.offeredThrough,
                                     importFrom: importFrom,
