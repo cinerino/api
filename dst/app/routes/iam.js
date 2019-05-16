@@ -18,14 +18,6 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const USER_POOL_ID = process.env.ADMIN_USER_POOL_ID;
-const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
-    apiVersion: 'latest',
-    region: 'ap-northeast-1',
-    credentials: new cinerino.AWS.Credentials({
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-    })
-});
 const iamRouter = express.Router();
 iamRouter.use(authentication_1.default);
 /**
@@ -57,7 +49,7 @@ iamRouter.get('/roles', permitScopes_1.default(['admin']), validator_1.default, 
  */
 iamRouter.get('/users', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+        const personRepo = new cinerino.repository.Person();
         const users = yield personRepo.search({
             userPooId: USER_POOL_ID,
             id: req.query.id,
@@ -79,7 +71,7 @@ iamRouter.get('/users', permitScopes_1.default(['admin']), validator_1.default, 
  */
 iamRouter.get('/users/:id', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+        const personRepo = new cinerino.repository.Person();
         const user = yield personRepo.findById({
             userPooId: USER_POOL_ID,
             userId: req.params.id

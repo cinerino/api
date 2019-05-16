@@ -8,15 +8,6 @@ import { NO_CONTENT } from 'http-status';
 import permitScopes from '../../../middlewares/permitScopes';
 import validator from '../../../middlewares/validator';
 
-const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
-    apiVersion: 'latest',
-    region: 'ap-northeast-1',
-    credentials: new cinerino.AWS.Credentials({
-        accessKeyId: <string>process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: <string>process.env.AWS_SECRET_ACCESS_KEY
-    })
-});
-
 const profileRouter = Router();
 
 /**
@@ -27,7 +18,7 @@ profileRouter.get(
     permitScopes(['customer']),
     async (req, res, next) => {
         try {
-            const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+            const personRepo = new cinerino.repository.Person();
             const profile = await personRepo.getUserAttributesByAccessToken(req.accessToken);
             res.json(profile);
         } catch (error) {
@@ -46,7 +37,7 @@ profileRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+            const personRepo = new cinerino.repository.Person();
             await personRepo.updateProfileByAccessToken({
                 accessToken: req.accessToken,
                 profile: req.body
@@ -68,7 +59,7 @@ profileRouter.patch(
     validator,
     async (req, res, next) => {
         try {
-            const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+            const personRepo = new cinerino.repository.Person();
             await personRepo.updateProfileByAccessToken({
                 accessToken: req.accessToken,
                 profile: req.body

@@ -20,14 +20,7 @@ import * as redis from '../../../redis';
 const me4cinemasunshineRouter = Router();
 
 const debug = createDebug('cinerino-api:router');
-const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
-    apiVersion: 'latest',
-    region: 'ap-northeast-1',
-    credentials: new cinerino.AWS.Credentials({
-        accessKeyId: <string>process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: <string>process.env.AWS_SECRET_ACCESS_KEY
-    })
-});
+
 const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.PECORINO_CLIENT_ID,
@@ -45,7 +38,7 @@ me4cinemasunshineRouter.get(
     permitScopes(['customer', 'people.contacts', 'people.contacts.read-only']),
     async (req, res, next) => {
         try {
-            const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+            const personRepo = new cinerino.repository.Person();
             const contact = await personRepo.getUserAttributesByAccessToken(req.accessToken);
 
             // format a phone number to a Japanese style
@@ -86,7 +79,7 @@ me4cinemasunshineRouter.put(
                 return;
             }
 
-            const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+            const personRepo = new cinerino.repository.Person();
             await personRepo.updateProfileByAccessToken({
                 accessToken: req.accessToken,
                 profile: {

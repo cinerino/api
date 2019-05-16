@@ -12,6 +12,8 @@ import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
+import * as redis from '../../../redis';
+
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 
 const returnOrderTransactionsRouter = Router();
@@ -129,7 +131,9 @@ returnOrderTransactionsRouter.put(
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+            const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+
             await cinerino.service.transaction.returnOrder.confirm({
                 ...req.body,
                 id: req.params.transactionId,
@@ -139,6 +143,28 @@ returnOrderTransactionsRouter.put(
                 transaction: transactionRepo,
                 seller: sellerRepo
             });
+
+            // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
+            // tslint:disable-next-line:no-floating-promises
+            cinerino.service.transaction.returnOrder.exportTasks({
+                project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
+                status: cinerino.factory.transactionStatusType.Confirmed
+            })({
+                task: taskRepo,
+                transaction: transactionRepo
+            })
+                .then(async (tasks) => {
+                    // タスクがあればすべて実行
+                    if (Array.isArray(tasks)) {
+                        await Promise.all(tasks.map(async (task) => {
+                            await cinerino.service.task.executeByName(task)({
+                                connection: mongoose.connection,
+                                redisClient: redis.getClient()
+                            });
+                        }));
+                    }
+                });
+
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {

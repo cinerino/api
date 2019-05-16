@@ -23,6 +23,7 @@ const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
+const redis = require("../../../redis");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const moneyTransferTransactionsRouter = express_1.Router();
@@ -138,7 +139,18 @@ moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.de
         })({
             task: taskRepo,
             transaction: transactionRepo
-        });
+        })
+            .then((tasks) => __awaiter(this, void 0, void 0, function* () {
+            // タスクがあればすべて実行
+            if (Array.isArray(tasks)) {
+                yield Promise.all(tasks.map((task) => __awaiter(this, void 0, void 0, function* () {
+                    yield cinerino.service.task.executeByName(task)({
+                        connection: mongoose.connection,
+                        redisClient: redis.getClient()
+                    });
+                })));
+            }
+        }));
         res.status(http_status_1.NO_CONTENT)
             .end();
     }

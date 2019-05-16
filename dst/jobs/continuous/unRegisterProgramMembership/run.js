@@ -18,15 +18,6 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 200;
-    const taskRepo = new cinerino.repository.Task(connection);
-    const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
-        apiVersion: 'latest',
-        region: 'ap-northeast-1',
-        credentials: new cinerino.AWS.Credentials({
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-        })
-    });
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
             return;
@@ -37,9 +28,7 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
                 project: params.project,
                 name: cinerino.factory.taskName.UnRegisterProgramMembership
             })({
-                taskRepo: taskRepo,
-                connection: connection,
-                cognitoIdentityServiceProvider: cognitoIdentityServiceProvider
+                connection: connection
             });
         }
         catch (error) {

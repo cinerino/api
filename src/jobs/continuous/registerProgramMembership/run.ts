@@ -22,17 +22,6 @@ export default async (params: {
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 200;
 
-    const taskRepo = new cinerino.repository.Task(connection);
-
-    const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
-        apiVersion: 'latest',
-        region: 'ap-northeast-1',
-        credentials: new cinerino.AWS.Credentials({
-            accessKeyId: <string>process.env.AWS_ACCESS_KEY_ID,
-            secretAccessKey: <string>process.env.AWS_SECRET_ACCESS_KEY
-        })
-    });
-
     setInterval(
         async () => {
             if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
@@ -46,10 +35,8 @@ export default async (params: {
                     project: params.project,
                     name: cinerino.factory.taskName.RegisterProgramMembership
                 })({
-                    taskRepo: taskRepo,
                     connection: connection,
-                    redisClient: redisClient,
-                    cognitoIdentityServiceProvider: cognitoIdentityServiceProvider
+                    redisClient: redisClient
                 });
             } catch (error) {
                 // tslint:disable-next-line:no-console

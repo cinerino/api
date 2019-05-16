@@ -24,7 +24,6 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 200;
-    const taskRepo = new cinerino.repository.Task(connection);
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
             return;
@@ -35,7 +34,6 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
                 project: params.project,
                 name: cinerino.factory.taskName.SendOrder
             })({
-                taskRepo: taskRepo,
                 connection: connection,
                 redisClient: redisClient
             });

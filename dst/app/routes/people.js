@@ -23,14 +23,6 @@ const validator_1 = require("../middlewares/validator");
  * GMOメンバーIDにユーザーネームを使用するかどうか
  */
 const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
-const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
-    apiVersion: 'latest',
-    region: 'ap-northeast-1',
-    credentials: new cinerino.AWS.Credentials({
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-    })
-});
 const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 const peopleRouter = express_1.Router();
 peopleRouter.use(authentication_1.default);
@@ -39,7 +31,7 @@ peopleRouter.use(authentication_1.default);
  */
 peopleRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+        const personRepo = new cinerino.repository.Person();
         const people = yield personRepo.search({
             userPooId: USER_POOL_ID,
             id: req.query.id,
@@ -61,7 +53,7 @@ peopleRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (re
  */
 peopleRouter.get('/:id', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+        const personRepo = new cinerino.repository.Person();
         const person = yield personRepo.findById({
             userPooId: USER_POOL_ID,
             userId: req.params.id
@@ -139,7 +131,7 @@ peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['adm
         }
         let memberId = req.params.id;
         if (USE_USERNAME_AS_GMO_MEMBER_ID) {
-            const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+            const personRepo = new cinerino.repository.Person();
             const person = yield personRepo.findById({
                 userPooId: USER_POOL_ID,
                 userId: req.params.id
@@ -166,7 +158,7 @@ peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['adm
  */
 peopleRouter.get('/:id/profile', permitScopes_1.default(['admin']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+        const personRepo = new cinerino.repository.Person();
         const person = yield personRepo.findById({
             userPooId: USER_POOL_ID,
             userId: req.params.id
@@ -193,7 +185,7 @@ peopleRouter.get('/:id/profile', permitScopes_1.default(['admin']), (req, res, n
  */
 peopleRouter.patch('/:id/profile', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+        const personRepo = new cinerino.repository.Person();
         const person = yield personRepo.findById({
             userPooId: USER_POOL_ID,
             userId: req.params.id

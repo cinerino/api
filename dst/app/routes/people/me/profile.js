@@ -16,21 +16,13 @@ const express_1 = require("express");
 const http_status_1 = require("http-status");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const validator_1 = require("../../../middlewares/validator");
-const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
-    apiVersion: 'latest',
-    region: 'ap-northeast-1',
-    credentials: new cinerino.AWS.Credentials({
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-    })
-});
 const profileRouter = express_1.Router();
 /**
  * プロフィール検索
  */
 profileRouter.get('', permitScopes_1.default(['customer']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+        const personRepo = new cinerino.repository.Person();
         const profile = yield personRepo.getUserAttributesByAccessToken(req.accessToken);
         res.json(profile);
     }
@@ -44,7 +36,7 @@ profileRouter.get('', permitScopes_1.default(['customer']), (req, res, next) => 
  */
 profileRouter.put('', permitScopes_1.default(['customer']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+        const personRepo = new cinerino.repository.Person();
         yield personRepo.updateProfileByAccessToken({
             accessToken: req.accessToken,
             profile: req.body
@@ -61,7 +53,7 @@ profileRouter.put('', permitScopes_1.default(['customer']), validator_1.default,
  */
 profileRouter.patch('', permitScopes_1.default(['customer']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+        const personRepo = new cinerino.repository.Person();
         yield personRepo.updateProfileByAccessToken({
             accessToken: req.accessToken,
             profile: req.body

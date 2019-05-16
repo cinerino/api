@@ -964,7 +964,18 @@ placeOrderTransactionsRouter.put(
             })({
                 task: taskRepo,
                 transaction: transactionRepo
-            });
+            })
+                .then(async (tasks) => {
+                    // タスクがあればすべて実行
+                    if (Array.isArray(tasks)) {
+                        await Promise.all(tasks.map(async (task) => {
+                            await cinerino.service.task.executeByName(task)({
+                                connection: mongoose.connection,
+                                redisClient: redis.getClient()
+                            });
+                        }));
+                    }
+                });
 
             res.json(result);
         } catch (error) {

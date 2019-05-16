@@ -15,7 +15,6 @@ export default async (params: {
 
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 1000;
-    const taskRepo = new cinerino.repository.Task(connection);
 
     setInterval(
         async () => {
@@ -30,7 +29,6 @@ export default async (params: {
                     project: params.project,
                     name: cinerino.factory.taskName.RefundCreditCard
                 })({
-                    taskRepo: taskRepo,
                     connection: connection
                 });
             } catch (error) {

@@ -605,7 +605,18 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/confirm', permitScopes_1.d
         })({
             task: new cinerino.repository.Task(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
-        });
+        })
+            .then((tasks) => __awaiter(this, void 0, void 0, function* () {
+            // タスクがあればすべて実行
+            if (Array.isArray(tasks)) {
+                yield Promise.all(tasks.map((task) => __awaiter(this, void 0, void 0, function* () {
+                    yield cinerino.service.task.executeByName(task)({
+                        connection: mongoose.connection,
+                        redisClient: redis.getClient()
+                    });
+                })));
+            }
+        }));
         res.status(http_status_1.CREATED)
             .json(order);
     }

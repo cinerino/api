@@ -800,7 +800,18 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
         })({
             task: taskRepo,
             transaction: transactionRepo
-        });
+        })
+            .then((tasks) => __awaiter(this, void 0, void 0, function* () {
+            // タスクがあればすべて実行
+            if (Array.isArray(tasks)) {
+                yield Promise.all(tasks.map((task) => __awaiter(this, void 0, void 0, function* () {
+                    yield cinerino.service.task.executeByName(task)({
+                        connection: mongoose.connection,
+                        redisClient: redis.getClient()
+                    });
+                })));
+            }
+        }));
         res.json(result);
     }
     catch (error) {

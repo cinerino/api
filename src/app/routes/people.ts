@@ -16,15 +16,6 @@ import validator from '../middlewares/validator';
  */
 const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
 
-const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
-    apiVersion: 'latest',
-    region: 'ap-northeast-1',
-    credentials: new cinerino.AWS.Credentials({
-        accessKeyId: <string>process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: <string>process.env.AWS_SECRET_ACCESS_KEY
-    })
-});
-
 const USER_POOL_ID = <string>process.env.COGNITO_USER_POOL_ID;
 
 const peopleRouter = Router();
@@ -39,7 +30,7 @@ peopleRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+            const personRepo = new cinerino.repository.Person();
             const people = await personRepo.search({
                 userPooId: USER_POOL_ID,
                 id: req.query.id,
@@ -66,7 +57,7 @@ peopleRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+            const personRepo = new cinerino.repository.Person();
             const person = await personRepo.findById({
                 userPooId: USER_POOL_ID,
                 userId: req.params.id
@@ -164,7 +155,7 @@ peopleRouter.get(
             let memberId = req.params.id;
 
             if (USE_USERNAME_AS_GMO_MEMBER_ID) {
-                const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+                const personRepo = new cinerino.repository.Person();
                 const person = await personRepo.findById({
                     userPooId: USER_POOL_ID,
                     userId: req.params.id
@@ -198,7 +189,7 @@ peopleRouter.get(
     permitScopes(['admin']),
     async (req, res, next) => {
         try {
-            const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+            const personRepo = new cinerino.repository.Person();
             const person = await personRepo.findById({
                 userPooId: USER_POOL_ID,
                 userId: req.params.id
@@ -234,7 +225,7 @@ peopleRouter.patch(
     validator,
     async (req, res, next) => {
         try {
-            const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+            const personRepo = new cinerino.repository.Person();
             const person = await personRepo.findById({
                 userPooId: USER_POOL_ID,
                 userId: req.params.id

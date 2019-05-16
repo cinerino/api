@@ -733,7 +733,18 @@ placeOrder4cinemasunshineRouter.post(
             })({
                 task: new cinerino.repository.Task(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
-            });
+            })
+                .then(async (tasks) => {
+                    // タスクがあればすべて実行
+                    if (Array.isArray(tasks)) {
+                        await Promise.all(tasks.map(async (task) => {
+                            await cinerino.service.task.executeByName(task)({
+                                connection: mongoose.connection,
+                                redisClient: redis.getClient()
+                            });
+                        }));
+                    }
+                });
 
             res.status(CREATED)
                 .json(order);

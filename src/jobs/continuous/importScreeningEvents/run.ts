@@ -14,7 +14,6 @@ export default async (params: {
 
     const MAX_NUBMER_OF_PARALLEL_TASKS = 2;
     const INTERVAL_MILLISECONDS = 200;
-    const taskRepo = new cinerino.repository.Task(connection);
 
     setInterval(
         async () => {
@@ -29,7 +28,6 @@ export default async (params: {
                     project: params.project,
                     name: cinerino.factory.taskName.ImportScreeningEvents
                 })({
-                    taskRepo: taskRepo,
                     connection: connection
                 });
             } catch (error) {

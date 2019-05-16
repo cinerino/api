@@ -16,6 +16,8 @@ import permitScopes from '../../middlewares/permitScopes';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
+import * as redis from '../../../redis';
+
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
@@ -154,7 +156,18 @@ moneyTransferTransactionsRouter.put(
             })({
                 task: taskRepo,
                 transaction: transactionRepo
-            });
+            })
+                .then(async (tasks) => {
+                    // タスクがあればすべて実行
+                    if (Array.isArray(tasks)) {
+                        await Promise.all(tasks.map(async (task) => {
+                            await cinerino.service.task.executeByName(task)({
+                                connection: mongoose.connection,
+                                redisClient: redis.getClient()
+                            });
+                        }));
+                    }
+                });
 
             res.status(NO_CONTENT)
                 .end();

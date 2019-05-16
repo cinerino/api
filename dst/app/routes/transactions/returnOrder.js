@@ -20,6 +20,7 @@ const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
+const redis = require("../../../redis");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const returnOrderTransactionsRouter = express_1.Router();
 returnOrderTransactionsRouter.use(authentication_1.default);
@@ -117,12 +118,33 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+        const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         yield cinerino.service.transaction.returnOrder.confirm(Object.assign({}, req.body, { id: req.params.transactionId, agent: { id: req.user.sub } }))({
             action: actionRepo,
             transaction: transactionRepo,
             seller: sellerRepo
         });
+        // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
+        // tslint:disable-next-line:no-floating-promises
+        cinerino.service.transaction.returnOrder.exportTasks({
+            project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
+            status: cinerino.factory.transactionStatusType.Confirmed
+        })({
+            task: taskRepo,
+            transaction: transactionRepo
+        })
+            .then((tasks) => __awaiter(this, void 0, void 0, function* () {
+            // タスクがあればすべて実行
+            if (Array.isArray(tasks)) {
+                yield Promise.all(tasks.map((task) => __awaiter(this, void 0, void 0, function* () {
+                    yield cinerino.service.task.executeByName(task)({
+                        connection: mongoose.connection,
+                        redisClient: redis.getClient()
+                    });
+                })));
+            }
+        }));
         res.status(http_status_1.NO_CONTENT)
             .end();
     }

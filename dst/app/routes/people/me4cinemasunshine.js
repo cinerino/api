@@ -26,14 +26,6 @@ const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
 const me4cinemasunshineRouter = express_1.Router();
 const debug = createDebug('cinerino-api:router');
-const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
-    apiVersion: 'latest',
-    region: 'ap-northeast-1',
-    credentials: new cinerino.AWS.Credentials({
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-    })
-});
 const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.PECORINO_CLIENT_ID,
@@ -47,7 +39,7 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
  */
 me4cinemasunshineRouter.get('/contacts', permitScopes_1.default(['customer', 'people.contacts', 'people.contacts.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+        const personRepo = new cinerino.repository.Person();
         const contact = yield personRepo.getUserAttributesByAccessToken(req.accessToken);
         // format a phone number to a Japanese style
         const phoneUtil = google_libphonenumber_1.PhoneNumberUtil.getInstance();
@@ -79,7 +71,7 @@ me4cinemasunshineRouter.put('/contacts', permitScopes_1.default(['customer', 'pe
             next(new cinerino.factory.errors.Argument('telephone', 'invalid phone number format'));
             return;
         }
-        const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
+        const personRepo = new cinerino.repository.Person();
         yield personRepo.updateProfileByAccessToken({
             accessToken: req.accessToken,
             profile: Object.assign({}, req.body, { telephone: formatedPhoneNumber })
