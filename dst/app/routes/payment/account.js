@@ -27,6 +27,9 @@ accountPaymentRouter.use(authentication_1.default);
  * 口座確保
  */
 accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'customer', 'transactions']), ...[
+    check_1.body('object')
+        .not()
+        .isEmpty(),
     check_1.body('object.amount')
         .not()
         .isEmpty()
@@ -123,6 +126,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'custom
             project: req.project,
             object: {
                 typeOf: cinerino.factory.paymentMethodType.Account,
+                name: req.body.object.name,
                 amount: Number(req.body.object.amount),
                 currency: currency,
                 additionalProperty: req.body.object.additionalProperty,

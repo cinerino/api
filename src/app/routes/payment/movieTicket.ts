@@ -72,6 +72,9 @@ movieTicketPaymentRouter.post(
     '/authorize',
     permitScopes(['customer', 'transactions']),
     ...[
+        body('object')
+            .not()
+            .isEmpty(),
         body('object.typeOf')
             .not()
             .isEmpty()
@@ -112,6 +115,7 @@ movieTicketPaymentRouter.post(
                 agent: { id: req.user.sub },
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.MovieTicket,
+                    name: req.body.object.name,
                     amount: 0,
                     additionalProperty: req.body.object.additionalProperty,
                     movieTickets: req.body.object.movieTickets

@@ -31,6 +31,9 @@ creditCardPaymentRouter.use(authentication_1.default);
  * クレジットカード決済承認
  */
 creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'customer', 'transactions']), ...[
+    check_1.body('object')
+        .not()
+        .isEmpty(),
     check_1.body('object.typeOf')
         .not()
         .isEmpty()
@@ -70,6 +73,7 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'cus
             agent: { id: req.user.sub },
             object: {
                 typeOf: cinerino.factory.paymentMethodType.CreditCard,
+                name: req.body.object.name,
                 additionalProperty: req.body.object.additionalProperty,
                 orderId: req.body.object.orderId,
                 amount: req.body.object.amount,

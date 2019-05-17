@@ -28,6 +28,9 @@ creditCardPaymentRouter.post(
     '/authorize',
     permitScopes(['admin', 'customer', 'transactions']),
     ...[
+        body('object')
+            .not()
+            .isEmpty(),
         body('object.typeOf')
             .not()
             .isEmpty()
@@ -76,6 +79,7 @@ creditCardPaymentRouter.post(
                 agent: { id: req.user.sub },
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.CreditCard,
+                    name: req.body.object.name,
                     additionalProperty: req.body.object.additionalProperty,
                     orderId: req.body.object.orderId,
                     amount: req.body.object.amount,

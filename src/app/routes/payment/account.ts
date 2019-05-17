@@ -23,6 +23,9 @@ accountPaymentRouter.post(
     '/authorize',
     permitScopes(['admin', 'customer', 'transactions']),
     ...[
+        body('object')
+            .not()
+            .isEmpty(),
         body('object.amount')
             .not()
             .isEmpty()
@@ -132,6 +135,7 @@ accountPaymentRouter.post(
                 project: req.project,
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.Account,
+                    name: req.body.object.name,
                     amount: Number(req.body.object.amount),
                     currency: currency,
                     additionalProperty: req.body.object.additionalProperty,

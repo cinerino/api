@@ -27,6 +27,9 @@ anyPaymentRouter.use(authentication_1.default);
  * 汎用決済承認
  */
 anyPaymentRouter.post('/authorize', permitScopes_1.default(['admin']), ...[
+    check_1.body('object')
+        .not()
+        .isEmpty(),
     check_1.body('object.typeOf')
         .not()
         .isEmpty()

@@ -23,6 +23,9 @@ anyPaymentRouter.post(
     '/authorize',
     permitScopes(['admin']),
     ...[
+        body('object')
+            .not()
+            .isEmpty(),
         body('object.typeOf')
             .not()
             .isEmpty()

@@ -69,6 +69,9 @@ movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['custome
  * ムビチケ決済承認
  */
 movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['customer', 'transactions']), ...[
+    check_1.body('object')
+        .not()
+        .isEmpty(),
     check_1.body('object.typeOf')
         .not()
         .isEmpty()
@@ -105,6 +108,7 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['customer', 
             agent: { id: req.user.sub },
             object: {
                 typeOf: cinerino.factory.paymentMethodType.MovieTicket,
+                name: req.body.object.name,
                 amount: 0,
                 additionalProperty: req.body.object.additionalProperty,
                 movieTickets: req.body.object.movieTickets
