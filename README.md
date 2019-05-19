@@ -58,7 +58,6 @@
 | `USE_USERNAME_AS_GMO_MEMBER_ID`           | false    | 1 or 0         | GMO会員IDにユーザーネームを使用するかどうか |
 | `VALIDATE_MOVIE_TICKET`                   | false    | 1 or 0         | Validation flag for movie tickets           |
 | `MULTI_TENANT_SUPPORTED`                  | false    | 1 or 0         | マルチテナント対応フラグ                    |
-| `USE_TMP_CODE_REPO`                       | false    | 1 or 0         | 一時コードリポジトリ使用フラグ              |
 
 ## License
 

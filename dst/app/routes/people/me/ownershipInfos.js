@@ -17,7 +17,6 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const validator_1 = require("../../../middlewares/validator");
-const redis = require("../../../../redis");
 const accounts_1 = require("./ownershipInfos/accounts");
 const creditCards_1 = require("./ownershipInfos/creditCards");
 const reservations_1 = require("./ownershipInfos/reservations");
@@ -93,9 +92,7 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['customer'])
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const codeRepo = (process.env.USE_TMP_CODE_REPO === '1')
-            ? new cinerino.repository.TemporaryCode(redis.getClient())
-            : new cinerino.repository.Code(mongoose.connection);
+        const codeRepo = new cinerino.repository.Code(mongoose.connection);
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
         const ownershipInfo = yield ownershipInfoRepo.findById({ id: req.params.id });

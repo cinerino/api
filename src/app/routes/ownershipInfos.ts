@@ -12,8 +12,6 @@ import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
-import * as redis from '../../redis';
-
 const TOKEN_EXPIRES_IN = 1800;
 
 const ownershipInfosRouter = Router();
@@ -28,26 +26,14 @@ ownershipInfosRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            let token: string;
             const codeRepo = new cinerino.repository.Code(mongoose.connection);
-            const tmpCodeRepo = new cinerino.repository.TemporaryCode(redis.getClient());
 
-            try {
-                token = await cinerino.service.code.getToken({
-                    code: req.body.code,
-                    secret: <string>process.env.TOKEN_SECRET,
-                    issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER,
-                    expiresIn: TOKEN_EXPIRES_IN
-                })({ code: codeRepo });
-            } catch (error) {
-                // コードリポジトリにコードがなければ、一時コードリポジトリで確認
-                token = await cinerino.service.code.getToken({
-                    code: req.body.code,
-                    secret: <string>process.env.TOKEN_SECRET,
-                    issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER,
-                    expiresIn: TOKEN_EXPIRES_IN
-                })({ code: tmpCodeRepo });
-            }
+            const token = await cinerino.service.code.getToken({
+                code: req.body.code,
+                secret: <string>process.env.TOKEN_SECRET,
+                issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER,
+                expiresIn: TOKEN_EXPIRES_IN
+            })({ code: codeRepo });
 
             res.json({ token });
         } catch (error) {

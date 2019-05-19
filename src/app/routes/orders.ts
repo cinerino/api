@@ -324,9 +324,7 @@ ordersRouter.post(
             }
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
-            const codeRepo = (process.env.USE_TMP_CODE_REPO === '1')
-                ? new cinerino.repository.TemporaryCode(redis.getClient())
-                : new cinerino.repository.Code(mongoose.connection);
+            const codeRepo = new cinerino.repository.Code(mongoose.connection);
 
             const order = await orderRepo.findByOrderNumber({ orderNumber: req.params.orderNumber });
             if (order.customer.email !== customer.email && order.customer.telephone !== customer.telephone) {
