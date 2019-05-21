@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const accounts_1 = require("./accounts");
 const actions_1 = require("./actions");
+const authorizations_1 = require("./authorizations");
 const creativeWorks_1 = require("./creativeWorks");
 const events_1 = require("./events");
 const health_1 = require("./health");
@@ -35,6 +36,7 @@ const router = express.Router();
 // })
 router.use('/accounts', accounts_1.default);
 router.use('/actions', actions_1.default);
+router.use('/authorizations', authorizations_1.default);
 router.use('/creativeWorks', creativeWorks_1.default);
 router.use('/events', events_1.default);
 router.use('/health', health_1.default);

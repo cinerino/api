@@ -20,9 +20,57 @@ const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
+const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const TOKEN_EXPIRES_IN = 1800;
 const ownershipInfosRouter = express_1.Router();
 ownershipInfosRouter.use(authentication_1.default);
+/**
+ * 所有権検索
+ */
+ownershipInfosRouter.get('', permitScopes_1.default(['admin']), ...[
+    check_1.query('ownedFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('ownedThrough')
+        .optional()
+        .isISO8601()
+        .toDate()
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+        const typeOfGood = (req.query.typeOfGood !== undefined && req.query.typeOfGood !== null) ? req.query.typeOfGood : {};
+        let ownershipInfos;
+        const searchConditions = Object.assign({}, req.query, { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
+        const totalCount = yield ownershipInfoRepo.count(searchConditions);
+        switch (typeOfGood.typeOf) {
+            // case cinerino.factory.ownershipInfo.AccountGoodType.Account:
+            //     ownershipInfos = await cinerino.service.account.search({
+            //         project: req.project,
+            //         conditions: searchConditions
+            //     })({
+            //         ownershipInfo: ownershipInfoRepo,
+            //         project: projectRepo
+            //     });
+            //     break;
+            // case cinerino.factory.chevre.reservationType.EventReservation:
+            //     ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(searchConditions)({
+            //         ownershipInfo: ownershipInfoRepo,
+            //         project: projectRepo
+            //     });
+            //     break;
+            default:
+                ownershipInfos = yield ownershipInfoRepo.search(searchConditions);
+        }
+        res.set('X-Total-Count', totalCount.toString());
+        res.json(ownershipInfos);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 /**
  * コードから所有権に対するアクセストークンを発行する
  */

@@ -5,6 +5,7 @@ import * as express from 'express';
 
 import accountsRouter from './accounts';
 import actionsRouter from './actions';
+import authorizationsRouter from './authorizations';
 import creativeWorksRouter from './creativeWorks';
 import eventsRouter from './events';
 import healthRouter from './health';
@@ -37,6 +38,7 @@ const router = express.Router();
 
 router.use('/accounts', accountsRouter);
 router.use('/actions', actionsRouter);
+router.use('/authorizations', authorizationsRouter);
 router.use('/creativeWorks', creativeWorksRouter);
 router.use('/events', eventsRouter);
 router.use('/health', healthRouter);
