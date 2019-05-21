@@ -512,13 +512,11 @@ placeOrderTransactionsRouter.post(
                 seller: new cinerino.repository.Seller(mongoose.connection)
             });
 
-            if (action.result !== undefined) {
-                delete action.result.entryTranArgs;
-                delete action.result.execTranArgs;
-                delete action.result.execTranResult;
-            }
             res.status(CREATED)
-                .json(action);
+                .json({
+                    ...action,
+                    result: undefined
+                });
         } catch (error) {
             next(error);
         }
