@@ -113,6 +113,7 @@ ordersRouter.post('', permitScopes_1.default(['admin']), ...[
         // 注文検索
         const orders = yield orderRepo.search({
             limit: 1,
+            project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
             orderNumbers: [orderNumber]
         });
         let order = orders.shift();
@@ -233,6 +234,7 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['customer
         const orders = yield orderRepo.search({
             limit: 1,
             sort: { orderDate: cinerino.factory.sortType.Descending },
+            project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
             confirmationNumbers: [req.body.confirmationNumber],
             customer: {
                 email: (customer.email !== undefined)

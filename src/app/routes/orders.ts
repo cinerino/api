@@ -128,6 +128,7 @@ ordersRouter.post(
             // 注文検索
             const orders = await orderRepo.search({
                 limit: 1,
+                project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
                 orderNumbers: [orderNumber]
             });
             let order = orders.shift();
@@ -272,6 +273,7 @@ ordersRouter.post(
             const orders = await orderRepo.search({
                 limit: 1,
                 sort: { orderDate: cinerino.factory.sortType.Descending },
+                project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
                 confirmationNumbers: [<string>req.body.confirmationNumber],
                 customer: {
                     email: (customer.email !== undefined)
