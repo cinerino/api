@@ -29,29 +29,6 @@ profileRouter.get(
 
 /**
  * プロフィール更新
- * @deprecated Use patch method
- */
-profileRouter.put(
-    '',
-    permitScopes(['customer']),
-    validator,
-    async (req, res, next) => {
-        try {
-            const personRepo = new cinerino.repository.Person();
-            await personRepo.updateProfileByAccessToken({
-                accessToken: req.accessToken,
-                profile: req.body
-            });
-            res.status(NO_CONTENT)
-                .end();
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
- * プロフィール更新
  */
 profileRouter.patch(
     '',

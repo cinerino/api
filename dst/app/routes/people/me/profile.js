@@ -32,24 +32,6 @@ profileRouter.get('', permitScopes_1.default(['customer']), (req, res, next) => 
 }));
 /**
  * プロフィール更新
- * @deprecated Use patch method
- */
-profileRouter.put('', permitScopes_1.default(['customer']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    try {
-        const personRepo = new cinerino.repository.Person();
-        yield personRepo.updateProfileByAccessToken({
-            accessToken: req.accessToken,
-            profile: req.body
-        });
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * プロフィール更新
  */
 profileRouter.patch('', permitScopes_1.default(['customer']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
