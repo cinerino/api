@@ -1,11 +1,14 @@
 /**
- * ポイント口座ルーター
+ * 口座ルーター
  */
 import * as cinerino from '@cinerino/domain';
-// import * as createDebug from 'debug';
 import { Router } from 'express';
-import { NO_CONTENT } from 'http-status';
+// tslint:disable-next-line:no-submodule-imports
+import { body } from 'express-validator/check';
+import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
+
+import * as redis from '../../redis';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -13,9 +16,67 @@ import validator from '../middlewares/validator';
 
 const accountsRouter = Router();
 
-// const debug = createDebug('cinerino-api:routes:accounts');
-
 accountsRouter.use(authentication);
+
+/**
+ * 管理者として口座開設
+ */
+accountsRouter.post(
+    '',
+    permitScopes(['admin']),
+    ...[
+        body('accountType', 'invalid accountType')
+            .not()
+            .isEmpty(),
+        body('name', 'invalid name')
+            .not()
+            .isEmpty()
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            const account = await cinerino.service.account.openWithoutOwnershipInfo({
+                project: req.project,
+                accountType: req.body.accountType,
+                name: req.body.name
+            })({
+                accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
+                project: new cinerino.repository.Project(mongoose.connection)
+            });
+
+            res.status(CREATED)
+                .json(account);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 管理者として口座解約
+ */
+accountsRouter.put(
+    '/:accountType/:accountNumber/close',
+    permitScopes(['admin']),
+    validator,
+    async (req, res, next) => {
+        try {
+            await cinerino.service.account.close({
+                project: req.project,
+                accountType: req.params.accountType,
+                accountNumber: req.params.accountNumber
+            })({
+                ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
+                project: new cinerino.repository.Project(mongoose.connection)
+            });
+
+            res.status(NO_CONTENT)
+                .end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 
 /**
  * 管理者として口座に入金する
@@ -23,19 +84,18 @@ accountsRouter.use(authentication);
 accountsRouter.post(
     '/transactions/deposit',
     permitScopes(['admin']),
-    (req, __, next) => {
-        req.checkBody('recipient', 'invalid recipient')
-            .notEmpty()
-            .withMessage('recipient is required');
-        req.checkBody('amount', 'invalid amount')
-            .notEmpty()
-            .withMessage('amount is required')
-            .isInt();
-        req.checkBody('toAccountNumber', 'invalid toAccountNumber')
-            .notEmpty()
-            .withMessage('toAccountNumber is required');
-        next();
-    },
+    ...[
+        body('recipient', 'invalid recipient')
+            .not()
+            .isEmpty(),
+        body('amount', 'invalid name')
+            .not()
+            .isEmpty()
+            .isInt(),
+        body('toAccountNumber', 'invalid toAccountNumber')
+            .not()
+            .isEmpty()
+    ],
     validator,
     async (req, res, next) => {
         try {
