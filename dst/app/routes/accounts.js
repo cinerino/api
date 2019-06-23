@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * 口座ルーター
  */
 const cinerino = require("@cinerino/domain");
-// import * as createDebug from 'debug';
 const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
@@ -23,7 +22,6 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const accountsRouter = express_1.Router();
-// const debug = createDebug('cinerino-api:routes:accounts');
 accountsRouter.use(authentication_1.default);
 /**
  * 管理者として口座開設
