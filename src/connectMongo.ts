@@ -8,8 +8,10 @@ import * as mongoose from 'mongoose';
 const debug = createDebug('cinerino-api:connectMongo');
 const PING_INTERVAL = 10000;
 const MONGOLAB_URI = <string>process.env.MONGOLAB_URI;
+const AUTO_INDEX = process.env.MONGO_AUTO_INDEX_DISABLED !== '1';
 
 const connectOptions: mongoose.ConnectionOptions = {
+    autoIndex: AUTO_INDEX,
     autoReconnect: true,
     keepAlive: true,
     connectTimeoutMS: 30000,

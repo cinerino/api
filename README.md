@@ -17,6 +17,7 @@
 | `DEBUG_SINGLETON_PROCESS`                 | false    | 1 or 0         | Singleton Process Debug Flag                |
 | `NODE_ENV`                                | true     |                | Environment name                            |
 | `MONGOLAB_URI`                            | true     |                | MongoDB connection URI                      |
+| `MONGO_AUTO_INDEX_DISABLED`               | false    | 1 or 0         | MongoDB auto index flag                     |
 | `REDIS_HOST`                              | true     |                | Redis Cache host                            |
 | `REDIS_PORT`                              | true     |                | Redis Cache port                            |
 | `REDIS_KEY`                               | true     |                | Redis Cache key                             |
