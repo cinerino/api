@@ -13,13 +13,43 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+// tslint:disable-next-line:no-submodule-imports
+const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
+const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const actionsRouter = express_1.Router();
 actionsRouter.use(authentication_1.default);
+/**
+ * アクション検索
+ */
+actionsRouter.get('', permitScopes_1.default(['admin']), ...[
+    check_1.query('startFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('startThrough')
+        .optional()
+        .isISO8601()
+        .toDate()
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    try {
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const searchConditions = Object.assign({}, req.query, { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
+        const totalCount = yield actionRepo.count(searchConditions);
+        const actions = yield actionRepo.search(searchConditions);
+        res.set('X-Total-Count', totalCount.toString());
+        res.json(actions);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 /**
  * チケット印刷アクション追加
  */
