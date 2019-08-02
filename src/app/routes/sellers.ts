@@ -48,22 +48,6 @@ sellersRouter.post(
             .not()
             .isEmpty()
             .withMessage((_, __) => 'required'),
-        body('location.typeOf')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required'),
-        body('location.branchCode')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required'),
-        body('location.name.ja')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required'),
-        body('location.name.en')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required'),
         body('telephone')
             .not()
             .isEmpty()
@@ -187,22 +171,6 @@ sellersRouter.put(
             .isEmpty()
             .withMessage((_, __) => 'required'),
         body('parentOrganization.name.en')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required'),
-        body('location.typeOf')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required'),
-        body('location.branchCode')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required'),
-        body('location.name.ja')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required'),
-        body('location.name.en')
             .not()
             .isEmpty()
             .withMessage((_, __) => 'required'),
