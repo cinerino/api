@@ -51,22 +51,6 @@ sellersRouter.post('', permitScopes_1.default(['admin', 'sellers']), ...[
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('location.typeOf')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    check_1.body('location.branchCode')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    check_1.body('location.name.ja')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    check_1.body('location.name.en')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
     check_1.body('telephone')
         .not()
         .isEmpty()
@@ -159,22 +143,6 @@ sellersRouter.put('/:id', permitScopes_1.default(['admin', 'sellers']), ...[
         .isEmpty()
         .withMessage((_, __) => 'required'),
     check_1.body('parentOrganization.name.en')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    check_1.body('location.typeOf')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    check_1.body('location.branchCode')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    check_1.body('location.name.ja')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    check_1.body('location.name.en')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
