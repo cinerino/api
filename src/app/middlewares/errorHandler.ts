@@ -16,13 +16,11 @@ import {
 } from 'http-status';
 
 import { APIError } from '../error/api';
-// import logger from '../logger';
 
 const debug = createDebug('cinerino-api:middlewares');
 
 export default (err: any, __: Request, res: Response, next: NextFunction) => {
     debug(err);
-    // logger.error('cinerino-api:middleware:errorHandler', err);
 
     if (res.headersSent) {
         next(err);

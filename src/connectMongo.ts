@@ -65,7 +65,7 @@ export async function connectMongo(params: {
             try {
                 // コネクション再確立
                 await connection.close();
-                await connection.openUri(MONGOLAB_URI, undefined, undefined, connectOptions);
+                await connection.openUri(MONGOLAB_URI, connectOptions);
                 debug('MongoDB reconnected!');
                 await cinerino.service.notification.report2developers(
                     `[${process.env.PROJECT_ID}] api:connectMongo`,

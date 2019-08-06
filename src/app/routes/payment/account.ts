@@ -33,11 +33,7 @@ accountPaymentRouter.post(
             .isInt(),
         body('object.additionalProperty')
             .optional()
-            .isArray(),
-        body('object.fromAccount')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required')
+            .isArray()
     ],
     validator,
     async (req, res, next) => {
@@ -49,7 +45,7 @@ accountPaymentRouter.post(
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
-            let fromAccount: cinerino.factory.action.authorize.paymentMethod.account.IFromAccount<cinerino.factory.accountType>
+            let fromAccount: cinerino.factory.action.authorize.paymentMethod.account.IFromAccount<cinerino.factory.accountType> | undefined
                 = req.body.object.fromAccount;
             let toAccount: cinerino.factory.action.authorize.paymentMethod.account.IToAccount<cinerino.factory.accountType> | undefined
                 = req.body.object.toAccount;
@@ -71,27 +67,35 @@ accountPaymentRouter.post(
                 }
                 fromAccount = account;
             } else {
-                // 口座情報がトークンでない、かつ、APIユーザーが管理者でない場合、口座に所有権があるかどうか確認
+                // 口座情報がトークンでない、かつ、APIユーザーが管理者でない場合、許可されるリクエストかどうか確認
                 if (!req.isAdmin) {
-                    const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-                    const count = await ownershipInfoRepo.count<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
-                        limit: 1,
-                        ownedBy: { id: req.user.sub },
-                        ownedFrom: new Date(),
-                        ownedThrough: new Date(),
-                        typeOfGood: {
-                            typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
-                            accountType: fromAccount.accountType,
-                            accountNumber: fromAccount.accountNumber
+                    if (fromAccount === undefined) {
+                        // 入金処理は禁止
+                        throw new cinerino.factory.errors.ArgumentNull('From Account');
+                    } else {
+                        // 口座に所有権があるかどうか確認
+                        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+                        const count = await ownershipInfoRepo.count<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
+                            limit: 1,
+                            ownedBy: { id: req.user.sub },
+                            ownedFrom: new Date(),
+                            ownedThrough: new Date(),
+                            typeOfGood: {
+                                typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                                accountType: fromAccount.accountType,
+                                accountNumber: fromAccount.accountNumber
+                            }
+                        });
+                        if (count === 0) {
+                            throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
                         }
-                    });
-                    if (count === 0) {
-                        throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
                     }
                 }
             }
 
-            const accountType = fromAccount.accountType;
+            const accountType = (fromAccount !== undefined)
+                ? fromAccount.accountType
+                : (toAccount !== undefined) ? toAccount.accountType : undefined;
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
