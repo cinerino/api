@@ -9,6 +9,7 @@ import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
 import authentication from '../../middlewares/authentication';
+import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
@@ -101,6 +102,12 @@ movieTicketPaymentRouter.post(
         })(req, res, next);
     },
     async (req, res, next) => {
+        await lockTransaction({
+            typeOf: req.body.purpose.typeOf,
+            id: <string>req.body.purpose.id
+        })(req, res, next);
+    },
+    async (req, res, next) => {
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
@@ -148,6 +155,12 @@ movieTicketPaymentRouter.put(
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
+            typeOf: req.body.purpose.typeOf,
+            id: <string>req.body.purpose.id
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
             typeOf: req.body.purpose.typeOf,
             id: <string>req.body.purpose.id
         })(req, res, next);

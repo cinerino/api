@@ -12,6 +12,7 @@ import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import authentication from '../../middlewares/authentication';
+import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
@@ -223,6 +224,12 @@ placeOrderTransactionsRouter.put(
         })(req, res, next);
     },
     async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
         try {
             let requestedNumber = <string>req.body.telephone;
 
@@ -286,6 +293,12 @@ placeOrderTransactionsRouter.post(
         })(req, res, next);
     },
     async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
@@ -330,6 +343,12 @@ placeOrderTransactionsRouter.put(
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
             typeOf: cinerino.factory.transactionType.PlaceOrder,
             id: req.params.transactionId
         })(req, res, next);
@@ -384,6 +403,12 @@ placeOrderTransactionsRouter.post(
         })(req, res, next);
     },
     async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
         try {
             const action = await cinerino.service.payment.any.authorize({
                 agent: { id: req.user.sub },
@@ -412,6 +437,12 @@ placeOrderTransactionsRouter.put(
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
             typeOf: cinerino.factory.transactionType.PlaceOrder,
             id: req.params.transactionId
         })(req, res, next);
@@ -476,6 +507,12 @@ placeOrderTransactionsRouter.post(
         })(req, res, next);
     },
     async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
         try {
             // 会員IDを強制的にログイン中の人物IDに変更
             type ICreditCard4authorizeAction = cinerino.factory.action.authorize.paymentMethod.creditCard.ICreditCard;
@@ -532,6 +569,12 @@ placeOrderTransactionsRouter.put(
         })(req, res, next);
     },
     async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
         try {
             await cinerino.service.payment.creditCard.voidTransaction({
                 project: { id: req.project.id },
@@ -580,6 +623,12 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
             typeOf: cinerino.factory.transactionType.PlaceOrder,
             id: req.params.transactionId
         })(req, res, next);
@@ -686,6 +735,12 @@ placeOrderTransactionsRouter.put(
         })(req, res, next);
     },
     async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
         try {
             await cinerino.service.payment.account.voidTransaction({
                 project: req.project,
@@ -735,6 +790,12 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
             typeOf: cinerino.factory.transactionType.PlaceOrder,
             id: req.params.transactionId
         })(req, res, next);
@@ -792,6 +853,12 @@ placeOrderTransactionsRouter.put(
         })(req, res, next);
     },
     async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
         try {
             await cinerino.service.payment.movieTicket.voidTransaction({
                 id: req.params.actionId,
@@ -834,6 +901,12 @@ placeOrderTransactionsRouter.post(
         })(req, res, next);
     },
     async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
         try {
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.create({
                 transaction: { id: req.params.transactionId },
@@ -871,6 +944,12 @@ placeOrderTransactionsRouter.put(
         })(req, res, next);
     },
     async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
         try {
             await cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({
                 agent: { id: req.user.sub },
@@ -896,6 +975,12 @@ placeOrderTransactionsRouter.put(
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
             typeOf: cinerino.factory.transactionType.PlaceOrder,
             id: req.params.transactionId
         })(req, res, next);
@@ -983,6 +1068,18 @@ placeOrderTransactionsRouter.put(
     '/:transactionId/cancel',
     permitScopes(['customer', 'transactions']),
     validator,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (req, res, next) => {
         try {
             const taskRepo = new cinerino.repository.Task(mongoose.connection);

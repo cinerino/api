@@ -9,6 +9,7 @@ import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
 import authentication from '../../middlewares/authentication';
+import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
@@ -65,6 +66,12 @@ creditCardPaymentRouter.post(
         })(req, res, next);
     },
     async (req, res, next) => {
+        await lockTransaction({
+            typeOf: req.body.purpose.typeOf,
+            id: <string>req.body.purpose.id
+        })(req, res, next);
+    },
+    async (req, res, next) => {
         try {
             // 会員IDを強制的にログイン中の人物IDに変更
             type ICreditCard4authorizeAction = cinerino.factory.action.authorize.paymentMethod.creditCard.ICreditCard;
@@ -114,6 +121,12 @@ creditCardPaymentRouter.put(
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
+            typeOf: req.body.purpose.typeOf,
+            id: <string>req.body.purpose.id
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
             typeOf: req.body.purpose.typeOf,
             id: <string>req.body.purpose.id
         })(req, res, next);

@@ -12,6 +12,7 @@ import { Router } from 'express';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
+import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
@@ -97,6 +98,12 @@ placeOrder4cinemasunshineRouter.post(
         })(req, res, next);
     },
     async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
         try {
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4coa.create({
                 object: {
@@ -134,6 +141,12 @@ placeOrder4cinemasunshineRouter.delete(
         })(req, res, next);
     },
     async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
         try {
             await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4coa.cancel({
                 agent: { id: req.user.sub },
@@ -161,6 +174,12 @@ placeOrder4cinemasunshineRouter.patch(
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
             typeOf: cinerino.factory.transactionType.PlaceOrder,
             id: req.params.transactionId
         })(req, res, next);
@@ -202,6 +221,12 @@ placeOrder4cinemasunshineRouter.post(
             id: req.params.transactionId
         })(req, res, next);
     },
+    async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (_, res, next) => {
         try {
             // tslint:disable-next-line:no-suspicious-comment
@@ -224,6 +249,12 @@ placeOrder4cinemasunshineRouter.delete(
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
             typeOf: cinerino.factory.transactionType.PlaceOrder,
             id: req.params.transactionId
         })(req, res, next);
@@ -266,6 +297,12 @@ placeOrder4cinemasunshineRouter.post(
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
             typeOf: cinerino.factory.transactionType.PlaceOrder,
             id: req.params.transactionId
         })(req, res, next);
@@ -326,6 +363,12 @@ placeOrder4cinemasunshineRouter.delete(
         })(req, res, next);
     },
     async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
         try {
             await cinerino.service.payment.creditCard.voidTransaction({
                 project: { id: req.project.id },
@@ -355,6 +398,12 @@ placeOrder4cinemasunshineRouter.post(
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
             typeOf: cinerino.factory.transactionType.PlaceOrder,
             id: req.params.transactionId
         })(req, res, next);
@@ -419,6 +468,12 @@ placeOrder4cinemasunshineRouter.delete(
         })(req, res, next);
     },
     async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
         try {
             await cinerino.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.cancel({
                 agentId: req.user.sub,
@@ -456,6 +511,12 @@ placeOrder4cinemasunshineRouter.post(
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
             typeOf: cinerino.factory.transactionType.PlaceOrder,
             id: req.params.transactionId
         })(req, res, next);
@@ -516,6 +577,12 @@ placeOrder4cinemasunshineRouter.delete(
         })(req, res, next);
     },
     async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
         try {
             await cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({
                 agent: { id: req.user.sub },
@@ -540,6 +607,12 @@ placeOrder4cinemasunshineRouter.post(
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
             typeOf: cinerino.factory.transactionType.PlaceOrder,
             id: req.params.transactionId
         })(req, res, next);
@@ -624,6 +697,18 @@ placeOrder4cinemasunshineRouter.post(
     '/:transactionId/cancel',
     permitScopes(['admin', 'customer', 'transactions']),
     validator,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (req, res, next) => {
         try {
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);

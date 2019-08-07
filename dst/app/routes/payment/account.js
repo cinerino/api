@@ -18,6 +18,7 @@ const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
+const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
@@ -40,6 +41,11 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'custom
         .isArray()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
+        typeOf: req.body.purpose.typeOf,
+        id: req.body.purpose.id
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield lockTransaction_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id
     })(req, res, next);
@@ -158,6 +164,11 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'custom
  */
 accountPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['admin', 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
+        typeOf: req.body.purpose.typeOf,
+        id: req.body.purpose.id
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield lockTransaction_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id
     })(req, res, next);

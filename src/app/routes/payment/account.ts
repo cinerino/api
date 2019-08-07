@@ -9,6 +9,7 @@ import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
 import authentication from '../../middlewares/authentication';
+import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
@@ -38,6 +39,12 @@ accountPaymentRouter.post(
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
+            typeOf: req.body.purpose.typeOf,
+            id: <string>req.body.purpose.id
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
             typeOf: req.body.purpose.typeOf,
             id: <string>req.body.purpose.id
         })(req, res, next);
@@ -172,6 +179,12 @@ accountPaymentRouter.put(
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
+            typeOf: req.body.purpose.typeOf,
+            id: <string>req.body.purpose.id
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
             typeOf: req.body.purpose.typeOf,
             id: <string>req.body.purpose.id
         })(req, res, next);
