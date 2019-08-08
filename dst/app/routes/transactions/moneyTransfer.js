@@ -20,6 +20,7 @@ const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
+const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
@@ -82,7 +83,7 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 
         const transaction = yield cinerino.service.transaction.moneyTransfer.start({
             project: req.project,
             expires: expires,
-            agent: Object.assign({}, req.agent, { identifier: [
+            agent: Object.assign({}, req.agent, (req.body.agent !== undefined && req.body.agent.name !== undefined) ? { name: req.body.agent.name } : {}, { identifier: [
                     ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
                     ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
                 ] }),
@@ -116,6 +117,11 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 
 }));
 moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin', 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
+        typeOf: cinerino.factory.transactionType.MoneyTransfer,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield lockTransaction_1.default({
         typeOf: cinerino.factory.transactionType.MoneyTransfer,
         id: req.params.transactionId
     })(req, res, next);
@@ -162,6 +168,16 @@ moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.de
  * 取引を明示的に中止
  */
 moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.default(['admin', 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: cinerino.factory.transactionType.MoneyTransfer,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    yield lockTransaction_1.default({
+        typeOf: cinerino.factory.transactionType.MoneyTransfer,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);

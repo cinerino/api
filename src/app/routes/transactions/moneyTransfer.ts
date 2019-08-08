@@ -12,6 +12,7 @@ import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import authentication from '../../middlewares/authentication';
+import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
@@ -89,6 +90,7 @@ moneyTransferTransactionsRouter.post(
                 expires: expires,
                 agent: {
                     ...req.agent,
+                    ...(req.body.agent !== undefined && req.body.agent.name !== undefined) ? { name: req.body.agent.name } : {},
                     identifier: [
                         ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
                         ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
@@ -130,6 +132,12 @@ moneyTransferTransactionsRouter.put(
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.MoneyTransfer,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
             typeOf: cinerino.factory.transactionType.MoneyTransfer,
             id: req.params.transactionId
         })(req, res, next);
@@ -184,6 +192,18 @@ moneyTransferTransactionsRouter.put(
     '/:transactionId/cancel',
     permitScopes(['admin', 'customer', 'transactions']),
     validator,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.MoneyTransfer,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.MoneyTransfer,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
     async (req, res, next) => {
         try {
             const taskRepo = new cinerino.repository.Task(mongoose.connection);

@@ -142,6 +142,7 @@ accountPaymentRouter.post(
             const currency = (accountType === cinerino.factory.accountType.Coin)
                 ? cinerino.factory.priceCurrency.JPY
                 : accountType;
+
             const action = await cinerino.service.payment.account.authorize({
                 project: req.project,
                 object: {
@@ -150,9 +151,9 @@ accountPaymentRouter.post(
                     amount: Number(req.body.object.amount),
                     currency: currency,
                     additionalProperty: req.body.object.additionalProperty,
-                    fromAccount: fromAccount,
-                    toAccount: toAccount,
-                    notes: req.body.object.notes
+                    notes: req.body.object.notes,
+                    ...(fromAccount !== undefined) ? { fromAccount } : {},
+                    ...(toAccount !== undefined) ? { toAccount } : {}
                 },
                 agent: { id: req.user.sub },
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
