@@ -8,6 +8,8 @@ import { connectMongo } from '../../../connectMongo';
 
 const debug = createDebug('cinerino-api');
 
+const RUNS_TASKS_AFTER_IN_SECONDS = 120;
+
 export default async (params: {
     project?: cinerino.factory.project.IProject;
 }) => {
@@ -32,7 +34,8 @@ export default async (params: {
                 debug('exporting tasks...');
                 await cinerino.service.transaction.placeOrder.exportTasks({
                     project: params.project,
-                    status: cinerino.factory.transactionStatusType.Expired
+                    status: cinerino.factory.transactionStatusType.Expired,
+                    runsTasksAfterInSeconds: RUNS_TASKS_AFTER_IN_SECONDS
                 })({
                     task: taskRepo,
                     transaction: transactionRepo

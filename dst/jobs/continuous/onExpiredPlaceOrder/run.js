@@ -15,6 +15,7 @@ const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
 const connectMongo_1 = require("../../../connectMongo");
 const debug = createDebug('cinerino-api');
+const RUNS_TASKS_AFTER_IN_SECONDS = 120;
 exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     let countExecute = 0;
@@ -31,7 +32,8 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
             debug('exporting tasks...');
             yield cinerino.service.transaction.placeOrder.exportTasks({
                 project: params.project,
-                status: cinerino.factory.transactionStatusType.Expired
+                status: cinerino.factory.transactionStatusType.Expired,
+                runsTasksAfterInSeconds: RUNS_TASKS_AFTER_IN_SECONDS
             })({
                 task: taskRepo,
                 transaction: transactionRepo
