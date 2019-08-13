@@ -135,7 +135,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'custom
             : accountType;
         const action = yield cinerino.service.payment.account.authorize({
             project: req.project,
-            object: Object.assign({ typeOf: cinerino.factory.paymentMethodType.Account, name: req.body.object.name, amount: Number(req.body.object.amount), currency: currency, additionalProperty: req.body.object.additionalProperty, notes: req.body.object.notes }, (fromAccount !== undefined) ? { fromAccount } : {}, (toAccount !== undefined) ? { toAccount } : {}),
+            object: Object.assign({ typeOf: cinerino.factory.paymentMethodType.Account, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty)) ? req.body.object.additionalProperty : [] }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined, (typeof req.body.object.notes === 'string') ? { notes: req.body.object.notes } : undefined, (fromAccount !== undefined) ? { fromAccount } : {}, (toAccount !== undefined) ? { toAccount } : {}),
             agent: { id: req.user.sub },
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({

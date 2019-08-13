@@ -529,11 +529,11 @@ placeOrderTransactionsRouter.post(
                 agent: { id: req.user.sub },
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.CreditCard,
-                    additionalProperty: req.body.additionalProperty,
-                    orderId: req.body.orderId,
+                    additionalProperty: (Array.isArray(req.body.additionalProperty)) ? req.body.additionalProperty : [],
                     amount: req.body.amount,
                     method: req.body.method,
-                    creditCard: creditCard
+                    creditCard: creditCard,
+                    ...(typeof req.body.orderId === 'string') ? { orderId: <string>req.body.orderId } : undefined
                 },
                 purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
             })({

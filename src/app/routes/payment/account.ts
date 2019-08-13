@@ -147,11 +147,11 @@ accountPaymentRouter.post(
                 project: req.project,
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.Account,
-                    name: req.body.object.name,
                     amount: Number(req.body.object.amount),
                     currency: currency,
-                    additionalProperty: req.body.object.additionalProperty,
-                    notes: req.body.object.notes,
+                    additionalProperty: (Array.isArray(req.body.object.additionalProperty)) ? req.body.object.additionalProperty : [],
+                    ...(typeof req.body.object.name === 'string') ? { name: <string>req.body.object.name } : undefined,
+                    ...(typeof req.body.object.notes === 'string') ? { notes: <string>req.body.object.notes } : undefined,
                     ...(fromAccount !== undefined) ? { fromAccount } : {},
                     ...(toAccount !== undefined) ? { toAccount } : {}
                 },

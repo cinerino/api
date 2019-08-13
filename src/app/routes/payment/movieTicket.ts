@@ -122,10 +122,10 @@ movieTicketPaymentRouter.post(
                 agent: { id: req.user.sub },
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.MovieTicket,
-                    name: req.body.object.name,
                     amount: 0,
-                    additionalProperty: req.body.object.additionalProperty,
-                    movieTickets: req.body.object.movieTickets
+                    additionalProperty: (Array.isArray(req.body.object.additionalProperty)) ? req.body.object.additionalProperty : [],
+                    movieTickets: req.body.object.movieTickets,
+                    ...(typeof req.body.object.name === 'string') ? { name: <string>req.body.object.name } : undefined
                 },
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({

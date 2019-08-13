@@ -77,15 +77,7 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'cus
         const action = yield cinerino.service.payment.creditCard.authorize({
             project: { id: process.env.PROJECT_ID },
             agent: { id: req.user.sub },
-            object: {
-                typeOf: cinerino.factory.paymentMethodType.CreditCard,
-                name: req.body.object.name,
-                additionalProperty: req.body.object.additionalProperty,
-                orderId: req.body.object.orderId,
-                amount: req.body.object.amount,
-                method: req.body.object.method,
-                creditCard: creditCard
-            },
+            object: Object.assign({ typeOf: cinerino.factory.paymentMethodType.CreditCard, additionalProperty: (Array.isArray(req.body.object.additionalProperty)) ? req.body.object.additionalProperty : [], amount: req.body.object.amount, method: req.body.object.method, creditCard: creditCard }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined, (typeof req.body.object.orderId === 'string') ? { orderId: req.body.object.orderId } : undefined),
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),

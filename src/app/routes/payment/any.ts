@@ -57,7 +57,11 @@ anyPaymentRouter.post(
         try {
             const action = await cinerino.service.payment.any.authorize({
                 agent: { id: req.user.sub },
-                object: req.body.object,
+                object: {
+                    ...req.body.object,
+                    additionalProperty: (Array.isArray(req.body.object.additionalProperty)) ? req.body.object.additionalProperty : [],
+                    ...(typeof req.body.object.name === 'string') ? { name: <string>req.body.object.name } : undefined
+                },
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),

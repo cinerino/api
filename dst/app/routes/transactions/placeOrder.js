@@ -444,14 +444,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         const action = yield cinerino.service.payment.creditCard.authorize({
             project: { id: process.env.PROJECT_ID },
             agent: { id: req.user.sub },
-            object: {
-                typeOf: cinerino.factory.paymentMethodType.CreditCard,
-                additionalProperty: req.body.additionalProperty,
-                orderId: req.body.orderId,
-                amount: req.body.amount,
-                method: req.body.method,
-                creditCard: creditCard
-            },
+            object: Object.assign({ typeOf: cinerino.factory.paymentMethodType.CreditCard, additionalProperty: (Array.isArray(req.body.additionalProperty)) ? req.body.additionalProperty : [], amount: req.body.amount, method: req.body.method, creditCard: creditCard }, (typeof req.body.orderId === 'string') ? { orderId: req.body.orderId } : undefined),
             purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),

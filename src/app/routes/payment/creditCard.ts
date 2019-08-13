@@ -86,12 +86,12 @@ creditCardPaymentRouter.post(
                 agent: { id: req.user.sub },
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.CreditCard,
-                    name: req.body.object.name,
-                    additionalProperty: req.body.object.additionalProperty,
-                    orderId: req.body.object.orderId,
+                    additionalProperty: (Array.isArray(req.body.object.additionalProperty)) ? req.body.object.additionalProperty : [],
                     amount: req.body.object.amount,
                     method: req.body.object.method,
-                    creditCard: creditCard
+                    creditCard: creditCard,
+                    ...(typeof req.body.object.name === 'string') ? { name: <string>req.body.object.name } : undefined,
+                    ...(typeof req.body.object.orderId === 'string') ? { orderId: <string>req.body.object.orderId } : undefined
                 },
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({
