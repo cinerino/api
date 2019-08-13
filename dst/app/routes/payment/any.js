@@ -57,7 +57,11 @@ anyPaymentRouter.post('/authorize', permitScopes_1.default(['admin']), ...[
     try {
         const action = yield cinerino.service.payment.any.authorize({
             agent: { id: req.user.sub },
-            object: Object.assign({}, req.body.object, { additionalProperty: (Array.isArray(req.body.object.additionalProperty)) ? req.body.object.additionalProperty : [] }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined),
+            object: Object.assign({}, req.body.object, { additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+                    ? req.body.object.additionalProperty.map((p) => {
+                        return { name: String(p.name), value: String(p.value) };
+                    })
+                    : [] }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined),
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),

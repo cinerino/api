@@ -86,7 +86,11 @@ creditCardPaymentRouter.post(
                 agent: { id: req.user.sub },
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.CreditCard,
-                    additionalProperty: (Array.isArray(req.body.object.additionalProperty)) ? req.body.object.additionalProperty : [],
+                    additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+                        ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
+                            return { name: String(p.name), value: String(p.value) };
+                        })
+                        : [],
                     amount: req.body.object.amount,
                     method: req.body.object.method,
                     creditCard: creditCard,

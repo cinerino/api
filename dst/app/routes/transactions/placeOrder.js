@@ -444,7 +444,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         const action = yield cinerino.service.payment.creditCard.authorize({
             project: { id: process.env.PROJECT_ID },
             agent: { id: req.user.sub },
-            object: Object.assign({ typeOf: cinerino.factory.paymentMethodType.CreditCard, additionalProperty: (Array.isArray(req.body.additionalProperty)) ? req.body.additionalProperty : [], amount: req.body.amount, method: req.body.method, creditCard: creditCard }, (typeof req.body.orderId === 'string') ? { orderId: req.body.orderId } : undefined),
+            object: Object.assign({ typeOf: cinerino.factory.paymentMethodType.CreditCard, additionalProperty: (Array.isArray(req.body.additionalProperty))
+                    ? req.body.additionalProperty.map((p) => {
+                        return { name: String(p.name), value: String(p.value) };
+                    })
+                    : [], amount: req.body.amount, method: req.body.method, creditCard: creditCard }, (typeof req.body.orderId === 'string') ? { orderId: req.body.orderId } : undefined),
             purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
@@ -579,7 +583,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
                 typeOf: cinerino.factory.paymentMethodType.Account,
                 amount: Number(req.body.amount),
                 currency: currency,
-                additionalProperty: req.body.additionalProperty,
+                additionalProperty: (Array.isArray(req.body.additionalProperty))
+                    ? req.body.additionalProperty.map((p) => {
+                        return { name: String(p.name), value: String(p.value) };
+                    })
+                    : [],
                 fromAccount: fromAccount,
                 toAccount: toAccount,
                 notes: req.body.notes
@@ -677,7 +685,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             object: {
                 typeOf: cinerino.factory.paymentMethodType.MovieTicket,
                 amount: 0,
-                additionalProperty: req.body.additionalProperty,
+                additionalProperty: (Array.isArray(req.body.additionalProperty))
+                    ? req.body.additionalProperty.map((p) => {
+                        return { name: String(p.name), value: String(p.value) };
+                    })
+                    : [],
                 movieTickets: req.body.movieTickets
             },
             purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }

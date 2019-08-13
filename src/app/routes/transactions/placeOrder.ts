@@ -529,7 +529,11 @@ placeOrderTransactionsRouter.post(
                 agent: { id: req.user.sub },
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.CreditCard,
-                    additionalProperty: (Array.isArray(req.body.additionalProperty)) ? req.body.additionalProperty : [],
+                    additionalProperty: (Array.isArray(req.body.additionalProperty))
+                        ? (<any[]>req.body.additionalProperty).map((p: any) => {
+                            return { name: String(p.name), value: String(p.value) };
+                        })
+                        : [],
                     amount: req.body.amount,
                     method: req.body.method,
                     creditCard: creditCard,
@@ -700,7 +704,11 @@ placeOrderTransactionsRouter.post(
                     typeOf: cinerino.factory.paymentMethodType.Account,
                     amount: Number(req.body.amount),
                     currency: currency,
-                    additionalProperty: req.body.additionalProperty,
+                    additionalProperty: (Array.isArray(req.body.additionalProperty))
+                        ? (<any[]>req.body.additionalProperty).map((p: any) => {
+                            return { name: String(p.name), value: String(p.value) };
+                        })
+                        : [],
                     fromAccount: fromAccount,
                     toAccount: toAccount,
                     notes: req.body.notes
@@ -816,7 +824,11 @@ placeOrderTransactionsRouter.post(
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.MovieTicket,
                     amount: 0,
-                    additionalProperty: req.body.additionalProperty,
+                    additionalProperty: (Array.isArray(req.body.additionalProperty))
+                        ? (<any[]>req.body.additionalProperty).map((p: any) => {
+                            return { name: String(p.name), value: String(p.value) };
+                        })
+                        : [],
                     movieTickets: req.body.movieTickets
                 },
                 purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }

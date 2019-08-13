@@ -123,7 +123,11 @@ movieTicketPaymentRouter.post(
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.MovieTicket,
                     amount: 0,
-                    additionalProperty: (Array.isArray(req.body.object.additionalProperty)) ? req.body.object.additionalProperty : [],
+                    additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+                        ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
+                            return { name: String(p.name), value: String(p.value) };
+                        })
+                        : [],
                     movieTickets: req.body.object.movieTickets,
                     ...(typeof req.body.object.name === 'string') ? { name: <string>req.body.object.name } : undefined
                 },

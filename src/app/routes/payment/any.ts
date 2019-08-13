@@ -59,7 +59,11 @@ anyPaymentRouter.post(
                 agent: { id: req.user.sub },
                 object: {
                     ...req.body.object,
-                    additionalProperty: (Array.isArray(req.body.object.additionalProperty)) ? req.body.object.additionalProperty : [],
+                    additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+                        ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
+                            return { name: String(p.name), value: String(p.value) };
+                        })
+                        : [],
                     ...(typeof req.body.object.name === 'string') ? { name: <string>req.body.object.name } : undefined
                 },
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
