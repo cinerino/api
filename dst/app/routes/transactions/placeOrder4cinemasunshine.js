@@ -225,99 +225,6 @@ placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/offer/
     }
 }));
 /**
- * クレジットカードオーソリ
- */
-placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/creditCard', permitScopes_1.default(['customer', 'transactions']), (req, __2, next) => {
-    req.checkBody('orderId', 'invalid orderId')
-        .notEmpty()
-        .withMessage('orderId is required');
-    req.checkBody('amount', 'invalid amount')
-        .notEmpty()
-        .withMessage('amount is required');
-    req.checkBody('method', 'invalid method')
-        .notEmpty()
-        .withMessage('method is required');
-    req.checkBody('creditCard', 'invalid creditCard')
-        .notEmpty()
-        .withMessage('creditCard is required');
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    try {
-        const creditCard = Object.assign({}, req.body.creditCard, {
-            memberId: (req.user.username !== undefined) ? req.user.username : undefined
-        });
-        debug('authorizing credit card...', creditCard);
-        debug('authorizing credit card...', req.body.creditCard);
-        const action = yield cinerino.service.payment.creditCard.authorize({
-            project: { id: process.env.PROJECT_ID },
-            agent: { id: req.user.sub },
-            object: {
-                typeOf: cinerino.factory.paymentMethodType.CreditCard,
-                additionalProperty: req.body.additionalProperty,
-                orderId: req.body.orderId,
-                amount: Number(req.body.amount),
-                method: req.body.method,
-                creditCard: creditCard
-            },
-            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
-            seller: new cinerino.repository.Seller(mongoose.connection)
-        });
-        res.status(http_status_1.CREATED)
-            .json({
-            id: action.id
-        });
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * クレジットカードオーソリ取消
- */
-placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/creditCard/:actionId', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    try {
-        yield cinerino.service.payment.creditCard.voidTransaction({
-            project: { id: req.project.id },
-            agent: { id: req.user.sub },
-            id: req.params.actionId,
-            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection)
-        });
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
  * ムビチケ追加
  */
 placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/mvtk', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -564,34 +471,6 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/confirm', permitScopes_1.d
         }));
         res.status(http_status_1.CREATED)
             .json(order);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * 取引を明示的に中止
- */
-placeOrder4cinemasunshineRouter.post('/:transactionId/cancel', permitScopes_1.default(['admin', 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-    try {
-        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        yield transactionRepo.cancel({
-            typeOf: cinerino.factory.transactionType.PlaceOrder,
-            id: req.params.transactionId
-        });
-        debug('transaction canceled.');
-        res.status(http_status_1.NO_CONTENT)
-            .end();
     }
     catch (error) {
         next(error);
