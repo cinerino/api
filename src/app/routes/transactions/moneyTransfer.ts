@@ -6,9 +6,8 @@ import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
-import { query } from 'express-validator/check';
+import { body, query } from 'express-validator/check';
 import { NO_CONTENT } from 'http-status';
-import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import authentication from '../../middlewares/authentication';
@@ -21,7 +20,7 @@ import * as redis from '../../../redis';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 
-const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
+// const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const moneyTransferTransactionsRouter = Router();
 const debug = createDebug('cinerino-api:router');
 const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
@@ -37,31 +36,44 @@ moneyTransferTransactionsRouter.use(authentication);
 moneyTransferTransactionsRouter.post(
     '/start',
     permitScopes(['admin', 'customer', 'transactions']),
-    (req, _, next) => {
-        req.checkBody('expires', 'invalid expires')
-            .notEmpty()
-            .withMessage('expires is required')
-            .isISO8601();
-        req.checkBody('agent.identifier', 'invalid agent identifier')
+    ...[
+        body('expires', 'invalid expires')
+            .not()
+            .isEmpty()
+            .isISO8601()
+            .toDate(),
+        body('object')
+            .not()
+            .isEmpty(),
+        body('agent.identifier')
             .optional()
-            .isArray();
-        req.checkBody('recipient.typeOf', 'invalid recipient type')
-            .notEmpty()
-            .withMessage('recipient.typeOf is required');
-        req.checkBody('seller.typeOf', 'invalid seller type')
-            .notEmpty()
-            .withMessage('seller.typeOf is required');
-        req.checkBody('seller.id', 'invalid seller id')
-            .notEmpty()
-            .withMessage('seller.id is required');
-        if (!WAITER_DISABLED) {
-            //     req.checkBody('object.passport.token', 'invalid passport token')
-            //         .notEmpty()
-            //         .withMessage('object.passport.token is required');
-        }
-
-        next();
-    },
+            .isArray(),
+        body('recipient')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required'),
+        body('recipient.typeOf')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required')
+            .isString(),
+        body('seller')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required'),
+        body('seller.typeOf')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required')
+            .isString(),
+        body('seller.id')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required')
+            .isString()
+        // if (!WAITER_DISABLED) {
+        // }
+    ],
     validator,
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
@@ -82,12 +94,9 @@ moneyTransferTransactionsRouter.post(
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
-            const expires = moment(<string>req.body.expires)
-                .toDate();
-
             const transaction = await cinerino.service.transaction.moneyTransfer.start({
                 project: req.project,
-                expires: expires,
+                expires: req.body.expires,
                 agent: {
                     ...req.agent,
                     ...(req.body.agent !== undefined && req.body.agent.name !== undefined) ? { name: req.body.agent.name } : {},
@@ -102,16 +111,16 @@ moneyTransferTransactionsRouter.post(
                 },
                 object: {
                     clientUser: req.user,
-                    amount: Number(req.body.object.amount),
-                    toLocation: req.body.object.toLocation,
+                    // amount: Number(req.body.object.amount),
+                    // toLocation: req.body.object.toLocation,
                     authorizeActions: [],
-                    description: req.body.object.description
+                    ...(typeof req.body.object.description === 'string') ? { description: req.body.object.description } : {}
                 },
                 recipient: {
                     typeOf: req.body.recipient.typeOf,
                     id: req.body.recipient.id,
-                    name: req.body.recipient.name,
-                    url: req.body.recipient.url
+                    ...(typeof req.body.recipient.name === 'string') ? { name: req.body.recipient.name } : {},
+                    ...(typeof req.body.recipient.url === 'string') ? { url: req.body.recipient.url } : {}
                 },
                 seller: req.body.seller
             })({

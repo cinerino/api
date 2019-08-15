@@ -17,7 +17,6 @@ const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
-const moment = require("moment");
 const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
 const lockTransaction_1 = require("../../middlewares/lockTransaction");
@@ -26,7 +25,7 @@ const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4t
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
+// const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const moneyTransferTransactionsRouter = express_1.Router();
 const debug = createDebug('cinerino-api:router');
 const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
@@ -37,30 +36,44 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     state: ''
 });
 moneyTransferTransactionsRouter.use(authentication_1.default);
-moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'customer', 'transactions']), (req, _, next) => {
-    req.checkBody('expires', 'invalid expires')
-        .notEmpty()
-        .withMessage('expires is required')
-        .isISO8601();
-    req.checkBody('agent.identifier', 'invalid agent identifier')
+moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'customer', 'transactions']), ...[
+    check_1.body('expires', 'invalid expires')
+        .not()
+        .isEmpty()
+        .isISO8601()
+        .toDate(),
+    check_1.body('object')
+        .not()
+        .isEmpty(),
+    check_1.body('agent.identifier')
         .optional()
-        .isArray();
-    req.checkBody('recipient.typeOf', 'invalid recipient type')
-        .notEmpty()
-        .withMessage('recipient.typeOf is required');
-    req.checkBody('seller.typeOf', 'invalid seller type')
-        .notEmpty()
-        .withMessage('seller.typeOf is required');
-    req.checkBody('seller.id', 'invalid seller id')
-        .notEmpty()
-        .withMessage('seller.id is required');
-    if (!WAITER_DISABLED) {
-        //     req.checkBody('object.passport.token', 'invalid passport token')
-        //         .notEmpty()
-        //         .withMessage('object.passport.token is required');
-    }
-    next();
-}, validator_1.default, 
+        .isArray(),
+    check_1.body('recipient')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required'),
+    check_1.body('recipient.typeOf')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required')
+        .isString(),
+    check_1.body('seller')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required'),
+    check_1.body('seller.typeOf')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required')
+        .isString(),
+    check_1.body('seller.id')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required')
+        .isString()
+    // if (!WAITER_DISABLED) {
+    // }
+], validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -78,11 +91,9 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 
         });
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        const expires = moment(req.body.expires)
-            .toDate();
         const transaction = yield cinerino.service.transaction.moneyTransfer.start({
             project: req.project,
-            expires: expires,
+            expires: req.body.expires,
             agent: Object.assign({}, req.agent, (req.body.agent !== undefined && req.body.agent.name !== undefined) ? { name: req.body.agent.name } : {}, { identifier: [
                     ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
                     ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
@@ -91,19 +102,11 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 
                         })
                         : []
                 ] }),
-            object: {
-                clientUser: req.user,
-                amount: Number(req.body.object.amount),
-                toLocation: req.body.object.toLocation,
-                authorizeActions: [],
-                description: req.body.object.description
-            },
-            recipient: {
-                typeOf: req.body.recipient.typeOf,
-                id: req.body.recipient.id,
-                name: req.body.recipient.name,
-                url: req.body.recipient.url
-            },
+            object: Object.assign({ clientUser: req.user, 
+                // amount: Number(req.body.object.amount),
+                // toLocation: req.body.object.toLocation,
+                authorizeActions: [] }, (typeof req.body.object.description === 'string') ? { description: req.body.object.description } : {}),
+            recipient: Object.assign({ typeOf: req.body.recipient.typeOf, id: req.body.recipient.id }, (typeof req.body.recipient.name === 'string') ? { name: req.body.recipient.name } : {}, (typeof req.body.recipient.url === 'string') ? { url: req.body.recipient.url } : {}),
             seller: req.body.seller
         })({
             accountService: accountService,
