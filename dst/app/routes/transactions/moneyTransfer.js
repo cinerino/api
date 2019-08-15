@@ -85,7 +85,11 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 
             expires: expires,
             agent: Object.assign({}, req.agent, (req.body.agent !== undefined && req.body.agent.name !== undefined) ? { name: req.body.agent.name } : {}, { identifier: [
                     ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
-                    ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
+                    ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
+                        ? req.body.agent.identifier.map((p) => {
+                            return { name: String(p.name), value: String(p.value) };
+                        })
+                        : []
                 ] }),
             object: {
                 clientUser: req.user,

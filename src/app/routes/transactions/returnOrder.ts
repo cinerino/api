@@ -93,7 +93,11 @@ returnOrderTransactionsRouter.post(
                     ...req.agent,
                     identifier: [
                         ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
-                        ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
+                        ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
+                            ? (<any[]>req.body.agent.identifier).map((p: any) => {
+                                return { name: String(p.name), value: String(p.value) };
+                            })
+                            : []
                     ]
                 },
                 object: {

@@ -168,7 +168,11 @@ placeOrderTransactionsRouter.post(
                     ...req.agent,
                     identifier: [
                         ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
-                        ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
+                        ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
+                            ? (<any[]>req.body.agent.identifier).map((p: any) => {
+                                return { name: String(p.name), value: String(p.value) };
+                            })
+                            : []
                     ]
                 },
                 seller: req.body.seller,
@@ -231,7 +235,7 @@ placeOrderTransactionsRouter.put(
     },
     async (req, res, next) => {
         try {
-            let requestedNumber = <string>req.body.telephone;
+            let requestedNumber = String(req.body.telephone);
 
             try {
                 // cinemasunshine対応として、国内向け電話番号フォーマットであれば、強制的に日本国番号を追加
@@ -246,9 +250,9 @@ placeOrderTransactionsRouter.put(
                 id: req.params.transactionId,
                 agent: {
                     id: req.user.sub,
-                    familyName: <string>req.body.familyName,
-                    givenName: <string>req.body.givenName,
-                    email: <string>req.body.email,
+                    familyName: String(req.body.familyName),
+                    givenName: String(req.body.givenName),
+                    email: String(req.body.email),
                     telephone: requestedNumber
                 }
             })({
@@ -1013,7 +1017,7 @@ placeOrderTransactionsRouter.put(
                 req.body.email = {};
             }
             if (req.body.emailTemplate !== undefined) {
-                req.body.email.template = req.body.emailTemplate;
+                req.body.email.template = String(req.body.emailTemplate);
             }
 
             const result = await cinerino.service.transaction.placeOrderInProgress.confirm({
@@ -1033,7 +1037,7 @@ placeOrderTransactionsRouter.put(
                 },
                 options: {
                     ...req.body,
-                    sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false,
+                    sendEmailMessage: (req.body.sendEmailMessage === true),
                     validateMovieTicket: (process.env.VALIDATE_MOVIE_TICKET === '1')
                 }
             })({

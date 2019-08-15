@@ -144,7 +144,11 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 
             expires: expires,
             agent: Object.assign({}, req.agent, { identifier: [
                     ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
-                    ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
+                    ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
+                        ? req.body.agent.identifier.map((p) => {
+                            return { name: String(p.name), value: String(p.value) };
+                        })
+                        : []
                 ] }),
             seller: req.body.seller,
             object: {
@@ -197,7 +201,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
     })(req, res, next);
 }), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        let requestedNumber = req.body.telephone;
+        let requestedNumber = String(req.body.telephone);
         try {
             // cinemasunshine対応として、国内向け電話番号フォーマットであれば、強制的に日本国番号を追加
             if (requestedNumber.slice(0, 1) === '0') {
@@ -211,9 +215,9 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
             id: req.params.transactionId,
             agent: {
                 id: req.user.sub,
-                familyName: req.body.familyName,
-                givenName: req.body.givenName,
-                email: req.body.email,
+                familyName: String(req.body.familyName),
+                givenName: String(req.body.givenName),
+                email: String(req.body.email),
                 telephone: requestedNumber
             }
         })({
@@ -840,7 +844,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             req.body.email = {};
         }
         if (req.body.emailTemplate !== undefined) {
-            req.body.email.template = req.body.emailTemplate;
+            req.body.email.template = String(req.body.emailTemplate);
         }
         const result = yield cinerino.service.transaction.placeOrderInProgress.confirm(Object.assign({}, req.body, { project: req.project, id: req.params.transactionId, agent: { id: req.user.sub }, result: Object.assign({}, req.body.result, { order: {
                     orderDate: orderDate,
@@ -848,7 +852,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
                         maxValue: NUM_ORDER_ITEMS_MAX_VALUE
                         // minValue: 0
                     }
-                } }), options: Object.assign({}, req.body, { sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false, validateMovieTicket: (process.env.VALIDATE_MOVIE_TICKET === '1') }) }))({
+                } }), options: Object.assign({}, req.body, { sendEmailMessage: (req.body.sendEmailMessage === true), validateMovieTicket: (process.env.VALIDATE_MOVIE_TICKET === '1') }) }))({
             action: actionRepo,
             transaction: transactionRepo,
             confirmationNumber: confirmationNumberRepo,

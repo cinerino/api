@@ -87,7 +87,11 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'c
             expires: req.body.expires,
             agent: Object.assign({}, req.agent, { identifier: [
                     ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
-                    ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
+                    ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
+                        ? req.body.agent.identifier.map((p) => {
+                            return { name: String(p.name), value: String(p.value) };
+                        })
+                        : []
                 ] }),
             object: {
                 order: returnableOrder,
