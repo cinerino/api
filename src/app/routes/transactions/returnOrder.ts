@@ -28,7 +28,7 @@ function escapeRegExp(params: string) {
 
 returnOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['admin', 'customer', 'transactions']),
+    permitScopes(['admin']),
     ...[
         body('expires')
             .not()
@@ -129,7 +129,7 @@ returnOrderTransactionsRouter.post(
 
 returnOrderTransactionsRouter.put(
     '/:transactionId/confirm',
-    permitScopes(['admin', 'transactions']),
+    permitScopes(['admin']),
     ...[
         // Eメールカスタマイズのバリデーション
         body([

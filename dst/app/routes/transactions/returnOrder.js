@@ -30,7 +30,7 @@ returnOrderTransactionsRouter.use(authentication_1.default);
 function escapeRegExp(params) {
     return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
 }
-returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'customer', 'transactions']), ...[
+returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), ...[
     check_1.body('expires')
         .not()
         .isEmpty()
@@ -118,7 +118,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'c
         next(error);
     }
 }));
-returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin', 'transactions']), ...[
+returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin']), ...[
     // Eメールカスタマイズのバリデーション
     check_1.body([
         'potentialActions.returnOrder.potentialActions.refundCreditCard.potentialActions.sendEmailMessage.object.about',
