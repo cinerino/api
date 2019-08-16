@@ -118,7 +118,21 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'c
         next(error);
     }
 }));
-returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin', 'transactions']), ...[
+    // Eメールカスタマイズのバリデーション
+    check_1.body([
+        'potentialActions.returnOrder.potentialActions.refundCreditCard.potentialActions.sendEmailMessage.object.about',
+        'potentialActions.returnOrder.potentialActions.refundCreditCard.potentialActions.sendEmailMessage.object.template',
+        'potentialActions.returnOrder.potentialActions.refundCreditCard.potentialActions.sendEmailMessage.object.sender.email',
+        // tslint:disable-next-line:max-line-length
+        'potentialActions.returnOrder.potentialActions.refundCreditCard.potentialActions.sendEmailMessage.object.toRecipient.email'
+    ])
+        .optional()
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} must not be empty`)
+        .isString()
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);

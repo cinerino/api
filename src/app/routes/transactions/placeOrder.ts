@@ -988,6 +988,25 @@ placeOrderTransactionsRouter.put(
 placeOrderTransactionsRouter.put(
     '/:transactionId/confirm',
     permitScopes(['customer', 'transactions']),
+    ...[
+        // Eメールカスタマイズのバリデーション
+        body([
+            'emailTemplate',
+            'email.about',
+            'email.template',
+            'email.sender.email',
+            'email.toRecipient.email',
+            'options.email.about',
+            'options.email.template',
+            'options.email.sender.email',
+            'options.email.toRecipient.email'
+        ])
+            .optional()
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} must not be empty`)
+            .isString()
+    ],
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({

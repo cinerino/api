@@ -820,7 +820,25 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accoun
         next(error);
     }
 }));
-placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['customer', 'transactions']), ...[
+    // Eメールカスタマイズのバリデーション
+    check_1.body([
+        'emailTemplate',
+        'email.about',
+        'email.template',
+        'email.sender.email',
+        'email.toRecipient.email',
+        'options.email.about',
+        'options.email.template',
+        'options.email.sender.email',
+        'options.email.toRecipient.email'
+    ])
+        .optional()
+        .not()
+        .isEmpty()
+        .withMessage((_, options) => `${options.path} must not be empty`)
+        .isString()
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
         id: req.params.transactionId

@@ -130,6 +130,21 @@ returnOrderTransactionsRouter.post(
 returnOrderTransactionsRouter.put(
     '/:transactionId/confirm',
     permitScopes(['admin', 'transactions']),
+    ...[
+        // Eメールカスタマイズのバリデーション
+        body([
+            'potentialActions.returnOrder.potentialActions.refundCreditCard.potentialActions.sendEmailMessage.object.about',
+            'potentialActions.returnOrder.potentialActions.refundCreditCard.potentialActions.sendEmailMessage.object.template',
+            'potentialActions.returnOrder.potentialActions.refundCreditCard.potentialActions.sendEmailMessage.object.sender.email',
+            // tslint:disable-next-line:max-line-length
+            'potentialActions.returnOrder.potentialActions.refundCreditCard.potentialActions.sendEmailMessage.object.toRecipient.email'
+        ])
+            .optional()
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} must not be empty`)
+            .isString()
+    ],
     validator,
     async (req, res, next) => {
         try {
