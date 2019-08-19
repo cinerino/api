@@ -70,6 +70,57 @@ peopleRouter.get(
 );
 
 /**
+ * IDで削除
+ */
+peopleRouter.delete(
+    '/:id',
+    permitScopes(['admin']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const personRepo = new cinerino.repository.Person();
+            const person = await personRepo.findById({
+                userPooId: USER_POOL_ID,
+                userId: req.params.id
+            });
+
+            const deleteActionAttributes = {
+                agent: req.agent,
+                object: person,
+                project: { typeOf: req.project.typeOf, id: req.project.id },
+                typeOf: <any>'DeleteAction'
+            };
+            const action = await actionRepo.start(deleteActionAttributes);
+
+            try {
+                await personRepo.deleteById({
+                    userPooId: USER_POOL_ID,
+                    userId: req.params.id
+                });
+            } catch (error) {
+                // actionにエラー結果を追加
+                try {
+                    const actionError = { ...error, message: error.message, name: error.name };
+                    await actionRepo.giveUp({ typeOf: action.typeOf, id: action.id, error: actionError });
+                } catch (__) {
+                    // 失敗したら仕方ない
+                }
+
+                throw error;
+            }
+
+            await actionRepo.complete({ typeOf: action.typeOf, id: action.id, result: {} });
+
+            res.status(NO_CONTENT)
+                .end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
  * 所有権検索
  */
 peopleRouter.get(
@@ -175,6 +226,57 @@ peopleRouter.get(
             const searchCardResults = await creditCardRepo.search({ personId: memberId });
 
             res.json(searchCardResults);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 会員クレジットカード削除
+ */
+peopleRouter.delete(
+    '/:id/ownershipInfos/creditCards/:cardSeq',
+    permitScopes(['admin']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+            if (project.settings.gmo === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+            }
+
+            let memberId = req.params.id;
+
+            if (USE_USERNAME_AS_GMO_MEMBER_ID) {
+                const personRepo = new cinerino.repository.Person();
+                const person = await personRepo.findById({
+                    userPooId: USER_POOL_ID,
+                    userId: req.params.id
+                });
+                if (person.memberOf === undefined) {
+                    throw new cinerino.factory.errors.NotFound('Person');
+                }
+
+                memberId = <string>person.memberOf.membershipNumber;
+            }
+
+            const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
+                siteId: project.settings.gmo.siteId,
+                sitePass: project.settings.gmo.sitePass,
+                cardService: new cinerino.GMO.service.Card({ endpoint: project.settings.gmo.endpoint })
+            });
+            await creditCardRepo.remove({
+                personId: memberId,
+                cardSeq: req.params.cardSeq
+            });
+
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }
