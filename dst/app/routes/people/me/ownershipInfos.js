@@ -13,7 +13,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-const moment = require("moment");
+// tslint:disable-next-line:no-submodule-imports
+const check_1 = require("express-validator/check");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const validator_1 = require("../../../middlewares/validator");
@@ -35,28 +36,28 @@ ownershipInfosRouter.use('/reservations', reservations_1.default);
 /**
  * 所有権検索
  */
-ownershipInfosRouter.get('', permitScopes_1.default(['customer']), (_1, _2, next) => {
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+ownershipInfosRouter.get('', permitScopes_1.default(['customer']), ...[
+    check_1.query('typeOfGood')
+        .not()
+        .isEmpty(),
+    check_1.query('ownedFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('ownedThrough')
+        .optional()
+        .isISO8601()
+        .toDate()
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const query = req.query;
-        const typeOfGood = query.typeOfGood;
         let ownershipInfos;
-        const searchConditions = {
+        const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (query.limit !== undefined) ? Math.min(query.limit, 100) : 100,
-            page: (query.page !== undefined) ? Math.max(query.page, 1) : 1,
-            sort: query.sort,
-            ownedBy: { id: req.user.sub },
-            ownedFrom: (query.ownedFrom !== undefined) ? moment(query.ownedFrom)
-                .toDate() : undefined,
-            ownedThrough: (query.ownedThrough !== undefined) ? moment(query.ownedThrough)
-                .toDate() : undefined,
-            typeOfGood: typeOfGood
-        };
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, ownedBy: { id: req.user.sub } });
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const totalCount = yield ownershipInfoRepo.count(searchConditions);
+        const typeOfGood = req.query.typeOfGood;
         switch (typeOfGood.typeOf) {
             case cinerino.factory.ownershipInfo.AccountGoodType.Account:
                 ownershipInfos = yield cinerino.service.account.search({

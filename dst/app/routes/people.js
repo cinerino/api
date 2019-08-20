@@ -13,8 +13,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+// tslint:disable-next-line:no-submodule-imports
+const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
-const moment = require("moment");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -110,28 +111,28 @@ peopleRouter.delete('/:id', permitScopes_1.default(['admin']), validator_1.defau
 /**
  * 所有権検索
  */
-peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['admin']), (_1, _2, next) => {
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['admin']), ...[
+    check_1.query('typeOfGood')
+        .not()
+        .isEmpty(),
+    check_1.query('offers.ownedFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('offers.ownedThrough')
+        .optional()
+        .isISO8601()
+        .toDate()
+], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const query = req.query;
-        const typeOfGood = query.typeOfGood;
         let ownershipInfos;
-        const searchConditions = {
+        const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (query.limit !== undefined) ? Math.min(query.limit, 100) : 100,
-            page: (query.page !== undefined) ? Math.max(query.page, 1) : 1,
-            sort: query.sort,
-            ownedBy: { id: req.params.id },
-            ownedFrom: (query.ownedFrom !== undefined) ? moment(query.ownedFrom)
-                .toDate() : undefined,
-            ownedThrough: (query.ownedThrough !== undefined) ? moment(query.ownedThrough)
-                .toDate() : undefined,
-            typeOfGood: typeOfGood
-        };
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, ownedBy: { id: req.params.id } });
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const totalCount = yield ownershipInfoRepo.count(searchConditions);
+        const typeOfGood = req.query.typeOfGood;
         switch (typeOfGood.typeOf) {
             case cinerino.factory.ownershipInfo.AccountGoodType.Account:
                 ownershipInfos = yield cinerino.service.account.search({
