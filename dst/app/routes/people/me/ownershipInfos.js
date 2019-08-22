@@ -88,10 +88,9 @@ ownershipInfosRouter.get('', permitScopes_1.default(['customer']), ...[
 /**
  * 所有権に対して認可コードを発行する
  */
-ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['customer']), (_1, _2, next) => {
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['customer']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const codeRepo = new cinerino.repository.Code(mongoose.connection);
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
@@ -100,12 +99,25 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['customer'])
         if (ownershipInfo.ownedBy.id !== req.user.sub) {
             throw new cinerino.factory.errors.Unauthorized();
         }
-        const code = yield codeRepo.publish({
+        const authorization = yield cinerino.service.code.publish({
             project: req.project,
-            data: ownershipInfo,
+            agent: req.agent,
+            recipient: req.agent,
+            object: ownershipInfo,
+            purpose: {},
             validFrom: new Date(),
             expiresInSeconds: CODE_EXPIRES_IN_SECONDS
+        })({
+            action: actionRepo,
+            code: codeRepo
         });
+        const code = authorization.code;
+        // const code = await codeRepo.publish({
+        //     project: req.project,
+        //     data: ownershipInfo,
+        //     validFrom: new Date(),
+        //     expiresInSeconds: CODE_EXPIRES_IN_SECONDS
+        // });
         // 座席予約に対する所有権であれば、Chevreでチェックイン
         if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
             if (project.settings === undefined) {

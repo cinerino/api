@@ -105,12 +105,10 @@ ownershipInfosRouter.get(
 ownershipInfosRouter.post(
     '/:id/authorize',
     permitScopes(['customer']),
-    (_1, _2, next) => {
-        next();
-    },
     validator,
     async (req, res, next) => {
         try {
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const codeRepo = new cinerino.repository.Code(mongoose.connection);
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
@@ -122,12 +120,26 @@ ownershipInfosRouter.post(
                 throw new cinerino.factory.errors.Unauthorized();
             }
 
-            const code = await codeRepo.publish({
+            const authorization = await cinerino.service.code.publish({
                 project: req.project,
-                data: ownershipInfo,
+                agent: req.agent,
+                recipient: req.agent,
+                object: ownershipInfo,
+                purpose: {},
                 validFrom: new Date(),
                 expiresInSeconds: CODE_EXPIRES_IN_SECONDS
+            })({
+                action: actionRepo,
+                code: codeRepo
             });
+            const code = authorization.code;
+
+            // const code = await codeRepo.publish({
+            //     project: req.project,
+            //     data: ownershipInfo,
+            //     validFrom: new Date(),
+            //     expiresInSeconds: CODE_EXPIRES_IN_SECONDS
+            // });
 
             // 座席予約に対する所有権であれば、Chevreでチェックイン
             if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {

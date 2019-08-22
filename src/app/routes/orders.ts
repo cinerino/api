@@ -313,6 +313,7 @@ ordersRouter.post(
             .withMessage((_, __) => 'required')
     ],
     validator,
+    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             const now = new Date();
@@ -349,7 +350,12 @@ ordersRouter.post(
             }
 
             // 配送された所有権情報を注文に付加する
-            const ownershipInfos = sendOrderAction.result.ownershipInfos;
+            type IOwnershipInfo =
+                // tslint:disable-next-line:max-line-length
+                cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.ownershipInfo.IGoodType>>;
+            const ownershipInfos: IOwnershipInfo[] = (Array.isArray(sendOrderAction.result))
+                ? sendOrderAction.result
+                : (<any>sendOrderAction.result).ownershipInfos; // 旧型に対する互換性維持のため
             const reservationIds = ownershipInfos
                 .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
                 .map((o) => (<EventReservationGoodType>o.typeOfGood).id);
@@ -383,12 +389,26 @@ ordersRouter.post(
                     .find((o) => (<EventReservationGoodType>o.typeOfGood).id === offer.itemOffered.id);
                 if (ownershipInfo !== undefined) {
                     if (offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
-                        offer.itemOffered.reservedTicket.ticketToken = await codeRepo.publish({
+                        const authorization = await cinerino.service.code.publish({
                             project: req.project,
-                            data: ownershipInfo,
+                            agent: req.agent,
+                            recipient: req.agent,
+                            object: ownershipInfo,
+                            purpose: {},
                             validFrom: now,
                             expiresInSeconds: CODE_EXPIRES_IN_SECONDS
+                        })({
+                            action: actionRepo,
+                            code: codeRepo
                         });
+
+                        offer.itemOffered.reservedTicket.ticketToken = authorization.code;
+                        // offer.itemOffered.reservedTicket.ticketToken = await codeRepo.publish({
+                        //     project: req.project,
+                        //     data: ownershipInfo,
+                        //     validFrom: now,
+                        //     expiresInSeconds: CODE_EXPIRES_IN_SECONDS
+                        // });
                     }
                 }
 

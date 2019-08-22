@@ -266,7 +266,9 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
-], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const now = new Date();
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -296,8 +298,9 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
         if (sendOrderAction === undefined || sendOrderAction.result === undefined) {
             throw new cinerino.factory.errors.Argument('orderNumber', 'Not delivered yet');
         }
-        // 配送された所有権情報を注文に付加する
-        const ownershipInfos = sendOrderAction.result.ownershipInfos;
+        const ownershipInfos = (Array.isArray(sendOrderAction.result))
+            ? sendOrderAction.result
+            : sendOrderAction.result.ownershipInfos; // 旧型に対する互換性維持のため
         const reservationIds = ownershipInfos
             .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
             .map((o) => o.typeOfGood.id);
@@ -329,12 +332,25 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
                 .find((o) => o.typeOfGood.id === offer.itemOffered.id);
             if (ownershipInfo !== undefined) {
                 if (offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
-                    offer.itemOffered.reservedTicket.ticketToken = yield codeRepo.publish({
+                    const authorization = yield cinerino.service.code.publish({
                         project: req.project,
-                        data: ownershipInfo,
+                        agent: req.agent,
+                        recipient: req.agent,
+                        object: ownershipInfo,
+                        purpose: {},
                         validFrom: now,
                         expiresInSeconds: CODE_EXPIRES_IN_SECONDS
+                    })({
+                        action: actionRepo,
+                        code: codeRepo
                     });
+                    offer.itemOffered.reservedTicket.ticketToken = authorization.code;
+                    // offer.itemOffered.reservedTicket.ticketToken = await codeRepo.publish({
+                    //     project: req.project,
+                    //     data: ownershipInfo,
+                    //     validFrom: now,
+                    //     expiresInSeconds: CODE_EXPIRES_IN_SECONDS
+                    // });
                 }
             }
             return offer;
