@@ -131,51 +131,77 @@ ownershipInfosRouter.get(
             const now = new Date();
             const ownershipInfoId = <string>req.params.id;
 
-            const searchConditions: any = {
+            const searchConditions: cinerino.factory.action.ISearchConditions<cinerino.factory.actionType.CheckAction> = {
+                // ページング未実装、いったん100限定でも要件は十分満たされるか
+                // tslint:disable-next-line:no-magic-numbers
+                limit: 100,
+                sort: { startDate: cinerino.factory.sortType.Descending },
                 typeOf: cinerino.factory.actionType.CheckAction,
-                'result.typeOf': {
-                    $exists: true,
-                    $eq: 'OwnershipInfo'
+                result: {
+                    typeOf: { $in: ['OwnershipInfo'] },
+                    id: { $in: [ownershipInfoId] }
                 },
-                'result.id': {
-                    $exists: true,
-                    $eq: ownershipInfoId
-                },
-                startDate: {
-                    $gte: (req.query.startFrom instanceof Date)
-                        ? req.query.startFrom
-                        : moment(now)
-                            // とりあえずデフォルト直近1カ月(おそらくこれで十分)
-                            // tslint:disable-next-line:no-magic-numbers
-                            .add(-3, 'months')
-                            .toDate(),
-                    $lte: (req.query.startThrough instanceof Date)
-                        ? req.query.startThrough
-                        : now
-                }
+                startFrom: (req.query.startFrom instanceof Date)
+                    ? req.query.startFrom
+                    : moment(now)
+                        // とりあえずデフォルト直近1カ月(おそらくこれで十分)
+                        // tslint:disable-next-line:no-magic-numbers
+                        .add(-3, 'months')
+                        .toDate(),
+                startThrough: (req.query.startThrough instanceof Date)
+                    ? req.query.startThrough
+                    : now
             };
+
+            // const searchConditions: any = {
+            //     typeOf: cinerino.factory.actionType.CheckAction,
+            //     'result.typeOf': {
+            //         $exists: true,
+            //         $eq: 'OwnershipInfo'
+            //     },
+            //     'result.id': {
+            //         $exists: true,
+            //         $eq: ownershipInfoId
+            //     },
+            //     startDate: {
+            //         $gte: (req.query.startFrom instanceof Date)
+            //             ? req.query.startFrom
+            //             : moment(now)
+            //                 // とりあえずデフォルト直近1カ月(おそらくこれで十分)
+            //                 // tslint:disable-next-line:no-magic-numbers
+            //                 .add(-3, 'months')
+            //                 .toDate(),
+            //         $lte: (req.query.startThrough instanceof Date)
+            //             ? req.query.startThrough
+            //             : now
+            //     }
+            // };
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
 
-            const totalCount = await actionRepo.actionModel.countDocuments(searchConditions)
-                .setOptions({ maxTimeMS: 10000 })
-                .exec();
+            // const totalCount = await actionRepo.actionModel.countDocuments(searchConditions)
+            //     .setOptions({ maxTimeMS: 10000 })
+            //     .exec();
 
-            const actions = await actionRepo.actionModel.find(
-                searchConditions,
-                {
-                    __v: 0,
-                    createdAt: 0,
-                    updatedAt: 0
-                }
-            )
-                .sort({ startDate: cinerino.factory.sortType.Descending })
-                // ページング未実装、いったん100限定でも要件は十分満たされるか
-                // tslint:disable-next-line:no-magic-numbers
-                .limit(100)
-                // .setOptions({ maxTimeMS: 10000 })
-                .exec()
-                .then((docs) => docs.map((doc) => doc.toObject()));
+            const totalCount = await actionRepo.count(searchConditions);
+
+            const actions = await actionRepo.search(searchConditions);
+
+            // const actions = await actionRepo.actionModel.find(
+            //     searchConditions,
+            //     {
+            //         __v: 0,
+            //         createdAt: 0,
+            //         updatedAt: 0
+            //     }
+            // )
+            //     .sort({ startDate: cinerino.factory.sortType.Descending })
+            //     // ページング未実装、いったん100限定でも要件は十分満たされるか
+            //     // tslint:disable-next-line:no-magic-numbers
+            //     .limit(100)
+            //     // .setOptions({ maxTimeMS: 10000 })
+            //     .exec()
+            //     .then((docs) => docs.map((doc) => doc.toObject()));
 
             res.set('X-Total-Count', totalCount.toString());
             res.json(actions);
