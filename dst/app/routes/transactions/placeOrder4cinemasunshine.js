@@ -344,7 +344,9 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/award/pe
             ownedFrom: now,
             ownedThrough: now
         });
-        const pecorinoPaymentAward = programMemberships.reduce((a, b) => [...a, ...b.typeOfGood.award], [])
+        const pecorinoPaymentAward = programMemberships.reduce((a, b) => {
+            return [...a, ...(Array.isArray(b.typeOfGood.award) ? b.typeOfGood.award : [])];
+        }, [])
             .find((a) => a === POINT_AWARD);
         if (pecorinoPaymentAward === undefined) {
             throw new cinerino.factory.errors.Forbidden('Membership program requirements not satisfied');
