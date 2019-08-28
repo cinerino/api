@@ -1054,11 +1054,8 @@ placeOrderTransactionsRouter.put(
                         }
                     }
                 },
-                options: {
-                    ...req.body,
-                    sendEmailMessage: (req.body.sendEmailMessage === true),
-                    validateMovieTicket: (process.env.VALIDATE_MOVIE_TICKET === '1')
-                }
+                sendEmailMessage: (req.body.sendEmailMessage === true),
+                validateMovieTicket: (process.env.VALIDATE_MOVIE_TICKET === '1')
             })({
                 action: actionRepo,
                 transaction: transactionRepo,

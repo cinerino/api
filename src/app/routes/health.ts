@@ -54,6 +54,7 @@ healthRouter.get(
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
 
 export default healthRouter;

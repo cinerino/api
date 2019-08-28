@@ -423,11 +423,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/confirm', permitScopes_1.d
         if (req.body.emailTemplate !== undefined) {
             req.body.email.template = req.body.emailTemplate;
         }
-        const { order } = yield cinerino.service.transaction.placeOrderInProgress.confirm({
-            project: req.project,
-            id: req.params.transactionId,
-            agent: { id: req.user.sub },
-            result: {
+        const { order } = yield cinerino.service.transaction.placeOrderInProgress.confirm(Object.assign({}, req.body, { project: req.project, id: req.params.transactionId, agent: { id: req.user.sub }, result: {
                 order: {
                     orderDate: orderDate,
                     confirmationNumber: (params) => {
@@ -442,9 +438,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/confirm', permitScopes_1.d
                         }
                     }
                 }
-            },
-            options: Object.assign({}, req.body, { sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false })
-        })({
+            }, sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false }))({
             action: new cinerino.repository.Action(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection),
             orderNumber: new cinerino.repository.OrderNumber(redis.getClient()),

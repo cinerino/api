@@ -870,7 +870,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
                         maxValue: NUM_ORDER_ITEMS_MAX_VALUE
                         // minValue: 0
                     }
-                } }), options: Object.assign({}, req.body, { sendEmailMessage: (req.body.sendEmailMessage === true), validateMovieTicket: (process.env.VALIDATE_MOVIE_TICKET === '1') }) }))({
+                } }), sendEmailMessage: (req.body.sendEmailMessage === true), validateMovieTicket: (process.env.VALIDATE_MOVIE_TICKET === '1') }))({
             action: actionRepo,
             transaction: transactionRepo,
             confirmationNumber: confirmationNumberRepo,

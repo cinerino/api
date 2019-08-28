@@ -518,6 +518,7 @@ placeOrder4cinemasunshineRouter.post(
             }
 
             const { order } = await cinerino.service.transaction.placeOrderInProgress.confirm({
+                ...req.body,
                 project: req.project,
                 id: <string>req.params.transactionId,
                 agent: { id: req.user.sub },
@@ -537,10 +538,7 @@ placeOrder4cinemasunshineRouter.post(
                         }
                     }
                 },
-                options: {
-                    ...req.body,
-                    sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false
-                }
+                sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection),
