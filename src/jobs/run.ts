@@ -19,6 +19,7 @@ import onExpiredReturnOrder from './continuous/onExpiredReturnOrder/run';
 import cancelAccount from './continuous/cancelAccount/run';
 import cancelCreditCard from './continuous/cancelCreditCard/run';
 import cancelPointAward from './continuous/cancelPointAward/run';
+import cancelReservation from './continuous/cancelReservation/run';
 import cancelSeatReservation from './continuous/cancelSeatReservation/run';
 import confirmReservation from './continuous/confirmReservation/run';
 import givePointAward from './continuous/givePointAward/run';
@@ -64,6 +65,7 @@ export default async () => {
     await cancelAccount({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await cancelCreditCard({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await cancelPointAward({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    await cancelReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await cancelSeatReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await confirmReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await givePointAward({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
