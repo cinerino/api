@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -75,14 +76,14 @@ exports.TransactionProcessRepository = TransactionProcessRepository;
  * 取引中の処理の排他処理を行うミドルウェア
  */
 exports.default = (params) => {
-    return (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+    return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const processRepo = new TransactionProcessRepository(redisClient);
         try {
-            const key = Object.assign({}, params, { project: req.project });
+            const key = Object.assign(Object.assign({}, params), { project: req.project });
             yield processRepo.lock(key);
             // レスポンスが送信されたら解放
             // @see https://nodejs.org/api/http.html#http_event_finish
-            res.on('finish', () => __awaiter(this, void 0, void 0, function* () {
+            res.on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
                 debug(req.originalUrl, 'res finished. unlocking...');
                 yield processRepo.unlock(key);
             }));

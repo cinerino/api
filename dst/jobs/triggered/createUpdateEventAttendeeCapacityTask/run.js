@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -24,9 +25,9 @@ const debug = createDebug('cinerino-api:jobs');
 const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS !== undefined)
     ? Number(process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS)
     : 1;
-exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
+exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     let holdSingletonProcess = false;
-    setInterval(() => __awaiter(this, void 0, void 0, function* () {
+    setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
         holdSingletonProcess = yield singletonProcess.lock({
             project: params.project,
             key: 'createUpdateEventAttendeeCapacityTask',
@@ -36,7 +37,7 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     // tslint:disable-next-line:no-magic-numbers
     10000);
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
-    const job = new cron_1.CronJob(`* * * * *`, () => __awaiter(this, void 0, void 0, function* () {
+    const job = new cron_1.CronJob(`* * * * *`, () => __awaiter(void 0, void 0, void 0, function* () {
         if (process.env.IMPORT_EVENTS_STOPPED === '1') {
             return;
         }
@@ -54,10 +55,10 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
             .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
             .toDate();
         const runsAt = new Date();
-        yield Promise.all(sellers.map((seller) => __awaiter(this, void 0, void 0, function* () {
+        yield Promise.all(sellers.map((seller) => __awaiter(void 0, void 0, void 0, function* () {
             try {
                 if (Array.isArray(seller.makesOffer)) {
-                    yield Promise.all(seller.makesOffer.map((offer) => __awaiter(this, void 0, void 0, function* () {
+                    yield Promise.all(seller.makesOffer.map((offer) => __awaiter(void 0, void 0, void 0, function* () {
                         const taskAttributes = {
                             name: cinerino.factory.taskName.UpdateEventAttendeeCapacity,
                             status: cinerino.factory.taskStatus.Ready,

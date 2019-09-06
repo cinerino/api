@@ -317,7 +317,7 @@ placeOrderTransactionsRouter.post(
                 project: req.project,
                 object: req.body,
                 agent: { id: req.user.sub },
-                transaction: { id: <string>req.params.transactionId }
+                transaction: { id: req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 event: new cinerino.repository.Event(mongoose.connection),
@@ -1118,7 +1118,7 @@ placeOrderTransactionsRouter.put(
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             await transactionRepo.cancel({
                 typeOf: cinerino.factory.transactionType.PlaceOrder,
-                id: <string>req.params.transactionId
+                id: req.params.transactionId
             });
 
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
@@ -1198,7 +1198,7 @@ placeOrderTransactionsRouter.get(
             const actions = await actionRepo.searchByPurpose({
                 purpose: {
                     typeOf: cinerino.factory.transactionType.PlaceOrder,
-                    id: <string>req.params.transactionId
+                    id: req.params.transactionId
                 },
                 sort: req.query.sort
             });

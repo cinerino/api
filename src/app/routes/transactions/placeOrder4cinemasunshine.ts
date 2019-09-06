@@ -111,7 +111,7 @@ placeOrder4cinemasunshineRouter.post(
                     acceptedOffer: req.body.offers
                 },
                 agent: { id: req.user.sub },
-                transaction: { id: <string>req.params.transactionId }
+                transaction: { id: req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 event: new cinerino.repository.Event(mongoose.connection),
@@ -150,8 +150,8 @@ placeOrder4cinemasunshineRouter.delete(
         try {
             await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4coa.cancel({
                 agent: { id: req.user.sub },
-                transaction: { id: <string>req.params.transactionId },
-                id: <string>req.params.actionId
+                transaction: { id: req.params.transactionId },
+                id: req.params.actionId
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
@@ -188,12 +188,12 @@ placeOrder4cinemasunshineRouter.patch(
         try {
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4coa.changeOffers({
                 object: {
-                    event: { id: <string>req.body.eventIdentifier },
+                    event: { id: req.body.eventIdentifier },
                     acceptedOffer: req.body.offers
                 },
                 agent: { id: req.user.sub },
-                transaction: { id: <string>req.params.transactionId },
-                id: <string>req.params.actionId
+                transaction: { id: req.params.transactionId },
+                id: req.params.actionId
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 event: new cinerino.repository.Event(mongoose.connection),
@@ -296,7 +296,7 @@ placeOrder4cinemasunshineRouter.post(
             const authorizeObject = {
                 typeOf: cinerino.factory.action.authorize.discount.mvtk.ObjectType.Mvtk,
                 price: Number(req.body.price),
-                transactionId: <string>req.params.transactionId,
+                transactionId: req.params.transactionId,
                 seatInfoSyncIn: {
                     kgygishCd: req.body.seatInfoSyncIn.kgygishCd,
                     yykDvcTyp: req.body.seatInfoSyncIn.yykDvcTyp,
@@ -317,7 +317,7 @@ placeOrder4cinemasunshineRouter.post(
             const actions = await mvtkService.createMovieTicketPaymentAuthorization({
                 project: req.project,
                 agentId: req.user.sub,
-                transactionId: <string>req.params.transactionId,
+                transactionId: req.params.transactionId,
                 authorizeObject: authorizeObject
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
@@ -360,8 +360,8 @@ placeOrder4cinemasunshineRouter.delete(
         try {
             await cinerino.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.cancel({
                 agentId: req.user.sub,
-                transactionId: <string>req.params.transactionId,
-                actionId: <string>req.params.actionId
+                transactionId: req.params.transactionId,
+                actionId: req.params.actionId
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
@@ -430,7 +430,7 @@ placeOrder4cinemasunshineRouter.post(
 
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.create({
                 agent: { id: req.user.sub },
-                transaction: { id: <string>req.params.transactionId },
+                transaction: { id: req.params.transactionId },
                 object: {
                     amount: Number(req.body.amount),
                     toAccountNumber: <string>req.body.toAccountNumber,
@@ -474,8 +474,8 @@ placeOrder4cinemasunshineRouter.delete(
         try {
             await cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({
                 agent: { id: req.user.sub },
-                transaction: { id: <string>req.params.transactionId },
-                id: <string>req.params.actionId
+                transaction: { id: req.params.transactionId },
+                id: req.params.actionId
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 project: new cinerino.repository.Project(mongoose.connection),
@@ -520,7 +520,7 @@ placeOrder4cinemasunshineRouter.post(
             const { order } = await cinerino.service.transaction.placeOrderInProgress.confirm({
                 ...req.body,
                 project: req.project,
-                id: <string>req.params.transactionId,
+                id: req.params.transactionId,
                 agent: { id: req.user.sub },
                 result: {
                     order: {

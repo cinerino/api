@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -57,7 +58,7 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['customer', 
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
-], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const phoneUtil = google_libphonenumber_1.PhoneNumberUtil.getInstance();
         const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
@@ -102,7 +103,7 @@ ordersRouter.post('', permitScopes_1.default(['admin']), ...[
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
-], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
@@ -155,7 +156,7 @@ ordersRouter.post('', permitScopes_1.default(['admin']), ...[
 /**
  * 注文配送
  */
-ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
@@ -213,7 +214,7 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['customer
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
-], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const customer = req.body.customer;
         if (customer.email !== undefined && customer.telephone !== undefined) {
@@ -268,7 +269,7 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
         .withMessage((_, __) => 'required')
 ], validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
-(req, res, next) => __awaiter(this, void 0, void 0, function* () {
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const now = new Date();
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -320,7 +321,7 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
             ids: reservationIds
         });
         // 所有権に対してコード発行
-        order.acceptedOffers = yield Promise.all(order.acceptedOffers.map((offer) => __awaiter(this, void 0, void 0, function* () {
+        order.acceptedOffers = yield Promise.all(order.acceptedOffers.map((offer) => __awaiter(void 0, void 0, void 0, function* () {
             // 実際の予約データで置き換え
             const reservation = searchReservationsResult.data.find((r) => r.id === offer.itemOffered.id);
             if (reservation !== undefined) {
@@ -360,7 +361,7 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
             .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
             .map((o) => o.typeOfGood.reservationNumber);
         reservationNumbers = [...new Set(reservationNumbers)];
-        yield Promise.all(reservationNumbers.map((reservationNumber) => __awaiter(this, void 0, void 0, function* () {
+        yield Promise.all(reservationNumbers.map((reservationNumber) => __awaiter(void 0, void 0, void 0, function* () {
             yield reservationService.checkInScreeningEventReservations({
                 reservationNumber: reservationNumber
             });
@@ -374,7 +375,7 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
 /**
  * 注文に対するアクション検索
  */
-ordersRouter.get('/:orderNumber/actions', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+ordersRouter.get('/:orderNumber/actions', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const actions = yield actionRepo.searchByOrderNumber({
@@ -415,10 +416,10 @@ ordersRouter.get('', permitScopes_1.default(['admin']), ...[
         .optional()
         .isISO8601()
         .toDate()
-], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
-        const searchConditions = Object.assign({}, req.query, { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         const totalCount = yield orderRepo.count(searchConditions);

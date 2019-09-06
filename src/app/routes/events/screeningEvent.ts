@@ -130,7 +130,7 @@ screeningEventRouter.get(
 
             // Cinemasunshine対応
             if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
-                event = await cinerino.service.offer.findEventById4cinemasunshine(<string>req.params.id)({
+                event = await cinerino.service.offer.findEventById4cinemasunshine(req.params.id)({
                     attendeeCapacity: attendeeCapacityRepo,
                     event: new cinerino.repository.Event(mongoose.connection)
                     // itemAvailability: new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient())

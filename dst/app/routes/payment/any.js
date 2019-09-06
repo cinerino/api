@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -43,25 +44,25 @@ anyPaymentRouter.post('/authorize', permitScopes_1.default(['admin']), ...[
     check_1.body('object.additionalProperty')
         .optional()
         .isArray()
-], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id
     })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield lockTransaction_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id
     })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const action = yield cinerino.service.payment.any.authorize({
             agent: { id: req.user.sub },
-            object: Object.assign({}, req.body.object, { additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+            object: Object.assign(Object.assign(Object.assign({}, req.body.object), { additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {
                         return { name: String(p.name), value: String(p.value) };
                     })
-                    : [] }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined),
+                    : [] }), (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined),
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
@@ -78,17 +79,17 @@ anyPaymentRouter.post('/authorize', permitScopes_1.default(['admin']), ...[
 /**
  * 汎用決済承認取消
  */
-anyPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+anyPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id
     })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield lockTransaction_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id
     })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield cinerino.service.payment.any.voidTransaction({
             agent: { id: req.user.sub },

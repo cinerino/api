@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -23,7 +24,7 @@ iamRouter.use(authentication_1.default);
 /**
  * IAMグループ検索
  */
-iamRouter.get('/groups', permitScopes_1.default(['admin']), validator_1.default, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+iamRouter.get('/groups', permitScopes_1.default(['admin']), validator_1.default, (_, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         res.set('X-Total-Count', '0');
         res.json([]);
@@ -35,7 +36,7 @@ iamRouter.get('/groups', permitScopes_1.default(['admin']), validator_1.default,
 /**
  * IAMロール検索
  */
-iamRouter.get('/roles', permitScopes_1.default(['admin']), validator_1.default, (_, res, next) => __awaiter(this, void 0, void 0, function* () {
+iamRouter.get('/roles', permitScopes_1.default(['admin']), validator_1.default, (_, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         res.set('X-Total-Count', '0');
         res.json([]);
@@ -47,7 +48,7 @@ iamRouter.get('/roles', permitScopes_1.default(['admin']), validator_1.default, 
 /**
  * IAMユーザー検索
  */
-iamRouter.get('/users', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+iamRouter.get('/users', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person();
         const users = yield personRepo.search({
@@ -69,7 +70,7 @@ iamRouter.get('/users', permitScopes_1.default(['admin']), validator_1.default, 
 /**
  * IDでユーザー検索
  */
-iamRouter.get('/users/:id', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+iamRouter.get('/users/:id', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person();
         const user = yield personRepo.findById({

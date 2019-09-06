@@ -36,7 +36,7 @@ accountsRouter.post(
                 project: req.project,
                 agent: req.agent,
                 name: req.body.name,
-                accountType: req.params.accountType
+                accountType: <cinerino.factory.accountType>req.params.accountType
             })({
                 accountNumber: accountNumberRepo,
                 ownershipInfo: ownershipInfoRepo,
@@ -68,7 +68,7 @@ accountsRouter.put(
                 ownedBy: {
                     id: req.user.sub
                 },
-                accountType: req.params.accountType,
+                accountType: <cinerino.factory.accountType>req.params.accountType,
                 accountNumber: req.params.accountNumber
             })({
                 ownershipInfo: ownershipInfoRepo,

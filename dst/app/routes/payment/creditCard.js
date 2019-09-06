@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -60,28 +61,28 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'cus
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
-], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id
     })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield lockTransaction_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id
     })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
-        const creditCard = Object.assign({}, req.body.object.creditCard, { memberId: memberId });
+        const creditCard = Object.assign(Object.assign({}, req.body.object.creditCard), { memberId: memberId });
         const action = yield cinerino.service.payment.creditCard.authorize({
             project: { id: process.env.PROJECT_ID },
             agent: { id: req.user.sub },
-            object: Object.assign({ typeOf: cinerino.factory.paymentMethodType.CreditCard, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+            object: Object.assign(Object.assign({ typeOf: cinerino.factory.paymentMethodType.CreditCard, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {
                         return { name: String(p.name), value: String(p.value) };
                     })
-                    : [], amount: req.body.object.amount, method: req.body.object.method, creditCard: creditCard }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined, (typeof req.body.object.orderId === 'string') ? { orderId: req.body.object.orderId } : undefined),
+                    : [], amount: req.body.object.amount, method: req.body.object.method, creditCard: creditCard }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined), (typeof req.body.object.orderId === 'string') ? { orderId: req.body.object.orderId } : undefined),
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
@@ -90,7 +91,7 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'cus
             seller: new cinerino.repository.Seller(mongoose.connection)
         });
         res.status(http_status_1.CREATED)
-            .json(Object.assign({}, action, { result: undefined }));
+            .json(Object.assign(Object.assign({}, action), { result: undefined }));
     }
     catch (error) {
         next(error);
@@ -99,17 +100,17 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'cus
 /**
  * クレジットカード決済承認取消
  */
-creditCardPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['admin', 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+creditCardPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['admin', 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id
     })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield lockTransaction_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id
     })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield cinerino.service.payment.creditCard.voidTransaction({
             project: { id: req.project.id },

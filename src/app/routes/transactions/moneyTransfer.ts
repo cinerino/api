@@ -162,7 +162,7 @@ moneyTransferTransactionsRouter.put(
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
 
             await cinerino.service.transaction.moneyTransfer.confirm({
-                id: <string>req.params.transactionId
+                id: req.params.transactionId
             })({
                 action: actionRepo,
                 transaction: transactionRepo
@@ -224,7 +224,7 @@ moneyTransferTransactionsRouter.put(
 
             await transactionRepo.cancel({
                 typeOf: cinerino.factory.transactionType.MoneyTransfer,
-                id: <string>req.params.transactionId
+                id: req.params.transactionId
             });
 
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
@@ -304,7 +304,7 @@ moneyTransferTransactionsRouter.get(
             const actions = await actionRepo.searchByPurpose({
                 purpose: {
                     typeOf: cinerino.factory.transactionType.MoneyTransfer,
-                    id: <string>req.params.transactionId
+                    id: req.params.transactionId
                 },
                 sort: req.query.sort
             });

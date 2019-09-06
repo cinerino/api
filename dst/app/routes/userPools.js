@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -26,7 +27,7 @@ const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServicePr
 });
 const userPoolsRouter = express_1.Router();
 userPoolsRouter.use(authentication_1.default);
-userPoolsRouter.get('/:userPoolId', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+userPoolsRouter.get('/:userPoolId', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userPool = yield new Promise((resolve, reject) => {
             cognitoIdentityServiceProvider.describeUserPool({
@@ -51,7 +52,7 @@ userPoolsRouter.get('/:userPoolId', permitScopes_1.default(['admin']), validator
         next(error);
     }
 }));
-userPoolsRouter.get('/:userPoolId/clients', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+userPoolsRouter.get('/:userPoolId/clients', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const clients = yield new Promise((resolve, reject) => {
             cognitoIdentityServiceProvider.listUserPoolClients({
@@ -79,7 +80,7 @@ userPoolsRouter.get('/:userPoolId/clients', permitScopes_1.default(['admin']), v
         next(error);
     }
 }));
-userPoolsRouter.get('/:userPoolId/clients/:clientId', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+userPoolsRouter.get('/:userPoolId/clients/:clientId', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const client = yield new Promise((resolve, reject) => {
             cognitoIdentityServiceProvider.describeUserPoolClient({

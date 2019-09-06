@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -36,12 +37,12 @@ ownershipInfosRouter.get('', permitScopes_1.default(['admin']), ...[
         .optional()
         .isISO8601()
         .toDate()
-], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const typeOfGood = (req.query.typeOfGood !== undefined && req.query.typeOfGood !== null) ? req.query.typeOfGood : {};
         let ownershipInfos;
-        const searchConditions = Object.assign({}, req.query, { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         const totalCount = yield ownershipInfoRepo.count(searchConditions);
@@ -74,7 +75,7 @@ ownershipInfosRouter.get('', permitScopes_1.default(['admin']), ...[
 /**
  * コードから所有権に対するアクセストークンを発行する
  */
-ownershipInfosRouter.post('/tokens', permitScopes_1.default(['customer', 'tokens']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+ownershipInfosRouter.post('/tokens', permitScopes_1.default(['customer', 'tokens']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const codeRepo = new cinerino.repository.Code(mongoose.connection);
         const token = yield cinerino.service.code.getToken({
@@ -101,7 +102,7 @@ ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['adm
         .optional()
         .isISO8601()
         .toDate()
-], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const now = new Date();
         const ownershipInfoId = req.params.id;
@@ -191,7 +192,7 @@ ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.defaul
         .isISO8601()
         .withMessage('toDate must be ISO8601 timestamp');
     next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const fromDate = req.query.fromDate;
         const toDate = req.query.toDate;

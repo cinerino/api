@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -48,10 +49,10 @@ ownershipInfosRouter.get('', permitScopes_1.default(['customer']), ...[
         .optional()
         .isISO8601()
         .toDate()
-], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let ownershipInfos;
-        const searchConditions = Object.assign({}, req.query, { 
+        const searchConditions = Object.assign(Object.assign({}, req.query), { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, ownedBy: { id: req.user.sub } });
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
@@ -88,7 +89,7 @@ ownershipInfosRouter.get('', permitScopes_1.default(['customer']), ...[
 /**
  * 所有権に対して認可コードを発行する
  */
-ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['customer']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['customer']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);

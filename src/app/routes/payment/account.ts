@@ -198,7 +198,7 @@ accountPaymentRouter.put(
         try {
             await cinerino.service.payment.account.voidTransaction({
                 project: req.project,
-                id: <string>req.params.actionId,
+                id: req.params.actionId,
                 agent: { id: req.user.sub },
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({

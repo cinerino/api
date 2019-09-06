@@ -129,7 +129,7 @@ ownershipInfosRouter.get(
     async (req, res, next) => {
         try {
             const now = new Date();
-            const ownershipInfoId = <string>req.params.id;
+            const ownershipInfoId = req.params.id;
 
             const searchConditions: cinerino.factory.action.ISearchConditions<cinerino.factory.actionType.CheckAction> = {
                 // ページング未実装、いったん100限定でも要件は十分満たされるか

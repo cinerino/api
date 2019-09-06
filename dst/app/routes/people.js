@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -30,7 +31,7 @@ peopleRouter.use(authentication_1.default);
 /**
  * 会員検索
  */
-peopleRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+peopleRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person();
         const people = yield personRepo.search({
@@ -52,7 +53,7 @@ peopleRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (re
 /**
  * IDで検索
  */
-peopleRouter.get('/:id', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+peopleRouter.get('/:id', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person();
         const person = yield personRepo.findById({
@@ -68,7 +69,7 @@ peopleRouter.get('/:id', permitScopes_1.default(['admin']), validator_1.default,
 /**
  * IDで削除
  */
-peopleRouter.delete('/:id', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+peopleRouter.delete('/:id', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const personRepo = new cinerino.repository.Person();
@@ -92,7 +93,7 @@ peopleRouter.delete('/:id', permitScopes_1.default(['admin']), validator_1.defau
         catch (error) {
             // actionにエラー結果を追加
             try {
-                const actionError = Object.assign({}, error, { message: error.message, name: error.name });
+                const actionError = Object.assign(Object.assign({}, error), { message: error.message, name: error.name });
                 yield actionRepo.giveUp({ typeOf: action.typeOf, id: action.id, error: actionError });
             }
             catch (__) {
@@ -123,10 +124,10 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['admin']), ...[
         .optional()
         .isISO8601()
         .toDate()
-], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let ownershipInfos;
-        const searchConditions = Object.assign({}, req.query, { 
+        const searchConditions = Object.assign(Object.assign({}, req.query), { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, ownedBy: { id: req.params.id } });
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
@@ -163,7 +164,7 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['admin']), ...[
 /**
  * クレジットカード検索
  */
-peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['admin']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['admin']), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -200,7 +201,7 @@ peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['adm
 /**
  * 会員クレジットカード削除
  */
-peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -241,7 +242,7 @@ peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.d
 /**
  * プロフィール検索
  */
-peopleRouter.get('/:id/profile', permitScopes_1.default(['admin']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+peopleRouter.get('/:id/profile', permitScopes_1.default(['admin']), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person();
         const person = yield personRepo.findById({
@@ -268,7 +269,7 @@ peopleRouter.get('/:id/profile', permitScopes_1.default(['admin']), (req, res, n
 /**
  * プロフィール更新
  */
-peopleRouter.patch('/:id/profile', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+peopleRouter.patch('/:id/profile', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person();
         const person = yield personRepo.findById({

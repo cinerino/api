@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -31,7 +32,7 @@ const me4cinemasunshineRouter = express_1.Router();
  */
 me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.default(['customer', 'people.ownershipInfos']), validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
-(req, res, next) => __awaiter(this, void 0, void 0, function* () {
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const programMembershipRepo = new cinerino.repository.ProgramMembership(mongoose.connection);
         if (CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP) {
@@ -203,7 +204,7 @@ function checkCard(req, amount) {
  * 会員プログラム登録解除
  * 所有権のidentifierをURLで指定
  */
-me4cinemasunshineRouter.put('/ownershipInfos/programMembership/:identifier/unRegister', permitScopes_1.default(['customer', 'people.ownershipInfos']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+me4cinemasunshineRouter.put('/ownershipInfos/programMembership/:identifier/unRegister', permitScopes_1.default(['customer', 'people.ownershipInfos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const task = yield cinerino.service.programMembership.createUnRegisterTask({
             agent: req.agent,

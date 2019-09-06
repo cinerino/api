@@ -70,7 +70,7 @@ movieTheaterRouter.get(
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const movieTheaters = await sellerRepo.search(
                 {
-                    location: { branchCodes: [<string>req.params.branchCode] }
+                    location: { branchCodes: [req.params.branchCode] }
                 },
                 // 管理者以外にセキュアな情報を露出しないように
                 (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined

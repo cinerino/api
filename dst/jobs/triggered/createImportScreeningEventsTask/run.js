@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -30,9 +31,9 @@ const MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES = 60;
 const IMPORT_EVENTS_INTERVAL_IN_MINUTES = (process.env.IMPORT_EVENTS_INTERVAL_IN_MINUTES !== undefined)
     ? Math.min(Number(process.env.IMPORT_EVENTS_INTERVAL_IN_MINUTES), MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES)
     : MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES;
-exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
+exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     let holdSingletonProcess = false;
-    setInterval(() => __awaiter(this, void 0, void 0, function* () {
+    setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
         holdSingletonProcess = yield singletonProcess.lock({
             project: params.project,
             key: 'createImportScreeningEventsTask',
@@ -42,7 +43,7 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
     // tslint:disable-next-line:no-magic-numbers
     10000);
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
-    const job = new cron_1.CronJob(`*/${IMPORT_EVENTS_INTERVAL_IN_MINUTES} * * * *`, () => __awaiter(this, void 0, void 0, function* () {
+    const job = new cron_1.CronJob(`*/${IMPORT_EVENTS_INTERVAL_IN_MINUTES} * * * *`, () => __awaiter(void 0, void 0, void 0, function* () {
         if (process.env.DEBUG_SINGLETON_PROCESS === '1') {
             yield cinerino.service.notification.report2developers(`[${process.env.PROJECT_ID}] api:singletonProcess`, util.format('%s\n%s\n%s\n%s\n%s', `key: 'createImportScreeningEventsTask'`, `IMPORT_EVENTS_INTERVAL_IN_MINUTES: ${IMPORT_EVENTS_INTERVAL_IN_MINUTES}`, `holdSingletonProcess: ${holdSingletonProcess}`, `os.hostname: ${os.hostname}`, `pid: ${process.pid}`))();
         }
@@ -63,10 +64,10 @@ exports.default = (params) => __awaiter(this, void 0, void 0, function* () {
             .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
             .toDate();
         const runsAt = new Date();
-        yield Promise.all(sellers.map((seller) => __awaiter(this, void 0, void 0, function* () {
+        yield Promise.all(sellers.map((seller) => __awaiter(void 0, void 0, void 0, function* () {
             try {
                 if (Array.isArray(seller.makesOffer)) {
-                    yield Promise.all(seller.makesOffer.map((offer) => __awaiter(this, void 0, void 0, function* () {
+                    yield Promise.all(seller.makesOffer.map((offer) => __awaiter(void 0, void 0, void 0, function* () {
                         const taskAttributes = {
                             name: cinerino.factory.taskName.ImportScreeningEvents,
                             status: cinerino.factory.taskStatus.Ready,

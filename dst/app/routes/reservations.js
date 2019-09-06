@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -29,7 +30,7 @@ reservationsRouter.use(authentication_1.default);
 /**
  * 管理者として予約検索
  */
-reservationsRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+reservationsRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -44,7 +45,7 @@ reservationsRouter.get('', permitScopes_1.default(['admin']), validator_1.defaul
             endpoint: project.settings.chevre.endpoint,
             auth: chevreAuthClient
         });
-        const searchResult = yield reservationService.search(Object.assign({}, req.query, { project: { ids: [req.project.id] }, typeOf: cinerino.factory.chevre.reservationType.EventReservation }));
+        const searchResult = yield reservationService.search(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, typeOf: cinerino.factory.chevre.reservationType.EventReservation }));
         res.set('X-Total-Count', searchResult.totalCount.toString());
         res.json(searchResult.data);
     }
@@ -56,7 +57,7 @@ reservationsRouter.get('', permitScopes_1.default(['admin']), validator_1.defaul
  * 管理者として予約検索
  * @deprecated Use /reservations
  */
-reservationsRouter.get('/eventReservation/screeningEvent', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+reservationsRouter.get('/eventReservation/screeningEvent', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -71,7 +72,7 @@ reservationsRouter.get('/eventReservation/screeningEvent', permitScopes_1.defaul
             endpoint: project.settings.chevre.endpoint,
             auth: chevreAuthClient
         });
-        const searchResult = yield reservationService.search(Object.assign({}, req.query, { project: { ids: [req.project.id] }, typeOf: cinerino.factory.chevre.reservationType.EventReservation }));
+        const searchResult = yield reservationService.search(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, typeOf: cinerino.factory.chevre.reservationType.EventReservation }));
         res.set('X-Total-Count', searchResult.totalCount.toString());
         res.json(searchResult.data);
     }
@@ -87,7 +88,7 @@ reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitSc
         .notEmpty()
         .withMessage('token is required');
     next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -124,7 +125,7 @@ reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitSc
         const reservation = yield reservationService.findById({ id: ownershipInfo.typeOfGood.id });
         // 入場
         yield reservationService.attendScreeningEvent(reservation);
-        res.json(Object.assign({}, ownershipInfo, { typeOfGood: reservation }));
+        res.json(Object.assign(Object.assign({}, ownershipInfo), { typeOfGood: reservation }));
     }
     catch (error) {
         next(error);

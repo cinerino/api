@@ -44,7 +44,7 @@ tasksRouter.post(
     async (req, res, next) => {
         try {
             const attributes: cinerino.factory.task.IAttributes<cinerino.factory.taskName> = {
-                name: req.params.name,
+                name: <cinerino.factory.taskName>req.params.name,
                 status: cinerino.factory.taskStatus.Ready,
                 runsAt: moment(req.body.runsAt)
                     .toDate(),
@@ -77,7 +77,7 @@ tasksRouter.get(
         try {
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const task = await taskRepo.findById({
-                name: req.params.name,
+                name: <cinerino.factory.taskName>req.params.name,
                 id: req.params.id
             });
             res.json(task);

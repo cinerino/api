@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -75,7 +76,7 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 
     // }
 ], validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
-(req, res, next) => __awaiter(this, void 0, void 0, function* () {
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -94,7 +95,7 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 
         const transaction = yield cinerino.service.transaction.moneyTransfer.start({
             project: req.project,
             expires: req.body.expires,
-            agent: Object.assign({}, req.agent, (req.body.agent !== undefined && req.body.agent.name !== undefined) ? { name: req.body.agent.name } : {}, { identifier: [
+            agent: Object.assign(Object.assign(Object.assign({}, req.agent), (req.body.agent !== undefined && req.body.agent.name !== undefined) ? { name: req.body.agent.name } : {}), { identifier: [
                     ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
                     ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
                         ? req.body.agent.identifier.map((p) => {
@@ -106,7 +107,7 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 
                 // amount: Number(req.body.object.amount),
                 // toLocation: req.body.object.toLocation,
                 authorizeActions: [] }, (typeof req.body.object.description === 'string') ? { description: req.body.object.description } : {}),
-            recipient: Object.assign({ typeOf: req.body.recipient.typeOf, id: req.body.recipient.id }, (typeof req.body.recipient.name === 'string') ? { name: req.body.recipient.name } : {}, (typeof req.body.recipient.url === 'string') ? { url: req.body.recipient.url } : {}),
+            recipient: Object.assign(Object.assign({ typeOf: req.body.recipient.typeOf, id: req.body.recipient.id }, (typeof req.body.recipient.name === 'string') ? { name: req.body.recipient.name } : {}), (typeof req.body.recipient.url === 'string') ? { url: req.body.recipient.url } : {}),
             seller: req.body.seller
         })({
             accountService: accountService,
@@ -122,17 +123,17 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 
         next(error);
     }
 }));
-moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin', 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin', 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.MoneyTransfer,
         id: req.params.transactionId
     })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield lockTransaction_1.default({
         typeOf: cinerino.factory.transactionType.MoneyTransfer,
         id: req.params.transactionId
     })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
@@ -153,10 +154,10 @@ moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.de
             task: taskRepo,
             transaction: transactionRepo
         })
-            .then((tasks) => __awaiter(this, void 0, void 0, function* () {
+            .then((tasks) => __awaiter(void 0, void 0, void 0, function* () {
             // タスクがあればすべて実行
             if (Array.isArray(tasks)) {
-                yield Promise.all(tasks.map((task) => __awaiter(this, void 0, void 0, function* () {
+                yield Promise.all(tasks.map((task) => __awaiter(void 0, void 0, void 0, function* () {
                     yield cinerino.service.task.executeByName(task)({
                         connection: mongoose.connection,
                         redisClient: redis.getClient()
@@ -174,17 +175,17 @@ moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.de
 /**
  * 取引を明示的に中止
  */
-moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.default(['admin', 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.default(['admin', 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.MoneyTransfer,
         id: req.params.transactionId
     })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield lockTransaction_1.default({
         typeOf: cinerino.factory.transactionType.MoneyTransfer,
         id: req.params.transactionId
     })(req, res, next);
-}), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
@@ -228,10 +229,10 @@ moneyTransferTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
         .optional()
         .isISO8601()
         .toDate()
-], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        const searchConditions = Object.assign({}, req.query, { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, typeOf: cinerino.factory.transactionType.MoneyTransfer });
         const transactions = yield transactionRepo.search(searchConditions);
@@ -246,7 +247,7 @@ moneyTransferTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
 /**
  * 取引に対するアクション検索
  */
-moneyTransferTransactionsRouter.get('/:transactionId/actions', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+moneyTransferTransactionsRouter.get('/:transactionId/actions', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const actions = yield actionRepo.searchByPurpose({

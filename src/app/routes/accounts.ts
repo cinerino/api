@@ -63,7 +63,7 @@ accountsRouter.put(
         try {
             await cinerino.service.account.close({
                 project: req.project,
-                accountType: req.params.accountType,
+                accountType: <cinerino.factory.accountType>req.params.accountType,
                 accountNumber: req.params.accountNumber
             })({
                 ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),

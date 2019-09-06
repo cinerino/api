@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -29,7 +30,7 @@ movieRouter.use(authentication_1.default);
 /**
  * 映画作品検索
  */
-movieRouter.get('', permitScopes_1.default(['admin', 'creativeWorks', 'creativeWorks.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+movieRouter.get('', permitScopes_1.default(['admin', 'creativeWorks', 'creativeWorks.read-only']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -43,7 +44,7 @@ movieRouter.get('', permitScopes_1.default(['admin', 'creativeWorks', 'creativeW
             endpoint: project.settings.chevre.endpoint,
             auth: chevreAuthClient
         });
-        const { totalCount, data } = yield creativeWorkService.searchMovies(Object.assign({}, req.query, { project: { ids: [req.project.id] } }));
+        const { totalCount, data } = yield creativeWorkService.searchMovies(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] } }));
         res.set('X-Total-Count', totalCount.toString());
         res.json(data);
     }

@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -33,7 +34,7 @@ accountsRouter.post('', permitScopes_1.default(['admin']), ...[
     check_1.body('name', 'invalid name')
         .not()
         .isEmpty()
-], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const account = yield cinerino.service.account.openWithoutOwnershipInfo({
             project: req.project,
@@ -53,7 +54,7 @@ accountsRouter.post('', permitScopes_1.default(['admin']), ...[
 /**
  * 管理者として口座解約
  */
-accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield cinerino.service.account.close({
             project: req.project,
@@ -84,7 +85,7 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['admin']), 
     check_1.body('toAccountNumber', 'invalid toAccountNumber')
         .not()
         .isEmpty()
-], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         yield cinerino.service.account.deposit({

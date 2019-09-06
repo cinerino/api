@@ -188,7 +188,7 @@ ordersRouter.post(
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const registerActionInProgressRepo = new cinerino.repository.action.RegisterProgramMembershipInProgress(redis.getClient());
 
-            const orderNumber = <string>req.params.orderNumber;
+            const orderNumber = req.params.orderNumber;
 
             // 注文検索
             const order = await orderRepo.findByOrderNumber({
