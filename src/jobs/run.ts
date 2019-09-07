@@ -25,6 +25,7 @@ import confirmReservation from './continuous/confirmReservation/run';
 import givePointAward from './continuous/givePointAward/run';
 import importScreeningEvents from './continuous/importScreeningEvents/run';
 import moneyTransfer from './continuous/moneyTransfer/run';
+import orderProgramMembership from './continuous/orderProgramMembership/run';
 import payAccount from './continuous/payAccount/run';
 import payCreditCard from './continuous/payCreditCard/run';
 import payMovieTicket from './continuous/payMovieTicket/run';
@@ -71,6 +72,7 @@ export default async () => {
     await givePointAward({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await importScreeningEvents({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await moneyTransfer({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    await orderProgramMembership({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await payAccount({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await payCreditCard({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await payMovieTicket({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
