@@ -26,6 +26,7 @@ const validator_1 = require("../../middlewares/validator");
  */
 const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
 const CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP = process.env.CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP === '1';
+const EMAIL_INFORM_UPDATE_PROGRAMMEMBERSHIP = process.env.EMAIL_INFORM_UPDATE_PROGRAMMEMBERSHIP;
 const me4cinemasunshineRouter = express_1.Router();
 /**
  * 会員プログラム登録
@@ -35,12 +36,12 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const programMembershipRepo = new cinerino.repository.ProgramMembership(mongoose.connection);
+        const programMemberships = yield programMembershipRepo.search({ id: req.body.programMembershipId });
+        const programMembership = programMemberships.shift();
+        if (programMembership === undefined) {
+            throw new cinerino.factory.errors.NotFound('ProgramMembership');
+        }
         if (CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP) {
-            const programMemberships = yield programMembershipRepo.search({ id: req.body.programMembershipId });
-            const programMembership = programMemberships.shift();
-            if (programMembership === undefined) {
-                throw new cinerino.factory.errors.NotFound('ProgramMembership');
-            }
             if (programMembership.offers === undefined) {
                 throw new cinerino.factory.errors.NotFound('ProgramMembership.offers');
             }
@@ -53,14 +54,71 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
             }
             yield checkCard(req, offer.price);
         }
+        let email;
+        if (EMAIL_INFORM_UPDATE_PROGRAMMEMBERSHIP !== undefined) {
+            email = {
+                about: `[${req.project.id}] ProgramMembership Updated`,
+                toRecipient: { name: 'administrator', email: EMAIL_INFORM_UPDATE_PROGRAMMEMBERSHIP },
+                // tslint:disable:no-trailing-whitespace
+                template: `| 会員プログラムが更新されました。
+| 
+| [Project]
+| ${req.project.id}
+| 
+| [ID]
+| #{order.customer.id}
+| 
+| [Username]
+| ${req.user.username}
+| 
+| [OrderNumber]
+| #{order.orderNumber}
+| 
+| [Order Date]
+| #{order.orderDate}
+`
+            };
+        }
         const task = yield cinerino.service.programMembership.createRegisterTask({
             agent: req.agent,
+            offerIdentifier: req.body.offerIdentifier,
+            potentialActions: {
+                order: {
+                    potentialActions: {
+                        sendOrder: {
+                            potentialActions: {
+                                registerProgramMembership: [
+                                    {
+                                        object: { typeOf: programMembership.typeOf, id: programMembership.id },
+                                        potentialActions: {
+                                            orderProgramMembership: {
+                                                potentialActions: {
+                                                    order: {
+                                                        potentialActions: {
+                                                            sendOrder: {
+                                                                potentialActions: {
+                                                                    sendEmailMessage: (email !== undefined)
+                                                                        ? [{ object: email }]
+                                                                        : []
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            programMembershipId: req.body.programMembershipId,
             seller: {
                 typeOf: req.body.sellerType,
                 id: req.body.sellerId
-            },
-            programMembershipId: req.body.programMembershipId,
-            offerIdentifier: req.body.offerIdentifier
+            }
         })({
             seller: new cinerino.repository.Seller(mongoose.connection),
             programMembership: programMembershipRepo,
