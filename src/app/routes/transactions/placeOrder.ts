@@ -1031,19 +1031,48 @@ placeOrderTransactionsRouter.put(
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
 
+            const sendEmailMessage = req.body.sendEmailMessage === true;
+            let email: cinerino.factory.creativeWork.message.email.ICustomization | undefined = req.body.email;
+
             // 互換性維持のため、テンプレートオプションを変換
-            if (req.body.email === undefined) {
-                req.body.email = {};
-            }
             if (req.body.emailTemplate !== undefined) {
-                req.body.email.template = String(req.body.emailTemplate);
+                if (email === undefined) {
+                    email = {};
+                }
+                email.template = String(req.body.emailTemplate);
+            }
+
+            let potentialActions: cinerino.factory.transaction.placeOrder.IPotentialActionsParams | undefined = req.body.potentialActions;
+            if (potentialActions === undefined) {
+                potentialActions = {};
+            }
+            if (potentialActions.order === undefined) {
+                potentialActions.order = {};
+            }
+            if (potentialActions.order.potentialActions === undefined) {
+                potentialActions.order.potentialActions = {};
+            }
+            if (potentialActions.order.potentialActions.sendOrder === undefined) {
+                potentialActions.order.potentialActions.sendOrder = {};
+            }
+            if (potentialActions.order.potentialActions.sendOrder.potentialActions === undefined) {
+                potentialActions.order.potentialActions.sendOrder.potentialActions = {};
+            }
+            if (!Array.isArray(potentialActions.order.potentialActions.sendOrder.potentialActions.sendEmailMessage)) {
+                potentialActions.order.potentialActions.sendOrder.potentialActions.sendEmailMessage = [];
+            }
+            if (sendEmailMessage) {
+                potentialActions.order.potentialActions.sendOrder.potentialActions.sendEmailMessage.push({
+                    object: email
+                });
             }
 
             const result = await cinerino.service.transaction.placeOrderInProgress.confirm({
                 ...req.body,
-                project: req.project,
-                id: req.params.transactionId,
                 agent: { id: req.user.sub },
+                id: req.params.transactionId,
+                potentialActions: potentialActions,
+                project: req.project,
                 result: {
                     ...req.body.result,
                     order: {
@@ -1054,7 +1083,6 @@ placeOrderTransactionsRouter.put(
                         }
                     }
                 },
-                sendEmailMessage: (req.body.sendEmailMessage === true),
                 validateMovieTicket: (process.env.VALIDATE_MOVIE_TICKET === '1')
             })({
                 action: actionRepo,
@@ -1063,7 +1091,6 @@ placeOrderTransactionsRouter.put(
                 orderNumber: orderNumberRepo,
                 seller: sellerRepo
             });
-            debug('transaction confirmed');
 
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
             // tslint:disable-next-line:no-floating-promises
