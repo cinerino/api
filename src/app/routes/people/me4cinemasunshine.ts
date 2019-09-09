@@ -54,12 +54,8 @@ me4cinemasunshineRouter.put(
             }
 
             let email: cinerino.factory.creativeWork.message.email.ICustomization | undefined;
-            if (EMAIL_INFORM_UPDATE_PROGRAMMEMBERSHIP !== undefined) {
-                email = {
-                    about: `[${req.project.id}] ProgramMembership Updated`,
-                    toRecipient: { name: 'administrator', email: EMAIL_INFORM_UPDATE_PROGRAMMEMBERSHIP },
-                    // tslint:disable:no-trailing-whitespace
-                    template: `| 会員プログラムが更新されました。
+            // tslint:disable:no-trailing-whitespace
+            const template = `| 会員プログラムが更新されました。
 | 
 | [Project]
 | ${req.project.id}
@@ -75,7 +71,12 @@ me4cinemasunshineRouter.put(
 | 
 | [Order Date]
 | #{order.orderDate}
-`
+`;
+            if (EMAIL_INFORM_UPDATE_PROGRAMMEMBERSHIP !== undefined) {
+                email = {
+                    about: `[${req.project.id}] ProgramMembership Updated`,
+                    toRecipient: { name: 'administrator', email: EMAIL_INFORM_UPDATE_PROGRAMMEMBERSHIP },
+                    template: template
                 };
             }
 
@@ -223,48 +224,6 @@ async function checkCard(req: Request, amount: number) {
         seller: new cinerino.repository.Seller(mongoose.connection),
         transaction: new cinerino.repository.Transaction(mongoose.connection)
     });
-
-    // const orderId = cinerino.service.payment.creditCard.generateOrderId({
-    //     project: project,
-    //     transaction: { id: transaction.id }
-    // });
-
-    // try {
-    //     const creditService = new cinerino.GMO.service.Credit({ endpoint: project.settings.gmo.endpoint });
-    //     const entryTranResult = await creditService.entryTran({
-    //         shopId: creditCardPaymentAccepted.gmoInfo.shopId,
-    //         shopPass: creditCardPaymentAccepted.gmoInfo.shopPass,
-    //         orderId: orderId,
-    //         jobCd: cinerino.GMO.utils.util.JobCd.Check,
-    //         amount: <any>undefined
-    //     });
-
-    //     await creditService.execTran({
-    //         accessId: entryTranResult.accessId,
-    //         accessPass: entryTranResult.accessPass,
-    //         orderId: orderId,
-    //         method: cinerino.GMO.utils.util.Method.Lump,
-    //         siteId: project.settings.gmo.siteId,
-    //         sitePass: project.settings.gmo.sitePass,
-    //         memberId: memberId,
-    //         cardSeq: Number(creditCard.cardSeq),
-    //         seqMode: cinerino.GMO.utils.util.SeqMode.Physics
-    //     });
-    // } catch (error) {
-    //     if (error.name === 'GMOServiceBadRequestError') {
-    //         // consider E92000001,E92000002
-    //         // GMO流量制限オーバーエラーの場合
-    //         const serviceUnavailableError = error.errors.find((gmoError: any) => gmoError.info.match(/^E92000001|E92000002$/));
-    //         if (serviceUnavailableError !== undefined) {
-    //             throw new cinerino.factory.errors.RateLimitExceeded(serviceUnavailableError.userMessage);
-    //         }
-
-    //         // その他のGMOエラーに場合、なんらかのクライアントエラー
-    //         throw new cinerino.factory.errors.Argument('Invalid Credit Card');
-    //     }
-
-    //     throw error;
-    // }
 
     // 確認のためだけの取引なので、すぐに中止
     await transactionRepo.cancel({
