@@ -75,7 +75,7 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
 `;
         if (EMAIL_INFORM_UPDATE_PROGRAMMEMBERSHIP !== undefined) {
             email = {
-                about: `[${req.project.id}] ProgramMembership Updated`,
+                about: `ProgramMembership Updated [${req.project.id}]`,
                 toRecipient: { name: 'administrator', email: EMAIL_INFORM_UPDATE_PROGRAMMEMBERSHIP },
                 template: template
             };
