@@ -22,6 +22,7 @@ import cancelPointAward from './continuous/cancelPointAward/run';
 import cancelReservation from './continuous/cancelReservation/run';
 import cancelSeatReservation from './continuous/cancelSeatReservation/run';
 import confirmReservation from './continuous/confirmReservation/run';
+import deleteMember from './continuous/deleteMember/run';
 import givePointAward from './continuous/givePointAward/run';
 import importScreeningEvents from './continuous/importScreeningEvents/run';
 import moneyTransfer from './continuous/moneyTransfer/run';
@@ -69,6 +70,7 @@ export default async () => {
     await cancelReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await cancelSeatReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await confirmReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    await deleteMember({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await givePointAward({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await importScreeningEvents({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await moneyTransfer({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });

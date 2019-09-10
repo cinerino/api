@@ -235,6 +235,7 @@ async function checkCard(req: Request, amount: number) {
 /**
  * 会員プログラム登録解除
  * 所有権のidentifierをURLで指定
+ * @deprecated シネマサンシャインで「退会処理」として使用(機を見てエンドポイントを変更したい)
  */
 me4cinemasunshineRouter.put(
     '/ownershipInfos/programMembership/:identifier/unRegister',
@@ -242,16 +243,63 @@ me4cinemasunshineRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const task = await cinerino.service.programMembership.createUnRegisterTask({
-                agent: req.agent,
-                ownershipInfoIdentifier: req.params.identifier
-            })({
-                ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
-                task: new cinerino.repository.Task(mongoose.connection)
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+            const taskRepo = new cinerino.repository.Task(mongoose.connection);
+
+            // const task = await cinerino.service.programMembership.createUnRegisterTask({
+            //     agent: req.agent,
+            //     ownershipInfoIdentifier: req.params.identifier
+            // })({
+            //     ownershipInfo: ownershipInfoRepo,
+            //     task: taskRepo
+            // });
+
+            // 現在所有している会員プログラムを全て検索
+            const now = new Date();
+            const ownershipInfos = await ownershipInfoRepo.search<cinerino.factory.programMembership.ProgramMembershipType>({
+                typeOfGood: { typeOf: 'ProgramMembership' },
+                ownedBy: { id: req.agent.id },
+                ownedFrom: now,
+                ownedThrough: now
             });
+
+            // 所有が確認できれば、会員プログラム登録解除タスクを作成する
+            const unRegisterActionAttributes: cinerino.factory.action.interact.unRegister.programMembership.IAttributes[]
+                = ownershipInfos.map((o) => {
+                    return {
+                        project: o.project,
+                        typeOf: cinerino.factory.actionType.UnRegisterAction,
+                        agent: req.agent,
+                        object: o
+                    };
+                });
+
+            // 会員削除タスクを作成
+            const deleteMemberAction: cinerino.factory.action.update.deleteAction.member.IAttributes = {
+                agent: req.agent,
+                object: req.agent,
+                project: req.project,
+                potentialActions: {
+                    unRegisterProgramMembership: unRegisterActionAttributes
+                },
+                typeOf: cinerino.factory.actionType.DeleteAction
+            };
+            const deleteMemberTask: cinerino.factory.task.IAttributes<cinerino.factory.taskName.DeleteMember> = {
+                project: req.project,
+                name: cinerino.factory.taskName.DeleteMember,
+                status: cinerino.factory.taskStatus.Ready,
+                runsAt: now,
+                remainingNumberOfTries: 10,
+                numberOfTried: 0,
+                executionResults: [],
+                data: deleteMemberAction
+            };
+
+            await taskRepo.save<cinerino.factory.taskName.DeleteMember>(deleteMemberTask);
+
             // 会員登録解除タスクとして受け入れられたのでACCEPTED
             res.status(ACCEPTED)
-                .json(task);
+                .json(deleteMemberTask);
         } catch (error) {
             next(error);
         }
