@@ -102,38 +102,55 @@ peopleRouter.delete(
             }
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const personRepo = new cinerino.repository.Person({
                 userPoolId: project.settings.cognito.customerUserPool.id
             });
+            const taskRepo = new cinerino.repository.Task(mongoose.connection);
+
             const person = await personRepo.findById({
                 userId: req.params.id
             });
 
-            const deleteActionAttributes = {
+            // 現在所有している会員プログラムを全て検索
+            const now = new Date();
+            const ownershipInfos = await ownershipInfoRepo.search<cinerino.factory.programMembership.ProgramMembershipType>({
+                typeOfGood: { typeOf: 'ProgramMembership' },
+                ownedBy: { id: person.id },
+                ownedFrom: now,
+                ownedThrough: now
+            });
+
+            // 所有が確認できれば、会員プログラム登録解除タスクを作成する
+            const unRegisterActionAttributes: cinerino.factory.action.interact.unRegister.programMembership.IAttributes[]
+                = ownershipInfos.map((o) => {
+                    return {
+                        project: o.project,
+                        typeOf: cinerino.factory.actionType.UnRegisterAction,
+                        agent: req.agent,
+                        object: o
+                    };
+                });
+
+            // 会員削除タスクを作成
+            const deleteMemberAction: cinerino.factory.action.update.deleteAction.member.IAttributes = {
                 agent: req.agent,
                 object: person,
-                project: { typeOf: req.project.typeOf, id: req.project.id },
-                typeOf: <any>'DeleteAction'
+                project: req.project,
+                potentialActions: {
+                    unRegisterProgramMembership: unRegisterActionAttributes
+                },
+                typeOf: cinerino.factory.actionType.DeleteAction
             };
-            const action = await actionRepo.start(deleteActionAttributes);
 
-            try {
-                await personRepo.deleteById({
-                    userId: req.params.id
-                });
-            } catch (error) {
-                // actionにエラー結果を追加
-                try {
-                    const actionError = { ...error, message: error.message, name: error.name };
-                    await actionRepo.giveUp({ typeOf: action.typeOf, id: action.id, error: actionError });
-                } catch (__) {
-                    // 失敗したら仕方ない
-                }
-
-                throw error;
-            }
-
-            await actionRepo.complete({ typeOf: action.typeOf, id: action.id, result: {} });
+            await cinerino.service.customer.deleteMember({
+                ...deleteMemberAction,
+                physically: req.body.physically === true
+            })({
+                action: actionRepo,
+                person: personRepo,
+                task: taskRepo
+            });
 
             res.status(NO_CONTENT)
                 .end();

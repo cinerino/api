@@ -203,13 +203,6 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/:identifier/unReg
     try {
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
-        // const task = await cinerino.service.programMembership.createUnRegisterTask({
-        //     agent: req.agent,
-        //     ownershipInfoIdentifier: req.params.identifier
-        // })({
-        //     ownershipInfo: ownershipInfoRepo,
-        //     task: taskRepo
-        // });
         // 現在所有している会員プログラムを全て検索
         const now = new Date();
         const ownershipInfos = yield ownershipInfoRepo.search({
