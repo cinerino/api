@@ -23,7 +23,9 @@ const profileRouter = express_1.Router();
  */
 profileRouter.get('', permitScopes_1.default(['customer']), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const personRepo = new cinerino.repository.Person();
+        const personRepo = new cinerino.repository.Person({
+            userPoolId: '' // アクセストークンに情報が含まれるので必要なし
+        });
         const profile = yield personRepo.getUserAttributesByAccessToken(req.accessToken);
         res.json(profile);
     }
@@ -36,7 +38,9 @@ profileRouter.get('', permitScopes_1.default(['customer']), (req, res, next) => 
  */
 profileRouter.patch('', permitScopes_1.default(['customer']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const personRepo = new cinerino.repository.Person();
+        const personRepo = new cinerino.repository.Person({
+            userPoolId: '' // アクセストークンに情報が含まれるので必要なし
+        });
         yield personRepo.updateProfileByAccessToken({
             accessToken: req.accessToken,
             profile: req.body

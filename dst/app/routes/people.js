@@ -23,9 +23,9 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 /**
  * GMOメンバーIDにユーザーネームを使用するかどうか
+ * @deprecated 互換性維持目的であれば、基本的にユーザーIDを使用すること
  */
 const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
-const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
 const peopleRouter = express_1.Router();
 peopleRouter.use(authentication_1.default);
 /**
@@ -33,9 +33,16 @@ peopleRouter.use(authentication_1.default);
  */
 peopleRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const personRepo = new cinerino.repository.Person();
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined
+            || project.settings.cognito === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        const personRepo = new cinerino.repository.Person({
+            userPoolId: project.settings.cognito.customerUserPool.id
+        });
         const people = yield personRepo.search({
-            userPooId: USER_POOL_ID,
             id: req.query.id,
             username: req.query.username,
             email: req.query.email,
@@ -55,9 +62,16 @@ peopleRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (re
  */
 peopleRouter.get('/:id', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const personRepo = new cinerino.repository.Person();
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined
+            || project.settings.cognito === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        const personRepo = new cinerino.repository.Person({
+            userPoolId: project.settings.cognito.customerUserPool.id
+        });
         const person = yield personRepo.findById({
-            userPooId: USER_POOL_ID,
             userId: req.params.id
         });
         res.json(person);
@@ -71,10 +85,17 @@ peopleRouter.get('/:id', permitScopes_1.default(['admin']), validator_1.default,
  */
 peopleRouter.delete('/:id', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined
+            || project.settings.cognito === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        const personRepo = new cinerino.repository.Person();
+        const personRepo = new cinerino.repository.Person({
+            userPoolId: project.settings.cognito.customerUserPool.id
+        });
         const person = yield personRepo.findById({
-            userPooId: USER_POOL_ID,
             userId: req.params.id
         });
         const deleteActionAttributes = {
@@ -86,7 +107,6 @@ peopleRouter.delete('/:id', permitScopes_1.default(['admin']), validator_1.defau
         const action = yield actionRepo.start(deleteActionAttributes);
         try {
             yield personRepo.deleteById({
-                userPooId: USER_POOL_ID,
                 userId: req.params.id
             });
         }
@@ -168,17 +188,17 @@ peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['adm
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined) {
+        if (project.settings === undefined
+            || project.settings.gmo === undefined
+            || project.settings.cognito === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
-        if (project.settings.gmo === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
         }
         let memberId = req.params.id;
         if (USE_USERNAME_AS_GMO_MEMBER_ID) {
-            const personRepo = new cinerino.repository.Person();
+            const personRepo = new cinerino.repository.Person({
+                userPoolId: project.settings.cognito.customerUserPool.id
+            });
             const person = yield personRepo.findById({
-                userPooId: USER_POOL_ID,
                 userId: req.params.id
             });
             if (person.memberOf === undefined) {
@@ -205,17 +225,17 @@ peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.d
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined) {
+        if (project.settings === undefined
+            || project.settings.gmo === undefined
+            || project.settings.cognito === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
-        if (project.settings.gmo === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
         }
         let memberId = req.params.id;
         if (USE_USERNAME_AS_GMO_MEMBER_ID) {
-            const personRepo = new cinerino.repository.Person();
+            const personRepo = new cinerino.repository.Person({
+                userPoolId: project.settings.cognito.customerUserPool.id
+            });
             const person = yield personRepo.findById({
-                userPooId: USER_POOL_ID,
                 userId: req.params.id
             });
             if (person.memberOf === undefined) {
@@ -244,9 +264,16 @@ peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.d
  */
 peopleRouter.get('/:id/profile', permitScopes_1.default(['admin']), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const personRepo = new cinerino.repository.Person();
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined
+            || project.settings.cognito === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        const personRepo = new cinerino.repository.Person({
+            userPoolId: project.settings.cognito.customerUserPool.id
+        });
         const person = yield personRepo.findById({
-            userPooId: USER_POOL_ID,
             userId: req.params.id
         });
         if (person.memberOf === undefined) {
@@ -257,7 +284,6 @@ peopleRouter.get('/:id/profile', permitScopes_1.default(['admin']), (req, res, n
             throw new cinerino.factory.errors.NotFound('Person.memberOf.membershipNumber');
         }
         const profile = yield personRepo.getUserAttributes({
-            userPooId: USER_POOL_ID,
             username: username
         });
         res.json(profile);
@@ -271,9 +297,16 @@ peopleRouter.get('/:id/profile', permitScopes_1.default(['admin']), (req, res, n
  */
 peopleRouter.patch('/:id/profile', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const personRepo = new cinerino.repository.Person();
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined
+            || project.settings.cognito === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        const personRepo = new cinerino.repository.Person({
+            userPoolId: project.settings.cognito.customerUserPool.id
+        });
         const person = yield personRepo.findById({
-            userPooId: USER_POOL_ID,
             userId: req.params.id
         });
         if (person.memberOf === undefined) {
@@ -284,7 +317,6 @@ peopleRouter.patch('/:id/profile', permitScopes_1.default(['admin']), validator_
             throw new cinerino.factory.errors.NotFound('Person.memberOf.membershipNumber');
         }
         yield personRepo.updateProfile({
-            userPooId: USER_POOL_ID,
             username: username,
             profile: req.body
         });

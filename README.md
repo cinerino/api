@@ -13,7 +13,6 @@
 
 | Name                                      | Required | Value          | Purpose                                   |
 | ----------------------------------------- | -------- | -------------- | ----------------------------------------- |
-| `ADMIN_USER_POOL_ID`                      | true     |                | Admin user pool ID                        |
 | `AWS_ACCESS_KEY_ID`                       | true     |                | AWS access key                            |
 | `AWS_SECRET_ACCESS_KEY`                   | true     |                | AWS secret access key                     |
 | `BASIC_AUTH_NAME`                         | false    |                | Basic authentication user name            |
@@ -24,7 +23,6 @@
 | `COA_ENDPOINT`                            | true     |                | COA endpoint                              |
 | `COA_REFRESH_TOKEN`                       | true     |                | COA refresh token                         |
 | `CODE_EXPIRES_IN_SECONDS`                 | true     |                | OwnershipInfo code expiration             |
-| `COGNITO_USER_POOL_ID`                    | true     |                | Cognito user pool ID                      |
 | `CUSTOMER_ADDITIONAL_PERMITTED_SCOPES`    | true     |                | 会員追加許可スコープ                      |
 | `DEBUG`                                   | false    | cinerino-api:* | Debug                                     |
 | `DEBUG_SINGLETON_PROCESS`                 | false    | 1 or 0         | Singleton Process Debug Flag              |

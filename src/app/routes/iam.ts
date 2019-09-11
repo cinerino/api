@@ -4,12 +4,11 @@
 import * as cinerino from '@cinerino/domain';
 import * as express from 'express';
 // import { OK } from 'http-status';
+import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
-
-const USER_POOL_ID = <string>process.env.ADMIN_USER_POOL_ID;
 
 const iamRouter = express.Router();
 iamRouter.use(authentication);
@@ -57,9 +56,17 @@ iamRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const personRepo = new cinerino.repository.Person();
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined
+                || project.settings.cognito === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+
+            const personRepo = new cinerino.repository.Person({
+                userPoolId: project.settings.cognito.adminUserPool.id
+            });
             const users = await personRepo.search({
-                userPooId: USER_POOL_ID,
                 id: req.query.id,
                 username: req.query.username,
                 email: req.query.email,
@@ -85,9 +92,17 @@ iamRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const personRepo = new cinerino.repository.Person();
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined
+                || project.settings.cognito === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+
+            const personRepo = new cinerino.repository.Person({
+                userPoolId: project.settings.cognito.adminUserPool.id
+            });
             const user = await personRepo.findById({
-                userPooId: USER_POOL_ID,
                 userId: req.params.id
             });
 

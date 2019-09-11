@@ -18,7 +18,9 @@ profileRouter.get(
     permitScopes(['customer']),
     async (req, res, next) => {
         try {
-            const personRepo = new cinerino.repository.Person();
+            const personRepo = new cinerino.repository.Person({
+                userPoolId: '' // アクセストークンに情報が含まれるので必要なし
+            });
             const profile = await personRepo.getUserAttributesByAccessToken(req.accessToken);
             res.json(profile);
         } catch (error) {
@@ -36,7 +38,9 @@ profileRouter.patch(
     validator,
     async (req, res, next) => {
         try {
-            const personRepo = new cinerino.repository.Person();
+            const personRepo = new cinerino.repository.Person({
+                userPoolId: '' // アクセストークンに情報が含まれるので必要なし
+            });
             await personRepo.updateProfileByAccessToken({
                 accessToken: req.accessToken,
                 profile: req.body
