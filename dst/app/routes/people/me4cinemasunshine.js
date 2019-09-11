@@ -26,7 +26,6 @@ const validator_1 = require("../../middlewares/validator");
  */
 const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
 const CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP = process.env.CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP === '1';
-const EMAIL_INFORM_UPDATE_PROGRAMMEMBERSHIP = process.env.EMAIL_INFORM_UPDATE_PROGRAMMEMBERSHIP;
 const me4cinemasunshineRouter = express_1.Router();
 /**
  * 会員プログラム登録
@@ -54,32 +53,6 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
             }
             yield checkCard(req, offer.price);
         }
-        let email;
-        // tslint:disable:no-trailing-whitespace
-        const template = `| 会員プログラムが更新されました。
-| 
-| [Project]
-| ${req.project.id}
-| 
-| [ID]
-| #{order.customer.id}
-| 
-| [Username]
-| ${req.user.username}
-| 
-| [OrderNumber]
-| #{order.orderNumber}
-| 
-| [Order Date]
-| #{order.orderDate}
-`;
-        if (EMAIL_INFORM_UPDATE_PROGRAMMEMBERSHIP !== undefined) {
-            email = {
-                about: `ProgramMembership Updated [${req.project.id}]`,
-                toRecipient: { name: 'administrator', email: EMAIL_INFORM_UPDATE_PROGRAMMEMBERSHIP },
-                template: template
-            };
-        }
         const task = yield cinerino.service.programMembership.createRegisterTask({
             agent: req.agent,
             offerIdentifier: req.body.offerIdentifier,
@@ -98,9 +71,7 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
                                                         potentialActions: {
                                                             sendOrder: {
                                                                 potentialActions: {
-                                                                    sendEmailMessage: (email !== undefined)
-                                                                        ? [{ object: email }]
-                                                                        : []
+                                                                    sendEmailMessage: []
                                                                 }
                                                             }
                                                         }
