@@ -132,10 +132,11 @@ ordersRouter.post('', permitScopes_1.default(['admin']), ...[
             }
             const transactionResult = placeOrderTransaction.result;
             const orderActionAttributes = {
-                typeOf: cinerino.factory.actionType.OrderAction,
-                object: transactionResult.order,
                 agent: req.agent,
-                potentialActions: {}
+                object: transactionResult.order,
+                potentialActions: {},
+                project: placeOrderTransaction.project,
+                typeOf: cinerino.factory.actionType.OrderAction
             };
             yield cinerino.service.order.placeOrder(orderActionAttributes)({
                 action: actionRepo,
@@ -171,13 +172,14 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['admin']), va
         if (order.orderStatus !== cinerino.factory.orderStatus.OrderDelivered) {
             // APIユーザーとして注文配送を実行する
             const sendOrderActionAttributes = {
-                typeOf: cinerino.factory.actionType.SendAction,
-                object: order,
                 agent: req.agent,
-                recipient: order.customer,
+                object: order,
                 potentialActions: {
                     sendEmailMessage: undefined
-                }
+                },
+                project: order.project,
+                recipient: order.customer,
+                typeOf: cinerino.factory.actionType.SendAction
             };
             yield cinerino.service.delivery.sendOrder(sendOrderActionAttributes)({
                 action: actionRepo,

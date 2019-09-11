@@ -156,6 +156,7 @@ async function checkCard(req: Request, amount: number) {
         typeOf: cinerino.factory.transactionType.PlaceOrder,
         agent: req.agent,
         seller: {
+            project: req.project,
             id: seller.id,
             typeOf: seller.typeOf,
             name: seller.name,

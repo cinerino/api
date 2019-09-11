@@ -91,6 +91,6 @@ export default async () => {
     await unRegisterProgramMembership({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await updateEventAttendeeCapacity({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
 
-    await createImportScreeningEventsTask({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await createUpdateEventAttendeeCapacityTask({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    await createImportScreeningEventsTask({ project: project });
+    await createUpdateEventAttendeeCapacityTask({ project: project });
 };

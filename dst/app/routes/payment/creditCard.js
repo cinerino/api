@@ -76,7 +76,7 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'cus
         const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
         const creditCard = Object.assign(Object.assign({}, req.body.object.creditCard), { memberId: memberId });
         const action = yield cinerino.service.payment.creditCard.authorize({
-            project: { id: process.env.PROJECT_ID },
+            project: req.project,
             agent: { id: req.user.sub },
             object: Object.assign(Object.assign({ typeOf: cinerino.factory.paymentMethodType.CreditCard, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {

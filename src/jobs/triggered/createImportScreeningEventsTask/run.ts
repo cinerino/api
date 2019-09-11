@@ -26,7 +26,7 @@ const IMPORT_EVENTS_INTERVAL_IN_MINUTES = (process.env.IMPORT_EVENTS_INTERVAL_IN
     : MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES;
 
 export default async (params: {
-    project?: cinerino.factory.project.IProject;
+    project: cinerino.factory.project.IProject;
 }) => {
     let holdSingletonProcess = false;
     setInterval(

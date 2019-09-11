@@ -18,7 +18,7 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
     : 1;
 
 export default async (params: {
-    project?: cinerino.factory.project.IProject;
+    project: cinerino.factory.project.IProject;
 }) => {
     let holdSingletonProcess = false;
     setInterval(

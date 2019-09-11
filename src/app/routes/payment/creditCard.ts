@@ -82,7 +82,7 @@ creditCardPaymentRouter.post(
             };
 
             const action = await cinerino.service.payment.creditCard.authorize({
-                project: { id: <string>process.env.PROJECT_ID },
+                project: req.project,
                 agent: { id: req.user.sub },
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.CreditCard,

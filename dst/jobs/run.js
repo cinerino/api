@@ -89,6 +89,6 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_35.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     yield run_36.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     yield run_37.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    yield run_38.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    yield run_39.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    yield run_38.default({ project: project });
+    yield run_39.default({ project: project });
 });

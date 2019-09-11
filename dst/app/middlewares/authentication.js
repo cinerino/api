@@ -56,6 +56,7 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                 let programMembership;
                 if (user.username !== undefined) {
                     programMembership = {
+                        project: req.project,
                         typeOf: 'ProgramMembership',
                         membershipNumber: user.username,
                         programName: 'Amazon Cognito',

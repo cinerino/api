@@ -193,7 +193,10 @@ peopleRouter.get(
                     break;
 
                 case cinerino.factory.chevre.reservationType.EventReservation:
-                    ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(searchConditions)({
+                    ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations({
+                        ...searchConditions,
+                        project: req.project
+                    })({
                         ownershipInfo: ownershipInfoRepo,
                         project: projectRepo
                     });

@@ -165,7 +165,7 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['admin']), ...[
                 });
                 break;
             case cinerino.factory.chevre.reservationType.EventReservation:
-                ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(searchConditions)({
+                ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(Object.assign(Object.assign({}, searchConditions), { project: req.project }))({
                     ownershipInfo: ownershipInfoRepo,
                     project: projectRepo
                 });

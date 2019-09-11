@@ -148,10 +148,11 @@ ordersRouter.post(
                 const transactionResult = <cinerino.factory.transaction.IResult<cinerino.factory.transactionType.PlaceOrder>>
                     placeOrderTransaction.result;
                 const orderActionAttributes: cinerino.factory.action.trade.order.IAttributes = {
-                    typeOf: cinerino.factory.actionType.OrderAction,
-                    object: transactionResult.order,
                     agent: req.agent,
-                    potentialActions: {}
+                    object: transactionResult.order,
+                    potentialActions: {},
+                    project: placeOrderTransaction.project,
+                    typeOf: cinerino.factory.actionType.OrderAction
                 };
 
                 await cinerino.service.order.placeOrder(orderActionAttributes)({
@@ -198,13 +199,14 @@ ordersRouter.post(
             if (order.orderStatus !== cinerino.factory.orderStatus.OrderDelivered) {
                 // APIユーザーとして注文配送を実行する
                 const sendOrderActionAttributes: cinerino.factory.action.transfer.send.order.IAttributes = {
-                    typeOf: cinerino.factory.actionType.SendAction,
-                    object: order,
                     agent: req.agent,
-                    recipient: order.customer,
+                    object: order,
                     potentialActions: {
                         sendEmailMessage: undefined
-                    }
+                    },
+                    project: order.project,
+                    recipient: order.customer,
+                    typeOf: cinerino.factory.actionType.SendAction
                 };
 
                 await cinerino.service.delivery.sendOrder(sendOrderActionAttributes)({
