@@ -97,11 +97,17 @@ peopleRouter.delete(
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
             if (project.settings === undefined
-                || project.settings.cognito === undefined) {
+                || project.settings.cognito === undefined
+                || project.settings.gmo === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
+                siteId: project.settings.gmo.siteId,
+                sitePass: project.settings.gmo.sitePass,
+                cardService: new cinerino.GMO.service.Card({ endpoint: project.settings.gmo.endpoint })
+            });
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const personRepo = new cinerino.repository.Person({
                 userPoolId: project.settings.cognito.customerUserPool.id
@@ -148,6 +154,7 @@ peopleRouter.delete(
                 physically: req.body.physically === true
             })({
                 action: actionRepo,
+                creditCard: creditCardRepo,
                 person: personRepo,
                 task: taskRepo
             });
