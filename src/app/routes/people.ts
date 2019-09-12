@@ -324,7 +324,7 @@ peopleRouter.delete(
                 sitePass: project.settings.gmo.sitePass,
                 cardService: new cinerino.GMO.service.Card({ endpoint: project.settings.gmo.endpoint })
             });
-            await creditCardRepo.remove({
+            await creditCardRepo.deleteBySequenceNumber({
                 personId: memberId,
                 cardSeq: req.params.cardSeq
             });

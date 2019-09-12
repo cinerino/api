@@ -13,7 +13,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * 自分のクレジットカードルーター
  */
 const cinerino = require("@cinerino/domain");
-const createDebug = require("debug");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
@@ -24,7 +23,6 @@ const validator_1 = require("../../../../middlewares/validator");
  */
 const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
 const creditCardsRouter = express_1.Router();
-const debug = createDebug('cinerino-api:router');
 /**
  * 会員クレジットカード追加
  */
@@ -32,11 +30,9 @@ creditCardsRouter.post('', permitScopes_1.default(['customer']), validator_1.def
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined) {
+        if (project.settings === undefined
+            || project.settings.gmo === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
-        if (project.settings.gmo === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
         }
         const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
@@ -62,11 +58,9 @@ creditCardsRouter.get('', permitScopes_1.default(['customer']), (req, res, next)
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined) {
+        if (project.settings === undefined
+            || project.settings.gmo === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
-        if (project.settings.gmo === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
         }
         const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
@@ -75,7 +69,6 @@ creditCardsRouter.get('', permitScopes_1.default(['customer']), (req, res, next)
             cardService: new cinerino.GMO.service.Card({ endpoint: project.settings.gmo.endpoint })
         });
         const searchCardResults = yield creditCardRepo.search({ personId: memberId });
-        debug('searchCardResults:', searchCardResults);
         res.json(searchCardResults);
     }
     catch (error) {
@@ -89,11 +82,9 @@ creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['customer']), vali
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined) {
+        if (project.settings === undefined
+            || project.settings.gmo === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
-        if (project.settings.gmo === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
         }
         const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
@@ -101,7 +92,7 @@ creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['customer']), vali
             sitePass: project.settings.gmo.sitePass,
             cardService: new cinerino.GMO.service.Card({ endpoint: project.settings.gmo.endpoint })
         });
-        yield creditCardRepo.remove({
+        yield creditCardRepo.deleteBySequenceNumber({
             personId: memberId,
             cardSeq: req.params.cardSeq
         });

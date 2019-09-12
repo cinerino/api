@@ -2,7 +2,6 @@
  * 自分のクレジットカードルーター
  */
 import * as cinerino from '@cinerino/domain';
-import * as createDebug from 'debug';
 import { Router } from 'express';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
@@ -17,8 +16,6 @@ const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID 
 
 const creditCardsRouter = Router();
 
-const debug = createDebug('cinerino-api:router');
-
 /**
  * 会員クレジットカード追加
  */
@@ -30,11 +27,9 @@ creditCardsRouter.post(
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined) {
+            if (project.settings === undefined
+                || project.settings.gmo === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-            }
-            if (project.settings.gmo === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
             }
 
             const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? <string>req.user.username : req.user.sub;
@@ -66,11 +61,9 @@ creditCardsRouter.get(
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined) {
+            if (project.settings === undefined
+                || project.settings.gmo === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-            }
-            if (project.settings.gmo === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
             }
 
             const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? <string>req.user.username : req.user.sub;
@@ -80,7 +73,6 @@ creditCardsRouter.get(
                 cardService: new cinerino.GMO.service.Card({ endpoint: project.settings.gmo.endpoint })
             });
             const searchCardResults = await creditCardRepo.search({ personId: memberId });
-            debug('searchCardResults:', searchCardResults);
 
             res.json(searchCardResults);
         } catch (error) {
@@ -100,11 +92,9 @@ creditCardsRouter.delete(
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined) {
+            if (project.settings === undefined
+                || project.settings.gmo === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-            }
-            if (project.settings.gmo === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
             }
 
             const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? <string>req.user.username : req.user.sub;
@@ -113,7 +103,7 @@ creditCardsRouter.delete(
                 sitePass: project.settings.gmo.sitePass,
                 cardService: new cinerino.GMO.service.Card({ endpoint: project.settings.gmo.endpoint })
             });
-            await creditCardRepo.remove({
+            await creditCardRepo.deleteBySequenceNumber({
                 personId: memberId,
                 cardSeq: req.params.cardSeq
             });

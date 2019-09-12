@@ -265,7 +265,7 @@ peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.d
             sitePass: project.settings.gmo.sitePass,
             cardService: new cinerino.GMO.service.Card({ endpoint: project.settings.gmo.endpoint })
         });
-        yield creditCardRepo.remove({
+        yield creditCardRepo.deleteBySequenceNumber({
             personId: memberId,
             cardSeq: req.params.cardSeq
         });
