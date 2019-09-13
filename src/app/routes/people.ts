@@ -134,7 +134,10 @@ peopleRouter.delete(
                         project: o.project,
                         typeOf: cinerino.factory.actionType.UnRegisterAction,
                         agent: req.agent,
-                        object: o
+                        object: {
+                            ...o.typeOfGood,
+                            member: [person]
+                        }
                     };
                 });
 

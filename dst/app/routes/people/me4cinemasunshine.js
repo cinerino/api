@@ -217,7 +217,7 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/:identifier/unReg
                 project: o.project,
                 typeOf: cinerino.factory.actionType.UnRegisterAction,
                 agent: req.agent,
-                object: o
+                object: Object.assign(Object.assign({}, o.typeOfGood), { member: [req.agent] })
             };
         });
         // 会員削除タスクを作成

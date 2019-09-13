@@ -120,7 +120,7 @@ peopleRouter.delete('/:id', permitScopes_1.default(['admin']), validator_1.defau
                 project: o.project,
                 typeOf: cinerino.factory.actionType.UnRegisterAction,
                 agent: req.agent,
-                object: o
+                object: Object.assign(Object.assign({}, o.typeOfGood), { member: [person] })
             };
         });
         // 会員削除タスクを作成
