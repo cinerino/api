@@ -51,11 +51,11 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 let programMembership: cinerino.factory.programMembership.IProgramMembership | undefined;
                 if (user.username !== undefined) {
                     programMembership = {
-                        project: req.project,
-                        typeOf: <cinerino.factory.programMembership.ProgramMembershipType>'ProgramMembership',
+                        award: [],
                         membershipNumber: user.username,
                         programName: 'Amazon Cognito',
-                        award: [],
+                        project: req.project,
+                        typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership,
                         url: user.iss
                     };
                 }

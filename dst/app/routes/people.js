@@ -109,7 +109,7 @@ peopleRouter.delete('/:id', permitScopes_1.default(['admin']), validator_1.defau
         // 現在所有している会員プログラムを全て検索
         const now = new Date();
         const ownershipInfos = yield ownershipInfoRepo.search({
-            typeOfGood: { typeOf: 'ProgramMembership' },
+            typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
             ownedBy: { id: person.id },
             ownedFrom: now,
             ownedThrough: now

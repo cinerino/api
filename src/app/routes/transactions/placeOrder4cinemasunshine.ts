@@ -411,7 +411,7 @@ placeOrder4cinemasunshineRouter.post(
 
             const programMemberships = await ownershipInfoRepo.search<cinerino.factory.programMembership.ProgramMembershipType>({
                 typeOfGood: {
-                    typeOf: 'ProgramMembership'
+                    typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership
                 },
                 ownedBy: { id: req.user.sub },
                 ownedFrom: now,

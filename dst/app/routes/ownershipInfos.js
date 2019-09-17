@@ -204,7 +204,7 @@ ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.defaul
         };
         const repository = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const andConditions = [
-            { 'typeOfGood.typeOf': 'ProgramMembership' }
+            { 'typeOfGood.typeOf': cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership }
         ];
         andConditions.push({
             createdAt: {
