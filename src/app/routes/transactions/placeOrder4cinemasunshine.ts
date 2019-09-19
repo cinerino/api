@@ -432,6 +432,7 @@ placeOrder4cinemasunshineRouter.post(
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId },
                 object: {
+                    typeOf: cinerino.factory.action.authorize.award.point.ObjectType.PointAward,
                     amount: Number(req.body.amount),
                     toAccountNumber: <string>req.body.toAccountNumber,
                     notes: <string>req.body.notes
