@@ -122,7 +122,9 @@ reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitSc
             endpoint: project.settings.chevre.endpoint,
             auth: chevreAuthClient
         });
-        const reservation = yield reservationService.findById({ id: ownershipInfo.typeOfGood.id });
+        const reservation = yield reservationService.findById({
+            id: ownershipInfo.typeOfGood.id
+        });
         // 入場
         yield reservationService.attendScreeningEvent(reservation);
         res.json(Object.assign(Object.assign({}, ownershipInfo), { typeOfGood: reservation }));

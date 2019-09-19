@@ -148,7 +148,9 @@ reservationsRouter.post(
                 endpoint: project.settings.chevre.endpoint,
                 auth: chevreAuthClient
             });
-            const reservation = await reservationService.findById({ id: ownershipInfo.typeOfGood.id });
+            const reservation = await reservationService.findById<cinerino.factory.chevre.reservationType.EventReservation>({
+                id: ownershipInfo.typeOfGood.id
+            });
 
             // 入場
             await reservationService.attendScreeningEvent(reservation);

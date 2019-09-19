@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@cinerino/domain": "1.0.0-alpha.339",
+    "@cinerino/domain": "1.0.0-alpha.341",
     "@motionpicture/express-middleware": "^0.1.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
@@ -23,7 +23,8 @@
     "ioredis": "^3.2.2",
     "moment": "^2.24.0",
     "mongoose": "^5.6.12",
-    "qs": "^6.8.0"
+    "qs": "^6.8.0",
+    "redis": "^2.8.0"
   },
   "description": "Cinerino API Web Application",
   "devDependencies": {
@@ -43,6 +44,7 @@
     "@types/node": "^8.10.53",
     "@types/power-assert": "^1.5.0",
     "@types/qs": "^6.5.3",
+    "@types/redis": "^2.8.13",
     "@types/sinon": "^4.3.3",
     "@types/supertest": "^2.0.8",
     "cpx": "^1.5.0",

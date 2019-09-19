@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * redis cacheクライアント
  */
-const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
+const redis = require("redis");
 const debug = createDebug('cinerino-api:redis');
 const CONNECT_TIMEOUT_IN_MILLISECONDS = 3600000;
 const MAX_ATTEMPTS = 10;
@@ -24,7 +24,7 @@ setInterval(() => {
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
 function createClient() {
-    const c = cinerino.redis.createClient({
+    const c = redis.createClient({
         host: process.env.REDIS_HOST,
         port: Number(process.env.REDIS_PORT),
         password: process.env.REDIS_KEY,

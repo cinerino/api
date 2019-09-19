@@ -11,8 +11,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
+const redis = require("redis");
 const debug = createDebug('cinerino-api:middlewares');
-const redisClient = cinerino.redis.createClient({
+const redisClient = redis.createClient({
     host: process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT),
     password: process.env.REDIS_KEY,

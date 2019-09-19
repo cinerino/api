@@ -372,7 +372,7 @@ ordersRouter.post(
                 endpoint: project.settings.chevre.endpoint,
                 auth: chevreAuthClient
             });
-            const searchReservationsResult = await reservationService.search({
+            const searchReservationsResult = await reservationService.search<cinerino.factory.chevre.reservationType.EventReservation>({
                 limit: reservationIds.length,
                 typeOf: cinerino.factory.chevre.reservationType.EventReservation,
                 ids: reservationIds

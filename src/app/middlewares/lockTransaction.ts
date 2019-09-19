@@ -1,10 +1,11 @@
 import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
+import * as redis from 'redis';
 
 const debug = createDebug('cinerino-api:middlewares');
 
-const redisClient = cinerino.redis.createClient({
+const redisClient = redis.createClient({
     host: <string>process.env.REDIS_HOST,
     port: Number(<string>process.env.REDIS_PORT),
     password: <string>process.env.REDIS_KEY,
@@ -26,9 +27,9 @@ export interface IProcessKey {
  * 取引プロセスリポジトリ
  */
 export class TransactionProcessRepository {
-    public readonly redisClient: cinerino.redis.RedisClient;
+    public readonly redisClient: redis.RedisClient;
 
-    constructor(params: cinerino.redis.RedisClient) {
+    constructor(params: redis.RedisClient) {
         this.redisClient = params;
     }
 

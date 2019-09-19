@@ -13,10 +13,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * イベント席数更新
  */
 const cinerino = require("@cinerino/domain");
+const redis = require("redis");
 const connectMongo_1 = require("../../../connectMongo");
 exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
-    const redisClient = cinerino.redis.createClient({
+    const redisClient = redis.createClient({
         host: process.env.REDIS_HOST,
         port: Number(process.env.REDIS_PORT),
         password: process.env.REDIS_KEY,

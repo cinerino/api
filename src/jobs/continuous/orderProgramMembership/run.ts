@@ -2,6 +2,7 @@
  * 会員プログラム注文タスク
  */
 import * as cinerino from '@cinerino/domain';
+import * as redis from 'redis';
 
 import { connectMongo } from '../../../connectMongo';
 
@@ -10,7 +11,7 @@ export default async (params: {
 }) => {
     const connection = await connectMongo({ defaultConnection: false });
 
-    const redisClient = cinerino.redis.createClient({
+    const redisClient = redis.createClient({
         host: <string>process.env.REDIS_HOST,
         port: Number(<string>process.env.REDIS_PORT),
         password: <string>process.env.REDIS_KEY,

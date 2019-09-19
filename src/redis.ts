@@ -1,15 +1,15 @@
 /**
  * redis cacheクライアント
  */
-import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
+import * as redis from 'redis';
 
 const debug = createDebug('cinerino-api:redis');
 const CONNECT_TIMEOUT_IN_MILLISECONDS = 3600000;
 const MAX_ATTEMPTS = 10;
 const PING_INTERVAL = 60000; // 60 seconds
 
-let client: cinerino.redis.RedisClient | undefined;
+let client: redis.RedisClient | undefined;
 
 /**
  * AzureRedisは10分間アイドル状態だとタイムアウトしてコネクションが切断される
@@ -29,7 +29,7 @@ setInterval(
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
 function createClient() {
-    const c = cinerino.redis.createClient({
+    const c = redis.createClient({
         host: <string>process.env.REDIS_HOST,
         port: Number(<string>process.env.REDIS_PORT),
         password: <string>process.env.REDIS_KEY,
@@ -101,7 +101,7 @@ function resetClient() {
     client = undefined;
 }
 
-export function getClient(): cinerino.redis.RedisClient {
+export function getClient(): redis.RedisClient {
     if (client === undefined) {
         client = createClient();
     }
