@@ -174,6 +174,13 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 
  * 購入者情報を変更する
  */
 placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['customer', 'transactions']), ...[
+    check_1.body('additionalProperty')
+        .optional()
+        .isArray(),
+    check_1.body('email')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required'),
     check_1.body('familyName')
         .not()
         .isEmpty()
@@ -183,10 +190,6 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
         .isEmpty()
         .withMessage((_, __) => 'required'),
     check_1.body('telephone')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    check_1.body('email')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
@@ -212,15 +215,9 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
         catch (error) {
             throw new cinerino.factory.errors.Argument('Telephone', `Unexpected value: ${error.message}`);
         }
-        const contact = yield cinerino.service.transaction.placeOrderInProgress.updateCustomerProfile({
+        const contact = yield cinerino.service.transaction.placeOrderInProgress.updateAgent({
             id: req.params.transactionId,
-            agent: {
-                id: req.user.sub,
-                familyName: String(req.body.familyName),
-                givenName: String(req.body.givenName),
-                email: String(req.body.email),
-                telephone: requestedNumber
-            }
+            agent: Object.assign(Object.assign({}, req.body), { typeOf: cinerino.factory.personType.Person, id: req.user.sub, telephone: requestedNumber })
         })({
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });

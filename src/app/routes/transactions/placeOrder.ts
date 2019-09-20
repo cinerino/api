@@ -203,6 +203,13 @@ placeOrderTransactionsRouter.put(
     '/:transactionId/customerContact',
     permitScopes(['customer', 'transactions']),
     ...[
+        body('additionalProperty')
+            .optional()
+            .isArray(),
+        body('email')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required'),
         body('familyName')
             .not()
             .isEmpty()
@@ -212,10 +219,6 @@ placeOrderTransactionsRouter.put(
             .isEmpty()
             .withMessage((_, __) => 'required'),
         body('telephone')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required'),
-        body('email')
             .not()
             .isEmpty()
             .withMessage((_, __) => 'required')
@@ -246,14 +249,22 @@ placeOrderTransactionsRouter.put(
                 throw new cinerino.factory.errors.Argument('Telephone', `Unexpected value: ${error.message}`);
             }
 
-            const contact = await cinerino.service.transaction.placeOrderInProgress.updateCustomerProfile({
+            const contact = await cinerino.service.transaction.placeOrderInProgress.updateAgent({
                 id: req.params.transactionId,
                 agent: {
+                    ...req.body,
+                    typeOf: cinerino.factory.personType.Person,
                     id: req.user.sub,
-                    familyName: String(req.body.familyName),
-                    givenName: String(req.body.givenName),
-                    email: String(req.body.email),
                     telephone: requestedNumber
+                    // ...(Array.isArray(req.body.additionalProperty)) ? { additionalProperty: req.body.additionalProperty } : {},
+                    // ...(typeof req.body.age === 'string') ? { age: req.body.age } : {},
+                    // ...(typeof req.body.address === 'string') ? { address: req.body.address } : {},
+                    // ...(typeof req.body.email === 'string') ? { email: req.body.email } : {},
+                    // ...(typeof req.body.familyName === 'string') ? { familyName: req.body.familyName } : {},
+                    // ...(typeof req.body.gender === 'string') ? { gender: req.body.gender } : {},
+                    // ...(typeof req.body.givenName === 'string') ? { givenName: req.body.givenName } : {},
+                    // ...(typeof req.body.name === 'string') ? { name: req.body.name } : {},
+                    // ...(typeof req.body.url === 'string') ? { url: req.body.url } : {}
                 }
             })({
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
