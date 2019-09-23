@@ -294,9 +294,9 @@ placeOrder4cinemasunshineRouter.post(
     async (req, res, next) => {
         try {
             const authorizeObject = {
-                typeOf: cinerino.factory.action.authorize.discount.mvtk.ObjectType.Mvtk,
-                price: Number(req.body.price),
-                transactionId: req.params.transactionId,
+                // typeOf: cinerino.factory.action.authorize.discount.mvtk.ObjectType.Mvtk,
+                // price: Number(req.body.price),
+                // transactionId: req.params.transactionId,
                 seatInfoSyncIn: {
                     kgygishCd: req.body.seatInfoSyncIn.kgygishCd,
                     yykDvcTyp: req.body.seatInfoSyncIn.yykDvcTyp,
