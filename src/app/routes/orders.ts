@@ -360,7 +360,7 @@ ordersRouter.post(
                 : (<any>sendOrderAction.result).ownershipInfos; // 旧型に対する互換性維持のため
             const reservationIds = ownershipInfos
                 .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
-                .map((o) => (<EventReservationGoodType>o.typeOfGood).id);
+                .map((o) => <string>(<EventReservationGoodType>o.typeOfGood).id);
 
             if (project.settings === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
@@ -506,6 +506,37 @@ ordersRouter.get(
 
             res.set('X-Total-Count', totalCount.toString());
             res.json(orders);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * ストリーミングダウンロード
+ */
+ordersRouter.get(
+    '/download',
+    permitScopes(['admin']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+
+            const searchConditions: cinerino.factory.order.ISearchConditions = {
+                ...req.query,
+                project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined
+            };
+
+            const format = req.query.format;
+
+            const stream = await cinerino.service.report.order.stream({
+                conditions: searchConditions,
+                format: format
+            })({ order: orderRepo });
+
+            res.type(`${req.query.format}; charset=utf-8`);
+            stream.pipe(res);
         } catch (error) {
             next(error);
         }

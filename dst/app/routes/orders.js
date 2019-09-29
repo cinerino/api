@@ -433,4 +433,23 @@ ordersRouter.get('', permitScopes_1.default(['admin']), ...[
         next(error);
     }
 }));
+/**
+ * ストリーミングダウンロード
+ */
+ordersRouter.get('/download', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined });
+        const format = req.query.format;
+        const stream = yield cinerino.service.report.order.stream({
+            conditions: searchConditions,
+            format: format
+        })({ order: orderRepo });
+        res.type(`${req.query.format}; charset=utf-8`);
+        stream.pipe(res);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 exports.default = ordersRouter;
