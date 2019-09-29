@@ -42,6 +42,93 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 const ordersRouter = express_1.Router();
 ordersRouter.use(authentication_1.default);
 /**
+ * 注文検索
+ */
+ordersRouter.get('', permitScopes_1.default(['admin']), ...[
+    check_1.query('orderDateFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('orderDateThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('acceptedOffers.itemOffered.reservationFor.startFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('acceptedOffers.itemOffered.reservationFor.startThrough')
+        .optional()
+        .isISO8601()
+        .toDate()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
+        const totalCount = yield orderRepo.count(searchConditions);
+        const orders = yield orderRepo.search(searchConditions);
+        res.set('X-Total-Count', totalCount.toString());
+        res.json(orders);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * ストリーミングダウンロード
+ */
+ordersRouter.get('/download', permitScopes_1.default(['admin']), ...[
+    check_1.query('orderDateFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('orderDateThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('acceptedOffers.itemOffered.reservationFor.startFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.query('acceptedOffers.itemOffered.reservationFor.startThrough')
+        .optional()
+        .isISO8601()
+        .toDate()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined });
+        const format = req.query.format;
+        const stream = yield cinerino.service.report.order.stream({
+            conditions: searchConditions,
+            format: format
+        })({ order: orderRepo });
+        res.type(`${req.query.format}; charset=utf-8`);
+        stream.pipe(res);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
  * 確認番号と電話番号で注文照会
  * @deprecated 基本的にシネマサンシャイン互換性維持のためのエンドポイント
  */
@@ -385,68 +472,6 @@ ordersRouter.get('/:orderNumber/actions', permitScopes_1.default(['admin']), val
             sort: req.query.sort
         });
         res.json(actions);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * 注文検索
- */
-ordersRouter.get('', permitScopes_1.default(['admin']), ...[
-    check_1.query('orderDateFrom')
-        .optional()
-        .isISO8601()
-        .toDate(),
-    check_1.query('orderDateThrough')
-        .optional()
-        .isISO8601()
-        .toDate(),
-    check_1.query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
-        .optional()
-        .isISO8601()
-        .toDate(),
-    check_1.query('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
-        .optional()
-        .isISO8601()
-        .toDate(),
-    check_1.query('acceptedOffers.itemOffered.reservationFor.startFrom')
-        .optional()
-        .isISO8601()
-        .toDate(),
-    check_1.query('acceptedOffers.itemOffered.reservationFor.startThrough')
-        .optional()
-        .isISO8601()
-        .toDate()
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const orderRepo = new cinerino.repository.Order(mongoose.connection);
-        const searchConditions = Object.assign(Object.assign({}, req.query), { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
-            // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const totalCount = yield orderRepo.count(searchConditions);
-        const orders = yield orderRepo.search(searchConditions);
-        res.set('X-Total-Count', totalCount.toString());
-        res.json(orders);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * ストリーミングダウンロード
- */
-ordersRouter.get('/download', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const orderRepo = new cinerino.repository.Order(mongoose.connection);
-        const searchConditions = Object.assign(Object.assign({}, req.query), { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined });
-        const format = req.query.format;
-        const stream = yield cinerino.service.report.order.stream({
-            conditions: searchConditions,
-            format: format
-        })({ order: orderRepo });
-        res.type(`${req.query.format}; charset=utf-8`);
-        stream.pipe(res);
     }
     catch (error) {
         next(error);

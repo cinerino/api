@@ -38,6 +38,119 @@ const ordersRouter = Router();
 ordersRouter.use(authentication);
 
 /**
+ * 注文検索
+ */
+ordersRouter.get(
+    '',
+    permitScopes(['admin']),
+    ...[
+        query('orderDateFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('orderDateThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('acceptedOffers.itemOffered.reservationFor.startFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('acceptedOffers.itemOffered.reservationFor.startThrough')
+            .optional()
+            .isISO8601()
+            .toDate()
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+
+            const searchConditions: cinerino.factory.order.ISearchConditions = {
+                ...req.query,
+                project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
+            };
+
+            const totalCount = await orderRepo.count(searchConditions);
+            const orders = await orderRepo.search(searchConditions);
+
+            res.set('X-Total-Count', totalCount.toString());
+            res.json(orders);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * ストリーミングダウンロード
+ */
+ordersRouter.get(
+    '/download',
+    permitScopes(['admin']),
+    ...[
+        query('orderDateFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('orderDateThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('acceptedOffers.itemOffered.reservationFor.startFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('acceptedOffers.itemOffered.reservationFor.startThrough')
+            .optional()
+            .isISO8601()
+            .toDate()
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+
+            const searchConditions: cinerino.factory.order.ISearchConditions = {
+                ...req.query,
+                project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined
+            };
+
+            const format = req.query.format;
+
+            const stream = await cinerino.service.report.order.stream({
+                conditions: searchConditions,
+                format: format
+            })({ order: orderRepo });
+
+            res.type(`${req.query.format}; charset=utf-8`);
+            stream.pipe(res);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
  * 確認番号と電話番号で注文照会
  * @deprecated 基本的にシネマサンシャイン互換性維持のためのエンドポイント
  */
@@ -450,93 +563,6 @@ ordersRouter.get(
                 sort: req.query.sort
             });
             res.json(actions);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
- * 注文検索
- */
-ordersRouter.get(
-    '',
-    permitScopes(['admin']),
-    ...[
-        query('orderDateFrom')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('orderDateThrough')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('acceptedOffers.itemOffered.reservationFor.startFrom')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('acceptedOffers.itemOffered.reservationFor.startThrough')
-            .optional()
-            .isISO8601()
-            .toDate()
-    ],
-    validator,
-    async (req, res, next) => {
-        try {
-            const orderRepo = new cinerino.repository.Order(mongoose.connection);
-
-            const searchConditions: cinerino.factory.order.ISearchConditions = {
-                ...req.query,
-                project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
-            };
-
-            const totalCount = await orderRepo.count(searchConditions);
-            const orders = await orderRepo.search(searchConditions);
-
-            res.set('X-Total-Count', totalCount.toString());
-            res.json(orders);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
- * ストリーミングダウンロード
- */
-ordersRouter.get(
-    '/download',
-    permitScopes(['admin']),
-    validator,
-    async (req, res, next) => {
-        try {
-            const orderRepo = new cinerino.repository.Order(mongoose.connection);
-
-            const searchConditions: cinerino.factory.order.ISearchConditions = {
-                ...req.query,
-                project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined
-            };
-
-            const format = req.query.format;
-
-            const stream = await cinerino.service.report.order.stream({
-                conditions: searchConditions,
-                format: format
-            })({ order: orderRepo });
-
-            res.type(`${req.query.format}; charset=utf-8`);
-            stream.pipe(res);
         } catch (error) {
             next(error);
         }
