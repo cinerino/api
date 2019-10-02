@@ -43,7 +43,10 @@ creditCardPaymentRouter.post(
             .isInt(),
         body('object.additionalProperty')
             .optional()
-            .isArray(),
+            .isArray()
+            // tslint:disable-next-line:no-magic-numbers
+            .custom((value: any) => Array.isArray(value) && value.length <= 10)
+            .withMessage((_, __) => 'Max length exceeded'),
         body('object.orderId')
             .optional()
             .isString()

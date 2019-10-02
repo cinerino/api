@@ -64,27 +64,70 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 
         };
     }
     next();
-}, (req, _, next) => {
-    req.checkBody('expires', 'invalid expires')
-        .notEmpty()
-        .withMessage('expires is required')
-        .isISO8601();
-    req.checkBody('agent.identifier', 'invalid agent identifier')
+}, ...[
+    check_1.body('expires')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required')
+        .isISO8601()
+        .toDate(),
+    check_1.body('agent.identifier')
         .optional()
-        .isArray();
-    req.checkBody('seller.typeOf', 'invalid seller type')
-        .notEmpty()
-        .withMessage('seller.typeOf is required');
-    req.checkBody('seller.id', 'invalid seller id')
-        .notEmpty()
-        .withMessage('seller.id is required');
-    if (!WAITER_DISABLED) {
-        req.checkBody('object.passport.token', 'invalid passport token')
-            .notEmpty()
-            .withMessage('object.passport.token is required');
-    }
-    next();
-}, validator_1.default, 
+        .isArray()
+        // tslint:disable-next-line:no-magic-numbers
+        .custom((value) => Array.isArray(value) && value.length <= 10)
+        .withMessage((_, __) => 'Max length exceeded'),
+    check_1.body('agent.identifier.*.name')
+        .optional()
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required')
+        .isString(),
+    check_1.body('agent.identifier.*.value')
+        .optional()
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required')
+        .isString(),
+    check_1.body('seller.typeOf')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required'),
+    check_1.body('seller.id')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required'),
+    ...(!WAITER_DISABLED)
+        ? [
+            check_1.body('object.passport.token')
+                .not()
+                .isEmpty()
+                .withMessage((_, __) => 'required')
+        ]
+        : []
+], 
+// (req, _, next) => {
+//     req.checkBody('expires', 'invalid expires')
+//         .notEmpty()
+//         .withMessage('expires is required')
+//         .isISO8601();
+//     req.checkBody('agent.identifier', 'invalid agent identifier')
+//         .optional()
+//         .isArray();
+//     req.checkBody('seller.typeOf', 'invalid seller type')
+//         .notEmpty()
+//         .withMessage('seller.typeOf is required');
+//     req.checkBody('seller.id', 'invalid seller id')
+//         .notEmpty()
+//         .withMessage('seller.id is required');
+//     if (!WAITER_DISABLED) {
+//         req.checkBody('object.passport.token', 'invalid passport token')
+//             .notEmpty()
+//             .withMessage('object.passport.token is required');
+//     }
+//     next();
+// },
+validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -106,12 +149,12 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         // パラメーターの形式をunix timestampからISO 8601フォーマットに変更したため、互換性を維持するように期限をセット
-        const expires = (/^\d+$/.test(req.body.expires))
-            // tslint:disable-next-line:no-magic-numbers
-            ? moment.unix(Number(req.body.expires))
-                .toDate()
-            : moment(req.body.expires)
-                .toDate();
+        // const expires = (/^\d+$/.test(<string>req.body.expires))
+        //     ? moment.unix(Number(<string>req.body.expires))
+        //         .toDate()
+        //     : moment(<string>req.body.expires)
+        //         .toDate();
+        const expires = req.body.expires;
         const seller = yield sellerRepo.findById({ id: req.body.seller.id });
         const passportValidator = (params) => {
             // 許可証発行者確認
@@ -233,7 +276,10 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatReservation', permitScopes_1.default(['customer', 'transactions']), ...[
     check_1.body('object.acceptedOffer.additionalProperty')
         .optional()
-        .isArray(),
+        .isArray()
+        // tslint:disable-next-line:no-magic-numbers
+        .custom((value) => Array.isArray(value) && value.length <= 10)
+        .withMessage((_, __) => 'Max length exceeded'),
     check_1.body('object.acceptedOffer.additionalProperty.*.name')
         .optional()
         .not()

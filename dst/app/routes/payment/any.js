@@ -44,6 +44,9 @@ anyPaymentRouter.post('/authorize', permitScopes_1.default(['admin']), ...[
     check_1.body('object.additionalProperty')
         .optional()
         .isArray()
+        // tslint:disable-next-line:no-magic-numbers
+        .custom((value) => Array.isArray(value) && value.length <= 10)
+        .withMessage((_, __) => 'Max length exceeded')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,

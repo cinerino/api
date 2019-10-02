@@ -71,27 +71,70 @@ placeOrderTransactionsRouter.post(
 
         next();
     },
-    (req, _, next) => {
-        req.checkBody('expires', 'invalid expires')
-            .notEmpty()
-            .withMessage('expires is required')
-            .isISO8601();
-        req.checkBody('agent.identifier', 'invalid agent identifier')
+    ...[
+        body('expires')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required')
+            .isISO8601()
+            .toDate(),
+        body('agent.identifier')
             .optional()
-            .isArray();
-        req.checkBody('seller.typeOf', 'invalid seller type')
-            .notEmpty()
-            .withMessage('seller.typeOf is required');
-        req.checkBody('seller.id', 'invalid seller id')
-            .notEmpty()
-            .withMessage('seller.id is required');
-        if (!WAITER_DISABLED) {
-            req.checkBody('object.passport.token', 'invalid passport token')
-                .notEmpty()
-                .withMessage('object.passport.token is required');
-        }
-        next();
-    },
+            .isArray()
+            // tslint:disable-next-line:no-magic-numbers
+            .custom((value: any) => Array.isArray(value) && value.length <= 10)
+            .withMessage((_, __) => 'Max length exceeded'),
+        body('agent.identifier.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required')
+            .isString(),
+        body('agent.identifier.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required')
+            .isString(),
+        body('seller.typeOf')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required'),
+        body('seller.id')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required'),
+        ...(!WAITER_DISABLED)
+            ? [
+                body('object.passport.token')
+                    .not()
+                    .isEmpty()
+                    .withMessage((_, __) => 'required')
+            ]
+            : []
+
+    ],
+    // (req, _, next) => {
+    //     req.checkBody('expires', 'invalid expires')
+    //         .notEmpty()
+    //         .withMessage('expires is required')
+    //         .isISO8601();
+    //     req.checkBody('agent.identifier', 'invalid agent identifier')
+    //         .optional()
+    //         .isArray();
+    //     req.checkBody('seller.typeOf', 'invalid seller type')
+    //         .notEmpty()
+    //         .withMessage('seller.typeOf is required');
+    //     req.checkBody('seller.id', 'invalid seller id')
+    //         .notEmpty()
+    //         .withMessage('seller.id is required');
+    //     if (!WAITER_DISABLED) {
+    //         req.checkBody('object.passport.token', 'invalid passport token')
+    //             .notEmpty()
+    //             .withMessage('object.passport.token is required');
+    //     }
+    //     next();
+    // },
     validator,
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
@@ -116,12 +159,12 @@ placeOrderTransactionsRouter.post(
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
             // パラメーターの形式をunix timestampからISO 8601フォーマットに変更したため、互換性を維持するように期限をセット
-            const expires = (/^\d+$/.test(<string>req.body.expires))
-                // tslint:disable-next-line:no-magic-numbers
-                ? moment.unix(Number(<string>req.body.expires))
-                    .toDate()
-                : moment(<string>req.body.expires)
-                    .toDate();
+            // const expires = (/^\d+$/.test(<string>req.body.expires))
+            //     ? moment.unix(Number(<string>req.body.expires))
+            //         .toDate()
+            //     : moment(<string>req.body.expires)
+            //         .toDate();
+            const expires: Date = req.body.expires;
 
             const seller = await sellerRepo.findById({ id: <string>req.body.seller.id });
 
@@ -286,7 +329,10 @@ placeOrderTransactionsRouter.post(
     ...[
         body('object.acceptedOffer.additionalProperty')
             .optional()
-            .isArray(),
+            .isArray()
+            // tslint:disable-next-line:no-magic-numbers
+            .custom((value: any) => Array.isArray(value) && value.length <= 10)
+            .withMessage((_, __) => 'Max length exceeded'),
         body('object.acceptedOffer.additionalProperty.*.name')
             .optional()
             .not()

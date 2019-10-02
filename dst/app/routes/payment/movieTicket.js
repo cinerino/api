@@ -85,7 +85,10 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['customer', 
         .isInt(),
     check_1.body('object.additionalProperty')
         .optional()
-        .isArray(),
+        .isArray()
+        // tslint:disable-next-line:no-magic-numbers
+        .custom((value) => Array.isArray(value) && value.length <= 10)
+        .withMessage((_, __) => 'Max length exceeded'),
     check_1.body('object.movieTickets')
         .not()
         .isEmpty()

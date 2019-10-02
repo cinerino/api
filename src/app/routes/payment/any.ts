@@ -39,6 +39,9 @@ anyPaymentRouter.post(
         body('object.additionalProperty')
             .optional()
             .isArray()
+            // tslint:disable-next-line:no-magic-numbers
+            .custom((value: any) => Array.isArray(value) && value.length <= 10)
+            .withMessage((_, __) => 'Max length exceeded')
     ],
     validator,
     async (req, res, next) => {
