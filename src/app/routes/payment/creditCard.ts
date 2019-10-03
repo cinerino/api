@@ -46,10 +46,17 @@ creditCardPaymentRouter.post<ParamsDictionary>(
             .isInt(),
         body('object.additionalProperty')
             .optional()
-            .isArray()
-            // tslint:disable-next-line:no-magic-numbers
-            .custom((value: any) => Array.isArray(value) && value.length <= 10)
-            .withMessage((_, __) => 'Max length exceeded'),
+            .isArray({ max: 10 }),
+        body('object.additionalProperty.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString(),
+        body('object.additionalProperty.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString(),
         body('object.orderId')
             .optional()
             .isString()

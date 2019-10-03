@@ -47,7 +47,17 @@ moneyTransferTransactionsRouter.post(
             .isEmpty(),
         body('agent.identifier')
             .optional()
-            .isArray(),
+            .isArray({ max: 10 }),
+        body('agent.identifier.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString(),
+        body('agent.identifier.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString(),
         body('recipient')
             .not()
             .isEmpty()

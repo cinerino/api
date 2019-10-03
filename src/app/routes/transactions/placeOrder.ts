@@ -82,21 +82,16 @@ placeOrderTransactionsRouter.post(
             .toDate(),
         body('agent.identifier')
             .optional()
-            .isArray()
-            // tslint:disable-next-line:no-magic-numbers
-            .custom((value: any) => Array.isArray(value) && value.length <= 10)
-            .withMessage((_, __) => 'Max length exceeded'),
+            .isArray({ max: 10 }),
         body('agent.identifier.*.name')
             .optional()
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
             .isString(),
         body('agent.identifier.*.value')
             .optional()
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
             .isString(),
         body('seller.typeOf')
             .not()
@@ -230,7 +225,17 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
     ...[
         body('additionalProperty')
             .optional()
-            .isArray(),
+            .isArray({ max: 10 }),
+        body('additionalProperty.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString(),
+        body('additionalProperty.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString(),
         body('email')
             .not()
             .isEmpty()
@@ -312,21 +317,16 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
     ...[
         body('object.acceptedOffer.additionalProperty')
             .optional()
-            .isArray()
-            // tslint:disable-next-line:no-magic-numbers
-            .custom((value: any) => Array.isArray(value) && value.length <= 10)
-            .withMessage((_, __) => 'Max length exceeded'),
+            .isArray({ max: 10 }),
         body('object.acceptedOffer.additionalProperty.*.name')
             .optional()
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
             .isString(),
         body('object.acceptedOffer.additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
             .isString()
     ],
     validator,
@@ -439,7 +439,17 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             .isInt(),
         body('additionalProperty')
             .optional()
-            .isArray()
+            .isArray({ max: 10 }),
+        body('additionalProperty.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString(),
+        body('additionalProperty.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
     ],
     validator,
     async (req, res, next) => {
@@ -532,7 +542,17 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             .isInt(),
         body('additionalProperty')
             .optional()
-            .isArray(),
+            .isArray({ max: 10 }),
+        body('additionalProperty.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString(),
+        body('additionalProperty.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString(),
         body('orderId')
             .optional()
             .isString()
@@ -668,7 +688,17 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             .isInt(),
         body('additionalProperty')
             .optional()
-            .isArray(),
+            .isArray({ max: 10 }),
+        body('additionalProperty.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString(),
+        body('additionalProperty.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString(),
         body('fromAccount')
             .not()
             .isEmpty()
@@ -840,12 +870,22 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             .isInt(),
         body('additionalProperty')
             .optional()
-            .isArray(),
+            .isArray({ max: 10 }),
+        body('additionalProperty.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString(),
+        body('additionalProperty.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString(),
         body('movieTickets')
             .not()
             .isEmpty()
             .withMessage((_, __) => 'required')
-            .isArray()
+            .isArray({ max: 20 })
     ],
     validator,
     async (req, res, next) => {

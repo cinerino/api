@@ -44,10 +44,17 @@ anyPaymentRouter.post('/authorize', permitScopes_1.default(['admin']), ...[
         .isInt(),
     check_1.body('object.additionalProperty')
         .optional()
-        .isArray()
-        // tslint:disable-next-line:no-magic-numbers
-        .custom((value) => Array.isArray(value) && value.length <= 10)
-        .withMessage((_, __) => 'Max length exceeded')
+        .isArray({ max: 10 }),
+    check_1.body('object.additionalProperty.*.name')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString(),
+    check_1.body('object.additionalProperty.*.value')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,

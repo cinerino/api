@@ -48,10 +48,17 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'cus
         .isInt(),
     check_1.body('object.additionalProperty')
         .optional()
-        .isArray()
-        // tslint:disable-next-line:no-magic-numbers
-        .custom((value) => Array.isArray(value) && value.length <= 10)
-        .withMessage((_, __) => 'Max length exceeded'),
+        .isArray({ max: 10 }),
+    check_1.body('object.additionalProperty.*.name')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString(),
+    check_1.body('object.additionalProperty.*.value')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString(),
     check_1.body('object.orderId')
         .optional()
         .isString()
