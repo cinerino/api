@@ -78,12 +78,14 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 
         .optional()
         .not()
         .isEmpty()
-        .isString(),
+        .isString()
+        .isLength({ max: 256 }),
     check_1.body('agent.identifier.*.value')
         .optional()
         .not()
         .isEmpty()
-        .isString(),
+        .isString()
+        .isLength({ max: 512 }),
     check_1.body('seller.typeOf')
         .not()
         .isEmpty()
@@ -198,12 +200,14 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
         .optional()
         .not()
         .isEmpty()
-        .isString(),
+        .isString()
+        .isLength({ max: 256 }),
     check_1.body('additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
-        .isString(),
+        .isString()
+        .isLength({ max: 512 }),
     check_1.body('email')
         .not()
         .isEmpty()
@@ -266,12 +270,14 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         .optional()
         .not()
         .isEmpty()
-        .isString(),
+        .isString()
+        .isLength({ max: 256 }),
     check_1.body('object.acceptedOffer.additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
+        .isLength({ max: 512 })
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
@@ -370,12 +376,14 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         .optional()
         .not()
         .isEmpty()
-        .isString(),
+        .isString()
+        .isLength({ max: 256 }),
     check_1.body('additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
+        .isLength({ max: 512 })
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
@@ -458,12 +466,14 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         .optional()
         .not()
         .isEmpty()
-        .isString(),
+        .isString()
+        .isLength({ max: 256 }),
     check_1.body('additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
-        .isString(),
+        .isString()
+        .isLength({ max: 512 }),
     check_1.body('orderId')
         .optional()
         .isString()
@@ -571,12 +581,14 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         .optional()
         .not()
         .isEmpty()
-        .isString(),
+        .isString()
+        .isLength({ max: 256 }),
     check_1.body('additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
-        .isString(),
+        .isString()
+        .isLength({ max: 512 }),
     check_1.body('fromAccount')
         .not()
         .isEmpty()
@@ -725,12 +737,14 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         .optional()
         .not()
         .isEmpty()
-        .isString(),
+        .isString()
+        .isLength({ max: 256 }),
     check_1.body('additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
-        .isString(),
+        .isString()
+        .isLength({ max: 512 }),
     check_1.body('movieTickets')
         .not()
         .isEmpty()

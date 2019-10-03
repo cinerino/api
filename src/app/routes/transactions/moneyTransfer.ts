@@ -52,12 +52,14 @@ moneyTransferTransactionsRouter.post(
             .optional()
             .not()
             .isEmpty()
-            .isString(),
+            .isString()
+            .isLength({ max: 256 }),
         body('agent.identifier.*.value')
             .optional()
             .not()
             .isEmpty()
-            .isString(),
+            .isString()
+            .isLength({ max: 512 }),
         body('recipient')
             .not()
             .isEmpty()

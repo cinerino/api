@@ -53,12 +53,14 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 
         .optional()
         .not()
         .isEmpty()
-        .isString(),
+        .isString()
+        .isLength({ max: 256 }),
     check_1.body('agent.identifier.*.value')
         .optional()
         .not()
         .isEmpty()
-        .isString(),
+        .isString()
+        .isLength({ max: 512 }),
     check_1.body('recipient')
         .not()
         .isEmpty()

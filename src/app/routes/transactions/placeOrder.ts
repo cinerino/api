@@ -87,12 +87,14 @@ placeOrderTransactionsRouter.post(
             .optional()
             .not()
             .isEmpty()
-            .isString(),
+            .isString()
+            .isLength({ max: 256 }),
         body('agent.identifier.*.value')
             .optional()
             .not()
             .isEmpty()
-            .isString(),
+            .isString()
+            .isLength({ max: 512 }),
         body('seller.typeOf')
             .not()
             .isEmpty()
@@ -230,12 +232,14 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
             .optional()
             .not()
             .isEmpty()
-            .isString(),
+            .isString()
+            .isLength({ max: 256 }),
         body('additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
-            .isString(),
+            .isString()
+            .isLength({ max: 512 }),
         body('email')
             .not()
             .isEmpty()
@@ -322,12 +326,14 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             .optional()
             .not()
             .isEmpty()
-            .isString(),
+            .isString()
+            .isLength({ max: 256 }),
         body('object.acceptedOffer.additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
             .isString()
+            .isLength({ max: 512 })
     ],
     validator,
     async (req, res, next) => {
@@ -444,12 +450,14 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             .optional()
             .not()
             .isEmpty()
-            .isString(),
+            .isString()
+            .isLength({ max: 256 }),
         body('additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
             .isString()
+            .isLength({ max: 512 })
     ],
     validator,
     async (req, res, next) => {
@@ -547,12 +555,14 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             .optional()
             .not()
             .isEmpty()
-            .isString(),
+            .isString()
+            .isLength({ max: 256 }),
         body('additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
-            .isString(),
+            .isString()
+            .isLength({ max: 512 }),
         body('orderId')
             .optional()
             .isString()
@@ -693,12 +703,14 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             .optional()
             .not()
             .isEmpty()
-            .isString(),
+            .isString()
+            .isLength({ max: 256 }),
         body('additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
-            .isString(),
+            .isString()
+            .isLength({ max: 512 }),
         body('fromAccount')
             .not()
             .isEmpty()
@@ -875,12 +887,14 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             .optional()
             .not()
             .isEmpty()
-            .isString(),
+            .isString()
+            .isLength({ max: 256 }),
         body('additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
-            .isString(),
+            .isString()
+            .isLength({ max: 512 }),
         body('movieTickets')
             .not()
             .isEmpty()

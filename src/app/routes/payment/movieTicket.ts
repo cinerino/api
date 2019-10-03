@@ -95,12 +95,14 @@ movieTicketPaymentRouter.post<ParamsDictionary>(
             .optional()
             .not()
             .isEmpty()
-            .isString(),
+            .isString()
+            .isLength({ max: 256 }),
         body('object.additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
-            .isString(),
+            .isString()
+            .isLength({ max: 512 }),
         body('object.movieTickets')
             .not()
             .isEmpty()

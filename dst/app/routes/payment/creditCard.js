@@ -53,12 +53,14 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'cus
         .optional()
         .not()
         .isEmpty()
-        .isString(),
+        .isString()
+        .isLength({ max: 256 }),
     check_1.body('object.additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
-        .isString(),
+        .isString()
+        .isLength({ max: 512 }),
     check_1.body('object.orderId')
         .optional()
         .isString()

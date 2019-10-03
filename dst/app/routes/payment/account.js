@@ -45,12 +45,14 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'custom
         .optional()
         .not()
         .isEmpty()
-        .isString(),
+        .isString()
+        .isLength({ max: 256 }),
     check_1.body('object.additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
+        .isLength({ max: 512 })
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,
