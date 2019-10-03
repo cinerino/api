@@ -42,7 +42,7 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                 // リクエストユーザーの属性を識別子に追加
                 try {
                     identifier.push(...Object.keys(user)
-                        .filter((key) => key !== 'scopes') // scopeとデータ内容は重複するので省く
+                        .filter((key) => key !== 'scope' && key !== 'scopes') // スコープ情報はデータ量がDBの制限にはまる可能性がある
                         .map((key) => {
                         return {
                             name: String(key),
