@@ -3,6 +3,8 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+// tslint:disable-next-line:no-implicit-dependencies
+import { ParamsDictionary } from 'express-serve-static-core';
 // tslint:disable-next-line:no-submodule-imports
 import { query } from 'express-validator/check';
 import { NO_CONTENT } from 'http-status';
@@ -173,7 +175,8 @@ peopleRouter.delete(
 /**
  * 所有権検索
  */
-peopleRouter.get(
+// tslint:disable-next-line:use-default-type-parameter
+peopleRouter.get<ParamsDictionary>(
     '/:id/ownershipInfos',
     permitScopes(['admin']),
     ...[

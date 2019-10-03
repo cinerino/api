@@ -3,6 +3,8 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+// tslint:disable-next-line:no-implicit-dependencies
+import { ParamsDictionary } from 'express-serve-static-core';
 // tslint:disable-next-line:no-submodule-imports
 import { body, query } from 'express-validator/check';
 import { CREATED } from 'http-status';
@@ -21,7 +23,8 @@ tasksRouter.use(authentication);
 /**
  * タスク作成
  */
-tasksRouter.post(
+// tslint:disable-next-line:use-default-type-parameter
+tasksRouter.post<ParamsDictionary>(
     '/:name',
     permitScopes(['admin']),
     ...[
@@ -69,7 +72,8 @@ tasksRouter.post(
 /**
  * タスク確認
  */
-tasksRouter.get(
+// tslint:disable-next-line:use-default-type-parameter
+tasksRouter.get<ParamsDictionary>(
     '/:name/:id',
     permitScopes(['admin']),
     validator,

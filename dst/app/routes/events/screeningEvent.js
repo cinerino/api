@@ -150,6 +150,7 @@ screeningEventRouter.get('/:id/offers', permitScopes_1.default(['customer', 'eve
 /**
  * イベントに対する券種オファー検索
  */
+// tslint:disable-next-line:use-default-type-parameter
 screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['customer', 'events', 'events.read-only']), ...[
     check_1.query('seller')
         .not()

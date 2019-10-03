@@ -351,6 +351,7 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['customer
 /**
  * 確認番号で注文アイテムに対してコードを発行する
  */
+// tslint:disable-next-line:use-default-type-parameter
 ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.default(['customer', 'orders', 'orders.read-only']), ...[
     check_1.body('customer')
         .not()

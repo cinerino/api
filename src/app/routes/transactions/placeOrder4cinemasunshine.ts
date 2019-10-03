@@ -7,6 +7,8 @@ import * as cinerino from '@cinerino/domain';
 
 import * as createDebug from 'debug';
 import { Router } from 'express';
+// tslint:disable-next-line:no-implicit-dependencies
+import { ParamsDictionary } from 'express-serve-static-core';
 // tslint:disable-next-line:no-submodule-imports
 import { body } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
@@ -378,7 +380,8 @@ placeOrder4cinemasunshineRouter.delete(
 /**
  * ポイントインセンティブ承認アクション
  */
-placeOrder4cinemasunshineRouter.post(
+// tslint:disable-next-line:use-default-type-parameter
+placeOrder4cinemasunshineRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/award/pecorino',
     permitScopes(['customer', 'transactions']),
     ...[

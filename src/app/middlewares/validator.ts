@@ -12,7 +12,7 @@ import { BAD_REQUEST } from 'http-status';
 import { APIError } from '../error/api';
 
 export default async (req: Request, __: Response, next: NextFunction) => {
-    const validatorResult = validationResult<any>(req);
+    const validatorResult = validationResult(req);
     if (!validatorResult.isEmpty()) {
         const errors = validatorResult.array()
             .map((mappedRrror) => {

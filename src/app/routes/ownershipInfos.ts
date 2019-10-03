@@ -3,6 +3,8 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+// tslint:disable-next-line:no-implicit-dependencies
+import { ParamsDictionary } from 'express-serve-static-core';
 // tslint:disable-next-line:no-submodule-imports
 import { query } from 'express-validator/check';
 import * as moment from 'moment';
@@ -112,7 +114,8 @@ ownershipInfosRouter.post(
 /**
  * 所有権に対するトークン検証アクションを検索する
  */
-ownershipInfosRouter.get(
+// tslint:disable-next-line:use-default-type-parameter
+ownershipInfosRouter.get<ParamsDictionary>(
     '/:id/actions/checkToken',
     permitScopes(['admin']),
     ...[

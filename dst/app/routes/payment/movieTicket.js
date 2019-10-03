@@ -70,6 +70,7 @@ movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['custome
 /**
  * ムビチケ決済承認
  */
+// tslint:disable-next-line:use-default-type-parameter
 movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['customer', 'transactions']), ...[
     check_1.body('object')
         .not()

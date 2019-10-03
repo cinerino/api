@@ -149,6 +149,7 @@ peopleRouter.delete('/:id', permitScopes_1.default(['admin']), validator_1.defau
 /**
  * 所有権検索
  */
+// tslint:disable-next-line:use-default-type-parameter
 peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['admin']), ...[
     check_1.query('typeOfGood')
         .not()

@@ -32,6 +32,7 @@ creditCardPaymentRouter.use(authentication_1.default);
 /**
  * クレジットカード決済承認
  */
+// tslint:disable-next-line:use-default-type-parameter
 creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'customer', 'transactions']), ...[
     check_1.body('object')
         .not()

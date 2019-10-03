@@ -3,6 +3,8 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+// tslint:disable-next-line:no-implicit-dependencies
+import { ParamsDictionary } from 'express-serve-static-core';
 // tslint:disable-next-line:no-submodule-imports
 import { body } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
@@ -69,7 +71,8 @@ movieTicketPaymentRouter.post(
 /**
  * ムビチケ決済承認
  */
-movieTicketPaymentRouter.post(
+// tslint:disable-next-line:use-default-type-parameter
+movieTicketPaymentRouter.post<ParamsDictionary>(
     '/authorize',
     permitScopes(['customer', 'transactions']),
     ...[

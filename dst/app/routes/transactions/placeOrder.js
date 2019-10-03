@@ -194,6 +194,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 
 /**
  * 購入者情報を変更する
  */
+// tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['customer', 'transactions']), ...[
     check_1.body('additionalProperty')
         .optional()
@@ -251,6 +252,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
 /**
  * 座席仮予約
  */
+// tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatReservation', permitScopes_1.default(['customer', 'transactions']), ...[
     check_1.body('object.acceptedOffer.additionalProperty')
         .optional()
@@ -316,6 +318,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
 /**
  * 座席仮予約取消
  */
+// tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatReservation/:actionId/cancel', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
@@ -349,6 +352,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatRe
  * 汎用決済承認
  * @deprecated /payment
  */
+// tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/any', permitScopes_1.default(['admin']), ...[
     check_1.body('typeOf')
         .not()
@@ -394,6 +398,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
  * 汎用決済承認取消
  * @deprecated /payment
  */
+// tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
@@ -425,6 +430,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
  * クレジットカードオーソリ
  * @deprecated /payment
  */
+// tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/creditCard', permitScopes_1.default(['customer', 'transactions']), ...[
     check_1.body('typeOf')
         .not()
@@ -493,6 +499,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
  * クレジットカードオーソリ取消
  * @deprecated /payment
  */
+// tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/creditCard/:actionId/cancel', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
@@ -526,6 +533,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
  * 口座確保
  * @deprecated /payment
  */
+// tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/account', permitScopes_1.default(['customer', 'transactions']), ...[
     check_1.body('typeOf')
         .not()
@@ -635,6 +643,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
  * 口座承認取消
  * @deprecated /payment
  */
+// tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/account/:actionId/cancel', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
@@ -668,6 +677,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
  * ムビチケ承認
  * @deprecated /payment
  */
+// tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/movieTicket', permitScopes_1.default(['customer', 'transactions']), ...[
     check_1.body('typeOf')
         .not()
@@ -740,6 +750,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
  * ムビチケ承認取消
  * @deprecated /payment
  */
+// tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/movieTicket/:actionId/cancel', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
@@ -770,6 +781,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
 /**
  * ポイントインセンティブ承認アクション
  */
+// tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accounts/point', permitScopes_1.default(['customer', 'transactions']), ...[
     check_1.body('amount')
         .not()
@@ -813,6 +825,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accou
 /**
  * ポイントインセンティブ承認アクション取消
  */
+// tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accounts/point/:actionId/cancel', permitScopes_1.default(['customer', 'transactions']), (__1, __2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -843,6 +856,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accoun
         next(error);
     }
 }));
+// tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['customer', 'transactions']), ...[
     // Eメールカスタマイズのバリデーション
     check_1.body([

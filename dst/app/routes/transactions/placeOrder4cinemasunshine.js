@@ -314,6 +314,7 @@ placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/mvtk/:
 /**
  * ポイントインセンティブ承認アクション
  */
+// tslint:disable-next-line:use-default-type-parameter
 placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/award/pecorino', permitScopes_1.default(['customer', 'transactions']), ...[
     check_1.body('amount')
         .not()

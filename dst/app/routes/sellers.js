@@ -122,6 +122,7 @@ sellersRouter.get('/:id', permitScopes_1.default(['customer', 'sellers', 'seller
 /**
  * 販売者更新
  */
+// tslint:disable-next-line:use-default-type-parameter
 sellersRouter.put('/:id', permitScopes_1.default(['admin', 'sellers']), ...[
     check_1.body('typeOf')
         .not()

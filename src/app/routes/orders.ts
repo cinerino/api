@@ -3,6 +3,8 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+// tslint:disable-next-line:no-implicit-dependencies
+import { ParamsDictionary } from 'express-serve-static-core';
 // tslint:disable-next-line:no-submodule-imports
 import { body, query } from 'express-validator/check';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
@@ -418,7 +420,8 @@ ordersRouter.post(
 /**
  * 確認番号で注文アイテムに対してコードを発行する
  */
-ordersRouter.post(
+// tslint:disable-next-line:use-default-type-parameter
+ordersRouter.post<ParamsDictionary>(
     '/:orderNumber/ownershipInfos/authorize',
     permitScopes(['customer', 'orders', 'orders.read-only']),
     ...[

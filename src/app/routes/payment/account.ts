@@ -3,6 +3,8 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+// tslint:disable-next-line:no-implicit-dependencies
+import { ParamsDictionary } from 'express-serve-static-core';
 // tslint:disable-next-line:no-submodule-imports
 import { body } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
@@ -20,7 +22,8 @@ accountPaymentRouter.use(authentication);
 /**
  * 口座確保
  */
-accountPaymentRouter.post(
+// tslint:disable-next-line:use-default-type-parameter
+accountPaymentRouter.post<ParamsDictionary>(
     '/authorize',
     permitScopes(['admin', 'customer', 'transactions']),
     ...[

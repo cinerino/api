@@ -3,6 +3,8 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+// tslint:disable-next-line:no-implicit-dependencies
+import { ParamsDictionary } from 'express-serve-static-core';
 // tslint:disable-next-line:no-submodule-imports
 import { body, query } from 'express-validator/check';
 import { NO_CONTENT } from 'http-status';
@@ -127,7 +129,8 @@ returnOrderTransactionsRouter.post(
     }
 );
 
-returnOrderTransactionsRouter.put(
+// tslint:disable-next-line:use-default-type-parameter
+returnOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/confirm',
     permitScopes(['admin']),
     ...[

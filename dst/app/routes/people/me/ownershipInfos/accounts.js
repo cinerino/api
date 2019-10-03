@@ -25,6 +25,7 @@ const accountsRouter = express_1.Router();
 /**
  * 口座開設
  */
+// tslint:disable-next-line:use-default-type-parameter
 accountsRouter.post('/:accountType', permitScopes_1.default(['customer']), ...[
     check_1.body('name')
         .not()

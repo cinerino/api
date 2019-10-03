@@ -3,6 +3,8 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+// tslint:disable-next-line:no-implicit-dependencies
+import { ParamsDictionary } from 'express-serve-static-core';
 // tslint:disable-next-line:no-submodule-imports
 import { query } from 'express-validator/check';
 import * as mongoose from 'mongoose';
@@ -176,7 +178,8 @@ screeningEventRouter.get(
 /**
  * イベントに対する券種オファー検索
  */
-screeningEventRouter.get(
+// tslint:disable-next-line:use-default-type-parameter
+screeningEventRouter.get<ParamsDictionary>(
     '/:id/offers/ticket',
     permitScopes(['customer', 'events', 'events.read-only']),
     ...[

@@ -119,6 +119,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
         next(error);
     }
 }));
+// tslint:disable-next-line:use-default-type-parameter
 returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin']), ...[
     // Eメールカスタマイズのバリデーション
     check_1.body([

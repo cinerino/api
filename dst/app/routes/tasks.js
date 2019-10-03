@@ -28,6 +28,7 @@ tasksRouter.use(authentication_1.default);
 /**
  * タスク作成
  */
+// tslint:disable-next-line:use-default-type-parameter
 tasksRouter.post('/:name', permitScopes_1.default(['admin']), ...[
     check_1.body('runsAt')
         .not()
@@ -68,6 +69,7 @@ tasksRouter.post('/:name', permitScopes_1.default(['admin']), ...[
 /**
  * タスク確認
  */
+// tslint:disable-next-line:use-default-type-parameter
 tasksRouter.get('/:name/:id', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const taskRepo = new cinerino.repository.Task(mongoose.connection);

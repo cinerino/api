@@ -5,6 +5,8 @@ import * as cinerino from '@cinerino/domain';
 
 import * as createDebug from 'debug';
 import { Router } from 'express';
+// tslint:disable-next-line:no-implicit-dependencies
+import { ParamsDictionary } from 'express-serve-static-core';
 // tslint:disable-next-line:no-submodule-imports
 import { body, query } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
@@ -221,7 +223,8 @@ placeOrderTransactionsRouter.post(
 /**
  * 購入者情報を変更する
  */
-placeOrderTransactionsRouter.put(
+// tslint:disable-next-line:use-default-type-parameter
+placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/customerContact',
     permitScopes(['customer', 'transactions']),
     ...[
@@ -302,7 +305,8 @@ placeOrderTransactionsRouter.put(
 /**
  * 座席仮予約
  */
-placeOrderTransactionsRouter.post(
+// tslint:disable-next-line:use-default-type-parameter
+placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/offer/seatReservation',
     permitScopes(['customer', 'transactions']),
     ...[
@@ -377,7 +381,8 @@ placeOrderTransactionsRouter.post(
 /**
  * 座席仮予約取消
  */
-placeOrderTransactionsRouter.put(
+// tslint:disable-next-line:use-default-type-parameter
+placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/actions/authorize/offer/seatReservation/:actionId/cancel',
     permitScopes(['customer', 'transactions']),
     validator,
@@ -418,7 +423,8 @@ placeOrderTransactionsRouter.put(
  * 汎用決済承認
  * @deprecated /payment
  */
-placeOrderTransactionsRouter.post(
+// tslint:disable-next-line:use-default-type-parameter
+placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/any',
     permitScopes(['admin']),
     ...[
@@ -471,7 +477,8 @@ placeOrderTransactionsRouter.post(
  * 汎用決済承認取消
  * @deprecated /payment
  */
-placeOrderTransactionsRouter.put(
+// tslint:disable-next-line:use-default-type-parameter
+placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel',
     permitScopes(['admin']),
     validator,
@@ -509,7 +516,8 @@ placeOrderTransactionsRouter.put(
  * クレジットカードオーソリ
  * @deprecated /payment
  */
-placeOrderTransactionsRouter.post(
+// tslint:disable-next-line:use-default-type-parameter
+placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/creditCard',
     permitScopes(['customer', 'transactions']),
     ...[
@@ -602,7 +610,8 @@ placeOrderTransactionsRouter.post(
  * クレジットカードオーソリ取消
  * @deprecated /payment
  */
-placeOrderTransactionsRouter.put(
+// tslint:disable-next-line:use-default-type-parameter
+placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/creditCard/:actionId/cancel',
     permitScopes(['customer', 'transactions']),
     validator,
@@ -643,7 +652,8 @@ placeOrderTransactionsRouter.put(
  * 口座確保
  * @deprecated /payment
  */
-placeOrderTransactionsRouter.post(
+// tslint:disable-next-line:use-default-type-parameter
+placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/account',
     permitScopes(['customer', 'transactions']),
     ...[
@@ -772,7 +782,8 @@ placeOrderTransactionsRouter.post(
  * 口座承認取消
  * @deprecated /payment
  */
-placeOrderTransactionsRouter.put(
+// tslint:disable-next-line:use-default-type-parameter
+placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/account/:actionId/cancel',
     permitScopes(['customer', 'transactions']),
     validator,
@@ -813,7 +824,8 @@ placeOrderTransactionsRouter.put(
  * ムビチケ承認
  * @deprecated /payment
  */
-placeOrderTransactionsRouter.post(
+// tslint:disable-next-line:use-default-type-parameter
+placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/movieTicket',
     permitScopes(['customer', 'transactions']),
     ...[
@@ -894,7 +906,8 @@ placeOrderTransactionsRouter.post(
  * ムビチケ承認取消
  * @deprecated /payment
  */
-placeOrderTransactionsRouter.put(
+// tslint:disable-next-line:use-default-type-parameter
+placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/movieTicket/:actionId/cancel',
     permitScopes(['customer', 'transactions']),
     validator,
@@ -931,7 +944,8 @@ placeOrderTransactionsRouter.put(
 /**
  * ポイントインセンティブ承認アクション
  */
-placeOrderTransactionsRouter.post(
+// tslint:disable-next-line:use-default-type-parameter
+placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/award/accounts/point',
     permitScopes(['customer', 'transactions']),
     ...[
@@ -983,7 +997,8 @@ placeOrderTransactionsRouter.post(
 /**
  * ポイントインセンティブ承認アクション取消
  */
-placeOrderTransactionsRouter.put(
+// tslint:disable-next-line:use-default-type-parameter
+placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/actions/authorize/award/accounts/point/:actionId/cancel',
     permitScopes(['customer', 'transactions']),
     (__1, __2, next) => {
@@ -1022,7 +1037,8 @@ placeOrderTransactionsRouter.put(
     }
 );
 
-placeOrderTransactionsRouter.put(
+// tslint:disable-next-line:use-default-type-parameter
+placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/confirm',
     permitScopes(['customer', 'transactions']),
     ...[

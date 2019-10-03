@@ -28,6 +28,7 @@ accountPaymentRouter.use(authentication_1.default);
 /**
  * 口座確保
  */
+// tslint:disable-next-line:use-default-type-parameter
 accountPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'customer', 'transactions']), ...[
     check_1.body('object')
         .not()

@@ -93,6 +93,7 @@ ownershipInfosRouter.post('/tokens', permitScopes_1.default(['customer', 'tokens
 /**
  * 所有権に対するトークン検証アクションを検索する
  */
+// tslint:disable-next-line:use-default-type-parameter
 ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['admin']), ...[
     check_1.query('startFrom')
         .optional()
