@@ -14,6 +14,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+// tslint:disable-next-line:no-submodule-imports
+const check_1 = require("express-validator/check");
 const mongoose = require("mongoose");
 const authentication_1 = require("../../../middlewares/authentication");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
@@ -23,21 +25,18 @@ ordersRouter.use(authentication_1.default);
 /**
  * 注文検索
  */
-ordersRouter.get('', permitScopes_1.default(['customer']), (req, __2, next) => {
-    req.checkQuery('orderDateFrom')
-        .notEmpty()
-        .withMessage('required')
+ordersRouter.get('', permitScopes_1.default(['customer']), ...[
+    check_1.query('orderDateFrom')
+        .not()
+        .isEmpty()
         .isISO8601()
-        .withMessage('must be ISO8601')
-        .toDate();
-    req.checkQuery('orderDateThrough')
-        .notEmpty()
-        .withMessage('required')
+        .toDate(),
+    check_1.query('orderDateThrough')
+        .not()
+        .isEmpty()
         .isISO8601()
-        .withMessage('must be ISO8601')
-        .toDate();
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        .toDate()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const searchConditions = Object.assign(Object.assign({}, req.query), { 

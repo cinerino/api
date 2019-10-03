@@ -8,7 +8,7 @@ import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
-// import { query } from 'express-validator/check';
+import { body } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
@@ -381,16 +381,18 @@ placeOrder4cinemasunshineRouter.delete(
 placeOrder4cinemasunshineRouter.post(
     '/:transactionId/actions/authorize/award/pecorino',
     permitScopes(['customer', 'transactions']),
-    (req, __2, next) => {
-        req.checkBody('amount', 'invalid amount')
-            .notEmpty()
-            .withMessage('amount is required')
-            .isInt();
-        req.checkBody('toAccountNumber', 'invalid toAccountNumber')
-            .notEmpty()
-            .withMessage('toAccountNumber is required');
-        next();
-    },
+    ...[
+        body('amount')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required')
+            .isInt()
+            .toInt(),
+        body('toAccountNumber')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required')
+    ],
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({

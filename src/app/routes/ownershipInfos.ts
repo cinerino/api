@@ -218,18 +218,16 @@ ownershipInfosRouter.get(
 ownershipInfosRouter.get(
     '/countByRegisterDateAndTheater',
     permitScopes(['customer']),
-    (req, __, next) => {
-        req.checkQuery('fromDate')
-            .notEmpty()
+    ...[
+        query('fromDate')
+            .not()
+            .isEmpty()
+            .isISO8601(),
+        query('toDate')
+            .not()
+            .isEmpty()
             .isISO8601()
-            .withMessage('fromDate must be ISO8601 timestamp');
-        req.checkQuery('toDate')
-            .notEmpty()
-            .isISO8601()
-            .withMessage('toDate must be ISO8601 timestamp');
-
-        next();
-    },
+    ],
     validator,
     async (req, res, next) => {
         try {

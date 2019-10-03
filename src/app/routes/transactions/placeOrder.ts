@@ -114,27 +114,6 @@ placeOrderTransactionsRouter.post(
             : []
 
     ],
-    // (req, _, next) => {
-    //     req.checkBody('expires', 'invalid expires')
-    //         .notEmpty()
-    //         .withMessage('expires is required')
-    //         .isISO8601();
-    //     req.checkBody('agent.identifier', 'invalid agent identifier')
-    //         .optional()
-    //         .isArray();
-    //     req.checkBody('seller.typeOf', 'invalid seller type')
-    //         .notEmpty()
-    //         .withMessage('seller.typeOf is required');
-    //     req.checkBody('seller.id', 'invalid seller id')
-    //         .notEmpty()
-    //         .withMessage('seller.id is required');
-    //     if (!WAITER_DISABLED) {
-    //         req.checkBody('object.passport.token', 'invalid passport token')
-    //             .notEmpty()
-    //             .withMessage('object.passport.token is required');
-    //     }
-    //     next();
-    // },
     validator,
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
@@ -955,17 +934,18 @@ placeOrderTransactionsRouter.put(
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/award/accounts/point',
     permitScopes(['customer', 'transactions']),
-    (req, __2, next) => {
-        req.checkBody('amount', 'invalid amount')
-            .notEmpty()
-            .withMessage('amount is required')
+    ...[
+        body('amount')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required')
             .isInt()
-            .toInt();
-        req.checkBody('toAccountNumber', 'invalid toAccountNumber')
-            .notEmpty()
-            .withMessage('toAccountNumber is required');
-        next();
-    },
+            .toInt(),
+        body('toAccountNumber')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required')
+    ],
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({

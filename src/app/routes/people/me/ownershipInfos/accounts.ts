@@ -3,6 +3,8 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+// tslint:disable-next-line:no-submodule-imports
+import { body } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
@@ -19,12 +21,12 @@ const accountsRouter = Router();
 accountsRouter.post(
     '/:accountType',
     permitScopes(['customer']),
-    (req, _, next) => {
-        req.checkBody('name', 'invalid name')
-            .notEmpty()
-            .withMessage('name is required');
-        next();
-    },
+    ...[
+        body('name')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required')
+    ],
     validator,
     async (req, res, next) => {
         try {

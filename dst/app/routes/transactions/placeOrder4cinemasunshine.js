@@ -18,7 +18,7 @@ const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
 const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
-// import { query } from 'express-validator/check';
+const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const lockTransaction_1 = require("../../middlewares/lockTransaction");
@@ -314,16 +314,18 @@ placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/mvtk/:
 /**
  * ポイントインセンティブ承認アクション
  */
-placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/award/pecorino', permitScopes_1.default(['customer', 'transactions']), (req, __2, next) => {
-    req.checkBody('amount', 'invalid amount')
-        .notEmpty()
-        .withMessage('amount is required')
-        .isInt();
-    req.checkBody('toAccountNumber', 'invalid toAccountNumber')
-        .notEmpty()
-        .withMessage('toAccountNumber is required');
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/award/pecorino', permitScopes_1.default(['customer', 'transactions']), ...[
+    check_1.body('amount')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required')
+        .isInt()
+        .toInt(),
+    check_1.body('toAccountNumber')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required')
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
         id: req.params.transactionId

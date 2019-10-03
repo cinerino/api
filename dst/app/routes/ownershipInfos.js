@@ -182,17 +182,16 @@ ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['adm
  * Cinemasunshine対応
  * @deprecated
  */
-ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.default(['customer']), (req, __, next) => {
-    req.checkQuery('fromDate')
-        .notEmpty()
+ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.default(['customer']), ...[
+    check_1.query('fromDate')
+        .not()
+        .isEmpty()
+        .isISO8601(),
+    check_1.query('toDate')
+        .not()
+        .isEmpty()
         .isISO8601()
-        .withMessage('fromDate must be ISO8601 timestamp');
-    req.checkQuery('toDate')
-        .notEmpty()
-        .isISO8601()
-        .withMessage('toDate must be ISO8601 timestamp');
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const fromDate = req.query.fromDate;
         const toDate = req.query.toDate;

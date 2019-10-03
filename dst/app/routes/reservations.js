@@ -14,6 +14,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+// tslint:disable-next-line:no-submodule-imports
+const check_1 = require("express-validator/check");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -83,12 +85,12 @@ reservationsRouter.get('/eventReservation/screeningEvent', permitScopes_1.defaul
 /**
  * トークンで予約照会
  */
-reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitScopes_1.default(['admin', 'tokens', 'tokens.read-only']), (req, _, next) => {
-    req.checkBody('token', 'invalid token')
-        .notEmpty()
-        .withMessage('token is required');
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitScopes_1.default(['admin', 'tokens', 'tokens.read-only']), ...[
+    check_1.body('token')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required')
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });

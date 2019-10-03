@@ -3,6 +3,8 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+// tslint:disable-next-line:no-submodule-imports
+import { query } from 'express-validator/check';
 import * as mongoose from 'mongoose';
 
 import authentication from '../../../middlewares/authentication';
@@ -11,27 +13,25 @@ import validator from '../../../middlewares/validator';
 
 const ordersRouter = Router();
 ordersRouter.use(authentication);
+
 /**
  * 注文検索
  */
 ordersRouter.get(
     '',
     permitScopes(['customer']),
-    (req, __2, next) => {
-        req.checkQuery('orderDateFrom')
-            .notEmpty()
-            .withMessage('required')
+    ...[
+        query('orderDateFrom')
+            .not()
+            .isEmpty()
             .isISO8601()
-            .withMessage('must be ISO8601')
-            .toDate();
-        req.checkQuery('orderDateThrough')
-            .notEmpty()
-            .withMessage('required')
+            .toDate(),
+        query('orderDateThrough')
+            .not()
+            .isEmpty()
             .isISO8601()
-            .withMessage('must be ISO8601')
-            .toDate();
-        next();
-    },
+            .toDate()
+    ],
     validator,
     async (req, res, next) => {
         try {
@@ -56,4 +56,5 @@ ordersRouter.get(
         }
     }
 );
+
 export default ordersRouter;

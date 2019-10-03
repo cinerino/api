@@ -14,6 +14,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+// tslint:disable-next-line:no-submodule-imports
+const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../../../../middlewares/permitScopes");
@@ -23,12 +25,12 @@ const accountsRouter = express_1.Router();
 /**
  * 口座開設
  */
-accountsRouter.post('/:accountType', permitScopes_1.default(['customer']), (req, _, next) => {
-    req.checkBody('name', 'invalid name')
-        .notEmpty()
-        .withMessage('name is required');
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+accountsRouter.post('/:accountType', permitScopes_1.default(['customer']), ...[
+    check_1.body('name')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required')
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const accountNumberRepo = new cinerino.repository.AccountNumber(redis.getClient());
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);

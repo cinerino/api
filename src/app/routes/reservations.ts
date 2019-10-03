@@ -3,6 +3,8 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+// tslint:disable-next-line:no-submodule-imports
+import { body } from 'express-validator/check';
 import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
@@ -103,12 +105,12 @@ reservationsRouter.get(
 reservationsRouter.post(
     '/eventReservation/screeningEvent/findByToken',
     permitScopes(['admin', 'tokens', 'tokens.read-only']),
-    (req, _, next) => {
-        req.checkBody('token', 'invalid token')
-            .notEmpty()
-            .withMessage('token is required');
-        next();
-    },
+    ...[
+        body('token')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required')
+    ],
     validator,
     async (req, res, next) => {
         try {
