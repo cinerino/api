@@ -456,6 +456,8 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             .optional()
             .not()
             .isEmpty()
+            // バリデーション強化前の数字リクエストに対する互換性維持のため
+            .customSanitizer((value) => typeof value === 'number' ? String(value) : value)
             .isString()
             .isLength({ max: 512 })
     ],

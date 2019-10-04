@@ -382,6 +382,8 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         .optional()
         .not()
         .isEmpty()
+        // バリデーション強化前の数字リクエストに対する互換性維持のため
+        .customSanitizer((value) => typeof value === 'number' ? String(value) : value)
         .isString()
         .isLength({ max: 512 })
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
