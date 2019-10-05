@@ -160,6 +160,7 @@ creditCardPaymentRouter.put(
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 project: new cinerino.repository.Project(mongoose.connection),
+                seller: new cinerino.repository.Seller(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
