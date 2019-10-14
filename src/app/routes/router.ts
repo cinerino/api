@@ -25,6 +25,7 @@ import sellersRouter from './sellers';
 import statsRouter from './stats';
 import tasksRouter from './tasks';
 import transactionsRouter from './transactions';
+import tttsRouter from './ttts';
 import userPoolsRouter from './userPools';
 
 const router = express.Router();
@@ -57,6 +58,7 @@ router.use('/sellers', sellersRouter);
 router.use('/stats', statsRouter);
 router.use('/tasks', tasksRouter);
 router.use('/transactions', transactionsRouter);
+router.use('/ttts', tttsRouter);
 router.use('/userPools', userPoolsRouter);
 
 export default router;
