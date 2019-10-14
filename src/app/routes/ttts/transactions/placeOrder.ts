@@ -27,7 +27,7 @@ placeOrderTransactionsRouter.use(authentication);
 
 placeOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['transactions']),
     ...[
         body('expires')
             .not()
@@ -150,7 +150,7 @@ placeOrderTransactionsRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/customerContact',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['transactions']),
     ...[
         body('last_name')
             .not()
@@ -209,7 +209,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/seatReservation',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         try {
@@ -253,7 +253,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         try {
@@ -281,7 +281,7 @@ placeOrderTransactionsRouter.delete(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/creditCard',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['transactions']),
     ...[
         body('amount')
             .not()
@@ -360,7 +360,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
  */
 placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/creditCard/:actionId',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         try {
@@ -386,7 +386,7 @@ placeOrderTransactionsRouter.delete(
 
 placeOrderTransactionsRouter.post(
     '/:transactionId/confirm',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
@@ -730,7 +730,7 @@ function temporaryReservation2confirmed(params: {
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/tasks/sendEmailNotification',
-    permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
+    permitScopes(['transactions']),
     ...[
         body('sender.name')
             .not()

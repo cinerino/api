@@ -8,24 +8,31 @@ const createDebug = require("debug");
 const debug = createDebug('cinerino-api:middlewares');
 exports.SCOPE_ADMIN = 'admin';
 exports.SCOPE_CUSTOMER = 'customer';
-const CUSTOMER_ADDITIONAL_PERMITTED_SCOPES = (process.env.CUSTOMER_ADDITIONAL_PERMITTED_SCOPES !== undefined)
-    ? /* istanbul ignore next */ process.env.CUSTOMER_ADDITIONAL_PERMITTED_SCOPES.split(',')
-    : [];
 exports.default = (permittedScopes) => {
     return (req, __, next) => {
         if (process.env.RESOURCE_SERVER_IDENTIFIER === undefined) {
             next(new Error('RESOURCE_SERVER_IDENTIFIER undefined'));
             return;
         }
+        const ADMIN_ADDITIONAL_PERMITTED_SCOPES = (process.env.ADMIN_ADDITIONAL_PERMITTED_SCOPES !== undefined)
+            ? /* istanbul ignore next */ process.env.ADMIN_ADDITIONAL_PERMITTED_SCOPES.split(',')
+            : [];
+        const CUSTOMER_ADDITIONAL_PERMITTED_SCOPES = (process.env.CUSTOMER_ADDITIONAL_PERMITTED_SCOPES !== undefined)
+            ? /* istanbul ignore next */ process.env.CUSTOMER_ADDITIONAL_PERMITTED_SCOPES.split(',')
+            : [];
         // SCOPE_ADMINは全アクセス許可
         permittedScopes.push(exports.SCOPE_ADMIN);
         debug('req.user.scopes:', req.user.scopes);
-        req.isAdmin = req.user.scopes.indexOf(`${process.env.RESOURCE_SERVER_IDENTIFIER}/${exports.SCOPE_ADMIN}`) >= 0;
+        req.isAdmin =
+            req.user.scopes.indexOf(`${process.env.RESOURCE_SERVER_IDENTIFIER}/${exports.SCOPE_ADMIN}`) >= 0
+                || ADMIN_ADDITIONAL_PERMITTED_SCOPES.some((scope) => req.user.scopes.indexOf(scope) >= 0);
         // ドメインつきのカスタムスコープリストを許容するように変更
         const permittedScopesWithResourceServerIdentifier = [
             ...permittedScopes.map((permittedScope) => `${process.env.RESOURCE_SERVER_IDENTIFIER}/${permittedScope}`),
             ...permittedScopes.map((permittedScope) => `${process.env.RESOURCE_SERVER_IDENTIFIER}/auth/${permittedScope}`)
         ];
+        // 管理者の追加許可スコープをセット
+        permittedScopesWithResourceServerIdentifier.push(...ADMIN_ADDITIONAL_PERMITTED_SCOPES);
         // 会員の場合、追加許可スコープをセット
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */
@@ -54,7 +61,6 @@ exports.default = (permittedScopes) => {
  * @param permittedScopes 許可スコープリスト
  */
 function isScopesPermitted(ownedScopes, permittedScopes) {
-    debug('checking scope requirements...', permittedScopes);
     if (!Array.isArray(ownedScopes)) {
         throw new Error('ownedScopes should be array of string');
     }

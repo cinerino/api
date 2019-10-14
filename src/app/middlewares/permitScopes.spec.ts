@@ -20,6 +20,7 @@ describe('permitScopes.default()', () => {
     afterEach(() => {
         sandbox.restore();
         process.env.RESOURCE_SERVER_IDENTIFIER = resourceServerIdentifier;
+        delete process.env.ADMIN_ADDITIONAL_PERMITTED_SCOPES;
     });
 
     it('RESOURCE_SERVER_IDENTIFIERが未定義であればエラーパラメーターと共にnextが呼ばれるはず', async () => {
@@ -31,7 +32,9 @@ describe('permitScopes.default()', () => {
             next: () => undefined
         };
 
-        sandbox.mock(params).expects('next').once()
+        sandbox.mock(params)
+            .expects('next')
+            .once()
             .withExactArgs(sinon.match.instanceOf(Error));
 
         const result = await permitScopes.default(scopes)(<any>params.req, <any>params.res, params.next);
@@ -47,7 +50,9 @@ describe('permitScopes.default()', () => {
             next: () => undefined
         };
 
-        sandbox.mock(params).expects('next').once()
+        sandbox.mock(params)
+            .expects('next')
+            .once()
             .withExactArgs();
 
         const result = await permitScopes.default(scopes)(<any>params.req, <any>params.res, params.next);
@@ -63,7 +68,9 @@ describe('permitScopes.default()', () => {
             next: () => undefined
         };
 
-        sandbox.mock(params).expects('next').once()
+        sandbox.mock(params)
+            .expects('next')
+            .once()
             .withExactArgs(sinon.match.instanceOf(Error));
 
         const result = await permitScopes.default(scopes)(<any>params.req, <any>params.res, params.next);
@@ -79,8 +86,29 @@ describe('permitScopes.default()', () => {
             next: () => undefined
         };
 
-        sandbox.mock(params).expects('next').once()
+        sandbox.mock(params)
+            .expects('next')
+            .once()
             .withExactArgs(sinon.match.instanceOf(Error));
+
+        const result = await permitScopes.default(scopes)(<any>params.req, <any>params.res, params.next);
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+
+    it('管理者追加許可スコープも許可されるはず', async () => {
+        process.env.ADMIN_ADDITIONAL_PERMITTED_SCOPES = 'custom';
+        const scopes = ['scope'];
+        const params = {
+            req: { user: { scopes: [process.env.ADMIN_ADDITIONAL_PERMITTED_SCOPES] } },
+            res: {},
+            next: () => undefined
+        };
+
+        sandbox.mock(params)
+            .expects('next')
+            .once()
+            .withExactArgs();
 
         const result = await permitScopes.default(scopes)(<any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);
