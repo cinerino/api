@@ -83,8 +83,10 @@ returnOrderTransactionsRouter.post(
                     )
                     .filter((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus);
 
-            const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onReturnOrder`;
-            const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationCancelled`;
+            // const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onReturnOrder`;
+            // const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationCancelled`;
+            const informOrderUrl = <string>req.body.informOrderUrl;
+            const informReservationUrl = <string>req.body.informReservationUrl;
 
             const actionsOnOrder = await actionRepo.searchByOrderNumber({ orderNumber: order.orderNumber });
             const payActions = <cinerino.factory.action.trade.pay.IAction<cinerino.factory.paymentMethodType>[]>actionsOnOrder

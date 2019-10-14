@@ -77,8 +77,10 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
             .filter((a) => a.object.typeOf
             === cinerino.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation)
             .filter((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus);
-        const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onReturnOrder`;
-        const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationCancelled`;
+        // const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onReturnOrder`;
+        // const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationCancelled`;
+        const informOrderUrl = req.body.informOrderUrl;
+        const informReservationUrl = req.body.informReservationUrl;
         const actionsOnOrder = yield actionRepo.searchByOrderNumber({ orderNumber: order.orderNumber });
         const payActions = actionsOnOrder
             .filter((a) => a.typeOf === cinerino.factory.actionType.PayAction)

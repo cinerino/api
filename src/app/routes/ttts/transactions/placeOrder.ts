@@ -450,8 +450,10 @@ placeOrderTransactionsRouter.post(
             const paymentNo = await paymentNoRepo.publish(eventStartDateStr);
             const confirmationNumber: string = `${eventStartDateStr}${paymentNo}`;
 
-            const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
-            const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
+            // const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
+            // const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
+            const informOrderUrl = <string>req.body.informOrderUrl;
+            const informReservationUrl = <string>req.body.informReservationUrl;
 
             // 予約確定パラメータを生成
             const eventReservations = acceptedOffers.map((acceptedOffer, index) => {

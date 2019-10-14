@@ -360,8 +360,10 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             .format('YYYYMMDD');
         const paymentNo = yield paymentNoRepo.publish(eventStartDateStr);
         const confirmationNumber = `${eventStartDateStr}${paymentNo}`;
-        const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
-        const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
+        // const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
+        // const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
+        const informOrderUrl = req.body.informOrderUrl;
+        const informReservationUrl = req.body.informReservationUrl;
         // 予約確定パラメータを生成
         const eventReservations = acceptedOffers.map((acceptedOffer, index) => {
             const reservation = acceptedOffer.itemOffered;
