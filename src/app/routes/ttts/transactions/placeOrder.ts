@@ -636,7 +636,11 @@ function authorizeOtherPayment(params: {
         });
         authorizePaymentMethodAction = authorizeActions
             .filter((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus)
-            .find((a) => a.object.typeOf === cinerino.factory.paymentMethodType.CreditCard);
+            .find(
+                (a) => a.object.typeOf === cinerino.factory.paymentMethodType.Cash
+                    || a.object.typeOf === cinerino.factory.paymentMethodType.CreditCard
+                    || a.object.typeOf === cinerino.factory.paymentMethodType.Others
+            );
 
         if (authorizePaymentMethodAction === undefined) {
             // クライアントがPOSあるいは内部予約の場合、決済方法承認アクションを自動生成
