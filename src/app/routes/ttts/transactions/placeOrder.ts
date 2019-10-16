@@ -12,7 +12,6 @@ import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
-// const POS_CLIENT_ID = <string>process.env.POS_CLIENT_ID;
 const STAFF_CLIENT_ID = <string>process.env.STAFF_CLIENT_ID;
 
 const placeOrderTransactionsRouter = Router();
@@ -42,12 +41,6 @@ placeOrderTransactionsRouter.post(
         ...(!WAITER_DISABLED)
             ? [
                 body('passportToken')
-                    // POSからの流入制限を一時的に回避するため、許可証不要なクライアント設定ができるようにする
-                    // staffアプリケーションに関しても同様に
-                    // .if((_, { req }) => {
-                    //     return req.user.client_id === POS_CLIENT_ID
-                    //         || req.user.client_id === STAFF_CLIENT_ID;
-                    // })
                     .not()
                     .isEmpty()
                     .withMessage(() => 'required')
@@ -72,8 +65,6 @@ placeOrderTransactionsRouter.post(
 
             let passport: cinerino.factory.transaction.placeOrder.IPassportBeforeStart | undefined;
             if (!WAITER_DISABLED) {
-                // && req.user.client_id !== POS_CLIENT_ID
-                // && req.user.client_id !== STAFF_CLIENT_ID) {
                 if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
                     throw new cinerino.factory.errors.ServiceUnavailable('WAITER_PASSPORT_ISSUER undefined');
                 }
@@ -177,10 +168,6 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 agent: {
                     ...req.body,
                     id: req.user.sub,
-                    // address: (typeof req.body.address === 'string') ? req.body.address : '',
-                    // age: (typeof req.body.age === 'string') ? req.body.age : '',
-                    // email: (typeof req.body.email === 'string') ? req.body.email : '',
-                    // gender: (typeof req.body.gender === 'string') ? req.body.gender : '',
                     givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '',
                     familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '',
                     telephone: (typeof req.body.tel === 'string') ? req.body.tel : '',
@@ -191,13 +178,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
             });
 
             res.status(CREATED)
-                .json({
-                    ...profile,
-                    // POSへの互換性維持のために値補完
-                    last_name: profile.familyName,
-                    first_name: profile.givenName,
-                    tel: profile.telephone
-                });
+                .json(profile);
         } catch (error) {
             next(error);
         }
@@ -425,7 +406,7 @@ placeOrderTransactionsRouter.post(
                 throw new cinerino.factory.errors.Argument('Transaction', 'Event required');
             }
 
-            // クライアントがPOSあるいは内部予約の場合、決済方法承認アクションを自動生成
+            // クライアントが内部予約の場合、決済方法承認アクションを自動生成
             const authorizePaymentMethodAction = await authorizeOtherPayment({
                 agent: { id: req.user.sub },
                 client: { id: req.user.client_id },
@@ -565,19 +546,6 @@ placeOrderTransactionsRouter.post(
             res.status(CREATED)
                 .json({
                     ...transactionResult,
-                    // POSへ互換性維持のためにeventReservations属性を生成
-                    eventReservations: (transactionResult !== undefined)
-                        ? transactionResult.order.acceptedOffers
-                            .map((o) => {
-                                const r = <cinerino.factory.order.IReservation>o.itemOffered;
-
-                                return {
-                                    qr_str: r.id,
-                                    payment_no: paymentNo,
-                                    performance: r.reservationFor.id
-                                };
-                            })
-                        : [],
                     // 印刷トークン情報を追加
                     printToken: printToken
                 });
@@ -643,8 +611,7 @@ function authorizeOtherPayment(params: {
             );
 
         if (authorizePaymentMethodAction === undefined) {
-            // クライアントがPOSあるいは内部予約の場合、決済方法承認アクションを自動生成
-            // if (params.client.id === POS_CLIENT_ID || params.client.id === STAFF_CLIENT_ID) {
+            // クライアントが内部予約の場合、決済方法承認アクションを自動生成
             if (params.client.id === STAFF_CLIENT_ID) {
                 let authorizingPaymentMethodType: string;
                 switch (params.paymentMethodType) {
