@@ -20,7 +20,6 @@ const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const mongoose = require("mongoose");
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
-const STAFF_CLIENT_ID = process.env.STAFF_CLIENT_ID;
 const placeOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../../middlewares/authentication");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
@@ -194,93 +193,6 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
             transaction: { id: req.params.transactionId },
             id: req.params.actionId
         })(new cinerino.repository.Transaction(mongoose.connection), new cinerino.repository.Action(mongoose.connection), new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()), new cinerino.repository.Task(mongoose.connection), new cinerino.repository.Project(mongoose.connection));
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-// tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard', permitScopes_1.default(['transactions']), ...[
-    check_1.body('amount')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required'),
-    check_1.body('method')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required'),
-    check_1.body('creditCard')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        // 会員IDを強制的にログイン中の人物IDに変更
-        const creditCard = Object.assign(Object.assign({}, req.body.creditCard), {
-            memberId: (req.user.username !== undefined) ? req.user.sub : undefined
-        });
-        const action = yield cinerino.service.payment.creditCard.authorize({
-            project: req.project,
-            agent: { id: req.user.sub },
-            object: {
-                typeOf: cinerino.factory.paymentMethodType.CreditCard,
-                // name: req.body.object.name,
-                // additionalProperty: req.body.object.additionalProperty,
-                orderId: req.body.orderId,
-                amount: req.body.amount,
-                method: req.body.method,
-                creditCard: creditCard
-            },
-            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
-            seller: new cinerino.repository.Seller(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection)
-        });
-        res.status(http_status_1.CREATED)
-            .json({
-            id: action.id
-        });
-    }
-    catch (error) {
-        let handledError = error;
-        if (error.name === 'CinerinoError') {
-            const reason = error.reason;
-            switch (reason) {
-                case cinerino.factory.errorCode.AlreadyInUse:
-                    handledError = new cinerino.factory.errors.AlreadyInUse(error.entityName, error.fieldNames, error.message);
-                    break;
-                case cinerino.factory.errorCode.Argument:
-                    handledError = new cinerino.factory.errors.Argument(error.argumentName, error.message);
-                    break;
-                case cinerino.factory.errorCode.RateLimitExceeded:
-                    handledError = new cinerino.factory.errors.RateLimitExceeded(error.message);
-                    break;
-                default:
-            }
-        }
-        next(handledError);
-    }
-}));
-/**
- * クレジットカードオーソリ取消
- */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/creditCard/:actionId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        yield cinerino.service.payment.creditCard.voidTransaction({
-            project: { id: req.project.id },
-            agent: { id: req.user.sub },
-            id: req.params.actionId,
-            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
-            seller: new cinerino.repository.Seller(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection)
-        });
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
@@ -488,34 +400,6 @@ function authorizeOtherPayment(params) {
             .find((a) => a.object.typeOf === cinerino.factory.paymentMethodType.Cash
             || a.object.typeOf === cinerino.factory.paymentMethodType.CreditCard
             || a.object.typeOf === cinerino.factory.paymentMethodType.Others);
-        if (authorizePaymentMethodAction === undefined) {
-            // クライアントが内部予約の場合、決済方法承認アクションを自動生成
-            if (params.client.id === STAFF_CLIENT_ID) {
-                let authorizingPaymentMethodType;
-                switch (params.paymentMethodType) {
-                    case cinerino.factory.paymentMethodType.Cash:
-                    case cinerino.factory.paymentMethodType.CreditCard:
-                        authorizingPaymentMethodType = params.paymentMethodType;
-                        break;
-                    default:
-                        // その他の決済方法を認められるのは代理予約だけ(管理者としてログインしているはず)
-                        if (params.client.id !== STAFF_CLIENT_ID || params.client.id === undefined) {
-                            throw new cinerino.factory.errors.Argument('paymentMethod', `Invalid payment method for the client`);
-                        }
-                        authorizingPaymentMethodType = cinerino.factory.paymentMethodType.Others;
-                }
-                authorizePaymentMethodAction = yield cinerino.service.payment.any.authorize({
-                    agent: { id: params.agent.id },
-                    object: {
-                        typeOf: authorizingPaymentMethodType,
-                        name: params.paymentMethodType,
-                        additionalProperty: [],
-                        amount: params.amount
-                    },
-                    purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: params.transaction.id }
-                })(repos);
-            }
-        }
         return authorizePaymentMethodAction;
     });
 }
