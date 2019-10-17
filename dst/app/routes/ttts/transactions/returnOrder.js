@@ -157,7 +157,7 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
             }
         };
         // 取引があれば、返品取引進行
-        const returnOrderTransaction = yield cinerino.service.transaction.returnOrder4ttts.start({
+        const returnOrderTransaction = yield cinerino.service.transaction.returnOrder.start({
             project: req.project,
             agent: req.agent,
             expires: expires,
@@ -176,7 +176,7 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
             seller: sellerRepo,
             transaction: transactionRepo
         });
-        yield cinerino.service.transaction.returnOrder4ttts.confirm({
+        yield cinerino.service.transaction.returnOrder.confirm({
             id: returnOrderTransaction.id,
             potentialActions: potentialActionParams
         })({
@@ -264,7 +264,7 @@ returnOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification'
         .withMessage(() => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const task = yield cinerino.service.transaction.returnOrder4ttts.sendEmail(req.params.transactionId, {
+        const task = yield cinerino.service.transaction.returnOrder.sendEmail(req.params.transactionId, {
             typeOf: cinerino.factory.creativeWorkType.EmailMessage,
             sender: {
                 name: req.body.sender.name,
@@ -276,7 +276,10 @@ returnOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification'
             },
             about: req.body.about,
             text: req.body.text
-        })(new cinerino.repository.Task(mongoose.connection), new cinerino.repository.Transaction(mongoose.connection));
+        })({
+            task: new cinerino.repository.Task(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
+        });
         res.status(http_status_1.CREATED)
             .json(task);
     }

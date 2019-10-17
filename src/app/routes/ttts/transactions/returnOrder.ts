@@ -177,7 +177,7 @@ returnOrderTransactionsRouter.post(
             };
 
             // 取引があれば、返品取引進行
-            const returnOrderTransaction = await cinerino.service.transaction.returnOrder4ttts.start({
+            const returnOrderTransaction = await cinerino.service.transaction.returnOrder.start({
                 project: req.project,
                 agent: req.agent,
                 expires: expires,
@@ -197,7 +197,7 @@ returnOrderTransactionsRouter.post(
                 transaction: transactionRepo
             });
 
-            await cinerino.service.transaction.returnOrder4ttts.confirm({
+            await cinerino.service.transaction.returnOrder.confirm({
                 id: returnOrderTransaction.id,
                 potentialActions: potentialActionParams
             })({
@@ -302,7 +302,7 @@ returnOrderTransactionsRouter.post<ParamsDictionary>(
     validator,
     async (req, res, next) => {
         try {
-            const task = await cinerino.service.transaction.returnOrder4ttts.sendEmail(
+            const task = await cinerino.service.transaction.returnOrder.sendEmail(
                 req.params.transactionId,
                 {
                     typeOf: cinerino.factory.creativeWorkType.EmailMessage,
@@ -317,10 +317,10 @@ returnOrderTransactionsRouter.post<ParamsDictionary>(
                     about: req.body.about,
                     text: req.body.text
                 }
-            )(
-                new cinerino.repository.Task(mongoose.connection),
-                new cinerino.repository.Transaction(mongoose.connection)
-            );
+            )({
+                task: new cinerino.repository.Task(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
+            });
 
             res.status(CREATED)
                 .json(task);

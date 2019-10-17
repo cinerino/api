@@ -88,7 +88,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
             );
             return validIssuer && validScope;
         };
-        const transaction = yield cinerino.service.transaction.placeOrderInProgress4ttts.start({
+        const transaction = yield cinerino.service.transaction.placeOrderInProgress.start({
             project: req.project,
             expires: moment(req.body.expires)
                 .toDate(),
@@ -139,7 +139,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
         .withMessage(() => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const profile = yield cinerino.service.transaction.placeOrderInProgress4ttts.updateAgent({
+        const profile = yield cinerino.service.transaction.placeOrderInProgress.updateAgent({
             id: req.params.transactionId,
             agent: Object.assign(Object.assign({}, req.body), { id: req.user.sub, givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '', familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '', telephone: (typeof req.body.tel === 'string') ? req.body.tel : '', telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : '' })
         })({
@@ -161,7 +161,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             req.body.offers = [];
         }
         const performanceId = req.body.performance_id;
-        const action = yield cinerino.service.transaction.placeOrderInProgress4ttts.action.authorize.seatReservation.create({
+        const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4ttts.create({
             project: req.project,
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId },
@@ -187,7 +187,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield cinerino.service.transaction.placeOrderInProgress4ttts.action.authorize.seatReservation.cancel({
+        yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4ttts.cancel({
             project: req.project,
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId },
@@ -328,7 +328,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         const orderDate = new Date();
         // 印刷トークンを事前に発行
         const printToken = yield tokenRepo.createPrintToken(acceptedOffers.map((o) => o.itemOffered.id));
-        const transactionResult = yield cinerino.service.transaction.placeOrderInProgress4ttts.confirm({
+        const transactionResult = yield cinerino.service.transaction.placeOrderInProgress.confirm({
             project: req.project,
             agent: { id: req.user.sub },
             id: req.params.transactionId,

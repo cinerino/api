@@ -100,7 +100,7 @@ placeOrderTransactionsRouter.post(
                 return validIssuer && validScope;
             };
 
-            const transaction = await cinerino.service.transaction.placeOrderInProgress4ttts.start({
+            const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
                 project: req.project,
                 expires: moment(req.body.expires)
                     .toDate(),
@@ -162,7 +162,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
     validator,
     async (req, res, next) => {
         try {
-            const profile = await cinerino.service.transaction.placeOrderInProgress4ttts.updateAgent({
+            const profile = await cinerino.service.transaction.placeOrderInProgress.updateAgent({
                 id: req.params.transactionId,
                 agent: {
                     ...req.body,
@@ -199,7 +199,7 @@ placeOrderTransactionsRouter.post(
 
             const performanceId: string = req.body.performance_id;
 
-            const action = await cinerino.service.transaction.placeOrderInProgress4ttts.action.authorize.seatReservation.create({
+            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4ttts.create({
                 project: req.project,
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId },
@@ -237,7 +237,7 @@ placeOrderTransactionsRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await cinerino.service.transaction.placeOrderInProgress4ttts.action.authorize.seatReservation.cancel({
+            await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4ttts.cancel({
                 project: req.project,
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId },
@@ -407,7 +407,7 @@ placeOrderTransactionsRouter.post(
             // 印刷トークンを事前に発行
             const printToken = await tokenRepo.createPrintToken(acceptedOffers.map((o) => o.itemOffered.id));
 
-            const transactionResult = await cinerino.service.transaction.placeOrderInProgress4ttts.confirm({
+            const transactionResult = await cinerino.service.transaction.placeOrderInProgress.confirm({
                 project: req.project,
                 agent: { id: req.user.sub },
                 id: req.params.transactionId,
