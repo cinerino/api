@@ -77,23 +77,23 @@ screeningEventRouter.get('', permitScopes_1.default(['customer', 'events', 'even
             // const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient());
             const searchConditions = Object.assign(Object.assign({}, req.query), { 
                 // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined });
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined, typeOf: cinerino.factory.chevre.eventType.ScreeningEvent });
             events = yield cinerino.service.offer.searchEvents4cinemasunshine(searchConditions)({
                 attendeeCapacity: attendeeCapacityRepo,
                 event: eventRepo
                 // itemAvailability: itemAvailabilityRepo
             });
-            totalCount = yield eventRepo.countScreeningEvents(searchConditions);
+            totalCount = yield eventRepo.count(searchConditions);
         }
         else {
-            const searchCoinditions = Object.assign(Object.assign({}, req.query), { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
+            const searchConditions = Object.assign(Object.assign({}, req.query), { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
                 // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-            events = yield cinerino.service.offer.searchEvents(searchCoinditions)({
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, typeOf: cinerino.factory.chevre.eventType.ScreeningEvent });
+            events = yield cinerino.service.offer.searchEvents(searchConditions)({
                 event: eventRepo,
                 attendeeCapacity: attendeeCapacityRepo
             });
-            totalCount = yield eventRepo.countScreeningEvents(searchCoinditions);
+            totalCount = yield eventRepo.count(searchConditions);
         }
         res.set('X-Total-Count', totalCount.toString())
             .json(events);
@@ -119,7 +119,7 @@ screeningEventRouter.get('/:id', permitScopes_1.default(['customer', 'events', '
             });
         }
         else {
-            event = yield eventRepo.findById({ typeOf: cinerino.factory.chevre.eventType.ScreeningEvent, id: req.params.id });
+            event = yield eventRepo.findById({ id: req.params.id });
         }
         res.json(event);
     }

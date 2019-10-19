@@ -83,7 +83,8 @@ screeningEventRouter.get(
                     ...req.query,
                     // tslint:disable-next-line:no-magic-numbers
                     limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined,
-                    page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined
+                    page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined,
+                    typeOf: cinerino.factory.chevre.eventType.ScreeningEvent
                 };
 
                 events = await cinerino.service.offer.searchEvents4cinemasunshine(searchConditions)({
@@ -91,21 +92,22 @@ screeningEventRouter.get(
                     event: eventRepo
                     // itemAvailability: itemAvailabilityRepo
                 });
-                totalCount = await eventRepo.countScreeningEvents(searchConditions);
+                totalCount = await eventRepo.count(searchConditions);
             } else {
-                const searchCoinditions: cinerino.chevre.factory.event.screeningEvent.ISearchConditions = {
+                const searchConditions: cinerino.chevre.factory.event.screeningEvent.ISearchConditions = {
                     ...req.query,
                     project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
                     // tslint:disable-next-line:no-magic-numbers
                     limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                    page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
+                    page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+                    typeOf: cinerino.factory.chevre.eventType.ScreeningEvent
                 };
 
-                events = await cinerino.service.offer.searchEvents(searchCoinditions)({
+                events = await cinerino.service.offer.searchEvents(searchConditions)({
                     event: eventRepo,
                     attendeeCapacity: attendeeCapacityRepo
                 });
-                totalCount = await eventRepo.countScreeningEvents(searchCoinditions);
+                totalCount = await eventRepo.count(searchConditions);
             }
 
             res.set('X-Total-Count', totalCount.toString())
@@ -138,7 +140,7 @@ screeningEventRouter.get(
                     // itemAvailability: new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient())
                 });
             } else {
-                event = await eventRepo.findById({ typeOf: cinerino.factory.chevre.eventType.ScreeningEvent, id: req.params.id });
+                event = await eventRepo.findById({ id: req.params.id });
             }
 
             res.json(event);
