@@ -78,6 +78,7 @@ eventsRouter.get(
         try {
             const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
             const eventRepo = new cinerino.repository.Event(mongoose.connection);
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
             let events: cinerino.factory.chevre.event.screeningEvent.IEvent[];
             let totalCount: number;
@@ -105,9 +106,13 @@ eventsRouter.get(
                     page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
                 };
 
-                events = await cinerino.service.offer.searchEvents(searchConditions)({
+                events = await cinerino.service.offer.searchEvents({
+                    project: req.project,
+                    conditions: searchConditions
+                })({
                     event: eventRepo,
-                    attendeeCapacity: attendeeCapacityRepo
+                    attendeeCapacity: attendeeCapacityRepo,
+                    project: projectRepo
                 });
                 totalCount = await eventRepo.count(searchConditions);
             }

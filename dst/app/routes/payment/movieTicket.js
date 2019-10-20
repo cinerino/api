@@ -53,6 +53,7 @@ movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['custome
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             event: new cinerino.repository.Event(mongoose.connection),
+            project: new cinerino.repository.Project(mongoose.connection),
             seller: new cinerino.repository.Seller(mongoose.connection),
             movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
                 endpoint: project.settings.mvtkReserve.endpoint,
@@ -135,6 +136,7 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['customer', 
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             event: new cinerino.repository.Event(mongoose.connection),
+            project: new cinerino.repository.Project(mongoose.connection),
             seller: new cinerino.repository.Seller(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection),
             movieTicket: new cinerino.repository.paymentMethod.MovieTicket({

@@ -74,6 +74,7 @@ eventsRouter.get('', permitScopes_1.default(['customer', 'events', 'events.read-
     try {
         const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         let events;
         let totalCount;
         // Cinemasunshine対応
@@ -91,9 +92,13 @@ eventsRouter.get('', permitScopes_1.default(['customer', 'events', 'events.read-
             const searchConditions = Object.assign(Object.assign({}, req.query), { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-            events = yield cinerino.service.offer.searchEvents(searchConditions)({
+            events = yield cinerino.service.offer.searchEvents({
+                project: req.project,
+                conditions: searchConditions
+            })({
                 event: eventRepo,
-                attendeeCapacity: attendeeCapacityRepo
+                attendeeCapacity: attendeeCapacityRepo,
+                project: projectRepo
             });
             totalCount = yield eventRepo.count(searchConditions);
         }

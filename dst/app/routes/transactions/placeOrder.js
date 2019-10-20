@@ -789,6 +789,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             event: new cinerino.repository.Event(mongoose.connection),
+            project: new cinerino.repository.Project(mongoose.connection),
             seller: new cinerino.repository.Seller(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection),
             movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
