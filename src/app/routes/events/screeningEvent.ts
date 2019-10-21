@@ -104,7 +104,7 @@ screeningEventRouter.get(
                     typeOf: cinerino.factory.chevre.eventType.ScreeningEvent
                 };
 
-                events = await cinerino.service.offer.searchEvents({
+                const searchEventsResult = await cinerino.service.offer.searchEvents({
                     project: req.project,
                     conditions: searchConditions
                 })({
@@ -112,7 +112,8 @@ screeningEventRouter.get(
                     attendeeCapacity: attendeeCapacityRepo,
                     project: projectRepo
                 });
-                totalCount = await eventRepo.count(searchConditions);
+                events = searchEventsResult.data;
+                totalCount = searchEventsResult.totalCount;
             }
 
             res.set('X-Total-Count', totalCount.toString())

@@ -90,7 +90,7 @@ screeningEventRouter.get('', permitScopes_1.default(['customer', 'events', 'even
             const searchConditions = Object.assign(Object.assign({}, req.query), { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, typeOf: cinerino.factory.chevre.eventType.ScreeningEvent });
-            events = yield cinerino.service.offer.searchEvents({
+            const searchEventsResult = yield cinerino.service.offer.searchEvents({
                 project: req.project,
                 conditions: searchConditions
             })({
@@ -98,7 +98,8 @@ screeningEventRouter.get('', permitScopes_1.default(['customer', 'events', 'even
                 attendeeCapacity: attendeeCapacityRepo,
                 project: projectRepo
             });
-            totalCount = yield eventRepo.count(searchConditions);
+            events = searchEventsResult.data;
+            totalCount = searchEventsResult.totalCount;
         }
         res.set('X-Total-Count', totalCount.toString())
             .json(events);

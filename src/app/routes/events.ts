@@ -115,7 +115,7 @@ eventsRouter.get(
                     page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
                 };
 
-                events = await cinerino.service.offer.searchEvents({
+                const searchEventsResult = await cinerino.service.offer.searchEvents({
                     project: req.project,
                     conditions: searchConditions
                 })({
@@ -123,7 +123,8 @@ eventsRouter.get(
                     project: projectRepo,
                     ...(USE_EVENT_REPO) ? { event: eventRepo } : undefined
                 });
-                totalCount = await eventRepo.count(searchConditions);
+                events = searchEventsResult.data;
+                totalCount = searchEventsResult.totalCount;
             }
 
             res.set('X-Total-Count', totalCount.toString())
