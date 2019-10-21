@@ -295,6 +295,14 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['customer
         .optional()
         .isISO8601()
         .toDate(),
+    check_1.body('orderDateFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    check_1.body('orderDateThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
     check_1.body('confirmationNumber')
         .not()
         .isEmpty()
@@ -313,14 +321,18 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['customer
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const orderDateThrough = (req.query.orderDateThrough instanceof Date)
             ? req.query.orderDateThrough
-            : moment()
-                .toDate();
+            : (req.body.orderDateThrough instanceof Date)
+                ? req.body.orderDateThrough
+                : moment()
+                    .toDate();
         const orderDateFrom = (req.query.orderDateFrom instanceof Date)
             ? req.query.orderDateFrom
-            : moment(orderDateThrough)
-                // tslint:disable-next-line:no-magic-numbers
-                .add(-3, 'months') // とりあえず直近3カ月をデフォルト動作に設定
-                .toDate();
+            : (req.body.orderDateFrom instanceof Date)
+                ? req.body.orderDateFrom
+                : moment(orderDateThrough)
+                    // tslint:disable-next-line:no-magic-numbers
+                    .add(-3, 'months') // とりあえず直近3カ月をデフォルト動作に設定
+                    .toDate();
         const orders = yield orderRepo.search({
             limit: 1,
             sort: { orderDate: cinerino.factory.sortType.Descending },
