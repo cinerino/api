@@ -23,6 +23,14 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const screeningEvent_1 = require("./events/screeningEvent");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
+const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const eventsRouter = express_1.Router();
 eventsRouter.use(authentication_1.default);
 eventsRouter.use('/screeningEvent', screeningEvent_1.default);
@@ -95,11 +103,7 @@ eventsRouter.get('', permitScopes_1.default(['customer', 'events', 'events.read-
             events = yield cinerino.service.offer.searchEvents({
                 project: req.project,
                 conditions: searchConditions
-            })({
-                event: eventRepo,
-                attendeeCapacity: attendeeCapacityRepo,
-                project: projectRepo
-            });
+            })(Object.assign({ attendeeCapacity: attendeeCapacityRepo, project: projectRepo }, (USE_EVENT_REPO) ? { event: eventRepo } : undefined));
             totalCount = yield eventRepo.count(searchConditions);
         }
         res.set('X-Total-Count', totalCount.toString())
@@ -116,6 +120,7 @@ eventsRouter.get('/:id', permitScopes_1.default(['customer', 'events', 'events.r
     try {
         const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         let event;
         // Cinemasunshine対応
         if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
@@ -125,7 +130,20 @@ eventsRouter.get('/:id', permitScopes_1.default(['customer', 'events', 'events.r
             });
         }
         else {
-            event = yield eventRepo.findById({ id: req.params.id });
+            if (USE_EVENT_REPO) {
+                event = yield eventRepo.findById({ id: req.params.id });
+            }
+            else {
+                const project = yield projectRepo.findById({ id: req.project.id });
+                if (project.settings === undefined || project.settings.chevre === undefined) {
+                    throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
+                }
+                const eventService = new cinerino.chevre.service.Event({
+                    endpoint: project.settings.chevre.endpoint,
+                    auth: chevreAuthClient
+                });
+                event = yield eventService.findById({ id: req.params.id });
+            }
         }
         res.json(event);
     }
@@ -143,10 +161,7 @@ eventsRouter.get('/:id/offers', permitScopes_1.default(['customer', 'events', 'e
         const offers = yield cinerino.service.offer.searchEventOffers({
             project: req.project,
             event: { id: req.params.id }
-        })({
-            event: eventRepo,
-            project: projectRepo
-        });
+        })(Object.assign({ project: projectRepo }, (USE_EVENT_REPO) ? { event: eventRepo } : undefined));
         res.json(offers);
     }
     catch (error) {
@@ -176,11 +191,7 @@ eventsRouter.get('/:id/offers/ticket', permitScopes_1.default(['customer', 'even
             event: { id: req.params.id },
             seller: req.query.seller,
             store: req.query.store
-        })({
-            event: eventRepo,
-            project: projectRepo,
-            seller: sellerRepo
-        });
+        })(Object.assign({ project: projectRepo, seller: sellerRepo }, (USE_EVENT_REPO) ? { event: eventRepo } : undefined));
         res.json(offers);
     }
     catch (error) {

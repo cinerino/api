@@ -19,6 +19,15 @@ import validator from '../middlewares/validator';
 import screeningEventRouter from './events/screeningEvent';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
+const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
+
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 
 const eventsRouter = Router();
 eventsRouter.use(authentication);
@@ -110,9 +119,9 @@ eventsRouter.get(
                     project: req.project,
                     conditions: searchConditions
                 })({
-                    event: eventRepo,
                     attendeeCapacity: attendeeCapacityRepo,
-                    project: projectRepo
+                    project: projectRepo,
+                    ...(USE_EVENT_REPO) ? { event: eventRepo } : undefined
                 });
                 totalCount = await eventRepo.count(searchConditions);
             }
@@ -136,6 +145,7 @@ eventsRouter.get(
         try {
             const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
             const eventRepo = new cinerino.repository.Event(mongoose.connection);
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
             let event: cinerino.factory.chevre.event.screeningEvent.IEvent;
 
@@ -146,7 +156,20 @@ eventsRouter.get(
                     event: new cinerino.repository.Event(mongoose.connection)
                 });
             } else {
-                event = await eventRepo.findById({ id: req.params.id });
+                if (USE_EVENT_REPO) {
+                    event = await eventRepo.findById({ id: req.params.id });
+                } else {
+                    const project = await projectRepo.findById({ id: req.project.id });
+                    if (project.settings === undefined || project.settings.chevre === undefined) {
+                        throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
+                    }
+
+                    const eventService = new cinerino.chevre.service.Event({
+                        endpoint: project.settings.chevre.endpoint,
+                        auth: chevreAuthClient
+                    });
+                    event = await eventService.findById({ id: req.params.id });
+                }
             }
 
             res.json(event);
@@ -172,8 +195,8 @@ eventsRouter.get(
                 project: req.project,
                 event: { id: req.params.id }
             })({
-                event: eventRepo,
-                project: projectRepo
+                project: projectRepo,
+                ...(USE_EVENT_REPO) ? { event: eventRepo } : undefined
             });
 
             res.json(offers);
@@ -213,9 +236,9 @@ eventsRouter.get<ParamsDictionary>(
                 seller: req.query.seller,
                 store: req.query.store
             })({
-                event: eventRepo,
                 project: projectRepo,
-                seller: sellerRepo
+                seller: sellerRepo,
+                ...(USE_EVENT_REPO) ? { event: eventRepo } : undefined
             });
             res.json(offers);
         } catch (error) {

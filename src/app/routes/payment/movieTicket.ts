@@ -16,6 +16,8 @@ import permitScopes from '../../middlewares/permitScopes';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
+const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
+
 const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials({
     domain: <string>process.env.MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.MVTK_RESERVE_CLIENT_ID,
@@ -52,14 +54,14 @@ movieTicketPaymentRouter.post(
                 object: req.body
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                event: new cinerino.repository.Event(mongoose.connection),
                 project: new cinerino.repository.Project(mongoose.connection),
                 seller: new cinerino.repository.Seller(mongoose.connection),
                 movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
                     endpoint: project.settings.mvtkReserve.endpoint,
                     auth: mvtkReserveAuthClient
                 }),
-                paymentMethod: new cinerino.repository.PaymentMethod(mongoose.connection)
+                paymentMethod: new cinerino.repository.PaymentMethod(mongoose.connection),
+                ...(USE_EVENT_REPO) ? { event: new cinerino.repository.Event(mongoose.connection) } : undefined
             });
             res.status(CREATED)
                 .json(action);
@@ -150,14 +152,14 @@ movieTicketPaymentRouter.post<ParamsDictionary>(
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                event: new cinerino.repository.Event(mongoose.connection),
                 project: new cinerino.repository.Project(mongoose.connection),
                 seller: new cinerino.repository.Seller(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection),
                 movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
                     endpoint: project.settings.mvtkReserve.endpoint,
                     auth: mvtkReserveAuthClient
-                })
+                }),
+                ...(USE_EVENT_REPO) ? { event: new cinerino.repository.Event(mongoose.connection) } : undefined
             });
             res.status(CREATED)
                 .json(action);

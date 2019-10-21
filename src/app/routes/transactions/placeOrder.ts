@@ -24,6 +24,7 @@ import placeOrder4cinemasunshineRouter from './placeOrder4cinemasunshine';
 import * as redis from '../../../redis';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
+const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
 
 /**
  * GMOメンバーIDにユーザーネームを使用するかどうか
@@ -366,14 +367,14 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
                 transaction: { id: req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                event: new cinerino.repository.Event(mongoose.connection),
                 movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
                     endpoint: project.settings.mvtkReserve.endpoint,
                     auth: mvtkReserveAuthClient
                 }),
                 project: projectRepo,
                 seller: new cinerino.repository.Seller(mongoose.connection),
-                transaction: new cinerino.repository.Transaction(mongoose.connection)
+                transaction: new cinerino.repository.Transaction(mongoose.connection),
+                ...(USE_EVENT_REPO) ? { event: new cinerino.repository.Event(mongoose.connection) } : undefined
             });
 
             res.status(CREATED)
@@ -943,14 +944,14 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
                 purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                event: new cinerino.repository.Event(mongoose.connection),
                 project: new cinerino.repository.Project(mongoose.connection),
                 seller: new cinerino.repository.Seller(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection),
                 movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
                     endpoint: project.settings.mvtkReserve.endpoint,
                     auth: mvtkReserveAuthClient
-                })
+                }),
+                ...(USE_EVENT_REPO) ? { event: new cinerino.repository.Event(mongoose.connection) } : undefined
             });
             res.status(CREATED)
                 .json(action);
