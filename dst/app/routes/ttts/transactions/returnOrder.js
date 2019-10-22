@@ -159,7 +159,14 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
         // 取引があれば、返品取引進行
         const returnOrderTransaction = yield cinerino.service.transaction.returnOrder.start({
             project: req.project,
-            agent: req.agent,
+            agent: Object.assign(Object.assign({}, req.agent), { identifier: [
+                    ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
+                    ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
+                        ? req.body.agent.identifier.map((p) => {
+                            return { name: String(p.name), value: String(p.value) };
+                        })
+                        : []
+                ] }),
             expires: expires,
             object: {
                 cancellationFee: Number(req.body.cancellation_fee),

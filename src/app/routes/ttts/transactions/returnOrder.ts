@@ -179,7 +179,17 @@ returnOrderTransactionsRouter.post(
             // 取引があれば、返品取引進行
             const returnOrderTransaction = await cinerino.service.transaction.returnOrder.start({
                 project: req.project,
-                agent: req.agent,
+                agent: {
+                    ...req.agent,
+                    identifier: [
+                        ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
+                        ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
+                            ? (<any[]>req.body.agent.identifier).map((p: any) => {
+                                return { name: String(p.name), value: String(p.value) };
+                            })
+                            : []
+                    ]
+                },
                 expires: expires,
                 object: {
                     cancellationFee: Number(req.body.cancellation_fee),
