@@ -454,7 +454,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/confirm', permitScopes_1.d
                 object: email
             });
         }
-        const { order } = yield cinerino.service.transaction.placeOrderInProgress.confirm(Object.assign(Object.assign({}, req.body), { agent: { id: req.user.sub }, id: req.params.transactionId, potentialActions: potentialActions, project: req.project, result: {
+        const result = yield cinerino.service.transaction.placeOrderInProgress.confirm(Object.assign(Object.assign({}, req.body), { agent: { id: req.user.sub }, id: req.params.transactionId, potentialActions: potentialActions, project: req.project, result: {
                 order: {
                     orderDate: orderDate,
                     confirmationNumber: (params) => {
@@ -496,7 +496,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/confirm', permitScopes_1.d
             }
         }));
         res.status(http_status_1.CREATED)
-            .json(order);
+            .json(Object.assign(Object.assign({}, result), result.order));
     }
     catch (error) {
         next(error);

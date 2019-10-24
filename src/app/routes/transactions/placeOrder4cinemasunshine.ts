@@ -551,7 +551,7 @@ placeOrder4cinemasunshineRouter.post(
                 });
             }
 
-            const { order } = await cinerino.service.transaction.placeOrderInProgress.confirm({
+            const result = await cinerino.service.transaction.placeOrderInProgress.confirm({
                 ...req.body,
                 agent: { id: req.user.sub },
                 id: req.params.transactionId,
@@ -602,7 +602,10 @@ placeOrder4cinemasunshineRouter.post(
                 });
 
             res.status(CREATED)
-                .json(order);
+                .json({
+                    ...result,
+                    ...result.order
+                });
         } catch (error) {
             next(error);
         }
