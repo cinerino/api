@@ -367,12 +367,10 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
                 project: req.project,
                 object: {
                     ...req.body,
-                    ...{
-                        onReservationStatusChanged: {
-                            informReservation: WEBHOOK_ON_RESERVATION_STATUS_CHANGED.map((url) => {
-                                return { recipient: { url: url } };
-                            })
-                        }
+                    onReservationStatusChanged: {
+                        informReservation: WEBHOOK_ON_RESERVATION_STATUS_CHANGED.map((url) => {
+                            return { recipient: { url: url } };
+                        })
                     }
                 },
                 agent: { id: req.user.sub },

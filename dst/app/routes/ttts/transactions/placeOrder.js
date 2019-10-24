@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 注文取引ルーター
+ * 注文取引ルーター(ttts専用)
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
@@ -168,18 +168,21 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             project: req.project,
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId },
-            object: Object.assign({ event: { id: performanceId }, acceptedOffers: req.body.offers.map((offer) => {
+            object: {
+                event: { id: performanceId },
+                acceptedOffer: [],
+                acceptedOffers: req.body.offers.map((offer) => {
                     return {
                         ticket_type: offer.ticket_type,
                         watcher_name: offer.watcher_name
                     };
-                }) }, {
+                }),
                 onReservationStatusChanged: {
                     informReservation: WEBHOOK_ON_RESERVATION_STATUS_CHANGED.map((url) => {
                         return { recipient: { url: url } };
                     })
                 }
-            })
+            }
         })(new cinerino.repository.Transaction(mongoose.connection), new cinerino.repository.Action(mongoose.connection), new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()), new cinerino.repository.Task(mongoose.connection), new cinerino.repository.Project(mongoose.connection));
         res.status(http_status_1.CREATED)
             .json(action);
@@ -262,8 +265,6 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             .format('YYYYMMDD');
         const paymentNo = yield paymentNoRepo.publish(eventStartDateStr);
         const confirmationNumber = `${eventStartDateStr}${paymentNo}`;
-        // const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
-        // const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
         const informOrderUrl = req.body.informOrderUrl;
         const informReservationUrl = req.body.informReservationUrl;
         // 予約確定パラメータを生成

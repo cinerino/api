@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 注文返品取引ルーター
+ * 注文返品取引ルーター(ttts専用)
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
@@ -77,8 +77,6 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
             .filter((a) => a.object.typeOf
             === cinerino.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation)
             .filter((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus);
-        // const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onReturnOrder`;
-        // const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationCancelled`;
         const informOrderUrl = req.body.informOrderUrl;
         const informReservationUrl = req.body.informReservationUrl;
         const actionsOnOrder = yield actionRepo.searchByOrderNumber({ orderNumber: order.orderNumber });
@@ -210,29 +208,8 @@ function getEmailCustomization(params) {
     const emailMessage = undefined;
     switch (params.reason) {
         case cinerino.factory.transaction.returnOrder.Reason.Customer:
-            // no op
             break;
         case cinerino.factory.transaction.returnOrder.Reason.Seller:
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO 二重送信対策
-            // emailMessageAttributes = await createEmailMessage4sellerReason(params.placeOrderTransaction);
-            // emailMessage = {
-            //     typeOf: cinerino.factory.creativeWorkType.EmailMessage,
-            //     identifier: `returnOrderTransaction-${order.orderNumber}`,
-            //     name: `returnOrderTransaction-${order.orderNumber}`,
-            //     sender: {
-            //         typeOf: params.placeOrderTransaction.seller.typeOf,
-            //         name: emailMessageAttributes.sender.name,
-            //         email: emailMessageAttributes.sender.email
-            //     },
-            //     toRecipient: {
-            //         typeOf: params.placeOrderTransaction.agent.typeOf,
-            //         name: emailMessageAttributes.toRecipient.name,
-            //         email: emailMessageAttributes.toRecipient.email
-            //     },
-            //     about: emailMessageAttributes.about,
-            //     text: emailMessageAttributes.text
-            // };
             break;
         default:
     }
@@ -289,41 +266,6 @@ returnOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification'
         });
         res.status(http_status_1.CREATED)
             .json(task);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * 取引検索
- */
-returnOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
-    check_1.query('startFrom')
-        .optional()
-        .isISO8601()
-        .toDate(),
-    check_1.query('startThrough')
-        .optional()
-        .isISO8601()
-        .toDate(),
-    check_1.query('endFrom')
-        .optional()
-        .isISO8601()
-        .toDate(),
-    check_1.query('endThrough')
-        .optional()
-        .isISO8601()
-        .toDate()
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        const searchConditions = Object.assign(Object.assign({}, req.query), { 
-            // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: cinerino.factory.sortType.Descending }, typeOf: cinerino.factory.transactionType.ReturnOrder });
-        const transactions = yield transactionRepo.search(searchConditions);
-        const totalCount = yield transactionRepo.count(searchConditions);
-        res.set('X-Total-Count', totalCount.toString());
-        res.json(transactions);
     }
     catch (error) {
         next(error);

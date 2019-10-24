@@ -304,13 +304,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         }
         const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create({
             project: req.project,
-            object: Object.assign(Object.assign({}, req.body), {
-                onReservationStatusChanged: {
+            object: Object.assign(Object.assign({}, req.body), { onReservationStatusChanged: {
                     informReservation: WEBHOOK_ON_RESERVATION_STATUS_CHANGED.map((url) => {
                         return { recipient: { url: url } };
                     })
-                }
-            }),
+                } }),
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId }
         })(Object.assign({ action: new cinerino.repository.Action(mongoose.connection), movieTicket: new cinerino.repository.paymentMethod.MovieTicket({

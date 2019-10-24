@@ -1,5 +1,5 @@
 /**
- * 注文取引ルーター
+ * 注文取引ルーター(ttts専用)
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
@@ -208,18 +208,17 @@ placeOrderTransactionsRouter.post(
                 transaction: { id: req.params.transactionId },
                 object: {
                     event: { id: performanceId },
+                    acceptedOffer: [],
                     acceptedOffers: (<any[]>req.body.offers).map((offer) => {
                         return {
                             ticket_type: offer.ticket_type,
                             watcher_name: offer.watcher_name
                         };
                     }),
-                    ...{
-                        onReservationStatusChanged: {
-                            informReservation: WEBHOOK_ON_RESERVATION_STATUS_CHANGED.map((url) => {
-                                return { recipient: { url: url } };
-                            })
-                        }
+                    onReservationStatusChanged: {
+                        informReservation: WEBHOOK_ON_RESERVATION_STATUS_CHANGED.map((url) => {
+                            return { recipient: { url: url } };
+                        })
                     }
                 }
             })(
@@ -334,8 +333,6 @@ placeOrderTransactionsRouter.post(
             const paymentNo = await paymentNoRepo.publish(eventStartDateStr);
             const confirmationNumber: string = `${eventStartDateStr}${paymentNo}`;
 
-            // const informOrderUrl = `${req.protocol}://${req.hostname}/webhooks/onPlaceOrder`;
-            // const informReservationUrl = `${req.protocol}://${req.hostname}/webhooks/onReservationConfirmed`;
             const informOrderUrl = <string>req.body.informOrderUrl;
             const informReservationUrl = <string>req.body.informReservationUrl;
 
