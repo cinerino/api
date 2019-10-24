@@ -12,6 +12,9 @@ import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
+const WEBHOOK_ON_RESERVATION_STATUS_CHANGED = (process.env.WEBHOOK_ON_RESERVATION_STATUS_CHANGED !== undefined)
+    ? process.env.WEBHOOK_ON_RESERVATION_STATUS_CHANGED.split(',')
+    : [];
 
 const placeOrderTransactionsRouter = Router();
 
@@ -210,7 +213,14 @@ placeOrderTransactionsRouter.post(
                             ticket_type: offer.ticket_type,
                             watcher_name: offer.watcher_name
                         };
-                    })
+                    }),
+                    ...{
+                        onReservationStatusChanged: {
+                            informReservation: WEBHOOK_ON_RESERVATION_STATUS_CHANGED.map((url) => {
+                                return { recipient: { url: url } };
+                            })
+                        }
+                    }
                 }
             })(
                 new cinerino.repository.Transaction(mongoose.connection),

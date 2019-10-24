@@ -20,6 +20,9 @@ const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const mongoose = require("mongoose");
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
+const WEBHOOK_ON_RESERVATION_STATUS_CHANGED = (process.env.WEBHOOK_ON_RESERVATION_STATUS_CHANGED !== undefined)
+    ? process.env.WEBHOOK_ON_RESERVATION_STATUS_CHANGED.split(',')
+    : [];
 const placeOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../../middlewares/authentication");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
@@ -165,15 +168,18 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             project: req.project,
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId },
-            object: {
-                event: { id: performanceId },
-                acceptedOffers: req.body.offers.map((offer) => {
+            object: Object.assign({ event: { id: performanceId }, acceptedOffers: req.body.offers.map((offer) => {
                     return {
                         ticket_type: offer.ticket_type,
                         watcher_name: offer.watcher_name
                     };
-                })
-            }
+                }) }, {
+                onReservationStatusChanged: {
+                    informReservation: WEBHOOK_ON_RESERVATION_STATUS_CHANGED.map((url) => {
+                        return { recipient: { url: url } };
+                    })
+                }
+            })
         })(new cinerino.repository.Transaction(mongoose.connection), new cinerino.repository.Action(mongoose.connection), new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()), new cinerino.repository.Task(mongoose.connection), new cinerino.repository.Project(mongoose.connection));
         res.status(http_status_1.CREATED)
             .json(action);
