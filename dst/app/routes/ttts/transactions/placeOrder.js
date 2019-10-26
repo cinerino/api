@@ -183,7 +183,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
                     })
                 }
             }
-        })(new cinerino.repository.Transaction(mongoose.connection), new cinerino.repository.Action(mongoose.connection), new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()), new cinerino.repository.Task(mongoose.connection), new cinerino.repository.Project(mongoose.connection));
+        })(new cinerino.repository.Transaction(mongoose.connection), new cinerino.repository.Action(mongoose.connection), new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()), new cinerino.repository.Project(mongoose.connection));
         res.status(http_status_1.CREATED)
             .json(action);
     }
@@ -201,7 +201,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId },
             id: req.params.actionId
-        })(new cinerino.repository.Transaction(mongoose.connection), new cinerino.repository.Action(mongoose.connection), new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()), new cinerino.repository.Task(mongoose.connection), new cinerino.repository.Project(mongoose.connection));
+        })(new cinerino.repository.Transaction(mongoose.connection), new cinerino.repository.Action(mongoose.connection), new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()), new cinerino.repository.Project(mongoose.connection));
         res.status(http_status_1.NO_CONTENT)
             .end();
     }

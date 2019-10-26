@@ -225,7 +225,6 @@ placeOrderTransactionsRouter.post(
                 new cinerino.repository.Transaction(mongoose.connection),
                 new cinerino.repository.Action(mongoose.connection),
                 new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()),
-                new cinerino.repository.Task(mongoose.connection),
                 new cinerino.repository.Project(mongoose.connection)
             );
 
@@ -255,7 +254,6 @@ placeOrderTransactionsRouter.delete(
                 new cinerino.repository.Transaction(mongoose.connection),
                 new cinerino.repository.Action(mongoose.connection),
                 new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()),
-                new cinerino.repository.Task(mongoose.connection),
                 new cinerino.repository.Project(mongoose.connection)
             );
 
