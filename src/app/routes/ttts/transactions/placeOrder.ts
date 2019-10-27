@@ -413,7 +413,7 @@ placeOrderTransactionsRouter.post(
             const printToken = await tokenRepo.createPrintToken(acceptedOffers.map((o) => o.itemOffered.id));
 
             const transactionResult = await cinerino.service.transaction.placeOrderInProgress.confirm({
-                project: req.project,
+                project: { typeOf: req.project.typeOf, id: req.project.id },
                 agent: { id: req.user.sub },
                 id: req.params.transactionId,
                 potentialActions: {

@@ -336,7 +336,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         // 印刷トークンを事前に発行
         const printToken = yield tokenRepo.createPrintToken(acceptedOffers.map((o) => o.itemOffered.id));
         const transactionResult = yield cinerino.service.transaction.placeOrderInProgress.confirm({
-            project: req.project,
+            project: { typeOf: req.project.typeOf, id: req.project.id },
             agent: { id: req.user.sub },
             id: req.params.transactionId,
             potentialActions: {
