@@ -11,6 +11,8 @@ import { CREATED } from 'http-status';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
+const CANCELLATION_FEE = 1000;
+
 const returnOrderTransactionsRouter = Router();
 
 import authentication from '../../../middlewares/authentication';
@@ -91,11 +93,6 @@ returnOrderTransactionsRouter.post(
                 .filter((a) => a.typeOf === cinerino.factory.actionType.PayAction)
                 .filter((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus);
 
-            const emailCustomization = getEmailCustomization({
-                placeOrderTransaction: placeOrderTransaction,
-                reason: cinerino.factory.transaction.returnOrder.Reason.Customer
-            });
-
             // クレジットカード返金アクション
             const refundCreditCardActionsParams: cinerino.factory.transaction.returnOrder.IRefundCreditCardParams[] =
                 await Promise.all((<cinerino.factory.action.trade.pay.IAction<cinerino.factory.paymentMethodType.CreditCard>[]>payActions)
@@ -114,15 +111,12 @@ returnOrderTransactionsRouter.post(
                             },
                             potentialActions: {
                                 sendEmailMessage: {
-                                    ...(emailCustomization !== undefined)
-                                        ? { object: emailCustomization }
-                                        : {
-                                            object: {
-                                                toRecipient: {
-                                                    email: <string>process.env.DEVELOPER_EMAIL
-                                                }
-                                            }
+                                    // 返金メールは管理者へ
+                                    object: {
+                                        toRecipient: {
+                                            email: <string>process.env.DEVELOPER_EMAIL
                                         }
+                                    }
                                 },
                                 // クレジットカード返金後に注文通知
                                 informOrder: [
@@ -190,7 +184,7 @@ returnOrderTransactionsRouter.post(
                 },
                 expires: expires,
                 object: {
-                    cancellationFee: Number(req.body.cancellation_fee),
+                    cancellationFee: CANCELLATION_FEE,
                     clientUser: req.user,
                     order: { orderNumber: order.orderNumber },
                     reason: cinerino.factory.transaction.returnOrder.Reason.Customer
@@ -223,34 +217,6 @@ returnOrderTransactionsRouter.post(
         }
     }
 );
-
-export function getEmailCustomization(params: {
-    placeOrderTransaction: cinerino.factory.transaction.placeOrder.ITransaction;
-    reason: cinerino.factory.transaction.returnOrder.Reason;
-}) {
-    // const placeOrderTransaction = returnOrderTransaction.object.transaction;
-    if (params.placeOrderTransaction.result === undefined) {
-        throw new cinerino.factory.errors.NotFound('PlaceOrder Transaction Result');
-    }
-    // const order = params.placeOrderTransaction.result.order;
-
-    // let emailMessageAttributes: cinerino.factory.creativeWork.message.email.IAttributes;
-    const emailMessage: cinerino.factory.creativeWork.message.email.ICreativeWork | undefined = undefined;
-
-    switch (params.reason) {
-        case cinerino.factory.transaction.returnOrder.Reason.Customer:
-
-            break;
-
-        case cinerino.factory.transaction.returnOrder.Reason.Seller:
-
-            break;
-
-        default:
-    }
-
-    return emailMessage;
-}
 
 /**
  * 返品メール送信
