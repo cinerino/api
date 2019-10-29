@@ -266,7 +266,6 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         const paymentNo = yield paymentNoRepo.publish(eventStartDateStr);
         const confirmationNumber = `${eventStartDateStr}${paymentNo}`;
         const informOrderUrl = req.body.informOrderUrl;
-        const informReservationUrl = req.body.informReservationUrl;
         // 予約確定パラメータを生成
         const eventReservations = acceptedOffers.map((acceptedOffer, index) => {
             const reservation = acceptedOffer.itemOffered;
@@ -319,9 +318,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                 potentialActions: {
                     reserve: {
                         potentialActions: {
-                            informReservation: [
-                                { recipient: { url: informReservationUrl } }
-                            ]
+                            informReservation: []
                         }
                     }
                 }

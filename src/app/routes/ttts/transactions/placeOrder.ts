@@ -332,7 +332,6 @@ placeOrderTransactionsRouter.post(
             const confirmationNumber: string = `${eventStartDateStr}${paymentNo}`;
 
             const informOrderUrl = <string>req.body.informOrderUrl;
-            const informReservationUrl = <string>req.body.informReservationUrl;
 
             // 予約確定パラメータを生成
             const eventReservations = acceptedOffers.map((acceptedOffer, index) => {
@@ -392,9 +391,7 @@ placeOrderTransactionsRouter.post(
                     potentialActions: {
                         reserve: {
                             potentialActions: {
-                                informReservation: [
-                                    { recipient: { url: informReservationUrl } }
-                                ]
+                                informReservation: []
                             }
                         }
                     }
