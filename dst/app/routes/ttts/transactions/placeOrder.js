@@ -29,37 +29,55 @@ const permitScopes_1 = require("../../../middlewares/permitScopes");
 const validator_1 = require("../../../middlewares/validator");
 const redis = require("../../../../redis");
 placeOrderTransactionsRouter.use(authentication_1.default);
-placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), ...[
-    check_1.body('expires')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-        .isISO8601()
-        .toDate(),
-    check_1.body('seller_identifier')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required'),
-    ...(!WAITER_DISABLED)
-        ? [
-            check_1.body('passportToken')
-                .not()
-                .isEmpty()
-                .withMessage(() => 'required')
-        ]
-        : []
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
+    if (typeof req.body.seller_identifier === 'string') {
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const doc = yield sellerRepo.organizationModel.findOne({
             identifier: req.body.seller_identifier
         })
             .exec();
         if (doc === null) {
-            throw new cinerino.factory.errors.NotFound('Seller');
+            next(new cinerino.factory.errors.NotFound('Seller'));
+            return;
         }
         const seller = doc.toObject();
+        req.body.seller = {
+            typeOf: seller.typeOf,
+            id: seller.id
+        };
+    }
+    if (typeof req.body.passportToken === 'string') {
+        req.body.object = {
+            passport: { token: req.body.passportToken }
+        };
+    }
+    next();
+}), ...[
+    check_1.body('expires')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isISO8601()
+        .toDate(),
+    check_1.body('seller.typeOf')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required'),
+    check_1.body('seller.id')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required'),
+    ...(!WAITER_DISABLED)
+        ? [
+            check_1.body('object.passport.token')
+                .not()
+                .isEmpty()
+                .withMessage((_, __) => 'required')
+        ]
+        : []
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // WAITER有効設定であれば許可証をセット
         let passport;
         if (!WAITER_DISABLED) {
             if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
@@ -69,21 +87,21 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
                 throw new cinerino.factory.errors.ServiceUnavailable('WAITER_SECRET undefined');
             }
             passport = {
-                token: req.body.passportToken,
+                token: req.body.object.passport.token,
                 issuer: process.env.WAITER_PASSPORT_ISSUER,
                 secret: process.env.WAITER_SECRET
             };
         }
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+        const expires = req.body.expires;
+        const seller = yield sellerRepo.findById({ id: req.body.seller.id });
         /**
          * WAITER許可証の有効性チェック
          */
         const passportValidator = (params) => {
-            const WAITER_PASSPORT_ISSUER = process.env.WAITER_PASSPORT_ISSUER;
-            if (WAITER_PASSPORT_ISSUER === undefined) {
-                throw new Error('WAITER_PASSPORT_ISSUER unset');
-            }
-            const issuers = WAITER_PASSPORT_ISSUER.split(',');
-            const validIssuer = issuers.indexOf(params.passport.iss) >= 0;
+            // 許可証発行者確認
+            const validIssuer = params.passport.iss === process.env.WAITER_PASSPORT_ISSUER;
             // スコープのフォーマットは、placeOrderTransaction.{sellerIdentifier}
             const explodedScopeStrings = params.passport.scope.split('.');
             const validScope = (explodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
@@ -93,13 +111,16 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         };
         const transaction = yield cinerino.service.transaction.placeOrderInProgress.start({
             project: req.project,
-            expires: moment(req.body.expires)
-                .toDate(),
+            expires: expires,
             agent: Object.assign(Object.assign({}, req.agent), { identifier: [
                     ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
-                    ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
+                    ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
+                        ? req.body.agent.identifier.map((p) => {
+                            return { name: String(p.name), value: String(p.value) };
+                        })
+                        : []
                 ] }),
-            seller: { typeOf: seller.typeOf, id: seller.id },
+            seller: req.body.seller,
             object: {
                 clientUser: req.user,
                 passport: passport

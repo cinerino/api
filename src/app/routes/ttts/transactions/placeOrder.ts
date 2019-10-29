@@ -29,31 +29,8 @@ placeOrderTransactionsRouter.use(authentication);
 placeOrderTransactionsRouter.post(
     '/start',
     permitScopes(['transactions']),
-    ...[
-        body('expires')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-            .isISO8601()
-            .toDate(),
-        body('seller_identifier')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
-        ...(!WAITER_DISABLED)
-            ? [
-                body('passportToken')
-                    .not()
-                    .isEmpty()
-                    .withMessage(() => 'required')
-            ]
-            : []
-
-    ],
-    validator,
-    async (req, res, next) => {
-        try {
-            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+    async (req, _, next) => {
+        if (typeof req.body.seller_identifier === 'string') {
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
 
             const doc = await sellerRepo.organizationModel.findOne({
@@ -61,10 +38,54 @@ placeOrderTransactionsRouter.post(
             })
                 .exec();
             if (doc === null) {
-                throw new cinerino.factory.errors.NotFound('Seller');
+                next(new cinerino.factory.errors.NotFound('Seller'));
+
+                return;
             }
             const seller = doc.toObject();
 
+            req.body.seller = {
+                typeOf: seller.typeOf,
+                id: seller.id
+            };
+        }
+
+        if (typeof req.body.passportToken === 'string') {
+            req.body.object = {
+                passport: { token: req.body.passportToken }
+            };
+        }
+
+        next();
+    },
+    ...[
+        body('expires')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isISO8601()
+            .toDate(),
+        body('seller.typeOf')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required'),
+        body('seller.id')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required'),
+        ...(!WAITER_DISABLED)
+            ? [
+                body('object.passport.token')
+                    .not()
+                    .isEmpty()
+                    .withMessage((_, __) => 'required')
+            ]
+            : []
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            // WAITER有効設定であれば許可証をセット
             let passport: cinerino.factory.transaction.placeOrder.IPassportBeforeStart | undefined;
             if (!WAITER_DISABLED) {
                 if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
@@ -74,47 +95,52 @@ placeOrderTransactionsRouter.post(
                     throw new cinerino.factory.errors.ServiceUnavailable('WAITER_SECRET undefined');
                 }
                 passport = {
-                    token: req.body.passportToken,
+                    token: req.body.object.passport.token,
                     issuer: process.env.WAITER_PASSPORT_ISSUER,
                     secret: process.env.WAITER_SECRET
                 };
             }
 
+            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+
+            const expires: Date = req.body.expires;
+
+            const seller = await sellerRepo.findById({ id: <string>req.body.seller.id });
+
             /**
              * WAITER許可証の有効性チェック
              */
-            const passportValidator = (params: {
-                passport: cinerino.factory.waiter.passport.IPassport;
-            }) => {
-                const WAITER_PASSPORT_ISSUER = process.env.WAITER_PASSPORT_ISSUER;
-                if (WAITER_PASSPORT_ISSUER === undefined) {
-                    throw new Error('WAITER_PASSPORT_ISSUER unset');
-                }
-                const issuers = WAITER_PASSPORT_ISSUER.split(',');
-                const validIssuer = issuers.indexOf(params.passport.iss) >= 0;
+            const passportValidator: cinerino.service.transaction.placeOrderInProgress.IPassportValidator =
+                (params) => {
+                    // 許可証発行者確認
+                    const validIssuer = params.passport.iss === process.env.WAITER_PASSPORT_ISSUER;
 
-                // スコープのフォーマットは、placeOrderTransaction.{sellerIdentifier}
-                const explodedScopeStrings = params.passport.scope.split('.');
-                const validScope = (
-                    explodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
-                    explodedScopeStrings[1] === seller.identifier // 販売者識別子確認
-                );
+                    // スコープのフォーマットは、placeOrderTransaction.{sellerIdentifier}
+                    const explodedScopeStrings = params.passport.scope.split('.');
+                    const validScope = (
+                        explodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
+                        explodedScopeStrings[1] === seller.identifier // 販売者識別子確認
+                    );
 
-                return validIssuer && validScope;
-            };
+                    return validIssuer && validScope;
+                };
 
             const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
                 project: req.project,
-                expires: moment(req.body.expires)
-                    .toDate(),
+                expires: expires,
                 agent: {
                     ...req.agent,
                     identifier: [
                         ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
-                        ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
+                        ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
+                            ? (<any[]>req.body.agent.identifier).map((p: any) => {
+                                return { name: String(p.name), value: String(p.value) };
+                            })
+                            : []
                     ]
                 },
-                seller: { typeOf: seller.typeOf, id: seller.id },
+                seller: req.body.seller,
                 object: {
                     clientUser: req.user,
                     passport: passport
@@ -123,8 +149,7 @@ placeOrderTransactionsRouter.post(
             })({
                 seller: sellerRepo,
                 transaction: transactionRepo
-            }
-            );
+            });
 
             // tslint:disable-next-line:no-string-literal
             // const host = req.headers['host'];

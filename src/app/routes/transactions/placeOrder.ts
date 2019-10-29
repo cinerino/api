@@ -140,12 +140,6 @@ placeOrderTransactionsRouter.post(
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
-            // パラメーターの形式をunix timestampからISO 8601フォーマットに変更したため、互換性を維持するように期限をセット
-            // const expires = (/^\d+$/.test(<string>req.body.expires))
-            //     ? moment.unix(Number(<string>req.body.expires))
-            //         .toDate()
-            //     : moment(<string>req.body.expires)
-            //         .toDate();
             const expires: Date = req.body.expires;
 
             const seller = await sellerRepo.findById({ id: <string>req.body.seller.id });
