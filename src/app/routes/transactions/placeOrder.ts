@@ -274,35 +274,26 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 
             try {
                 // cinemasunshine対応として、国内向け電話番号フォーマットであれば、強制的に日本国番号を追加
-                if (requestedNumber.slice(0, 1) === '0') {
+                if (requestedNumber.slice(0, 1) === '0' && typeof req.body.telephoneRegion !== 'string') {
                     requestedNumber = `+81${requestedNumber.slice(1)}`;
                 }
             } catch (error) {
                 throw new cinerino.factory.errors.Argument('Telephone', `Unexpected value: ${error.message}`);
             }
 
-            const contact = await cinerino.service.transaction.placeOrderInProgress.updateAgent({
+            const profile = await cinerino.service.transaction.placeOrderInProgress.updateAgent({
                 id: req.params.transactionId,
                 agent: {
                     ...req.body,
                     typeOf: cinerino.factory.personType.Person,
                     id: req.user.sub,
                     telephone: requestedNumber
-                    // ...(Array.isArray(req.body.additionalProperty)) ? { additionalProperty: req.body.additionalProperty } : {},
-                    // ...(typeof req.body.age === 'string') ? { age: req.body.age } : {},
-                    // ...(typeof req.body.address === 'string') ? { address: req.body.address } : {},
-                    // ...(typeof req.body.email === 'string') ? { email: req.body.email } : {},
-                    // ...(typeof req.body.familyName === 'string') ? { familyName: req.body.familyName } : {},
-                    // ...(typeof req.body.gender === 'string') ? { gender: req.body.gender } : {},
-                    // ...(typeof req.body.givenName === 'string') ? { givenName: req.body.givenName } : {},
-                    // ...(typeof req.body.name === 'string') ? { name: req.body.name } : {},
-                    // ...(typeof req.body.url === 'string') ? { url: req.body.url } : {}
                 }
             })({
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
-            res.json(contact);
+            res.json(profile);
         } catch (error) {
             next(error);
         }

@@ -169,36 +169,63 @@ placeOrderTransactionsRouter.post(
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/customerContact',
     permitScopes(['transactions']),
+    async (req, _, next) => {
+        if (typeof req.body.first_name === 'string') {
+            req.body.givenName = req.body.first_name;
+        }
+
+        if (typeof req.body.last_name === 'string') {
+            req.body.familyName = req.body.last_name;
+        }
+
+        if (typeof req.body.tel === 'string') {
+            req.body.telephone = req.body.tel;
+        }
+
+        if (typeof req.body.address === 'string') {
+            req.body.telephoneRegion = req.body.address;
+        }
+
+        next();
+    },
     ...[
-        body('last_name')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
-        body('first_name')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
-        body('tel')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
         body('email')
             .not()
             .isEmpty()
-            .withMessage(() => 'required')
+            .withMessage((_, __) => 'required'),
+        body('familyName')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required'),
+        body('givenName')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required'),
+        body('telephone')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required')
     ],
     validator,
     async (req, res, next) => {
         try {
+            let requestedNumber = String(req.body.telephone);
+
+            try {
+                // cinemasunshine対応として、国内向け電話番号フォーマットであれば、強制的に日本国番号を追加
+                if (requestedNumber.slice(0, 1) === '0' && typeof req.body.telephoneRegion !== 'string') {
+                    requestedNumber = `+81${requestedNumber.slice(1)}`;
+                }
+            } catch (error) {
+                throw new cinerino.factory.errors.Argument('Telephone', `Unexpected value: ${error.message}`);
+            }
+
             const profile = await cinerino.service.transaction.placeOrderInProgress.updateAgent({
                 id: req.params.transactionId,
                 agent: {
                     ...req.body,
-                    id: req.user.sub,
-                    givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '',
-                    familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '',
-                    telephone: (typeof req.body.tel === 'string') ? req.body.tel : '',
-                    telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : ''
+                    typeOf: cinerino.factory.personType.Person,
+                    id: req.user.sub
                 }
             })({
                 transaction: new cinerino.repository.Transaction(mongoose.connection)

@@ -237,20 +237,20 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
         let requestedNumber = String(req.body.telephone);
         try {
             // cinemasunshine対応として、国内向け電話番号フォーマットであれば、強制的に日本国番号を追加
-            if (requestedNumber.slice(0, 1) === '0') {
+            if (requestedNumber.slice(0, 1) === '0' && typeof req.body.telephoneRegion !== 'string') {
                 requestedNumber = `+81${requestedNumber.slice(1)}`;
             }
         }
         catch (error) {
             throw new cinerino.factory.errors.Argument('Telephone', `Unexpected value: ${error.message}`);
         }
-        const contact = yield cinerino.service.transaction.placeOrderInProgress.updateAgent({
+        const profile = yield cinerino.service.transaction.placeOrderInProgress.updateAgent({
             id: req.params.transactionId,
             agent: Object.assign(Object.assign({}, req.body), { typeOf: cinerino.factory.personType.Person, id: req.user.sub, telephone: requestedNumber })
         })({
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
-        res.json(contact);
+        res.json(profile);
     }
     catch (error) {
         next(error);

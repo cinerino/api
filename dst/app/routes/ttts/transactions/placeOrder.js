@@ -144,28 +144,52 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
  * 購入者情報を変更する
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['transactions']), ...[
-    check_1.body('last_name')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required'),
-    check_1.body('first_name')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required'),
-    check_1.body('tel')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required'),
+placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['transactions']), (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
+    if (typeof req.body.first_name === 'string') {
+        req.body.givenName = req.body.first_name;
+    }
+    if (typeof req.body.last_name === 'string') {
+        req.body.familyName = req.body.last_name;
+    }
+    if (typeof req.body.tel === 'string') {
+        req.body.telephone = req.body.tel;
+    }
+    if (typeof req.body.address === 'string') {
+        req.body.telephoneRegion = req.body.address;
+    }
+    next();
+}), ...[
     check_1.body('email')
         .not()
         .isEmpty()
-        .withMessage(() => 'required')
+        .withMessage((_, __) => 'required'),
+    check_1.body('familyName')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required'),
+    check_1.body('givenName')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required'),
+    check_1.body('telephone')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        let requestedNumber = String(req.body.telephone);
+        try {
+            // cinemasunshine対応として、国内向け電話番号フォーマットであれば、強制的に日本国番号を追加
+            if (requestedNumber.slice(0, 1) === '0' && typeof req.body.telephoneRegion !== 'string') {
+                requestedNumber = `+81${requestedNumber.slice(1)}`;
+            }
+        }
+        catch (error) {
+            throw new cinerino.factory.errors.Argument('Telephone', `Unexpected value: ${error.message}`);
+        }
         const profile = yield cinerino.service.transaction.placeOrderInProgress.updateAgent({
             id: req.params.transactionId,
-            agent: Object.assign(Object.assign({}, req.body), { id: req.user.sub, givenName: (typeof req.body.first_name === 'string') ? req.body.first_name : '', familyName: (typeof req.body.last_name === 'string') ? req.body.last_name : '', telephone: (typeof req.body.tel === 'string') ? req.body.tel : '', telephoneRegion: (typeof req.body.address === 'string') ? req.body.address : '' })
+            agent: Object.assign(Object.assign({}, req.body), { typeOf: cinerino.factory.personType.Person, id: req.user.sub })
         })({
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
