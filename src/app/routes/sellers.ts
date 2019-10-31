@@ -93,7 +93,7 @@ sellersRouter.post(
  */
 sellersRouter.get(
     '',
-    permitScopes(['customer', 'sellers', 'sellers.read-only']),
+    permitScopes(['customer', 'sellers', 'sellers.read-only', 'pos']),
     validator,
     async (req, res, next) => {
         try {
