@@ -53,7 +53,7 @@ const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials
 placeOrderTransactionsRouter.use(authentication_1.default);
 // Cinemasunshine対応
 placeOrderTransactionsRouter.use(placeOrder4cinemasunshine_1.default);
-placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 'transactions']), 
+placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 'transactions', 'pos']), 
 // Cinemasunshine互換性維持のため
 (req, _, next) => {
     if (typeof req.body.sellerId === 'string') {
@@ -190,7 +190,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 
  * 購入者情報を変更する
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['customer', 'transactions']), ...[
+placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['customer', 'transactions', 'pos']), ...[
     check_1.body('additionalProperty')
         .optional()
         .isArray({ max: 10 }),

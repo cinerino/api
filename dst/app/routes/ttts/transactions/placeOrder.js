@@ -29,7 +29,7 @@ const permitScopes_1 = require("../../../middlewares/permitScopes");
 const validator_1 = require("../../../middlewares/validator");
 const redis = require("../../../../redis");
 placeOrderTransactionsRouter.use(authentication_1.default);
-placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions', 'pos']), (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
     if (typeof req.body.seller_identifier === 'string') {
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const doc = yield sellerRepo.organizationModel.findOne({
@@ -144,7 +144,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
  * 購入者情報を変更する
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['transactions']), (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['transactions', 'pos']), (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
     if (typeof req.body.first_name === 'string') {
         req.body.givenName = req.body.first_name;
     }
@@ -203,7 +203,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
 /**
  * 座席仮予約
  */
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['transactions', 'pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (!Array.isArray(req.body.offers)) {
             req.body.offers = [];
@@ -239,7 +239,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
 /**
  * 座席仮予約削除
  */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['transactions', 'pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4ttts.cancel({
             project: req.project,
@@ -254,7 +254,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
         next(error);
     }
 }));
-placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['transactions']), validator_1.default, 
+placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['transactions', 'pos']), validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {

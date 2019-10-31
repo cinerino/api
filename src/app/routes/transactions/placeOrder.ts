@@ -59,7 +59,7 @@ placeOrderTransactionsRouter.use(placeOrder4cinemasunshineRouter);
 
 placeOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['customer', 'transactions']),
+    permitScopes(['customer', 'transactions', 'pos']),
     // Cinemasunshine互換性維持のため
     (req, _, next) => {
         if (typeof req.body.sellerId === 'string') {
@@ -221,7 +221,7 @@ placeOrderTransactionsRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/customerContact',
-    permitScopes(['customer', 'transactions']),
+    permitScopes(['customer', 'transactions', 'pos']),
     ...[
         body('additionalProperty')
             .optional()

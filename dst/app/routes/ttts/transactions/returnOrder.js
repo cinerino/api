@@ -28,7 +28,7 @@ returnOrderTransactionsRouter.use(authentication_1.default);
 /**
  * 上映日と購入番号で返品
  */
-returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transactions']), ...[
+returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transactions', 'pos']), ...[
     check_1.body('performance_day')
         .not()
         .isEmpty()

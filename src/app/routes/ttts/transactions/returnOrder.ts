@@ -26,7 +26,7 @@ returnOrderTransactionsRouter.use(authentication);
  */
 returnOrderTransactionsRouter.post(
     '/confirm',
-    permitScopes(['transactions']),
+    permitScopes(['transactions', 'pos']),
     ...[
         body('performance_day')
             .not()

@@ -28,7 +28,7 @@ placeOrderTransactionsRouter.use(authentication);
 
 placeOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['transactions']),
+    permitScopes(['transactions', 'pos']),
     async (req, _, next) => {
         if (typeof req.body.seller_identifier === 'string') {
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
@@ -168,7 +168,7 @@ placeOrderTransactionsRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/customerContact',
-    permitScopes(['transactions']),
+    permitScopes(['transactions', 'pos']),
     async (req, _, next) => {
         if (typeof req.body.first_name === 'string') {
             req.body.givenName = req.body.first_name;
@@ -244,7 +244,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/seatReservation',
-    permitScopes(['transactions']),
+    permitScopes(['transactions', 'pos']),
     validator,
     async (req, res, next) => {
         try {
@@ -293,7 +293,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
-    permitScopes(['transactions']),
+    permitScopes(['transactions', 'pos']),
     validator,
     async (req, res, next) => {
         try {
@@ -319,7 +319,7 @@ placeOrderTransactionsRouter.delete(
 
 placeOrderTransactionsRouter.post(
     '/:transactionId/confirm',
-    permitScopes(['transactions']),
+    permitScopes(['transactions', 'pos']),
     validator,
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {

@@ -25,7 +25,7 @@ anyPaymentRouter.use(authentication);
 // tslint:disable-next-line:use-default-type-parameter
 anyPaymentRouter.post<ParamsDictionary>(
     '/authorize',
-    permitScopes(['admin']),
+    permitScopes(['admin', 'pos']),
     ...[
         body('object')
             .not()

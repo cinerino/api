@@ -29,7 +29,7 @@ anyPaymentRouter.use(authentication_1.default);
  * 汎用決済承認
  */
 // tslint:disable-next-line:use-default-type-parameter
-anyPaymentRouter.post('/authorize', permitScopes_1.default(['admin']), ...[
+anyPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'pos']), ...[
     check_1.body('object')
         .not()
         .isEmpty(),
