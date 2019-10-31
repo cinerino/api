@@ -11,7 +11,7 @@ import { CREATED, NO_CONTENT } from 'http-status';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 
-const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
+// const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const WEBHOOK_ON_RESERVATION_STATUS_CHANGED = (process.env.WEBHOOK_ON_RESERVATION_STATUS_CHANGED !== undefined)
     ? process.env.WEBHOOK_ON_RESERVATION_STATUS_CHANGED.split(',')
     : [];
@@ -26,218 +26,218 @@ import * as redis from '../../../../redis';
 
 placeOrderTransactionsRouter.use(authentication);
 
-placeOrderTransactionsRouter.post(
-    '/start',
-    permitScopes(['transactions', 'pos']),
-    async (req, _, next) => {
-        if (typeof req.body.seller_identifier === 'string') {
-            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+// placeOrderTransactionsRouter.post(
+//     '/start',
+//     permitScopes(['transactions', 'pos']),
+//     async (req, _, next) => {
+//         if (typeof req.body.seller_identifier === 'string') {
+//             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
 
-            const doc = await sellerRepo.organizationModel.findOne({
-                identifier: req.body.seller_identifier
-            })
-                .exec();
-            if (doc === null) {
-                next(new cinerino.factory.errors.NotFound('Seller'));
+//             const doc = await sellerRepo.organizationModel.findOne({
+//                 identifier: req.body.seller_identifier
+//             })
+//                 .exec();
+//             if (doc === null) {
+//                 next(new cinerino.factory.errors.NotFound('Seller'));
 
-                return;
-            }
-            const seller = doc.toObject();
+//                 return;
+//             }
+//             const seller = doc.toObject();
 
-            req.body.seller = {
-                typeOf: seller.typeOf,
-                id: seller.id
-            };
-        }
+//             req.body.seller = {
+//                 typeOf: seller.typeOf,
+//                 id: seller.id
+//             };
+//         }
 
-        if (typeof req.body.passportToken === 'string') {
-            req.body.object = {
-                passport: { token: req.body.passportToken }
-            };
-        }
+//         if (typeof req.body.passportToken === 'string') {
+//             req.body.object = {
+//                 passport: { token: req.body.passportToken }
+//             };
+//         }
 
-        next();
-    },
-    ...[
-        body('expires')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-            .isISO8601()
-            .toDate(),
-        body('seller.typeOf')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required'),
-        body('seller.id')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required'),
-        ...(!WAITER_DISABLED)
-            ? [
-                body('object.passport.token')
-                    .not()
-                    .isEmpty()
-                    .withMessage((_, __) => 'required')
-            ]
-            : []
-    ],
-    validator,
-    async (req, res, next) => {
-        try {
-            // WAITER有効設定であれば許可証をセット
-            let passport: cinerino.factory.transaction.placeOrder.IPassportBeforeStart | undefined;
-            if (!WAITER_DISABLED) {
-                if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
-                    throw new cinerino.factory.errors.ServiceUnavailable('WAITER_PASSPORT_ISSUER undefined');
-                }
-                if (process.env.WAITER_SECRET === undefined) {
-                    throw new cinerino.factory.errors.ServiceUnavailable('WAITER_SECRET undefined');
-                }
-                passport = {
-                    token: req.body.object.passport.token,
-                    issuer: process.env.WAITER_PASSPORT_ISSUER,
-                    secret: process.env.WAITER_SECRET
-                };
-            }
+//         next();
+//     },
+//     ...[
+//         body('expires')
+//             .not()
+//             .isEmpty()
+//             .withMessage(() => 'required')
+//             .isISO8601()
+//             .toDate(),
+//         body('seller.typeOf')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('seller.id')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         ...(!WAITER_DISABLED)
+//             ? [
+//                 body('object.passport.token')
+//                     .not()
+//                     .isEmpty()
+//                     .withMessage((_, __) => 'required')
+//             ]
+//             : []
+//     ],
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             // WAITER有効設定であれば許可証をセット
+//             let passport: cinerino.factory.transaction.placeOrder.IPassportBeforeStart | undefined;
+//             if (!WAITER_DISABLED) {
+//                 if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
+//                     throw new cinerino.factory.errors.ServiceUnavailable('WAITER_PASSPORT_ISSUER undefined');
+//                 }
+//                 if (process.env.WAITER_SECRET === undefined) {
+//                     throw new cinerino.factory.errors.ServiceUnavailable('WAITER_SECRET undefined');
+//                 }
+//                 passport = {
+//                     token: req.body.object.passport.token,
+//                     issuer: process.env.WAITER_PASSPORT_ISSUER,
+//                     secret: process.env.WAITER_SECRET
+//                 };
+//             }
 
-            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+//             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+//             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
-            const expires: Date = req.body.expires;
+//             const expires: Date = req.body.expires;
 
-            const seller = await sellerRepo.findById({ id: <string>req.body.seller.id });
+//             const seller = await sellerRepo.findById({ id: <string>req.body.seller.id });
 
-            /**
-             * WAITER許可証の有効性チェック
-             */
-            const passportValidator: cinerino.service.transaction.placeOrderInProgress.IPassportValidator =
-                (params) => {
-                    // 許可証発行者確認
-                    const validIssuer = params.passport.iss === process.env.WAITER_PASSPORT_ISSUER;
+//             /**
+//              * WAITER許可証の有効性チェック
+//              */
+//             const passportValidator: cinerino.service.transaction.placeOrderInProgress.IPassportValidator =
+//                 (params) => {
+//                     // 許可証発行者確認
+//                     const validIssuer = params.passport.iss === process.env.WAITER_PASSPORT_ISSUER;
 
-                    // スコープのフォーマットは、placeOrderTransaction.{sellerIdentifier}
-                    const explodedScopeStrings = params.passport.scope.split('.');
-                    const validScope = (
-                        explodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
-                        explodedScopeStrings[1] === seller.identifier // 販売者識別子確認
-                    );
+//                     // スコープのフォーマットは、placeOrderTransaction.{sellerIdentifier}
+//                     const explodedScopeStrings = params.passport.scope.split('.');
+//                     const validScope = (
+//                         explodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
+//                         explodedScopeStrings[1] === seller.identifier // 販売者識別子確認
+//                     );
 
-                    return validIssuer && validScope;
-                };
+//                     return validIssuer && validScope;
+//                 };
 
-            const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
-                project: req.project,
-                expires: expires,
-                agent: {
-                    ...req.agent,
-                    identifier: [
-                        ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
-                        ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
-                            ? (<any[]>req.body.agent.identifier).map((p: any) => {
-                                return { name: String(p.name), value: String(p.value) };
-                            })
-                            : []
-                    ]
-                },
-                seller: req.body.seller,
-                object: {
-                    clientUser: req.user,
-                    passport: passport
-                },
-                passportValidator: passportValidator
-            })({
-                seller: sellerRepo,
-                transaction: transactionRepo
-            });
+//             const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
+//                 project: req.project,
+//                 expires: expires,
+//                 agent: {
+//                     ...req.agent,
+//                     identifier: [
+//                         ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
+//                         ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
+//                             ? (<any[]>req.body.agent.identifier).map((p: any) => {
+//                                 return { name: String(p.name), value: String(p.value) };
+//                             })
+//                             : []
+//                     ]
+//                 },
+//                 seller: req.body.seller,
+//                 object: {
+//                     clientUser: req.user,
+//                     passport: passport
+//                 },
+//                 passportValidator: passportValidator
+//             })({
+//                 seller: sellerRepo,
+//                 transaction: transactionRepo
+//             });
 
-            // tslint:disable-next-line:no-string-literal
-            // const host = req.headers['host'];
-            // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
-            res.status(CREATED)
-                .json(transaction);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
+//             // tslint:disable-next-line:no-string-literal
+//             // const host = req.headers['host'];
+//             // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
+//             res.status(CREATED)
+//                 .json(transaction);
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 
 /**
  * 購入者情報を変更する
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put<ParamsDictionary>(
-    '/:transactionId/customerContact',
-    permitScopes(['transactions', 'pos']),
-    async (req, _, next) => {
-        if (typeof req.body.first_name === 'string') {
-            req.body.givenName = req.body.first_name;
-        }
+// placeOrderTransactionsRouter.put<ParamsDictionary>(
+//     '/:transactionId/customerContact',
+//     permitScopes(['transactions', 'pos']),
+//     async (req, _, next) => {
+//         if (typeof req.body.first_name === 'string') {
+//             req.body.givenName = req.body.first_name;
+//         }
 
-        if (typeof req.body.last_name === 'string') {
-            req.body.familyName = req.body.last_name;
-        }
+//         if (typeof req.body.last_name === 'string') {
+//             req.body.familyName = req.body.last_name;
+//         }
 
-        if (typeof req.body.tel === 'string') {
-            req.body.telephone = req.body.tel;
-        }
+//         if (typeof req.body.tel === 'string') {
+//             req.body.telephone = req.body.tel;
+//         }
 
-        if (typeof req.body.address === 'string') {
-            req.body.telephoneRegion = req.body.address;
-        }
+//         if (typeof req.body.address === 'string') {
+//             req.body.telephoneRegion = req.body.address;
+//         }
 
-        next();
-    },
-    ...[
-        body('email')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required'),
-        body('familyName')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required'),
-        body('givenName')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required'),
-        body('telephone')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required')
-    ],
-    validator,
-    async (req, res, next) => {
-        try {
-            let requestedNumber = String(req.body.telephone);
+//         next();
+//     },
+//     ...[
+//         body('email')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('familyName')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('givenName')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('telephone')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required')
+//     ],
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             let requestedNumber = String(req.body.telephone);
 
-            try {
-                // cinemasunshine対応として、国内向け電話番号フォーマットであれば、強制的に日本国番号を追加
-                if (requestedNumber.slice(0, 1) === '0' && typeof req.body.telephoneRegion !== 'string') {
-                    requestedNumber = `+81${requestedNumber.slice(1)}`;
-                }
-            } catch (error) {
-                throw new cinerino.factory.errors.Argument('Telephone', `Unexpected value: ${error.message}`);
-            }
+//             try {
+//                 // cinemasunshine対応として、国内向け電話番号フォーマットであれば、強制的に日本国番号を追加
+//                 if (requestedNumber.slice(0, 1) === '0' && typeof req.body.telephoneRegion !== 'string') {
+//                     requestedNumber = `+81${requestedNumber.slice(1)}`;
+//                 }
+//             } catch (error) {
+//                 throw new cinerino.factory.errors.Argument('Telephone', `Unexpected value: ${error.message}`);
+//             }
 
-            const profile = await cinerino.service.transaction.placeOrderInProgress.updateAgent({
-                id: req.params.transactionId,
-                agent: {
-                    ...req.body,
-                    typeOf: cinerino.factory.personType.Person,
-                    id: req.user.sub
-                }
-            })({
-                transaction: new cinerino.repository.Transaction(mongoose.connection)
-            });
+//             const profile = await cinerino.service.transaction.placeOrderInProgress.updateAgent({
+//                 id: req.params.transactionId,
+//                 agent: {
+//                     ...req.body,
+//                     typeOf: cinerino.factory.personType.Person,
+//                     id: req.user.sub
+//                 }
+//             })({
+//                 transaction: new cinerino.repository.Transaction(mongoose.connection)
+//             });
 
-            res.status(CREATED)
-                .json(profile);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
+//             res.status(CREATED)
+//                 .json(profile);
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 
 /**
  * 座席仮予約
