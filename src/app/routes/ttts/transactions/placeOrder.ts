@@ -515,12 +515,15 @@ function getTmpReservations(params: {
                 id: params.transaction.id
             }
         });
-        const seatReservationAuthorizeAction
-            // tslint:disable-next-line:max-line-length
-            = <cinerino.factory.action.authorize.offer.seatReservation.IAction<cinerino.factory.service.webAPI.Identifier.Chevre> | undefined>
+        const seatReservationAuthorizeActions
+            = <cinerino.factory.action.authorize.offer.seatReservation.IAction<cinerino.factory.service.webAPI.Identifier.Chevre>[]>
             authorizeActions
                 .filter((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus)
-                .find((a) => a.object.typeOf === cinerino.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
+                .filter((a) => a.object.typeOf === cinerino.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
+        if (seatReservationAuthorizeActions.length > 1) {
+            throw new cinerino.factory.errors.Argument('Transaction', 'Number of seat reservations must be 1');
+        }
+        const seatReservationAuthorizeAction = seatReservationAuthorizeActions.shift();
         if (seatReservationAuthorizeAction === undefined || seatReservationAuthorizeAction.result === undefined) {
             throw new cinerino.factory.errors.Argument('Transaction', 'Seat reservation authorize action required');
         }
