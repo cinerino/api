@@ -79,7 +79,6 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
             === cinerino.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation)
             .filter((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus);
         const informOrderUrl = req.body.informOrderUrl;
-        const informReservationUrl = req.body.informReservationUrl;
         const actionsOnOrder = yield actionRepo.searchByOrderNumber({ orderNumber: order.orderNumber });
         const payActions = actionsOnOrder
             .filter((a) => a.typeOf === cinerino.factory.actionType.PayAction)
@@ -128,9 +127,7 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
                 potentialActions: {
                     cancelReservation: {
                         potentialActions: {
-                            informReservation: [
-                                { recipient: { url: informReservationUrl } }
-                            ]
+                            informReservation: []
                         }
                     }
                 }

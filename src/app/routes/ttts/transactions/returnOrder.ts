@@ -86,7 +86,6 @@ returnOrderTransactionsRouter.post(
                     .filter((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus);
 
             const informOrderUrl = <string>req.body.informOrderUrl;
-            const informReservationUrl = <string>req.body.informReservationUrl;
 
             const actionsOnOrder = await actionRepo.searchByOrderNumber({ orderNumber: order.orderNumber });
             const payActions = <cinerino.factory.action.trade.pay.IAction<cinerino.factory.paymentMethodType>[]>actionsOnOrder
@@ -142,9 +141,7 @@ returnOrderTransactionsRouter.post(
                         potentialActions: {
                             cancelReservation: {
                                 potentialActions: {
-                                    informReservation: [
-                                        { recipient: { url: informReservationUrl } }
-                                    ]
+                                    informReservation: []
                                 }
                             }
                         }
