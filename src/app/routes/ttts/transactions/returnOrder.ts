@@ -35,12 +35,7 @@ returnOrderTransactionsRouter.post(
         body('payment_no')
             .not()
             .isEmpty()
-            .withMessage(() => 'required'),
-        body('cancellation_fee')
-            .not()
-            .isEmpty()
             .withMessage(() => 'required')
-            .isInt()
     ],
     validator,
     // tslint:disable-next-line:max-func-body-length
@@ -76,15 +71,6 @@ returnOrderTransactionsRouter.post(
                 throw new cinerino.factory.errors.NotFound('Transaction');
             }
 
-            // tslint:disable-next-line:max-line-length
-            const authorizeSeatReservationActions = <cinerino.factory.action.authorize.offer.seatReservation.IAction<cinerino.factory.service.webAPI.Identifier.Chevre>[]>
-                placeOrderTransaction.object.authorizeActions
-                    .filter(
-                        (a) => a.object.typeOf
-                            === cinerino.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation
-                    )
-                    .filter((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus);
-
             const informOrderUrl = <string>req.body.informOrderUrl;
 
             const actionsOnOrder = await actionRepo.searchByOrderNumber({ orderNumber: order.orderNumber });
@@ -96,7 +82,6 @@ returnOrderTransactionsRouter.post(
             const refundCreditCardActionsParams: cinerino.factory.transaction.returnOrder.IRefundCreditCardParams[] =
                 await Promise.all((<cinerino.factory.action.trade.pay.IAction<cinerino.factory.paymentMethodType.CreditCard>[]>payActions)
                     .filter((a) => a.object[0].paymentMethod.typeOf === cinerino.factory.paymentMethodType.CreditCard)
-                    // tslint:disable-next-line:max-line-length
                     .map(async (a) => {
                         return {
                             object: {
@@ -125,29 +110,6 @@ returnOrderTransactionsRouter.post(
                         };
                     }));
 
-            const confirmReservationParams: cinerino.factory.transaction.returnOrder.ICancelReservationParams[] =
-                authorizeSeatReservationActions.map((authorizeSeatReservationAction) => {
-                    if (authorizeSeatReservationAction.result === undefined) {
-                        throw new cinerino.factory.errors.NotFound('Result of seat reservation authorize action');
-                    }
-
-                    const reserveTransaction = authorizeSeatReservationAction.result.responseBody;
-
-                    return {
-                        object: {
-                            typeOf: reserveTransaction.typeOf,
-                            id: reserveTransaction.id
-                        },
-                        potentialActions: {
-                            cancelReservation: {
-                                potentialActions: {
-                                    informReservation: []
-                                }
-                            }
-                        }
-                    };
-                });
-
             // 注文通知パラメータを生成
             const informOrderParams: cinerino.factory.transaction.returnOrder.IInformOrderParams[] = [];
 
@@ -158,7 +120,6 @@ returnOrderTransactionsRouter.post(
             const potentialActionParams: cinerino.factory.transaction.returnOrder.IPotentialActionsParams = {
                 returnOrder: {
                     potentialActions: {
-                        cancelReservation: confirmReservationParams,
                         informOrder: informOrderParams,
                         refundCreditCard: refundCreditCardActionsParams
                     }
