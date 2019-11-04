@@ -137,6 +137,7 @@ placeOrderTransactionsRouter.post(
                 };
             }
 
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
@@ -201,6 +202,7 @@ placeOrderTransactionsRouter.post(
                 },
                 passportValidator: passportValidator
             })({
+                project: projectRepo,
                 seller: sellerRepo,
                 transaction: transactionRepo
             });

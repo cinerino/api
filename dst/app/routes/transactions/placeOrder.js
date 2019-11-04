@@ -125,6 +125,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 
                 secret: process.env.WAITER_SECRET
             };
         }
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const expires = req.body.expires;
@@ -174,6 +175,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 
             },
             passportValidator: passportValidator
         })({
+            project: projectRepo,
             seller: sellerRepo,
             transaction: transactionRepo
         });
