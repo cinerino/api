@@ -90,7 +90,6 @@ returnOrderTransactionsRouter.post(
 
             const transaction = await cinerino.service.transaction.returnOrder.start({
                 project: req.project,
-                expires: req.body.expires,
                 agent: {
                     ...req.agent,
                     identifier: [
@@ -102,20 +101,20 @@ returnOrderTransactionsRouter.post(
                             : []
                     ]
                 },
+                expires: req.body.expires,
                 object: {
-                    order: returnableOrder,
-                    clientUser: req.user,
                     cancellationFee: 0,
-                    // forcibly: true,
+                    clientUser: req.user,
+                    order: returnableOrder,
                     reason: cinerino.factory.transaction.returnOrder.Reason.Seller
                 },
                 seller: order.seller
             })({
                 action: actionRepo,
                 invoice: invoiceRepo,
-                seller: sellerRepo,
                 order: orderRepo,
                 project: projectRepo,
+                seller: sellerRepo,
                 transaction: transactionRepo
             });
 

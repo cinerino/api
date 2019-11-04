@@ -85,7 +85,6 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
         }
         const transaction = yield cinerino.service.transaction.returnOrder.start({
             project: req.project,
-            expires: req.body.expires,
             agent: Object.assign(Object.assign({}, req.agent), { identifier: [
                     ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
                     ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
@@ -94,20 +93,20 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
                         })
                         : []
                 ] }),
+            expires: req.body.expires,
             object: {
-                order: returnableOrder,
-                clientUser: req.user,
                 cancellationFee: 0,
-                // forcibly: true,
+                clientUser: req.user,
+                order: returnableOrder,
                 reason: cinerino.factory.transaction.returnOrder.Reason.Seller
             },
             seller: order.seller
         })({
             action: actionRepo,
             invoice: invoiceRepo,
-            seller: sellerRepo,
             order: orderRepo,
             project: projectRepo,
+            seller: sellerRepo,
             transaction: transactionRepo
         });
         // tslint:disable-next-line:no-string-literal

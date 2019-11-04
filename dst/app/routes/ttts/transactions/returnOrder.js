@@ -24,20 +24,28 @@ const returnOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../../middlewares/authentication");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const validator_1 = require("../../../middlewares/validator");
+/**
+ * 正規表現をエスケープする
+ */
+function escapeRegExp(params) {
+    return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
+}
 returnOrderTransactionsRouter.use(authentication_1.default);
 /**
  * 上映日と購入番号で返品
  */
-returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transactions', 'pos']), ...[
-    check_1.body('performance_day')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required'),
-    check_1.body('payment_no')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-], validator_1.default, 
+returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transactions', 'pos']), 
+// ...[
+//     body('performance_day')
+//         .not()
+//         .isEmpty()
+//         .withMessage(() => 'required'),
+//     body('payment_no')
+//         .not()
+//         .isEmpty()
+//         .withMessage(() => 'required')
+// ],
+validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -47,33 +55,58 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        // 確認番号で注文検索
-        const confirmationNumber = `${req.body.performance_day}${req.body.payment_no}`;
-        const orders = yield orderRepo.search({
-            limit: 1,
-            confirmationNumbers: [confirmationNumber],
-            project: { ids: [req.project.id] }
-        });
-        const order = orders.shift();
-        if (order === undefined) {
-            throw new cinerino.factory.errors.NotFound('Order');
+        let order;
+        let returnableOrder;
+        if (req.body.object !== undefined
+            && req.body.object !== null
+            && req.body.object.order !== undefined
+            && req.body.object.order !== null) {
+            returnableOrder = req.body.object.order;
+            const returnableOrderCustomer = returnableOrder.customer;
+            if (returnableOrderCustomer === undefined) {
+                throw new cinerino.factory.errors.ArgumentNull('Order Customer', 'Order customer info required');
+            }
+            if (returnableOrderCustomer.email === undefined && returnableOrderCustomer.telephone === undefined) {
+                throw new cinerino.factory.errors.ArgumentNull('Order Customer', 'Order customer info required');
+            }
+            // 個人情報完全一致で承認
+            const orders = yield orderRepo.search({
+                limit: 1,
+                orderNumbers: [returnableOrder.orderNumber],
+                customer: {
+                    email: (returnableOrderCustomer.email !== undefined)
+                        ? `^${escapeRegExp(returnableOrderCustomer.email)}$`
+                        : undefined,
+                    telephone: (returnableOrderCustomer.telephone !== undefined)
+                        ? `^${escapeRegExp(returnableOrderCustomer.telephone)}$`
+                        : undefined
+                }
+            });
+            order = orders.shift();
+            if (order === undefined) {
+                throw new cinerino.factory.errors.NotFound('Order');
+            }
+            returnableOrder = order;
         }
-        // 注文取引を検索する
-        const placeOrderTransactions = yield transactionRepo.search({
-            limit: 1,
-            typeOf: cinerino.factory.transactionType.PlaceOrder,
-            result: { order: { orderNumbers: [order.orderNumber] } }
-        });
-        const placeOrderTransaction = placeOrderTransactions.shift();
-        if (placeOrderTransaction === undefined) {
-            throw new cinerino.factory.errors.NotFound('Transaction');
+        else {
+            const confirmationNumber = `${req.body.performance_day}${req.body.payment_no}`;
+            const orders = yield orderRepo.search({
+                limit: 1,
+                confirmationNumbers: [confirmationNumber],
+                project: { ids: [req.project.id] }
+            });
+            order = orders.shift();
+            if (order === undefined) {
+                throw new cinerino.factory.errors.NotFound('Order');
+            }
+            returnableOrder = order;
         }
-        const informOrderUrl = req.body.informOrderUrl;
         const actionsOnOrder = yield actionRepo.searchByOrderNumber({ orderNumber: order.orderNumber });
         const payActions = actionsOnOrder
             .filter((a) => a.typeOf === cinerino.factory.actionType.PayAction)
             .filter((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus);
         // クレジットカード返金アクション
+        const informOrderUrl = req.body.informOrderUrl;
         const refundCreditCardActionsParams = yield Promise.all(payActions
             .filter((a) => a.object[0].paymentMethod.typeOf === cinerino.factory.paymentMethodType.CreditCard)
             .map((a) => __awaiter(void 0, void 0, void 0, function* () {
@@ -103,15 +136,12 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
                 }
             };
         })));
-        // 注文通知パラメータを生成
-        const informOrderParams = [];
         const expires = moment()
             .add(1, 'minute')
             .toDate();
         const potentialActionParams = {
             returnOrder: {
                 potentialActions: {
-                    informOrder: informOrderParams,
                     refundCreditCard: refundCreditCardActionsParams
                 }
             }
@@ -131,7 +161,7 @@ returnOrderTransactionsRouter.post('/confirm', permitScopes_1.default(['transact
             object: {
                 cancellationFee: CANCELLATION_FEE,
                 clientUser: req.user,
-                order: { orderNumber: order.orderNumber },
+                order: returnableOrder,
                 reason: cinerino.factory.transaction.returnOrder.Reason.Customer
             },
             seller: { typeOf: order.seller.typeOf, id: order.seller.id }
