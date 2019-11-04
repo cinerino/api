@@ -29,9 +29,6 @@ const placeOrder4cinemasunshine_1 = require("./placeOrder4cinemasunshine");
 const redis = require("../../../redis");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
-const WEBHOOK_ON_RESERVATION_STATUS_CHANGED = (process.env.WEBHOOK_ON_RESERVATION_STATUS_CHANGED !== undefined)
-    ? process.env.WEBHOOK_ON_RESERVATION_STATUS_CHANGED.split(',')
-    : [];
 /**
  * GMOメンバーIDにユーザーネームを使用するかどうか
  */
@@ -300,11 +297,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         }
         const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create({
             project: req.project,
-            object: Object.assign(Object.assign({}, req.body), { onReservationStatusChanged: {
-                    informReservation: WEBHOOK_ON_RESERVATION_STATUS_CHANGED.map((url) => {
-                        return { recipient: { url: url } };
-                    })
-                } }),
+            object: Object.assign({}, req.body),
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId }
         })(Object.assign({ action: new cinerino.repository.Action(mongoose.connection), movieTicket: new cinerino.repository.paymentMethod.MovieTicket({

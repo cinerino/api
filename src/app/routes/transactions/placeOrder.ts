@@ -25,9 +25,6 @@ import * as redis from '../../../redis';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
-const WEBHOOK_ON_RESERVATION_STATUS_CHANGED = (process.env.WEBHOOK_ON_RESERVATION_STATUS_CHANGED !== undefined)
-    ? process.env.WEBHOOK_ON_RESERVATION_STATUS_CHANGED.split(',')
-    : [];
 
 /**
  * GMOメンバーIDにユーザーネームを使用するかどうか
@@ -353,12 +350,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create({
                 project: req.project,
                 object: {
-                    ...req.body,
-                    onReservationStatusChanged: {
-                        informReservation: WEBHOOK_ON_RESERVATION_STATUS_CHANGED.map((url) => {
-                            return { recipient: { url: url } };
-                        })
-                    }
+                    ...req.body
                 },
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId }
