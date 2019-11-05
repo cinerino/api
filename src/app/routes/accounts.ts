@@ -107,11 +107,14 @@ accountsRouter.post(
     ...[
         body('recipient')
             .not()
-            .isEmpty(),
+            .isEmpty()
+            .withMessage(() => 'required'),
         body('object.amount')
             .not()
             .isEmpty()
+            .withMessage(() => 'required')
             .isInt()
+            .withMessage(() => 'Amount must be number')
             .custom((value) => {
                 if (Number(value) <= 0) {
                     throw new Error('Amount must be more than 0');
@@ -123,6 +126,7 @@ accountsRouter.post(
         body('object.toLocation.accountNumber')
             .not()
             .isEmpty()
+            .withMessage(() => 'required')
     ],
     validator,
     async (req, res, next) => {
@@ -133,15 +137,18 @@ accountsRouter.post(
                 project: req.project,
                 agent: {
                     typeOf: cinerino.factory.personType.Person,
-                    id: req.user.sub,
                     name: (req.user.username !== undefined) ? req.user.username : req.user.sub,
-                    url: ''
+                    ...req.body.agent,
+                    id: req.user.sub
                 },
                 object: {
                     ...req.body.object,
                     description: (typeof req.body.object.description === 'string') ? req.body.object.description : '入金'
                 },
-                recipient: req.body.recipient
+                recipient: {
+                    typeOf: cinerino.factory.personType.Person,
+                    ...req.body.recipient
+                }
             })({
                 project: projectRepo
             });

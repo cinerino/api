@@ -96,11 +96,14 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['admin']),
 }, ...[
     check_1.body('recipient')
         .not()
-        .isEmpty(),
+        .isEmpty()
+        .withMessage(() => 'required'),
     check_1.body('object.amount')
         .not()
         .isEmpty()
+        .withMessage(() => 'required')
         .isInt()
+        .withMessage(() => 'Amount must be number')
         .custom((value) => {
         if (Number(value) <= 0) {
             throw new Error('Amount must be more than 0');
@@ -111,19 +114,15 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['admin']),
     check_1.body('object.toLocation.accountNumber')
         .not()
         .isEmpty()
+        .withMessage(() => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         yield cinerino.service.account.deposit({
             project: req.project,
-            agent: {
-                typeOf: cinerino.factory.personType.Person,
-                id: req.user.sub,
-                name: (req.user.username !== undefined) ? req.user.username : req.user.sub,
-                url: ''
-            },
+            agent: Object.assign(Object.assign({ typeOf: cinerino.factory.personType.Person, name: (req.user.username !== undefined) ? req.user.username : req.user.sub }, req.body.agent), { id: req.user.sub }),
             object: Object.assign(Object.assign({}, req.body.object), { description: (typeof req.body.object.description === 'string') ? req.body.object.description : '入金' }),
-            recipient: req.body.recipient
+            recipient: Object.assign({ typeOf: cinerino.factory.personType.Person }, req.body.recipient)
         })({
             project: projectRepo
         });
