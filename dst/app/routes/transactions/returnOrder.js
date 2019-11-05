@@ -23,6 +23,7 @@ const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
+const CANCELLATION_FEE = 1000;
 const returnOrderTransactionsRouter = express_1.Router();
 returnOrderTransactionsRouter.use(authentication_1.default);
 /**
@@ -31,7 +32,7 @@ returnOrderTransactionsRouter.use(authentication_1.default);
 function escapeRegExp(params) {
     return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
 }
-returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'pos']), ...[
+returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'transactions', 'pos']), ...[
     check_1.body('expires')
         .not()
         .isEmpty()
@@ -83,6 +84,12 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'p
             }
             returnableOrder = order;
         }
+        const cancellationFee = (req.isAdmin)
+            ? 0
+            : CANCELLATION_FEE;
+        const reason = (req.isAdmin)
+            ? cinerino.factory.transaction.returnOrder.Reason.Seller
+            : cinerino.factory.transaction.returnOrder.Reason.Customer;
         const transaction = yield cinerino.service.transaction.returnOrder.start({
             project: req.project,
             agent: Object.assign(Object.assign({}, req.agent), { identifier: [
@@ -95,10 +102,10 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'p
                 ] }),
             expires: req.body.expires,
             object: {
-                cancellationFee: 0,
+                cancellationFee: cancellationFee,
                 clientUser: req.user,
                 order: returnableOrder,
-                reason: cinerino.factory.transaction.returnOrder.Reason.Seller
+                reason: reason
             },
             seller: order.seller
         })({
@@ -119,7 +126,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'p
     }
 }));
 // tslint:disable-next-line:use-default-type-parameter
-returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin', 'pos']), ...[
+returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin', 'transactions', 'pos']), ...[
     // Eメールカスタマイズのバリデーション
     check_1.body([
         'potentialActions.returnOrder.potentialActions.refundCreditCard.potentialActions.sendEmailMessage.object.about',

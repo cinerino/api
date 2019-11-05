@@ -18,6 +18,8 @@ import * as redis from '../../../redis';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 
+const CANCELLATION_FEE = 1000;
+
 const returnOrderTransactionsRouter = Router();
 returnOrderTransactionsRouter.use(authentication);
 
@@ -30,7 +32,7 @@ function escapeRegExp(params: string) {
 
 returnOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['admin', 'pos']),
+    permitScopes(['admin', 'transactions', 'pos']),
     ...[
         body('expires')
             .not()
@@ -88,6 +90,14 @@ returnOrderTransactionsRouter.post(
                 returnableOrder = order;
             }
 
+            const cancellationFee = (req.isAdmin)
+                ? 0
+                : CANCELLATION_FEE;
+
+            const reason = (req.isAdmin)
+                ? cinerino.factory.transaction.returnOrder.Reason.Seller
+                : cinerino.factory.transaction.returnOrder.Reason.Customer;
+
             const transaction = await cinerino.service.transaction.returnOrder.start({
                 project: req.project,
                 agent: {
@@ -103,10 +113,10 @@ returnOrderTransactionsRouter.post(
                 },
                 expires: req.body.expires,
                 object: {
-                    cancellationFee: 0,
+                    cancellationFee: cancellationFee,
                     clientUser: req.user,
                     order: returnableOrder,
-                    reason: cinerino.factory.transaction.returnOrder.Reason.Seller
+                    reason: reason
                 },
                 seller: order.seller
             })({
@@ -131,7 +141,7 @@ returnOrderTransactionsRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 returnOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/confirm',
-    permitScopes(['admin', 'pos']),
+    permitScopes(['admin', 'transactions', 'pos']),
     ...[
         // Eメールカスタマイズのバリデーション
         body([
