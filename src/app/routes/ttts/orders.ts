@@ -13,7 +13,7 @@ import validator from '../../middlewares/validator';
 
 import * as redis from '../../../redis';
 
-import { tttsReservation2chevre } from '../../util/reservation';
+// import { tttsReservation2chevre } from '../../util/reservation';
 
 /**
  * 正規表現をエスケープする
@@ -31,29 +31,38 @@ ordersRouter.use(authentication);
 ordersRouter.post(
     '/findByOrderInquiryKey',
     permitScopes(['orders', 'orders.read-only']),
-    ...[
-        body('performanceDay')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
-        body('paymentNo')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
-        body('telephone')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
+    // 互換性維持のため
+    (req, _, next) => {
+        if (typeof req.body.performanceDay === 'string' && typeof req.body.paymentNo === 'string') {
+            req.body.confirmationNumber = `${req.body.performanceDay}${req.body.paymentNo}`;
+        }
 
+        if (typeof req.body.telephone === 'string') {
+            req.body.customer = {
+                telephone: req.body.telephone
+            };
+        }
+
+        next();
+    },
+    ...[
+        body('confirmationNumber')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required'),
+        body('customer')
+            .not()
+            .isEmpty()
+            .withMessage((_, __) => 'required')
     ],
     validator,
     async (req, res, next) => {
         try {
-            const key = {
-                performanceDay: <string>req.body.performanceDay,
-                paymentNo: <string>req.body.paymentNo,
-                telephone: <string>req.body.telephone
-            };
+            // const key = {
+            //     performanceDay: <string>req.body.performanceDay,
+            //     paymentNo: <string>req.body.paymentNo,
+            //     telephone: <string>req.body.telephone
+            // };
 
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
             let order: cinerino.factory.order.IOrder | undefined;
@@ -61,8 +70,8 @@ ordersRouter.post(
             const orders = await orderRepo.search({
                 limit: 1,
                 sort: { orderDate: cinerino.factory.sortType.Descending },
-                customer: { telephone: `${escapeRegExp(key.telephone)}$` },
-                confirmationNumbers: [`${key.performanceDay}${key.paymentNo}`]
+                customer: { telephone: `${escapeRegExp(req.body.customer.telephone)}$` },
+                confirmationNumbers: [<string>req.body.confirmationNumber]
             });
             order = orders.shift();
             if (order === undefined) {
@@ -70,26 +79,26 @@ ordersRouter.post(
                 throw new cinerino.factory.errors.NotFound('Order');
             }
 
-            order.acceptedOffers = order.acceptedOffers
-                // 余分確保分を除く
-                .filter((o) => {
-                    const reservation = <cinerino.factory.order.IReservation>o.itemOffered;
-                    let extraProperty: cinerino.factory.propertyValue.IPropertyValue<string> | undefined;
-                    if (reservation.additionalProperty !== undefined) {
-                        extraProperty = reservation.additionalProperty.find((p) => p.name === 'extra');
-                    }
+            // order.acceptedOffers = order.acceptedOffers
+            //     // 余分確保分を除く
+            //     .filter((o) => {
+            //         const reservation = <cinerino.factory.order.IReservation>o.itemOffered;
+            //         let extraProperty: cinerino.factory.propertyValue.IPropertyValue<string> | undefined;
+            //         if (reservation.additionalProperty !== undefined) {
+            //             extraProperty = reservation.additionalProperty.find((p) => p.name === 'extra');
+            //         }
 
-                    return reservation.additionalProperty === undefined
-                        || extraProperty === undefined
-                        || extraProperty.value !== '1';
-                })
-                // 互換性維持
-                .map((o) => {
-                    return {
-                        ...o,
-                        itemOffered: tttsReservation2chevre(<cinerino.factory.order.IReservation>o.itemOffered)
-                    };
-                });
+            //         return reservation.additionalProperty === undefined
+            //             || extraProperty === undefined
+            //             || extraProperty.value !== '1';
+            //     })
+            //     // 互換性維持
+            //     .map((o) => {
+            //         return {
+            //             ...o,
+            //             itemOffered: tttsReservation2chevre(<cinerino.factory.order.IReservation>o.itemOffered)
+            //         };
+            //     });
 
             // 印刷トークンを発行
             const tokenRepo = new cinerino.repository.Token(redis.getClient());
