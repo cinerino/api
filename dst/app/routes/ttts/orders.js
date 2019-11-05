@@ -20,7 +20,7 @@ const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
-const redis = require("../../../redis");
+// import * as redis from '../../../redis';
 // import { tttsReservation2chevre } from '../../util/reservation';
 /**
  * 正規表現をエスケープする
@@ -94,10 +94,14 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders', 'o
         //         };
         //     });
         // 印刷トークンを発行
-        const tokenRepo = new cinerino.repository.Token(redis.getClient());
-        const reservationIds = order.acceptedOffers.map((o) => o.itemOffered.id);
-        const printToken = yield tokenRepo.createPrintToken(reservationIds);
-        res.json(Object.assign(Object.assign({}, order), { printToken: printToken }));
+        // const tokenRepo = new cinerino.repository.Token(redis.getClient());
+        // const reservationIds = order.acceptedOffers.map((o) => (<cinerino.factory.order.IReservation>o.itemOffered).id);
+        // const printToken = await tokenRepo.createPrintToken(reservationIds);
+        // res.json({
+        //     ...order
+        //     printToken: printToken
+        // });
+        res.json(order);
     }
     catch (error) {
         next(error);

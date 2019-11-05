@@ -11,7 +11,7 @@ import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
-import * as redis from '../../../redis';
+// import * as redis from '../../../redis';
 
 // import { tttsReservation2chevre } from '../../util/reservation';
 
@@ -101,14 +101,15 @@ ordersRouter.post(
             //     });
 
             // 印刷トークンを発行
-            const tokenRepo = new cinerino.repository.Token(redis.getClient());
-            const reservationIds = order.acceptedOffers.map((o) => (<cinerino.factory.order.IReservation>o.itemOffered).id);
-            const printToken = await tokenRepo.createPrintToken(reservationIds);
+            // const tokenRepo = new cinerino.repository.Token(redis.getClient());
+            // const reservationIds = order.acceptedOffers.map((o) => (<cinerino.factory.order.IReservation>o.itemOffered).id);
+            // const printToken = await tokenRepo.createPrintToken(reservationIds);
 
-            res.json({
-                ...order,
-                printToken: printToken
-            });
+            // res.json({
+            //     ...order
+            //     printToken: printToken
+            // });
+            res.json(order);
         } catch (error) {
             next(error);
         }
