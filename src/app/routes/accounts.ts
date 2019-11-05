@@ -84,15 +84,43 @@ accountsRouter.put(
 accountsRouter.post(
     '/transactions/deposit',
     permitScopes(['admin']),
+    // 互換性維持のため
+    (req, _, next) => {
+        if (req.body.object === undefined || req.body.object === null) {
+            req.body.object = {};
+        }
+        if (typeof req.body.amount === 'number') {
+            req.body.object.amount = req.body.amount;
+        }
+        if (typeof req.body.notes === 'string') {
+            req.body.object.description = req.body.notes;
+        }
+        if (typeof req.body.toAccountNumber === 'string') {
+            if (req.body.object.toLocation === undefined || req.body.object.toLocation === null) {
+                req.body.object.toLocation = {};
+            }
+            req.body.object.toLocation.accountNumber = req.body.toAccountNumber;
+        }
+
+        next();
+    },
     ...[
-        body('recipient', 'invalid recipient')
+        body('recipient')
             .not()
             .isEmpty(),
-        body('amount', 'invalid name')
+        body('object.amount')
             .not()
             .isEmpty()
-            .isInt(),
-        body('toAccountNumber', 'invalid toAccountNumber')
+            .isInt()
+            .custom((value) => {
+                // 適当な処理
+                if (Number(value) <= 0) {
+                    return Promise.reject('Amount must be more than 0');
+                }
+
+                return;
+            }),
+        body('object.toLocation.accountNumber')
             .not()
             .isEmpty()
     ],
@@ -103,15 +131,17 @@ accountsRouter.post(
 
             await cinerino.service.account.deposit({
                 project: req.project,
-                toAccountNumber: req.body.toAccountNumber,
                 agent: {
+                    typeOf: cinerino.factory.personType.Person,
                     id: req.user.sub,
                     name: (req.user.username !== undefined) ? req.user.username : req.user.sub,
                     url: ''
                 },
-                recipient: req.body.recipient,
-                amount: Number(req.body.amount),
-                notes: (req.body.notes !== undefined) ? req.body.notes : '入金'
+                object: {
+                    ...req.body.object,
+                    description: (typeof req.body.object.description === 'string') ? req.body.object.description : '入金'
+                },
+                recipient: req.body.recipient
             })({
                 project: projectRepo
             });

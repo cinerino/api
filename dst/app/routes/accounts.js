@@ -74,15 +74,41 @@ accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(
 /**
  * 管理者として口座に入金する
  */
-accountsRouter.post('/transactions/deposit', permitScopes_1.default(['admin']), ...[
-    check_1.body('recipient', 'invalid recipient')
+accountsRouter.post('/transactions/deposit', permitScopes_1.default(['admin']), 
+// 互換性維持のため
+(req, _, next) => {
+    if (req.body.object === undefined || req.body.object === null) {
+        req.body.object = {};
+    }
+    if (typeof req.body.amount === 'number') {
+        req.body.object.amount = req.body.amount;
+    }
+    if (typeof req.body.notes === 'string') {
+        req.body.object.description = req.body.notes;
+    }
+    if (typeof req.body.toAccountNumber === 'string') {
+        if (req.body.object.toLocation === undefined || req.body.object.toLocation === null) {
+            req.body.object.toLocation = {};
+        }
+        req.body.object.toLocation.accountNumber = req.body.toAccountNumber;
+    }
+    next();
+}, ...[
+    check_1.body('recipient')
         .not()
         .isEmpty(),
-    check_1.body('amount', 'invalid name')
+    check_1.body('object.amount')
         .not()
         .isEmpty()
-        .isInt(),
-    check_1.body('toAccountNumber', 'invalid toAccountNumber')
+        .isInt()
+        .custom((value) => {
+        // 適当な処理
+        if (Number(value) <= 0) {
+            return Promise.reject('Amount must be more than 0');
+        }
+        return;
+    }),
+    check_1.body('object.toLocation.accountNumber')
         .not()
         .isEmpty()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -90,15 +116,14 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['admin']), 
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         yield cinerino.service.account.deposit({
             project: req.project,
-            toAccountNumber: req.body.toAccountNumber,
             agent: {
+                typeOf: cinerino.factory.personType.Person,
                 id: req.user.sub,
                 name: (req.user.username !== undefined) ? req.user.username : req.user.sub,
                 url: ''
             },
-            recipient: req.body.recipient,
-            amount: Number(req.body.amount),
-            notes: (req.body.notes !== undefined) ? req.body.notes : '入金'
+            object: Object.assign(Object.assign({}, req.body.object), { description: (typeof req.body.object.description === 'string') ? req.body.object.description : '入金' }),
+            recipient: req.body.recipient
         })({
             project: projectRepo
         });
