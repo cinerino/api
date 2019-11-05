@@ -90,7 +90,7 @@ accountsRouter.post(
             req.body.object = {};
         }
         if (typeof req.body.amount === 'number') {
-            req.body.object.amount = req.body.amount;
+            req.body.object.amount = Number(req.body.amount);
         }
         if (typeof req.body.notes === 'string') {
             req.body.object.description = req.body.notes;
@@ -113,13 +113,13 @@ accountsRouter.post(
             .isEmpty()
             .isInt()
             .custom((value) => {
-                // 適当な処理
                 if (Number(value) <= 0) {
-                    return Promise.reject('Amount must be more than 0');
+                    throw new Error('Amount must be more than 0');
                 }
 
-                return;
-            }),
+                return true;
+            })
+            .withMessage(() => 'Amount must be more than 0'),
         body('object.toLocation.accountNumber')
             .not()
             .isEmpty()
