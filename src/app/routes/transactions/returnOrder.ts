@@ -30,7 +30,7 @@ function escapeRegExp(params: string) {
 
 returnOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['admin']),
+    permitScopes(['admin', 'pos']),
     ...[
         body('expires')
             .not()
@@ -131,7 +131,7 @@ returnOrderTransactionsRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 returnOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/confirm',
-    permitScopes(['admin']),
+    permitScopes(['admin', 'pos']),
     ...[
         // Eメールカスタマイズのバリデーション
         body([
