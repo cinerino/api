@@ -53,9 +53,10 @@ placeOrderTransactionsRouter.post(
                     })
                 }
             })(
-                new cinerino.repository.Transaction(mongoose.connection),
                 new cinerino.repository.Action(mongoose.connection),
+                new cinerino.repository.PaymentNo(redis.getClient()),
                 new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()),
+                new cinerino.repository.Transaction(mongoose.connection),
                 new cinerino.repository.Project(mongoose.connection)
             );
 
@@ -150,7 +151,18 @@ placeOrderTransactionsRouter.post(
             const eventStartDateStr = moment(event.startDate)
                 .tz('Asia/Tokyo')
                 .format('YYYYMMDD');
-            const paymentNo = await paymentNoRepo.publish(eventStartDateStr);
+
+            let paymentNo: string | undefined;
+            if (chevreReservations[0].underName !== undefined && Array.isArray(chevreReservations[0].underName.identifier)) {
+                const paymentNoProperty = chevreReservations[0].underName.identifier.find((p) => p.name === 'paymentNo');
+                if (paymentNoProperty !== undefined) {
+                    paymentNo = paymentNoProperty.value;
+                }
+            }
+            if (paymentNo === undefined) {
+                paymentNo = await paymentNoRepo.publish(eventStartDateStr);
+            }
+
             const confirmationNumber: string = `${eventStartDateStr}${paymentNo}`;
 
             // 予約確定パラメータを生成
@@ -165,8 +177,8 @@ placeOrderTransactionsRouter.post(
                 return temporaryReservation2confirmed({
                     reservation: reservation,
                     chevreReservation: chevreReservation,
-                    transaction: <any>transaction,
-                    paymentNo: paymentNo,
+                    transaction: transaction,
+                    paymentNo: <string>paymentNo,
                     gmoOrderId: authorizePaymentMethodActionResult.paymentMethodId,
                     paymentSeatIndex: index.toString(),
                     paymentMethodName: authorizePaymentMethodActionResult.name
@@ -377,13 +389,17 @@ function temporaryReservation2confirmed(params: {
         telephone: customer.telephone,
         gender: customer.gender,
         identifier: [
+            // 仮予約のidentifierを引き継ぐ?
+            // ...(params.chevreReservation.underName !== undefined && Array.isArray(params.chevreReservation.underName.identifier))
+            //     ? params.chevreReservation.underName.identifier
+            //     : [],
             { name: 'paymentNo', value: params.paymentNo },
             { name: 'transaction', value: params.transaction.id },
             { name: 'gmoOrderId', value: params.gmoOrderId },
             ...(typeof customer.age === 'string')
                 ? [{ name: 'age', value: customer.age }]
                 : [],
-            ...(customer.identifier !== undefined) ? customer.identifier : [],
+            ...(Array.isArray(customer.identifier)) ? customer.identifier : [],
             ...(customer.memberOf !== undefined && customer.memberOf.membershipNumber !== undefined)
                 ? [{ name: 'username', value: customer.memberOf.membershipNumber }]
                 : [],

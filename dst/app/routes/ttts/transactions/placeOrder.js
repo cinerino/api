@@ -49,7 +49,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
                     };
                 })
             }
-        })(new cinerino.repository.Transaction(mongoose.connection), new cinerino.repository.Action(mongoose.connection), new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()), new cinerino.repository.Project(mongoose.connection));
+        })(new cinerino.repository.Action(mongoose.connection), new cinerino.repository.PaymentNo(redis.getClient()), new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()), new cinerino.repository.Transaction(mongoose.connection), new cinerino.repository.Project(mongoose.connection));
         res.status(http_status_1.CREATED)
             .json(action);
     }
@@ -121,7 +121,16 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         const eventStartDateStr = moment(event.startDate)
             .tz('Asia/Tokyo')
             .format('YYYYMMDD');
-        const paymentNo = yield paymentNoRepo.publish(eventStartDateStr);
+        let paymentNo;
+        if (chevreReservations[0].underName !== undefined && Array.isArray(chevreReservations[0].underName.identifier)) {
+            const paymentNoProperty = chevreReservations[0].underName.identifier.find((p) => p.name === 'paymentNo');
+            if (paymentNoProperty !== undefined) {
+                paymentNo = paymentNoProperty.value;
+            }
+        }
+        if (paymentNo === undefined) {
+            paymentNo = yield paymentNoRepo.publish(eventStartDateStr);
+        }
         const confirmationNumber = `${eventStartDateStr}${paymentNo}`;
         // 予約確定パラメータを生成
         const eventReservations = acceptedOffers.map((acceptedOffer, index) => {
@@ -292,13 +301,17 @@ function authorizeOtherPayment(params) {
 function temporaryReservation2confirmed(params) {
     const customer = params.transaction.agent;
     const underName = Object.assign({ typeOf: cinerino.factory.personType.Person, id: customer.id, name: `${customer.givenName} ${customer.familyName}`, familyName: customer.familyName, givenName: customer.givenName, email: customer.email, telephone: customer.telephone, gender: customer.gender, identifier: [
+            // 仮予約のidentifierを引き継ぐ?
+            // ...(params.chevreReservation.underName !== undefined && Array.isArray(params.chevreReservation.underName.identifier))
+            //     ? params.chevreReservation.underName.identifier
+            //     : [],
             { name: 'paymentNo', value: params.paymentNo },
             { name: 'transaction', value: params.transaction.id },
             { name: 'gmoOrderId', value: params.gmoOrderId },
             ...(typeof customer.age === 'string')
                 ? [{ name: 'age', value: customer.age }]
                 : [],
-            ...(customer.identifier !== undefined) ? customer.identifier : [],
+            ...(Array.isArray(customer.identifier)) ? customer.identifier : [],
             ...(customer.memberOf !== undefined && customer.memberOf.membershipNumber !== undefined)
                 ? [{ name: 'username', value: customer.memberOf.membershipNumber }]
                 : [],
