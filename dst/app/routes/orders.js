@@ -25,6 +25,7 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const redis = require("../../redis");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
+const USE_TELEPHONE_LAST_DIGIT_ORDER_INQUIRY = process.env.USE_TELEPHONE_LAST_DIGIT_ORDER_INQUIRY === '1';
 /**
  * 正規表現をエスケープする
  */
@@ -343,7 +344,9 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['customer
                     ? `^${escapeRegExp(customer.email)}$`
                     : undefined,
                 telephone: (customer.telephone !== undefined)
-                    ? `^${escapeRegExp(customer.telephone)}$`
+                    ? (USE_TELEPHONE_LAST_DIGIT_ORDER_INQUIRY)
+                        ? `${escapeRegExp(customer.telephone)}$`
+                        : `^${escapeRegExp(customer.telephone)}$`
                     : undefined
             },
             orderDateFrom: orderDateFrom,
