@@ -103,8 +103,6 @@ placeOrderTransactionsRouter.post(
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
-            const paymentMethodType = req.body.payment_method;
-
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
             const paymentNoRepo = new cinerino.repository.PaymentNo(redis.getClient());
@@ -138,15 +136,9 @@ placeOrderTransactionsRouter.post(
             }
 
             const authorizePaymentMethodAction = await authorizeOtherPayment({
-                agent: { id: req.user.sub },
-                client: { id: req.user.client_id },
-                paymentMethodType: paymentMethodType,
-                amount: authorizeSeatReservationResult.price,
                 transaction: { id: req.params.transactionId }
             })({
-                action: actionRepo,
-                seller: sellerRepo,
-                transaction: transactionRepo
+                action: actionRepo
             });
             if (authorizePaymentMethodAction === undefined) {
                 throw new cinerino.factory.errors.Argument('Transaction', 'Payment method authorization required');
@@ -160,8 +152,6 @@ placeOrderTransactionsRouter.post(
                 .format('YYYYMMDD');
             const paymentNo = await paymentNoRepo.publish(eventStartDateStr);
             const confirmationNumber: string = `${eventStartDateStr}${paymentNo}`;
-
-            const informOrderUrl = <string>req.body.informOrderUrl;
 
             // 予約確定パラメータを生成
             const eventReservations = acceptedOffers.map((acceptedOffer, index) => {
@@ -183,7 +173,7 @@ placeOrderTransactionsRouter.post(
                 });
             });
 
-            const confirmReservationParams: cinerino.factory.transaction.placeOrder.IConfirmReservationParams[] = [];
+            let confirmReservationParams: cinerino.factory.transaction.placeOrder.IConfirmReservationParams[] = [];
             confirmReservationParams.push({
                 object: {
                     typeOf: reserveTransaction.typeOf,
@@ -229,9 +219,47 @@ placeOrderTransactionsRouter.post(
             });
 
             // 注文通知パラメータを生成
-            const informOrderParams: cinerino.factory.transaction.placeOrder.IInformOrderParams[] = [
-                { recipient: { url: informOrderUrl } }
+            let informOrderParams: cinerino.factory.transaction.placeOrder.IInformOrderParams[] = [
+                { recipient: { url: <string>req.body.informOrderUrl } }
             ];
+
+            // アプリケーション側でpotentialActionsの指定があればそちらを優先
+            const potentialActionsParams: cinerino.factory.transaction.placeOrder.IPotentialActionsParams | undefined
+                = req.body.potentialActions;
+
+            if (potentialActionsParams !== undefined) {
+                if (potentialActionsParams.order !== undefined) {
+                    if (potentialActionsParams.order.potentialActions !== undefined) {
+                        if (Array.isArray(potentialActionsParams.order.potentialActions.informOrder)) {
+                            informOrderParams = potentialActionsParams.order.potentialActions.informOrder;
+                        }
+
+                        if (potentialActionsParams.order.potentialActions.sendOrder !== undefined) {
+                            if (potentialActionsParams.order.potentialActions.sendOrder.potentialActions !== undefined) {
+                                if (Array.isArray(
+                                    potentialActionsParams.order.potentialActions.sendOrder.potentialActions.confirmReservation
+                                )) {
+                                    confirmReservationParams
+                                        = potentialActionsParams.order.potentialActions.sendOrder.potentialActions.confirmReservation;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            const potentialActions: cinerino.factory.transaction.placeOrder.IPotentialActionsParams = {
+                order: {
+                    potentialActions: {
+                        sendOrder: {
+                            potentialActions: {
+                                confirmReservation: confirmReservationParams
+                            }
+                        },
+                        informOrder: informOrderParams
+                    }
+                }
+            };
 
             // 決済承認後に注文日時を確定しなければ、取引条件を満たさないので注意
             const orderDate = new Date();
@@ -243,18 +271,7 @@ placeOrderTransactionsRouter.post(
                 project: { typeOf: req.project.typeOf, id: req.project.id },
                 agent: { id: req.user.sub },
                 id: req.params.transactionId,
-                potentialActions: {
-                    order: {
-                        potentialActions: {
-                            sendOrder: {
-                                potentialActions: {
-                                    confirmReservation: confirmReservationParams
-                                }
-                            },
-                            informOrder: informOrderParams
-                        }
-                    }
-                },
+                potentialActions: potentialActions,
                 result: {
                     order: {
                         orderDate: orderDate,
@@ -311,16 +328,10 @@ function getTmpReservations(params: {
 }
 
 function authorizeOtherPayment(params: {
-    agent: { id: string };
-    client: { id: string };
-    paymentMethodType: cinerino.factory.paymentMethodType;
-    amount: number;
     transaction: { id: string };
 }) {
     return async (repos: {
         action: cinerino.repository.Action;
-        seller: cinerino.repository.Seller;
-        transaction: cinerino.repository.Transaction;
     }) => {
         let authorizePaymentMethodAction: cinerino.factory.action.authorize.paymentMethod.any.IAction<any> | undefined;
         const authorizeActions = await repos.action.searchByPurpose({

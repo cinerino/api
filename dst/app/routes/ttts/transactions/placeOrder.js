@@ -79,7 +79,6 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const paymentMethodType = req.body.payment_method;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
         const paymentNoRepo = new cinerino.repository.PaymentNo(redis.getClient());
@@ -110,15 +109,9 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             throw new cinerino.factory.errors.Argument('Transaction', 'Event required');
         }
         const authorizePaymentMethodAction = yield authorizeOtherPayment({
-            agent: { id: req.user.sub },
-            client: { id: req.user.client_id },
-            paymentMethodType: paymentMethodType,
-            amount: authorizeSeatReservationResult.price,
             transaction: { id: req.params.transactionId }
         })({
-            action: actionRepo,
-            seller: sellerRepo,
-            transaction: transactionRepo
+            action: actionRepo
         });
         if (authorizePaymentMethodAction === undefined) {
             throw new cinerino.factory.errors.Argument('Transaction', 'Payment method authorization required');
@@ -130,7 +123,6 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             .format('YYYYMMDD');
         const paymentNo = yield paymentNoRepo.publish(eventStartDateStr);
         const confirmationNumber = `${eventStartDateStr}${paymentNo}`;
-        const informOrderUrl = req.body.informOrderUrl;
         // 予約確定パラメータを生成
         const eventReservations = acceptedOffers.map((acceptedOffer, index) => {
             const reservation = acceptedOffer.itemOffered;
@@ -148,7 +140,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                 paymentMethodName: authorizePaymentMethodActionResult.name
             });
         });
-        const confirmReservationParams = [];
+        let confirmReservationParams = [];
         confirmReservationParams.push({
             object: {
                 typeOf: reserveTransaction.typeOf,
@@ -190,9 +182,40 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             }
         });
         // 注文通知パラメータを生成
-        const informOrderParams = [
-            { recipient: { url: informOrderUrl } }
+        let informOrderParams = [
+            { recipient: { url: req.body.informOrderUrl } }
         ];
+        // アプリケーション側でpotentialActionsの指定があればそちらを優先
+        const potentialActionsParams = req.body.potentialActions;
+        if (potentialActionsParams !== undefined) {
+            if (potentialActionsParams.order !== undefined) {
+                if (potentialActionsParams.order.potentialActions !== undefined) {
+                    if (Array.isArray(potentialActionsParams.order.potentialActions.informOrder)) {
+                        informOrderParams = potentialActionsParams.order.potentialActions.informOrder;
+                    }
+                    if (potentialActionsParams.order.potentialActions.sendOrder !== undefined) {
+                        if (potentialActionsParams.order.potentialActions.sendOrder.potentialActions !== undefined) {
+                            if (Array.isArray(potentialActionsParams.order.potentialActions.sendOrder.potentialActions.confirmReservation)) {
+                                confirmReservationParams
+                                    = potentialActionsParams.order.potentialActions.sendOrder.potentialActions.confirmReservation;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        const potentialActions = {
+            order: {
+                potentialActions: {
+                    sendOrder: {
+                        potentialActions: {
+                            confirmReservation: confirmReservationParams
+                        }
+                    },
+                    informOrder: informOrderParams
+                }
+            }
+        };
         // 決済承認後に注文日時を確定しなければ、取引条件を満たさないので注意
         const orderDate = new Date();
         // 印刷トークンを事前に発行
@@ -201,18 +224,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             project: { typeOf: req.project.typeOf, id: req.project.id },
             agent: { id: req.user.sub },
             id: req.params.transactionId,
-            potentialActions: {
-                order: {
-                    potentialActions: {
-                        sendOrder: {
-                            potentialActions: {
-                                confirmReservation: confirmReservationParams
-                            }
-                        },
-                        informOrder: informOrderParams
-                    }
-                }
-            },
+            potentialActions: potentialActions,
             result: {
                 order: {
                     orderDate: orderDate,
