@@ -275,13 +275,6 @@ placeOrderTransactionsRouter.post(
             // 決済承認後に注文日時を確定しなければ、取引条件を満たさないので注意
             const orderDate = new Date();
 
-            // 印刷トークンを事前に発行
-            let printToken: string | undefined;
-            if (process.env.USE_PRINT_TOKEN === '1') {
-                const tokenRepo = new cinerino.repository.Token(redis.getClient());
-                printToken = await tokenRepo.createPrintToken(acceptedOffers.map((o) => o.itemOffered.id));
-            }
-
             const transactionResult = await cinerino.service.transaction.placeOrderInProgress.confirm({
                 project: { typeOf: req.project.typeOf, id: req.project.id },
                 agent: { id: req.user.sub },
@@ -301,11 +294,7 @@ placeOrderTransactionsRouter.post(
             });
 
             res.status(CREATED)
-                .json({
-                    ...transactionResult,
-                    // 印刷トークン情報を追加
-                    printToken: printToken
-                });
+                .json(transactionResult);
         } catch (error) {
             next(error);
         }
