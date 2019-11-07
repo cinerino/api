@@ -227,7 +227,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         // 決済承認後に注文日時を確定しなければ、取引条件を満たさないので注意
         const orderDate = new Date();
         // 印刷トークンを事前に発行
-        let printToken = '';
+        let printToken;
         if (process.env.USE_PRINT_TOKEN === '1') {
             const tokenRepo = new cinerino.repository.Token(redis.getClient());
             printToken = yield tokenRepo.createPrintToken(acceptedOffers.map((o) => o.itemOffered.id));
