@@ -188,7 +188,7 @@ placeOrderTransactionsRouter.post(
     }
 );
 
-function createConfirmationNumber(params: {
+export function createConfirmationNumber(params: {
     transactionId: string;
     authorizeSeatReservationResult:
     cinerino.factory.action.authorize.offer.seatReservation.IResult<cinerino.factory.service.webAPI.Identifier.Chevre>;
@@ -224,7 +224,7 @@ function createConfirmationNumber(params: {
     return `${eventStartDateStr}${paymentNo}`;
 }
 
-function getTmpReservations(params: {
+export function getTmpReservations(params: {
     transaction: { id: string };
 }) {
     return async (repos: {

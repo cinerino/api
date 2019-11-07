@@ -19,6 +19,7 @@ import permitScopes from '../../middlewares/permitScopes';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
+import { createConfirmationNumber, getTmpReservations } from '../ttts/transactions/placeOrder';
 import placeOrder4cinemasunshineRouter from './placeOrder4cinemasunshine';
 
 import * as redis from '../../../redis';
@@ -30,9 +31,8 @@ const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
  * GMOメンバーIDにユーザーネームを使用するかどうか
  */
 const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
-
+const USE_OLD_PAYMENT_NO = process.env.USE_OLD_PAYMENT_NO === '1';
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
-
 const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== undefined)
     ? Number(process.env.NUM_ORDER_ITEMS_MAX_VALUE)
     // tslint:disable-next-line:no-magic-numbers
@@ -1088,7 +1088,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/confirm',
-    permitScopes(['customer', 'transactions']),
+    permitScopes(['customer', 'transactions', 'pos']),
     ...[
         // Eメールカスタマイズのバリデーション
         body([
@@ -1121,6 +1121,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
             id: req.params.transactionId
         })(req, res, next);
     },
+    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             const orderDate = new Date();
@@ -1168,6 +1169,22 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 });
             }
 
+            let confirmationNumber:
+                string | cinerino.service.transaction.placeOrderInProgress.IOrderConfirmationNumberGenerator | undefined;
+
+            if (USE_OLD_PAYMENT_NO) {
+                const authorizeSeatReservationResult = await getTmpReservations({
+                    transaction: { id: req.params.transactionId }
+                })({
+                    action: actionRepo
+                });
+
+                confirmationNumber = createConfirmationNumber({
+                    transactionId: req.params.transactionId,
+                    authorizeSeatReservationResult: authorizeSeatReservationResult
+                });
+            }
+
             const result = await cinerino.service.transaction.placeOrderInProgress.confirm({
                 ...req.body,
                 agent: { id: req.user.sub },
@@ -1177,6 +1194,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 result: {
                     ...req.body.result,
                     order: {
+                        confirmationNumber: confirmationNumber,
                         orderDate: orderDate,
                         numItems: {
                             maxValue: NUM_ORDER_ITEMS_MAX_VALUE

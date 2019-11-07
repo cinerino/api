@@ -25,6 +25,7 @@ const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
+const placeOrder_1 = require("../ttts/transactions/placeOrder");
 const placeOrder4cinemasunshine_1 = require("./placeOrder4cinemasunshine");
 const redis = require("../../../redis");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
@@ -33,6 +34,7 @@ const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
  * GMOメンバーIDにユーザーネームを使用するかどうか
  */
 const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
+const USE_OLD_PAYMENT_NO = process.env.USE_OLD_PAYMENT_NO === '1';
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== undefined)
     ? Number(process.env.NUM_ORDER_ITEMS_MAX_VALUE)
@@ -898,7 +900,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accoun
     }
 }));
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['customer', 'transactions']), ...[
+placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['customer', 'transactions', 'pos']), ...[
     // Eメールカスタマイズのバリデーション
     check_1.body([
         'emailTemplate',
@@ -926,7 +928,9 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
         typeOf: cinerino.factory.transactionType.PlaceOrder,
         id: req.params.transactionId
     })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+}), 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const orderDate = new Date();
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
@@ -968,7 +972,20 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
                 object: email
             });
         }
+        let confirmationNumber;
+        if (USE_OLD_PAYMENT_NO) {
+            const authorizeSeatReservationResult = yield placeOrder_1.getTmpReservations({
+                transaction: { id: req.params.transactionId }
+            })({
+                action: actionRepo
+            });
+            confirmationNumber = placeOrder_1.createConfirmationNumber({
+                transactionId: req.params.transactionId,
+                authorizeSeatReservationResult: authorizeSeatReservationResult
+            });
+        }
         const result = yield cinerino.service.transaction.placeOrderInProgress.confirm(Object.assign(Object.assign({}, req.body), { agent: { id: req.user.sub }, id: req.params.transactionId, potentialActions: potentialActions, project: req.project, result: Object.assign(Object.assign({}, req.body.result), { order: {
+                    confirmationNumber: confirmationNumber,
                     orderDate: orderDate,
                     numItems: {
                         maxValue: NUM_ORDER_ITEMS_MAX_VALUE

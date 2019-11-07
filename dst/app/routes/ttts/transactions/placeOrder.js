@@ -180,6 +180,7 @@ function createConfirmationNumber(params) {
     }
     return `${eventStartDateStr}${paymentNo}`;
 }
+exports.createConfirmationNumber = createConfirmationNumber;
 function getTmpReservations(params) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
         const authorizeActions = yield repos.action.searchByPurpose({
@@ -202,6 +203,7 @@ function getTmpReservations(params) {
         return seatReservationAuthorizeAction.result;
     });
 }
+exports.getTmpReservations = getTmpReservations;
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification', permitScopes_1.default(['transactions']), ...[
     check_1.body('sender.name')
