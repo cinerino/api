@@ -108,7 +108,6 @@ placeOrderTransactionsRouter.post(
             const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
             const paymentNoRepo = new cinerino.repository.PaymentNo(redis.getClient());
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-            const tokenRepo = new cinerino.repository.Token(redis.getClient());
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
             const transaction = await transactionRepo.findInProgressById<cinerino.factory.transactionType.PlaceOrder>({
@@ -277,7 +276,11 @@ placeOrderTransactionsRouter.post(
             const orderDate = new Date();
 
             // 印刷トークンを事前に発行
-            const printToken = await tokenRepo.createPrintToken(acceptedOffers.map((o) => o.itemOffered.id));
+            let printToken = '';
+            if (process.env.USE_PRINT_TOKEN === '1') {
+                const tokenRepo = new cinerino.repository.Token(redis.getClient());
+                printToken = await tokenRepo.createPrintToken(acceptedOffers.map((o) => o.itemOffered.id));
+            }
 
             const transactionResult = await cinerino.service.transaction.placeOrderInProgress.confirm({
                 project: { typeOf: req.project.typeOf, id: req.project.id },
