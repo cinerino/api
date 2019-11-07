@@ -112,76 +112,61 @@ placeOrderTransactionsRouter.post(
             })({
                 action: actionRepo
             });
-            const reserveTransaction = authorizeSeatReservationResult.responseBody;
-            if (reserveTransaction === undefined) {
-                throw new cinerino.factory.errors.Argument('Transaction', 'Reserve trasaction required');
-            }
-            const event = reserveTransaction.object.reservationFor;
-            if (event === undefined || event === null) {
-                throw new cinerino.factory.errors.Argument('Transaction', 'Event required');
-            }
 
-            // 確認番号を事前生成
-            const eventStartDateStr = moment(event.startDate)
-                .tz('Asia/Tokyo')
-                .format('YYYYMMDD');
-
-            const paymentNo = createPaymentNo({
+            const confirmationNumber = createConfirmationNumber({
                 transactionId: req.params.transactionId,
                 authorizeSeatReservationResult: authorizeSeatReservationResult
             });
 
-            const confirmationNumber: string = `${eventStartDateStr}${paymentNo}`;
-
-            let confirmReservationParams: cinerino.factory.transaction.placeOrder.IConfirmReservationParams[] = [];
-            let informOrderParams: cinerino.factory.transaction.placeOrder.IInformOrderParams[] = [];
+            // let confirmReservationParams: cinerino.factory.transaction.placeOrder.IConfirmReservationParams[] = [];
+            // let informOrderParams: cinerino.factory.transaction.placeOrder.IInformOrderParams[] = [];
 
             // アプリケーション側でpotentialActionsの指定があれば設定
             const potentialActionsParams: cinerino.factory.transaction.placeOrder.IPotentialActionsParams | undefined
                 = req.body.potentialActions;
 
-            if (potentialActionsParams !== undefined) {
-                if (potentialActionsParams.order !== undefined) {
-                    if (potentialActionsParams.order.potentialActions !== undefined) {
-                        if (Array.isArray(potentialActionsParams.order.potentialActions.informOrder)) {
-                            informOrderParams = potentialActionsParams.order.potentialActions.informOrder;
-                        }
+            // if (potentialActionsParams !== undefined) {
+            //     if (potentialActionsParams.order !== undefined) {
+            //         if (potentialActionsParams.order.potentialActions !== undefined) {
+            //             if (Array.isArray(potentialActionsParams.order.potentialActions.informOrder)) {
+            //                 informOrderParams = potentialActionsParams.order.potentialActions.informOrder;
+            //             }
 
-                        if (potentialActionsParams.order.potentialActions.sendOrder !== undefined) {
-                            if (potentialActionsParams.order.potentialActions.sendOrder.potentialActions !== undefined) {
-                                if (Array.isArray(
-                                    potentialActionsParams.order.potentialActions.sendOrder.potentialActions.confirmReservation
-                                )) {
-                                    confirmReservationParams
-                                        = potentialActionsParams.order.potentialActions.sendOrder.potentialActions.confirmReservation;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            //             if (potentialActionsParams.order.potentialActions.sendOrder !== undefined) {
+            //                 if (potentialActionsParams.order.potentialActions.sendOrder.potentialActions !== undefined) {
+            //                     if (Array.isArray(
+            //                         potentialActionsParams.order.potentialActions.sendOrder.potentialActions.confirmReservation
+            //                     )) {
+            //                         confirmReservationParams
+            //                             = potentialActionsParams.order.potentialActions.sendOrder.potentialActions.confirmReservation;
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
 
-            const potentialActions: cinerino.factory.transaction.placeOrder.IPotentialActionsParams = {
-                order: {
-                    potentialActions: {
-                        sendOrder: {
-                            potentialActions: {
-                                confirmReservation: confirmReservationParams
-                            }
-                        },
-                        informOrder: informOrderParams
-                    }
-                }
-            };
+            // const potentialActions: cinerino.factory.transaction.placeOrder.IPotentialActionsParams = {
+            //     order: {
+            //         potentialActions: {
+            //             sendOrder: {
+            //                 potentialActions: {
+            //                     confirmReservation: confirmReservationParams
+            //                 }
+            //             },
+            //             informOrder: informOrderParams
+            //         }
+            //     }
+            // };
 
             // 決済承認後に注文日時を確定しなければ、取引条件を満たさないので注意
             const orderDate = new Date();
 
-            const transactionResult = await cinerino.service.transaction.placeOrderInProgress.confirm({
+            const result = await cinerino.service.transaction.placeOrderInProgress.confirm({
                 project: { typeOf: req.project.typeOf, id: req.project.id },
                 agent: { id: req.user.sub },
                 id: req.params.transactionId,
-                potentialActions: potentialActions,
+                potentialActions: potentialActionsParams,
                 result: {
                     order: {
                         orderDate: orderDate,
@@ -196,14 +181,14 @@ placeOrderTransactionsRouter.post(
             });
 
             res.status(CREATED)
-                .json(transactionResult);
+                .json(result);
         } catch (error) {
             next(error);
         }
     }
 );
 
-function createPaymentNo(params: {
+function createConfirmationNumber(params: {
     transactionId: string;
     authorizeSeatReservationResult:
     cinerino.factory.action.authorize.offer.seatReservation.IResult<cinerino.factory.service.webAPI.Identifier.Chevre>;
@@ -215,15 +200,15 @@ function createPaymentNo(params: {
     const chevreReservations = (Array.isArray(reserveTransaction.object.reservations))
         ? reserveTransaction.object.reservations
         : [];
-    // const event = reserveTransaction.object.reservationFor;
-    // if (event === undefined || event === null) {
-    //     throw new cinerino.factory.errors.Argument('Transaction', 'Event required');
-    // }
+    const event = reserveTransaction.object.reservationFor;
+    if (event === undefined || event === null) {
+        throw new cinerino.factory.errors.Argument('Transaction', 'Event required');
+    }
 
     // 確認番号を事前生成
-    // const eventStartDateStr = moment(event.startDate)
-    //     .tz('Asia/Tokyo')
-    //     .format('YYYYMMDD');
+    const eventStartDateStr = moment(event.startDate)
+        .tz('Asia/Tokyo')
+        .format('YYYYMMDD');
 
     let paymentNo: string | undefined;
     if (chevreReservations[0].underName !== undefined && Array.isArray(chevreReservations[0].underName.identifier)) {
@@ -236,7 +221,7 @@ function createPaymentNo(params: {
         throw new cinerino.factory.errors.ServiceUnavailable('Payment No not found');
     }
 
-    return paymentNo;
+    return `${eventStartDateStr}${paymentNo}`;
 }
 
 function getTmpReservations(params: {
