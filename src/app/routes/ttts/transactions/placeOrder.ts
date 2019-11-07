@@ -106,7 +106,6 @@ placeOrderTransactionsRouter.post(
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
-            const paymentNoRepo = new cinerino.repository.PaymentNo(redis.getClient());
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
@@ -120,9 +119,6 @@ placeOrderTransactionsRouter.post(
             })({
                 action: actionRepo
             });
-            const acceptedOffers = (Array.isArray(authorizeSeatReservationResult.acceptedOffers))
-                ? authorizeSeatReservationResult.acceptedOffers
-                : [];
             const reserveTransaction = authorizeSeatReservationResult.responseBody;
             if (reserveTransaction === undefined) {
                 throw new cinerino.factory.errors.Argument('Transaction', 'Reserve trasaction required');
@@ -135,6 +131,18 @@ placeOrderTransactionsRouter.post(
                 throw new cinerino.factory.errors.Argument('Transaction', 'Event required');
             }
 
+            // 確認番号を事前生成
+            const eventStartDateStr = moment(event.startDate)
+                .tz('Asia/Tokyo')
+                .format('YYYYMMDD');
+
+            const paymentNo = createPaymentNo({
+                transactionId: req.params.transactionId,
+                authorizeSeatReservationResult: authorizeSeatReservationResult
+            });
+
+            const confirmationNumber: string = `${eventStartDateStr}${paymentNo}`;
+
             const authorizePaymentMethodAction = await authorizeOtherPayment({
                 transaction: { id: req.params.transactionId }
             })({
@@ -146,25 +154,10 @@ placeOrderTransactionsRouter.post(
             const authorizePaymentMethodActionResult = <cinerino.factory.action.authorize.paymentMethod.any.IResult<any>>
                 authorizePaymentMethodAction.result;
 
-            // 確認番号を事前生成
-            const eventStartDateStr = moment(event.startDate)
-                .tz('Asia/Tokyo')
-                .format('YYYYMMDD');
-
-            let paymentNo: string | undefined;
-            if (chevreReservations[0].underName !== undefined && Array.isArray(chevreReservations[0].underName.identifier)) {
-                const paymentNoProperty = chevreReservations[0].underName.identifier.find((p) => p.name === 'paymentNo');
-                if (paymentNoProperty !== undefined) {
-                    paymentNo = paymentNoProperty.value;
-                }
-            }
-            if (paymentNo === undefined) {
-                paymentNo = await paymentNoRepo.publish(eventStartDateStr);
-            }
-
-            const confirmationNumber: string = `${eventStartDateStr}${paymentNo}`;
-
             // 予約確定パラメータを生成
+            const acceptedOffers = (Array.isArray(authorizeSeatReservationResult.acceptedOffers))
+                ? authorizeSeatReservationResult.acceptedOffers
+                : [];
             const eventReservations = acceptedOffers.map((acceptedOffer, index) => {
                 const reservation = acceptedOffer.itemOffered;
 
@@ -177,7 +170,7 @@ placeOrderTransactionsRouter.post(
                     reservation: reservation,
                     chevreReservation: chevreReservation,
                     transaction: transaction,
-                    paymentNo: <string>paymentNo,
+                    paymentNo: paymentNo,
                     gmoOrderId: authorizePaymentMethodActionResult.paymentMethodId,
                     paymentSeatIndex: index.toString(),
                     paymentMethodName: authorizePaymentMethodActionResult.name
@@ -230,9 +223,7 @@ placeOrderTransactionsRouter.post(
             });
 
             // 注文通知パラメータを生成
-            let informOrderParams: cinerino.factory.transaction.placeOrder.IInformOrderParams[] = [
-                { recipient: { url: <string>req.body.informOrderUrl } }
-            ];
+            let informOrderParams: cinerino.factory.transaction.placeOrder.IInformOrderParams[] = [];
 
             // アプリケーション側でpotentialActionsの指定があればそちらを優先
             const potentialActionsParams: cinerino.factory.transaction.placeOrder.IPotentialActionsParams | undefined
@@ -300,6 +291,42 @@ placeOrderTransactionsRouter.post(
         }
     }
 );
+
+function createPaymentNo(params: {
+    transactionId: string;
+    authorizeSeatReservationResult:
+    cinerino.factory.action.authorize.offer.seatReservation.IResult<cinerino.factory.service.webAPI.Identifier.Chevre>;
+}): string {
+    const reserveTransaction = params.authorizeSeatReservationResult.responseBody;
+    if (reserveTransaction === undefined) {
+        throw new cinerino.factory.errors.Argument('Transaction', 'Reserve trasaction required');
+    }
+    const chevreReservations = (Array.isArray(reserveTransaction.object.reservations))
+        ? reserveTransaction.object.reservations
+        : [];
+    // const event = reserveTransaction.object.reservationFor;
+    // if (event === undefined || event === null) {
+    //     throw new cinerino.factory.errors.Argument('Transaction', 'Event required');
+    // }
+
+    // 確認番号を事前生成
+    // const eventStartDateStr = moment(event.startDate)
+    //     .tz('Asia/Tokyo')
+    //     .format('YYYYMMDD');
+
+    let paymentNo: string | undefined;
+    if (chevreReservations[0].underName !== undefined && Array.isArray(chevreReservations[0].underName.identifier)) {
+        const paymentNoProperty = chevreReservations[0].underName.identifier.find((p) => p.name === 'paymentNo');
+        if (paymentNoProperty !== undefined) {
+            paymentNo = paymentNoProperty.value;
+        }
+    }
+    if (paymentNo === undefined) {
+        throw new cinerino.factory.errors.ServiceUnavailable('Payment No not found');
+    }
+
+    return paymentNo;
+}
 
 function getTmpReservations(params: {
     transaction: { id: string };
