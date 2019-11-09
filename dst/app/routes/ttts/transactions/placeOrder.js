@@ -14,8 +14,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const mongoose = require("mongoose");
@@ -126,56 +124,4 @@ function getTmpReservations(params) {
     });
 }
 exports.getTmpReservations = getTmpReservations;
-// tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification', permitScopes_1.default(['transactions']), ...[
-    check_1.body('sender.name')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required'),
-    check_1.body('sender.email')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required'),
-    check_1.body('toRecipient.name')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required'),
-    check_1.body('toRecipient.email')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-        .isEmail(),
-    check_1.body('about')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required'),
-    check_1.body('text')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const task = yield cinerino.service.transaction.placeOrder.sendEmail(req.params.transactionId, {
-            typeOf: cinerino.factory.creativeWorkType.EmailMessage,
-            sender: {
-                name: req.body.sender.name,
-                email: req.body.sender.email
-            },
-            toRecipient: {
-                name: req.body.toRecipient.name,
-                email: req.body.toRecipient.email
-            },
-            about: req.body.about,
-            text: req.body.text
-        })({
-            task: new cinerino.repository.Task(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection)
-        });
-        res.status(http_status_1.CREATED)
-            .json(task);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
 exports.default = placeOrderTransactionsRouter;

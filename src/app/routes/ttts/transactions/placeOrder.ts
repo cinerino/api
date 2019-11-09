@@ -3,10 +3,6 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
-// tslint:disable-next-line:no-implicit-dependencies
-import { ParamsDictionary } from 'express-serve-static-core';
-// tslint:disable-next-line:no-submodule-imports
-import { body } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
@@ -160,67 +156,5 @@ export function getTmpReservations(params: {
         return seatReservationAuthorizeAction.result;
     };
 }
-
-// tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.post<ParamsDictionary>(
-    '/:transactionId/tasks/sendEmailNotification',
-    permitScopes(['transactions']),
-    ...[
-        body('sender.name')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
-        body('sender.email')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
-        body('toRecipient.name')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
-        body('toRecipient.email')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-            .isEmail(),
-        body('about')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
-        body('text')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-    ],
-    validator,
-    async (req, res, next) => {
-        try {
-            const task = await cinerino.service.transaction.placeOrder.sendEmail(
-                req.params.transactionId,
-                {
-                    typeOf: cinerino.factory.creativeWorkType.EmailMessage,
-                    sender: {
-                        name: req.body.sender.name,
-                        email: req.body.sender.email
-                    },
-                    toRecipient: {
-                        name: req.body.toRecipient.name,
-                        email: req.body.toRecipient.email
-                    },
-                    about: req.body.about,
-                    text: req.body.text
-                }
-            )({
-                task: new cinerino.repository.Task(mongoose.connection),
-                transaction: new cinerino.repository.Transaction(mongoose.connection)
-            });
-
-            res.status(CREATED)
-                .json(task);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
 
 export default placeOrderTransactionsRouter;
