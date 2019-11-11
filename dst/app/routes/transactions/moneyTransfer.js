@@ -115,7 +115,7 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 
                         })
                         : []
                 ] }),
-            object: Object.assign({ clientUser: req.user, 
+            object: Object.assign({ 
                 // amount: Number(req.body.object.amount),
                 // toLocation: req.body.object.toLocation,
                 authorizeActions: [] }, (typeof req.body.object.description === 'string') ? { description: req.body.object.description } : {}),

@@ -159,7 +159,6 @@ function checkCard(req, amount) {
                 image: seller.image
             },
             object: {
-                clientUser: req.user,
                 authorizeActions: []
             },
             expires: moment()

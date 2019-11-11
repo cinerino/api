@@ -103,7 +103,6 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 't
             expires: req.body.expires,
             object: {
                 cancellationFee: cancellationFee,
-                clientUser: req.user,
                 order: returnableOrder,
                 reason: reason
             },

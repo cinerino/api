@@ -114,7 +114,6 @@ returnOrderTransactionsRouter.post(
                 expires: req.body.expires,
                 object: {
                     cancellationFee: cancellationFee,
-                    clientUser: req.user,
                     order: returnableOrder,
                     reason: reason
                 },

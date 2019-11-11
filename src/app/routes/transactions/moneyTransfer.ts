@@ -122,7 +122,6 @@ moneyTransferTransactionsRouter.post(
                     ]
                 },
                 object: {
-                    clientUser: req.user,
                     // amount: Number(req.body.object.amount),
                     // toLocation: req.body.object.toLocation,
                     authorizeActions: [],

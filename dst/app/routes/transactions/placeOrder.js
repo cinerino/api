@@ -169,7 +169,6 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 
                 ] }),
             seller: req.body.seller,
             object: {
-                clientUser: req.user,
                 passport: passport
             },
             passportValidator: passportValidator

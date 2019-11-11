@@ -166,7 +166,6 @@ async function checkCard(req: Request, amount: number) {
             image: seller.image
         },
         object: {
-            clientUser: req.user,
             authorizeActions: []
         },
         expires: moment()

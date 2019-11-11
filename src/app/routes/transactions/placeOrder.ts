@@ -194,7 +194,6 @@ placeOrderTransactionsRouter.post(
                 },
                 seller: req.body.seller,
                 object: {
-                    clientUser: req.user,
                     passport: passport
                 },
                 passportValidator: passportValidator
