@@ -168,9 +168,9 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 
                         : []
                 ] }),
             seller: req.body.seller,
-            object: {
-                passport: passport
-            },
+            object: Object.assign({ passport: passport }, {
+                clientUser: req.user
+            }),
             passportValidator: passportValidator
         })({
             project: projectRepo,
