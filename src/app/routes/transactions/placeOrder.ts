@@ -1172,7 +1172,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
             }
 
             let confirmationNumber:
-                string | cinerino.service.transaction.placeOrderInProgress.IOrderConfirmationNumberGenerator | undefined;
+                string | cinerino.service.transaction.placeOrderInProgress.IConfirmationNumberGenerator | undefined;
 
             if (USE_OLD_PAYMENT_NO) {
                 const authorizeSeatReservationResult = await getTmpReservations({
@@ -1187,6 +1187,16 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 });
             }
 
+            const resultOrderParams: cinerino.service.transaction.placeOrderInProgress.IResultOrderParams = {
+                ...(req.body.result !== undefined && req.body.result !== null) ? req.body.result.order : undefined,
+                confirmationNumber: confirmationNumber,
+                orderDate: orderDate,
+                numItems: {
+                    maxValue: NUM_ORDER_ITEMS_MAX_VALUE
+                    // minValue: 0
+                }
+            };
+
             const result = await cinerino.service.transaction.placeOrderInProgress.confirm({
                 ...req.body,
                 agent: { id: req.user.sub },
@@ -1195,14 +1205,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 project: req.project,
                 result: {
                     ...req.body.result,
-                    order: {
-                        confirmationNumber: confirmationNumber,
-                        orderDate: orderDate,
-                        numItems: {
-                            maxValue: NUM_ORDER_ITEMS_MAX_VALUE
-                            // minValue: 0
-                        }
-                    }
+                    order: resultOrderParams
                 },
                 validateMovieTicket: (process.env.VALIDATE_MOVIE_TICKET === '1')
             })({

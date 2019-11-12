@@ -983,14 +983,11 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
                 authorizeSeatReservationResult: authorizeSeatReservationResult
             });
         }
-        const result = yield cinerino.service.transaction.placeOrderInProgress.confirm(Object.assign(Object.assign({}, req.body), { agent: { id: req.user.sub }, id: req.params.transactionId, potentialActions: potentialActions, project: req.project, result: Object.assign(Object.assign({}, req.body.result), { order: {
-                    confirmationNumber: confirmationNumber,
-                    orderDate: orderDate,
-                    numItems: {
-                        maxValue: NUM_ORDER_ITEMS_MAX_VALUE
-                        // minValue: 0
-                    }
-                } }), validateMovieTicket: (process.env.VALIDATE_MOVIE_TICKET === '1') }))({
+        const resultOrderParams = Object.assign(Object.assign({}, (req.body.result !== undefined && req.body.result !== null) ? req.body.result.order : undefined), { confirmationNumber: confirmationNumber, orderDate: orderDate, numItems: {
+                maxValue: NUM_ORDER_ITEMS_MAX_VALUE
+                // minValue: 0
+            } });
+        const result = yield cinerino.service.transaction.placeOrderInProgress.confirm(Object.assign(Object.assign({}, req.body), { agent: { id: req.user.sub }, id: req.params.transactionId, potentialActions: potentialActions, project: req.project, result: Object.assign(Object.assign({}, req.body.result), { order: resultOrderParams }), validateMovieTicket: (process.env.VALIDATE_MOVIE_TICKET === '1') }))({
             action: actionRepo,
             transaction: transactionRepo,
             confirmationNumber: confirmationNumberRepo,

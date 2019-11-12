@@ -46,6 +46,9 @@ ordersRouter.use(authentication_1.default);
  * 注文検索
  */
 ordersRouter.get('', permitScopes_1.default(['admin']), ...[
+    check_1.query('identifier.$in')
+        .optional()
+        .isArray(),
     check_1.query('orderDateFrom')
         .optional()
         .isISO8601()

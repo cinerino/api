@@ -47,6 +47,9 @@ ordersRouter.get(
     '',
     permitScopes(['admin']),
     ...[
+        query('identifier.$in')
+            .optional()
+            .isArray(),
         query('orderDateFrom')
             .optional()
             .isISO8601()
