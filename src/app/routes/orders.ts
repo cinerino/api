@@ -7,6 +7,8 @@ import { Router } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 // tslint:disable-next-line:no-submodule-imports
 import { body, query } from 'express-validator/check';
+// tslint:disable-next-line:no-submodule-imports
+import { CustomValidator } from 'express-validator/src/base';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
@@ -40,16 +42,30 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 const ordersRouter = Router();
 ordersRouter.use(authentication);
 
+const isNotAdmin: CustomValidator = (_, { req }) => !req.isAdmin;
+
 /**
  * 注文検索
  */
 ordersRouter.get(
     '',
-    permitScopes(['admin']),
+    permitScopes(['admin', 'customer', 'orders', 'orders.read-only']),
     ...[
         query('identifier.$in')
             .optional()
             .isArray(),
+        query('identifier.$in.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: 256 }),
+        query('identifier.$in.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: 512 }),
         query('orderDateFrom')
             .optional()
             .isISO8601()
@@ -75,18 +91,55 @@ ordersRouter.get(
             .isISO8601()
             .toDate()
     ],
+    // 管理者でなければバリデーション追加
+    ...[
+        query('identifier.$in')
+            .if(isNotAdmin)
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isArray({ min: 2, max: 10 })
+            .withMessage(() => 'must be specified at least 2')
+    ],
     validator,
     async (req, res, next) => {
         try {
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
 
-            const searchConditions: cinerino.factory.order.ISearchConditions = {
+            let searchConditions: cinerino.factory.order.ISearchConditions = {
                 ...req.query,
                 project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
+
+            // 管理者でない場合、検索条件を限定
+            if (!req.isAdmin) {
+                const orderDateThrough = (req.query.orderDateThrough instanceof Date)
+                    ? req.query.orderDateThrough
+                    : moment()
+                        .toDate();
+                const orderDateFrom = (req.query.orderDateFrom instanceof Date)
+                    ? req.query.orderDateFrom
+                    : moment(orderDateThrough)
+                        // tslint:disable-next-line:no-magic-numbers
+                        .add(-3, 'months') // とりあえず直近3カ月をデフォルト動作に設定
+                        .toDate();
+
+                searchConditions = {
+                    project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
+                    // tslint:disable-next-line:no-magic-numbers
+                    limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+                    page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+                    sort: { orderDate: cinerino.factory.sortType.Descending },
+                    identifier: {
+                        $in: req.query.identifier.$in
+                    },
+                    orderDateFrom: orderDateFrom,
+                    orderDateThrough: orderDateThrough
+                };
+            }
 
             const totalCount = await orderRepo.count(searchConditions);
             const orders = await orderRepo.search(searchConditions);
