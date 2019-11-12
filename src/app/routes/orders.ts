@@ -51,9 +51,24 @@ ordersRouter.get(
     '',
     permitScopes(['admin', 'customer', 'orders', 'orders.read-only']),
     ...[
+        query('identifier.$all')
+            .optional()
+            .isArray(),
         query('identifier.$in')
             .optional()
             .isArray(),
+        query('identifier.$all.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: 256 }),
+        query('identifier.$all.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: 512 }),
         query('identifier.$in.*.name')
             .optional()
             .not()
@@ -93,7 +108,7 @@ ordersRouter.get(
     ],
     // 管理者でなければバリデーション追加
     ...[
-        query('identifier.$in')
+        query('identifier.$all')
             .if(isNotAdmin)
             .not()
             .isEmpty()
@@ -134,7 +149,7 @@ ordersRouter.get(
                     page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
                     sort: { orderDate: cinerino.factory.sortType.Descending },
                     identifier: {
-                        $in: req.query.identifier.$in
+                        $all: req.query.identifier.$all
                     },
                     orderDateFrom: orderDateFrom,
                     orderDateThrough: orderDateThrough

@@ -47,9 +47,24 @@ const isNotAdmin = (_, { req }) => !req.isAdmin;
  * 注文検索
  */
 ordersRouter.get('', permitScopes_1.default(['admin', 'customer', 'orders', 'orders.read-only']), ...[
+    check_1.query('identifier.$all')
+        .optional()
+        .isArray(),
     check_1.query('identifier.$in')
         .optional()
         .isArray(),
+    check_1.query('identifier.$all.*.name')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: 256 }),
+    check_1.query('identifier.$all.*.value')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: 512 }),
     check_1.query('identifier.$in.*.name')
         .optional()
         .not()
@@ -89,7 +104,7 @@ ordersRouter.get('', permitScopes_1.default(['admin', 'customer', 'orders', 'ord
 ], 
 // 管理者でなければバリデーション追加
 ...[
-    check_1.query('identifier.$in')
+    check_1.query('identifier.$all')
         .if(isNotAdmin)
         .not()
         .isEmpty()
@@ -121,7 +136,7 @@ ordersRouter.get('', permitScopes_1.default(['admin', 'customer', 'orders', 'ord
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
                 sort: { orderDate: cinerino.factory.sortType.Descending },
                 identifier: {
-                    $in: req.query.identifier.$in
+                    $all: req.query.identifier.$all
                 },
                 orderDateFrom: orderDateFrom,
                 orderDateThrough: orderDateThrough
