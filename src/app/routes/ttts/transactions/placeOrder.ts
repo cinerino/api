@@ -4,7 +4,6 @@
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import { CREATED, NO_CONTENT } from 'http-status';
-import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 
 const placeOrderTransactionsRouter = Router();
@@ -48,7 +47,6 @@ placeOrderTransactionsRouter.post(
                 }
             })(
                 new cinerino.repository.Action(mongoose.connection),
-                new cinerino.repository.PaymentNo(redis.getClient()),
                 new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()),
                 new cinerino.repository.Transaction(mongoose.connection),
                 new cinerino.repository.Project(mongoose.connection)
@@ -90,71 +88,5 @@ placeOrderTransactionsRouter.delete(
         }
     }
 );
-
-export function createConfirmationNumber(params: {
-    transactionId: string;
-    authorizeSeatReservationResult:
-    cinerino.factory.action.authorize.offer.seatReservation.IResult<cinerino.factory.service.webAPI.Identifier.Chevre>;
-}): string {
-    const reserveTransaction = params.authorizeSeatReservationResult.responseBody;
-    if (reserveTransaction === undefined) {
-        throw new cinerino.factory.errors.Argument('Transaction', 'Reserve trasaction required');
-    }
-    const chevreReservations = (Array.isArray(reserveTransaction.object.reservations))
-        ? reserveTransaction.object.reservations
-        : [];
-    const event = reserveTransaction.object.reservationFor;
-    if (event === undefined || event === null) {
-        throw new cinerino.factory.errors.Argument('Transaction', 'Event required');
-    }
-
-    // 確認番号を事前生成
-    const eventStartDateStr = moment(event.startDate)
-        .tz('Asia/Tokyo')
-        .format('YYYYMMDD');
-
-    let paymentNo: string | undefined;
-    if (chevreReservations[0].underName !== undefined && Array.isArray(chevreReservations[0].underName.identifier)) {
-        const paymentNoProperty = chevreReservations[0].underName.identifier.find((p) => p.name === 'paymentNo');
-        if (paymentNoProperty !== undefined) {
-            paymentNo = paymentNoProperty.value;
-        }
-    }
-    if (paymentNo === undefined) {
-        throw new cinerino.factory.errors.ServiceUnavailable('Payment No not found');
-    }
-
-    return `${eventStartDateStr}${paymentNo}`;
-}
-
-export function getTmpReservations(params: {
-    transaction: { id: string };
-}) {
-    return async (repos: {
-        action: cinerino.repository.Action;
-    }): Promise<cinerino.factory.action.authorize.offer.seatReservation.IResult<cinerino.factory.service.webAPI.Identifier.Chevre>> => {
-        const authorizeActions = await repos.action.searchByPurpose({
-            typeOf: cinerino.factory.actionType.AuthorizeAction,
-            purpose: {
-                typeOf: cinerino.factory.transactionType.PlaceOrder,
-                id: params.transaction.id
-            }
-        });
-        const seatReservationAuthorizeActions
-            = <cinerino.factory.action.authorize.offer.seatReservation.IAction<cinerino.factory.service.webAPI.Identifier.Chevre>[]>
-            authorizeActions
-                .filter((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus)
-                .filter((a) => a.object.typeOf === cinerino.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
-        if (seatReservationAuthorizeActions.length > 1) {
-            throw new cinerino.factory.errors.Argument('Transaction', 'Number of seat reservations must be 1');
-        }
-        const seatReservationAuthorizeAction = seatReservationAuthorizeActions.shift();
-        if (seatReservationAuthorizeAction === undefined || seatReservationAuthorizeAction.result === undefined) {
-            throw new cinerino.factory.errors.Argument('Transaction', 'Seat reservation authorize action required');
-        }
-
-        return seatReservationAuthorizeAction.result;
-    };
-}
 
 export default placeOrderTransactionsRouter;

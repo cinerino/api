@@ -13,10 +13,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * 口座ルーター
  */
 const cinerino = require("@cinerino/domain");
+const middlewares = require("@motionpicture/express-middleware");
 const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
+const ioredis = require("ioredis");
 const mongoose = require("mongoose");
 const redis = require("../../redis");
 const authentication_1 = require("../middlewares/authentication");
@@ -71,6 +73,29 @@ accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(
         next(error);
     }
 }));
+// tslint:disable-next-line:no-magic-numbers
+const UNIT_IN_SECONDS = 60;
+// tslint:disable-next-line:no-magic-numbers
+const THRESHOLD = 60;
+const redisClient = new ioredis({
+    host: process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT),
+    password: process.env.REDIS_KEY,
+    tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
+});
+const depositAccountRateLimiet = middlewares.rateLimit({
+    redisClient: redisClient,
+    aggregationUnitInSeconds: UNIT_IN_SECONDS,
+    threshold: THRESHOLD,
+    // 制限超過時の動作をカスタマイズ
+    limitExceededHandler: (_, __, res, next) => {
+        res.setHeader('Retry-After', UNIT_IN_SECONDS);
+        const message = `Retry after ${UNIT_IN_SECONDS} seconds for your transaction`;
+        next(new cinerino.factory.errors.RateLimitExceeded(message));
+    },
+    // スコープ生成ロジックをカスタマイズ
+    scopeGenerator: (_) => 'api:rateLimit4accountDepositTransaction'
+});
 /**
  * 管理者として口座に入金する
  */
@@ -115,7 +140,7 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['admin']),
         .not()
         .isEmpty()
         .withMessage(() => 'required')
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+], validator_1.default, depositAccountRateLimiet, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         yield cinerino.service.account.deposit({

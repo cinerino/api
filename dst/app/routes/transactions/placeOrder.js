@@ -25,7 +25,6 @@ const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
-const placeOrder_1 = require("../ttts/transactions/placeOrder");
 const placeOrder4cinemasunshine_1 = require("./placeOrder4cinemasunshine");
 const redis = require("../../../redis");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
@@ -34,7 +33,6 @@ const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
  * GMOメンバーIDにユーザーネームを使用するかどうか
  */
 const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
-const USE_OLD_PAYMENT_NO = process.env.USE_OLD_PAYMENT_NO === '1';
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== undefined)
     ? Number(process.env.NUM_ORDER_ITEMS_MAX_VALUE)
@@ -971,18 +969,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
                 object: email
             });
         }
-        let confirmationNumber;
-        if (USE_OLD_PAYMENT_NO) {
-            const authorizeSeatReservationResult = yield placeOrder_1.getTmpReservations({
-                transaction: { id: req.params.transactionId }
-            })({
-                action: actionRepo
-            });
-            confirmationNumber = placeOrder_1.createConfirmationNumber({
-                transactionId: req.params.transactionId,
-                authorizeSeatReservationResult: authorizeSeatReservationResult
-            });
-        }
+        const confirmationNumber = undefined;
         const resultOrderParams = Object.assign(Object.assign({}, (req.body.result !== undefined && req.body.result !== null) ? req.body.result.order : undefined), { confirmationNumber: confirmationNumber, orderDate: orderDate, numItems: {
                 maxValue: NUM_ORDER_ITEMS_MAX_VALUE
                 // minValue: 0

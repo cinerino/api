@@ -2,10 +2,12 @@
  * 口座ルーター
  */
 import * as cinerino from '@cinerino/domain';
+import * as middlewares from '@motionpicture/express-middleware';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { body } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
+import * as ioredis from 'ioredis';
 import * as mongoose from 'mongoose';
 
 import * as redis from '../../redis';
@@ -78,6 +80,33 @@ accountsRouter.put(
     }
 );
 
+// tslint:disable-next-line:no-magic-numbers
+const UNIT_IN_SECONDS = 60;
+
+// tslint:disable-next-line:no-magic-numbers
+const THRESHOLD = 60;
+
+const redisClient = new ioredis({
+    host: <string>process.env.REDIS_HOST,
+    port: Number(<string>process.env.REDIS_PORT),
+    password: <string>process.env.REDIS_KEY,
+    tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
+});
+
+const depositAccountRateLimiet = middlewares.rateLimit({
+    redisClient: redisClient,
+    aggregationUnitInSeconds: UNIT_IN_SECONDS,
+    threshold: THRESHOLD,
+    // 制限超過時の動作をカスタマイズ
+    limitExceededHandler: (_, __, res, next) => {
+        res.setHeader('Retry-After', UNIT_IN_SECONDS);
+        const message = `Retry after ${UNIT_IN_SECONDS} seconds for your transaction`;
+        next(new cinerino.factory.errors.RateLimitExceeded(message));
+    },
+    // スコープ生成ロジックをカスタマイズ
+    scopeGenerator: (_) => 'api:rateLimit4accountDepositTransaction'
+});
+
 /**
  * 管理者として口座に入金する
  */
@@ -129,6 +158,7 @@ accountsRouter.post(
             .withMessage(() => 'required')
     ],
     validator,
+    depositAccountRateLimiet,
     async (req, res, next) => {
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);

@@ -19,7 +19,6 @@ import permitScopes from '../../middlewares/permitScopes';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
-import { createConfirmationNumber, getTmpReservations } from '../ttts/transactions/placeOrder';
 import placeOrder4cinemasunshineRouter from './placeOrder4cinemasunshine';
 
 import * as redis from '../../../redis';
@@ -31,7 +30,6 @@ const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
  * GMOメンバーIDにユーザーネームを使用するかどうか
  */
 const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
-const USE_OLD_PAYMENT_NO = process.env.USE_OLD_PAYMENT_NO === '1';
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== undefined)
     ? Number(process.env.NUM_ORDER_ITEMS_MAX_VALUE)
@@ -1171,21 +1169,8 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 });
             }
 
-            let confirmationNumber:
-                string | cinerino.service.transaction.placeOrderInProgress.IConfirmationNumberGenerator | undefined;
-
-            if (USE_OLD_PAYMENT_NO) {
-                const authorizeSeatReservationResult = await getTmpReservations({
-                    transaction: { id: req.params.transactionId }
-                })({
-                    action: actionRepo
-                });
-
-                confirmationNumber = createConfirmationNumber({
-                    transactionId: req.params.transactionId,
-                    authorizeSeatReservationResult: authorizeSeatReservationResult
-                });
-            }
+            const confirmationNumber:
+                string | cinerino.service.transaction.placeOrderInProgress.IConfirmationNumberGenerator | undefined = undefined;
 
             const resultOrderParams: cinerino.service.transaction.placeOrderInProgress.IResultOrderParams = {
                 ...(req.body.result !== undefined && req.body.result !== null) ? req.body.result.order : undefined,
