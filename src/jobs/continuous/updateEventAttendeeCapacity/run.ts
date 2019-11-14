@@ -20,8 +20,8 @@ export default async (params: {
 
     let count = 0;
 
-    const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
-    const INTERVAL_MILLISECONDS = 200;
+    const MAX_NUBMER_OF_PARALLEL_TASKS = 1;
+    const INTERVAL_MILLISECONDS = 1000;
 
     setInterval(
         async () => {

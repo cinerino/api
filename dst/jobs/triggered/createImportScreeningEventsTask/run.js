@@ -31,6 +31,7 @@ const MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES = 60;
 const IMPORT_EVENTS_INTERVAL_IN_MINUTES = (process.env.IMPORT_EVENTS_INTERVAL_IN_MINUTES !== undefined)
     ? Math.min(Number(process.env.IMPORT_EVENTS_INTERVAL_IN_MINUTES), MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES)
     : MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES;
+// tslint:disable-next-line:max-func-body-length
 exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     let holdSingletonProcess = false;
     setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
@@ -43,7 +44,9 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     // tslint:disable-next-line:no-magic-numbers
     10000);
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
-    const job = new cron_1.CronJob(`*/${IMPORT_EVENTS_INTERVAL_IN_MINUTES} * * * *`, () => __awaiter(void 0, void 0, void 0, function* () {
+    const job = new cron_1.CronJob(`*/${IMPORT_EVENTS_INTERVAL_IN_MINUTES} * * * *`, 
+    // tslint:disable-next-line:max-func-body-length
+    () => __awaiter(void 0, void 0, void 0, function* () {
         if (process.env.DEBUG_SINGLETON_PROCESS === '1') {
             yield cinerino.service.notification.report2developers(`[${process.env.PROJECT_ID}] api:singletonProcess`, util.format('%s\n%s\n%s\n%s\n%s', `key: 'createImportScreeningEventsTask'`, `IMPORT_EVENTS_INTERVAL_IN_MINUTES: ${IMPORT_EVENTS_INTERVAL_IN_MINUTES}`, `holdSingletonProcess: ${holdSingletonProcess}`, `os.hostname: ${os.hostname}`, `pid: ${process.pid}`))();
         }
@@ -58,40 +61,77 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
         const sellers = yield sellerRepo.search({
             project: (params.project !== undefined) ? { ids: [params.project.id] } : undefined
         });
-        const importFrom = moment()
+        const now = moment()
             .toDate();
-        const importThrough = moment()
-            .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
-            .toDate();
+        // const importThrough = moment()
+        //     .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
+        //     .toDate();
         const runsAt = new Date();
-        yield Promise.all(sellers.map((seller) => __awaiter(void 0, void 0, void 0, function* () {
-            try {
-                if (Array.isArray(seller.makesOffer)) {
-                    yield Promise.all(seller.makesOffer.map((offer) => __awaiter(void 0, void 0, void 0, function* () {
-                        const taskAttributes = {
-                            name: cinerino.factory.taskName.ImportScreeningEvents,
-                            status: cinerino.factory.taskStatus.Ready,
-                            runsAt: runsAt,
-                            remainingNumberOfTries: 1,
-                            numberOfTried: 0,
-                            executionResults: [],
-                            data: {
-                                project: params.project,
-                                locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
-                                offeredThrough: offer.offeredThrough,
-                                importFrom: importFrom,
-                                importThrough: importThrough
-                            },
-                            project: params.project
-                        };
-                        yield taskRepo.save(taskAttributes);
-                    })));
+        // 1週間ずつインポート
+        // tslint:disable-next-line:prefer-array-literal
+        yield Promise.all([...Array(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS)].map((_, i) => __awaiter(void 0, void 0, void 0, function* () {
+            const importFrom = moment(now)
+                .add(i, 'weeks')
+                .toDate();
+            const importThrough = moment(importFrom)
+                .add(1, 'weeks')
+                .toDate();
+            yield Promise.all(sellers.map((seller) => __awaiter(void 0, void 0, void 0, function* () {
+                try {
+                    if (Array.isArray(seller.makesOffer)) {
+                        yield Promise.all(seller.makesOffer.map((offer) => __awaiter(void 0, void 0, void 0, function* () {
+                            const taskAttributes = {
+                                name: cinerino.factory.taskName.ImportScreeningEvents,
+                                status: cinerino.factory.taskStatus.Ready,
+                                runsAt: runsAt,
+                                remainingNumberOfTries: 1,
+                                numberOfTried: 0,
+                                executionResults: [],
+                                data: {
+                                    project: params.project,
+                                    locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
+                                    offeredThrough: offer.offeredThrough,
+                                    importFrom: importFrom,
+                                    importThrough: importThrough
+                                },
+                                project: params.project
+                            };
+                            yield taskRepo.save(taskAttributes);
+                        })));
+                    }
                 }
-            }
-            catch (error) {
-                console.error(error);
-            }
+                catch (error) {
+                    console.error(error);
+                }
+            })));
         })));
+        // await Promise.all(sellers.map(async (seller) => {
+        //     try {
+        //         if (Array.isArray(seller.makesOffer)) {
+        //             await Promise.all(seller.makesOffer.map(async (offer) => {
+        //                 const taskAttributes: cinerino.factory.task.IAttributes<cinerino.factory.taskName.ImportScreeningEvents> = {
+        //                     name: cinerino.factory.taskName.ImportScreeningEvents,
+        //                     status: cinerino.factory.taskStatus.Ready,
+        //                     runsAt: runsAt,
+        //                     remainingNumberOfTries: 1,
+        //                     numberOfTried: 0,
+        //                     executionResults: [],
+        //                     data: {
+        //                         project: params.project,
+        //                         locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
+        //                         offeredThrough: offer.offeredThrough,
+        //                         importFrom: importFrom,
+        //                         importThrough: importThrough
+        //                     },
+        //                     project: params.project
+        //                 };
+        //                 await taskRepo.save(taskAttributes);
+        //             }));
+        //         }
+        //     } catch (error) {
+        //         console.error(error);
+        //     }
+        // }));
     }), undefined, true);
     debug('job started', job);
 });

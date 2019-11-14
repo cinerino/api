@@ -24,8 +24,8 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
         tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
     });
     let count = 0;
-    const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
-    const INTERVAL_MILLISECONDS = 200;
+    const MAX_NUBMER_OF_PARALLEL_TASKS = 1;
+    const INTERVAL_MILLISECONDS = 1000;
     setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
             return;

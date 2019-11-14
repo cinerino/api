@@ -17,8 +17,8 @@ const connectMongo_1 = require("../../../connectMongo");
 exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     let count = 0;
-    const MAX_NUBMER_OF_PARALLEL_TASKS = 2;
-    const INTERVAL_MILLISECONDS = 200;
+    const MAX_NUBMER_OF_PARALLEL_TASKS = 1;
+    const INTERVAL_MILLISECONDS = 1000;
     setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
             return;
