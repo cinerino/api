@@ -26,4 +26,13 @@ statsRouter.get('/dbStats', (_, res, next) => __awaiter(void 0, void 0, void 0, 
         next(error);
     }
 }));
+statsRouter.get('/versions', (_, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        res.status(http_status_1.OK)
+            .json(process.versions);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 exports.default = statsRouter;

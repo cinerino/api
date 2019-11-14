@@ -19,6 +19,19 @@ statsRouter.get(
         } catch (error) {
             next(error);
         }
-    });
+    }
+);
+
+statsRouter.get(
+    '/versions',
+    async (_, res, next) => {
+        try {
+            res.status(OK)
+                .json(process.versions);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 
 export default statsRouter;
