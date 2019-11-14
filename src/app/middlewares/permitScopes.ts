@@ -15,7 +15,7 @@ export const SCOPE_CUSTOMER = 'customer';
  */
 type IScope = string;
 
-export default (permittedScopes: IScope[]) => {
+export default (specifiedPermittedScopes: IScope[]) => {
     return (req: Request, __: Response, next: NextFunction) => {
         if (process.env.RESOURCE_SERVER_IDENTIFIER === undefined) {
             next(new Error('RESOURCE_SERVER_IDENTIFIER undefined'));
@@ -30,8 +30,13 @@ export default (permittedScopes: IScope[]) => {
             ? /* istanbul ignore next */ process.env.CUSTOMER_ADDITIONAL_PERMITTED_SCOPES.split(',')
             : [];
 
+        let permittedScopes = [...specifiedPermittedScopes];
+
         // SCOPE_ADMINは全アクセス許可
         permittedScopes.push(SCOPE_ADMIN);
+
+        permittedScopes = [...new Set(permittedScopes)];
+        debug('permittedScopes:', permittedScopes);
 
         debug('req.user.scopes:', req.user.scopes);
         req.isAdmin =
@@ -54,8 +59,6 @@ export default (permittedScopes: IScope[]) => {
             permittedScopesWithResourceServerIdentifier.push(...CUSTOMER_ADDITIONAL_PERMITTED_SCOPES);
         }
 
-        debug('permittedScopesWithResourceServerIdentifier:', permittedScopesWithResourceServerIdentifier);
-
         // スコープチェック
         try {
             debug('checking scope requirements...', permittedScopesWithResourceServerIdentifier);
@@ -72,8 +75,6 @@ export default (permittedScopes: IScope[]) => {
 
 /**
  * 所有スコープが許可されたスコープかどうか
- * @param ownedScopes 所有スコープリスト
- * @param permittedScopes 許可スコープリスト
  */
 function isScopesPermitted(ownedScopes: string[], permittedScopes: string[]) {
     if (!Array.isArray(ownedScopes)) {
