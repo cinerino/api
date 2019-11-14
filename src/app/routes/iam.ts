@@ -18,7 +18,7 @@ iamRouter.use(authentication);
  */
 iamRouter.get(
     '/groups',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (_, res, next) => {
         try {
@@ -35,7 +35,7 @@ iamRouter.get(
  */
 iamRouter.get(
     '/roles',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (_, res, next) => {
         try {
@@ -52,7 +52,7 @@ iamRouter.get(
  */
 iamRouter.get(
     '/users',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {
@@ -88,7 +88,7 @@ iamRouter.get(
  */
 iamRouter.get(
     '/users/:id',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {

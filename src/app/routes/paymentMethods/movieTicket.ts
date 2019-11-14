@@ -16,7 +16,7 @@ movieTicketPaymentMethodsRouter.use(authentication);
 
 movieTicketPaymentMethodsRouter.get(
     '',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {

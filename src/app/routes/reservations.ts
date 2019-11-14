@@ -31,7 +31,7 @@ reservationsRouter.use(authentication);
  */
 reservationsRouter.get(
     '',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {
@@ -68,7 +68,7 @@ reservationsRouter.get(
  */
 reservationsRouter.get(
     '/eventReservation/screeningEvent',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {
@@ -104,7 +104,7 @@ reservationsRouter.get(
  */
 reservationsRouter.post(
     '/eventReservation/screeningEvent/findByToken',
-    permitScopes(['admin', 'tokens', 'tokens.read-only']),
+    permitScopes(['tokens', 'tokens.read-only']),
     ...[
         body('token')
             .not()

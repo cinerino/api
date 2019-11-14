@@ -46,7 +46,7 @@ const isNotAdmin = (_, { req }) => !req.isAdmin;
 /**
  * 注文検索
  */
-ordersRouter.get('', permitScopes_1.default(['admin', 'customer', 'orders', 'orders.read-only']), ...[
+ordersRouter.get('', permitScopes_1.default(['customer', 'orders', 'orders.read-only']), ...[
     check_1.query('identifier.$all')
         .optional()
         .isArray(),
@@ -154,7 +154,7 @@ ordersRouter.get('', permitScopes_1.default(['admin', 'customer', 'orders', 'ord
 /**
  * ストリーミングダウンロード
  */
-ordersRouter.get('/download', permitScopes_1.default(['admin']), ...[
+ordersRouter.get('/download', permitScopes_1.default([]), ...[
     check_1.query('orderDateFrom')
         .optional()
         .isISO8601()
@@ -252,7 +252,7 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['customer', 
 /**
  * 注文作成
  */
-ordersRouter.post('', permitScopes_1.default(['admin']), ...[
+ordersRouter.post('', permitScopes_1.default([]), ...[
     check_1.body('orderNumber')
         .not()
         .isEmpty()
@@ -311,7 +311,7 @@ ordersRouter.post('', permitScopes_1.default(['admin']), ...[
 /**
  * 注文配送
  */
-ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
@@ -546,7 +546,7 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
 /**
  * 注文に対するアクション検索
  */
-ordersRouter.get('/:orderNumber/actions', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+ordersRouter.get('/:orderNumber/actions', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const actions = yield actionRepo.searchByOrderNumber({

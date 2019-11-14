@@ -25,7 +25,7 @@ accountPaymentRouter.use(authentication);
 // tslint:disable-next-line:use-default-type-parameter
 accountPaymentRouter.post<ParamsDictionary>(
     '/authorize',
-    permitScopes(['admin', 'customer', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     ...[
         body('object')
             .not()
@@ -195,7 +195,7 @@ accountPaymentRouter.post<ParamsDictionary>(
  */
 accountPaymentRouter.put(
     '/authorize/:actionId/void',
-    permitScopes(['admin', 'customer', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({

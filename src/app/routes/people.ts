@@ -28,7 +28,7 @@ peopleRouter.use(authentication);
  */
 peopleRouter.get(
     '',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {
@@ -63,7 +63,7 @@ peopleRouter.get(
  */
 peopleRouter.get(
     '/:id',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {
@@ -92,7 +92,7 @@ peopleRouter.get(
  */
 peopleRouter.delete(
     '/:id',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {
@@ -178,7 +178,7 @@ peopleRouter.delete(
 // tslint:disable-next-line:use-default-type-parameter
 peopleRouter.get<ParamsDictionary>(
     '/:id/ownershipInfos',
-    permitScopes(['admin']),
+    permitScopes([]),
     ...[
         query('typeOfGood')
             .not()
@@ -251,7 +251,7 @@ peopleRouter.get<ParamsDictionary>(
  */
 peopleRouter.get(
     '/:id/ownershipInfos/creditCards',
-    permitScopes(['admin']),
+    permitScopes([]),
     async (req, res, next) => {
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -297,7 +297,7 @@ peopleRouter.get(
  */
 peopleRouter.delete(
     '/:id/ownershipInfos/creditCards/:cardSeq',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {
@@ -348,7 +348,7 @@ peopleRouter.delete(
  */
 peopleRouter.get(
     '/:id/profile',
-    permitScopes(['admin']),
+    permitScopes([]),
     async (req, res, next) => {
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -390,7 +390,7 @@ peopleRouter.get(
  */
 peopleRouter.patch(
     '/:id/profile',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {

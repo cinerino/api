@@ -26,7 +26,7 @@ tasksRouter.use(authentication);
 // tslint:disable-next-line:use-default-type-parameter
 tasksRouter.post<ParamsDictionary>(
     '/:name',
-    permitScopes(['admin']),
+    permitScopes([]),
     ...[
         body('runsAt')
             .not()
@@ -75,7 +75,7 @@ tasksRouter.post<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 tasksRouter.get<ParamsDictionary>(
     '/:name/:id',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {
@@ -96,7 +96,7 @@ tasksRouter.get<ParamsDictionary>(
  */
 tasksRouter.get(
     '',
-    permitScopes(['admin']),
+    permitScopes([]),
     ...[
         query('runsFrom')
             .optional()

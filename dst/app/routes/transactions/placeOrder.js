@@ -348,7 +348,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatRe
  * @deprecated /payment
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/any', permitScopes_1.default(['admin']), ...[
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/any', permitScopes_1.default([]), ...[
     check_1.body('typeOf')
         .not()
         .isEmpty()
@@ -408,7 +408,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
  * @deprecated /payment
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
         id: req.params.transactionId
@@ -1047,7 +1047,7 @@ placeOrderTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.defaul
 /**
  * 取引検索
  */
-placeOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
+placeOrderTransactionsRouter.get('', permitScopes_1.default([]), ...[
     check_1.query('startFrom')
         .optional()
         .isISO8601()
@@ -1082,7 +1082,7 @@ placeOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
 /**
  * 取引に対するアクション検索
  */
-placeOrderTransactionsRouter.get('/:transactionId/actions', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.get('/:transactionId/actions', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const actions = yield actionRepo.searchByPurpose({
@@ -1101,7 +1101,7 @@ placeOrderTransactionsRouter.get('/:transactionId/actions', permitScopes_1.defau
 /**
  * 取引レポート
  */
-placeOrderTransactionsRouter.get('/report', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.get('/report', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const searchConditions = {

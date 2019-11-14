@@ -49,7 +49,7 @@ const isNotAdmin: CustomValidator = (_, { req }) => !req.isAdmin;
  */
 ordersRouter.get(
     '',
-    permitScopes(['admin', 'customer', 'orders', 'orders.read-only']),
+    permitScopes(['customer', 'orders', 'orders.read-only']),
     ...[
         query('identifier.$all')
             .optional()
@@ -172,7 +172,7 @@ ordersRouter.get(
  */
 ordersRouter.get(
     '/download',
-    permitScopes(['admin']),
+    permitScopes([]),
     ...[
         query('orderDateFrom')
             .optional()
@@ -294,7 +294,7 @@ ordersRouter.post(
  */
 ordersRouter.post(
     '',
-    permitScopes(['admin']),
+    permitScopes([]),
     ...[
         body('orderNumber')
             .not()
@@ -366,7 +366,7 @@ ordersRouter.post(
  */
 ordersRouter.post(
     '/:orderNumber/deliver',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {
@@ -643,7 +643,7 @@ ordersRouter.post<ParamsDictionary>(
  */
 ordersRouter.get(
     '/:orderNumber/actions',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {

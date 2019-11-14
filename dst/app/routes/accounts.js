@@ -29,7 +29,7 @@ accountsRouter.use(authentication_1.default);
 /**
  * 管理者として口座開設
  */
-accountsRouter.post('', permitScopes_1.default(['admin']), ...[
+accountsRouter.post('', permitScopes_1.default([]), ...[
     check_1.body('accountType', 'invalid accountType')
         .not()
         .isEmpty(),
@@ -56,7 +56,7 @@ accountsRouter.post('', permitScopes_1.default(['admin']), ...[
 /**
  * 管理者として口座解約
  */
-accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield cinerino.service.account.close({
             project: req.project,
@@ -99,7 +99,7 @@ const depositAccountRateLimiet = middlewares.rateLimit({
 /**
  * 管理者として口座に入金する
  */
-accountsRouter.post('/transactions/deposit', permitScopes_1.default(['admin']), 
+accountsRouter.post('/transactions/deposit', permitScopes_1.default([]), 
 // 互換性維持のため
 (req, _, next) => {
     if (req.body.object === undefined || req.body.object === null) {

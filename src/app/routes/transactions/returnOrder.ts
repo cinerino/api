@@ -32,7 +32,7 @@ function escapeRegExp(params: string) {
 
 returnOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['admin', 'transactions', 'pos']),
+    permitScopes(['transactions', 'pos']),
     ...[
         body('expires')
             .not()
@@ -140,7 +140,7 @@ returnOrderTransactionsRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 returnOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/confirm',
-    permitScopes(['admin', 'transactions', 'pos']),
+    permitScopes(['transactions', 'pos']),
     ...[
         // Eメールカスタマイズのバリデーション
         body([
@@ -208,7 +208,7 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
  */
 returnOrderTransactionsRouter.get(
     '',
-    permitScopes(['admin']),
+    permitScopes([]),
     ...[
         query('startFrom')
             .optional()

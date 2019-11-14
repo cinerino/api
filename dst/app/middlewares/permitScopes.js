@@ -8,7 +8,7 @@ const createDebug = require("debug");
 const debug = createDebug('cinerino-api:middlewares');
 exports.SCOPE_ADMIN = 'admin';
 exports.SCOPE_CUSTOMER = 'customer';
-exports.default = (permittedScopes) => {
+exports.default = (specifiedPermittedScopes) => {
     return (req, __, next) => {
         if (process.env.RESOURCE_SERVER_IDENTIFIER === undefined) {
             next(new Error('RESOURCE_SERVER_IDENTIFIER undefined'));
@@ -20,8 +20,11 @@ exports.default = (permittedScopes) => {
         const CUSTOMER_ADDITIONAL_PERMITTED_SCOPES = (process.env.CUSTOMER_ADDITIONAL_PERMITTED_SCOPES !== undefined)
             ? /* istanbul ignore next */ process.env.CUSTOMER_ADDITIONAL_PERMITTED_SCOPES.split(',')
             : [];
+        let permittedScopes = [...specifiedPermittedScopes];
         // SCOPE_ADMINは全アクセス許可
         permittedScopes.push(exports.SCOPE_ADMIN);
+        permittedScopes = [...new Set(permittedScopes)];
+        debug('permittedScopes:', permittedScopes);
         debug('req.user.scopes:', req.user.scopes);
         req.isAdmin =
             req.user.scopes.indexOf(`${process.env.RESOURCE_SERVER_IDENTIFIER}/${exports.SCOPE_ADMIN}`) >= 0
@@ -39,7 +42,6 @@ exports.default = (permittedScopes) => {
         if (permittedScopes.indexOf(exports.SCOPE_CUSTOMER) >= 0) {
             permittedScopesWithResourceServerIdentifier.push(...CUSTOMER_ADDITIONAL_PERMITTED_SCOPES);
         }
-        debug('permittedScopesWithResourceServerIdentifier:', permittedScopesWithResourceServerIdentifier);
         // スコープチェック
         try {
             debug('checking scope requirements...', permittedScopesWithResourceServerIdentifier);
@@ -57,8 +59,6 @@ exports.default = (permittedScopes) => {
 };
 /**
  * 所有スコープが許可されたスコープかどうか
- * @param ownedScopes 所有スコープリスト
- * @param permittedScopes 許可スコープリスト
  */
 function isScopesPermitted(ownedScopes, permittedScopes) {
     if (!Array.isArray(ownedScopes)) {

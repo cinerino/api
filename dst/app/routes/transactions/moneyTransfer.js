@@ -37,7 +37,7 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     state: ''
 });
 moneyTransferTransactionsRouter.use(authentication_1.default);
-moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'customer', 'transactions']), ...[
+moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['customer', 'transactions']), ...[
     check_1.body('expires', 'invalid expires')
         .not()
         .isEmpty()
@@ -135,7 +135,7 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['admin', 
         next(error);
     }
 }));
-moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin', 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.MoneyTransfer,
         id: req.params.transactionId
@@ -187,7 +187,7 @@ moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.de
 /**
  * 取引を明示的に中止
  */
-moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.default(['admin', 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.MoneyTransfer,
         id: req.params.transactionId
@@ -224,7 +224,7 @@ moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.def
 /**
  * 取引検索
  */
-moneyTransferTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
+moneyTransferTransactionsRouter.get('', permitScopes_1.default([]), ...[
     check_1.query('startFrom')
         .optional()
         .isISO8601()
@@ -259,7 +259,7 @@ moneyTransferTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
 /**
  * 取引に対するアクション検索
  */
-moneyTransferTransactionsRouter.get('/:transactionId/actions', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+moneyTransferTransactionsRouter.get('/:transactionId/actions', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const actions = yield actionRepo.searchByPurpose({

@@ -31,7 +31,7 @@ peopleRouter.use(authentication_1.default);
 /**
  * 会員検索
  */
-peopleRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.get('', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -60,7 +60,7 @@ peopleRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (re
 /**
  * IDで検索
  */
-peopleRouter.get('/:id', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.get('/:id', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -83,7 +83,7 @@ peopleRouter.get('/:id', permitScopes_1.default(['admin']), validator_1.default,
 /**
  * IDで削除
  */
-peopleRouter.delete('/:id', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.delete('/:id', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -150,7 +150,7 @@ peopleRouter.delete('/:id', permitScopes_1.default(['admin']), validator_1.defau
  * 所有権検索
  */
 // tslint:disable-next-line:use-default-type-parameter
-peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['admin']), ...[
+peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default([]), ...[
     check_1.query('typeOfGood')
         .not()
         .isEmpty(),
@@ -202,7 +202,7 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['admin']), ...[
 /**
  * クレジットカード検索
  */
-peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['admin']), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default([]), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -239,7 +239,7 @@ peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['adm
 /**
  * 会員クレジットカード削除
  */
-peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -280,7 +280,7 @@ peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.d
 /**
  * プロフィール検索
  */
-peopleRouter.get('/:id/profile', permitScopes_1.default(['admin']), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.get('/:id/profile', permitScopes_1.default([]), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -313,7 +313,7 @@ peopleRouter.get('/:id/profile', permitScopes_1.default(['admin']), (req, res, n
 /**
  * プロフィール更新
  */
-peopleRouter.patch('/:id/profile', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.patch('/:id/profile', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });

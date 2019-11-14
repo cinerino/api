@@ -17,7 +17,7 @@ projectsRouter.use(authentication);
  */
 projectsRouter.get(
     '',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {
@@ -48,7 +48,7 @@ projectsRouter.get(
  */
 projectsRouter.get(
     '/:id',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {

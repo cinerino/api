@@ -25,7 +25,7 @@ movieRouter.use(authentication);
  */
 movieRouter.get(
     '',
-    permitScopes(['admin', 'creativeWorks', 'creativeWorks.read-only']),
+    permitScopes(['creativeWorks', 'creativeWorks.read-only']),
     validator,
     async (req, res, next) => {
         try {

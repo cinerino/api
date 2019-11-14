@@ -25,7 +25,7 @@ accountsRouter.use(authentication);
  */
 accountsRouter.post(
     '',
-    permitScopes(['admin']),
+    permitScopes([]),
     ...[
         body('accountType', 'invalid accountType')
             .not()
@@ -59,7 +59,7 @@ accountsRouter.post(
  */
 accountsRouter.put(
     '/:accountType/:accountNumber/close',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {
@@ -112,7 +112,7 @@ const depositAccountRateLimiet = middlewares.rateLimit({
  */
 accountsRouter.post(
     '/transactions/deposit',
-    permitScopes(['admin']),
+    permitScopes([]),
     // 互換性維持のため
     (req, _, next) => {
         if (req.body.object === undefined || req.body.object === null) {

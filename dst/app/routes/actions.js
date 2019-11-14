@@ -27,7 +27,7 @@ actionsRouter.use(authentication_1.default);
 /**
  * アクション検索
  */
-actionsRouter.get('', permitScopes_1.default(['admin']), ...[
+actionsRouter.get('', permitScopes_1.default([]), ...[
     check_1.query('startFrom')
         .optional()
         .isISO8601()

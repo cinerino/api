@@ -29,7 +29,7 @@ anyPaymentRouter.use(authentication_1.default);
  * 汎用決済承認
  */
 // tslint:disable-next-line:use-default-type-parameter
-anyPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'pos']), ...[
+anyPaymentRouter.post('/authorize', permitScopes_1.default(['pos']), ...[
     check_1.body('object')
         .not()
         .isEmpty(),
@@ -92,7 +92,7 @@ anyPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'pos']), ..
 /**
  * 汎用決済承認取消
  */
-anyPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+anyPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id

@@ -26,7 +26,7 @@ authorizationsRouter.use(authentication_1.default);
 /**
  * 承認検索
  */
-authorizationsRouter.get('', permitScopes_1.default(['admin']), ...[
+authorizationsRouter.get('', permitScopes_1.default([]), ...[
     check_1.query('validFrom')
         .optional()
         .isISO8601()

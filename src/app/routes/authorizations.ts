@@ -21,7 +21,7 @@ authorizationsRouter.use(authentication);
  */
 authorizationsRouter.get(
     '',
-    permitScopes(['admin']),
+    permitScopes([]),
     ...[
         query('validFrom')
             .optional()

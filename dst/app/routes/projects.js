@@ -23,7 +23,7 @@ projectsRouter.use(authentication_1.default);
 /**
  * プロジェクト検索
  */
-projectsRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+projectsRouter.get('', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const searchCoinditions = Object.assign(Object.assign({}, req.query), { 
             // tslint:disable-next-line:no-magic-numbers
@@ -41,7 +41,7 @@ projectsRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (
 /**
  * IDでプロジェクト検索
  */
-projectsRouter.get('/:id', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+projectsRouter.get('/:id', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const seller = yield projectRepo.findById({ id: req.params.id }, undefined);

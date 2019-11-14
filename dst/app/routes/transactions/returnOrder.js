@@ -32,7 +32,7 @@ returnOrderTransactionsRouter.use(authentication_1.default);
 function escapeRegExp(params) {
     return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
 }
-returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 'transactions', 'pos']), ...[
+returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions', 'pos']), ...[
     check_1.body('expires')
         .not()
         .isEmpty()
@@ -125,7 +125,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin', 't
     }
 }));
 // tslint:disable-next-line:use-default-type-parameter
-returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin', 'transactions', 'pos']), ...[
+returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['transactions', 'pos']), ...[
     // Eメールカスタマイズのバリデーション
     check_1.body([
         'potentialActions.returnOrder.potentialActions.refundCreditCard.potentialActions.sendEmailMessage.object.about',
@@ -180,7 +180,7 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
 /**
  * 取引検索
  */
-returnOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
+returnOrderTransactionsRouter.get('', permitScopes_1.default([]), ...[
     check_1.query('startFrom')
         .optional()
         .isISO8601()

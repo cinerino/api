@@ -24,7 +24,7 @@ iamRouter.use(authentication_1.default);
 /**
  * IAMグループ検索
  */
-iamRouter.get('/groups', permitScopes_1.default(['admin']), validator_1.default, (_, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+iamRouter.get('/groups', permitScopes_1.default([]), validator_1.default, (_, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         res.set('X-Total-Count', '0');
         res.json([]);
@@ -36,7 +36,7 @@ iamRouter.get('/groups', permitScopes_1.default(['admin']), validator_1.default,
 /**
  * IAMロール検索
  */
-iamRouter.get('/roles', permitScopes_1.default(['admin']), validator_1.default, (_, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+iamRouter.get('/roles', permitScopes_1.default([]), validator_1.default, (_, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         res.set('X-Total-Count', '0');
         res.json([]);
@@ -48,7 +48,7 @@ iamRouter.get('/roles', permitScopes_1.default(['admin']), validator_1.default, 
 /**
  * IAMユーザー検索
  */
-iamRouter.get('/users', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+iamRouter.get('/users', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -77,7 +77,7 @@ iamRouter.get('/users', permitScopes_1.default(['admin']), validator_1.default, 
 /**
  * IDでユーザー検索
  */
-iamRouter.get('/users/:id', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+iamRouter.get('/users/:id', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });

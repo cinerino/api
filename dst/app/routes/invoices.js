@@ -26,7 +26,7 @@ invoicesRouter.use(authentication_1.default);
 /**
  * インボイス検索
  */
-invoicesRouter.get('', permitScopes_1.default(['admin']), ...[
+invoicesRouter.get('', permitScopes_1.default([]), ...[
     check_1.query('createdFrom')
         .optional()
         .isISO8601()

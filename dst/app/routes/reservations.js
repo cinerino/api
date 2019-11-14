@@ -32,7 +32,7 @@ reservationsRouter.use(authentication_1.default);
 /**
  * 管理者として予約検索
  */
-reservationsRouter.get('', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+reservationsRouter.get('', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -59,7 +59,7 @@ reservationsRouter.get('', permitScopes_1.default(['admin']), validator_1.defaul
  * 管理者として予約検索
  * @deprecated Use /reservations
  */
-reservationsRouter.get('/eventReservation/screeningEvent', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+reservationsRouter.get('/eventReservation/screeningEvent', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -85,7 +85,7 @@ reservationsRouter.get('/eventReservation/screeningEvent', permitScopes_1.defaul
 /**
  * トークンで予約照会
  */
-reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitScopes_1.default(['admin', 'tokens', 'tokens.read-only']), ...[
+reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitScopes_1.default(['tokens', 'tokens.read-only']), ...[
     check_1.body('token')
         .not()
         .isEmpty()

@@ -21,7 +21,7 @@ invoicesRouter.use(authentication);
  */
 invoicesRouter.get(
     '',
-    permitScopes(['admin']),
+    permitScopes([]),
     ...[
         query('createdFrom')
             .optional()

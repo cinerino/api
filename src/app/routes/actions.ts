@@ -22,7 +22,7 @@ actionsRouter.use(authentication);
  */
 actionsRouter.get(
     '',
-    permitScopes(['admin']),
+    permitScopes([]),
     ...[
         query('startFrom')
             .optional()

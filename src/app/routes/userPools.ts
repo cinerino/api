@@ -20,7 +20,7 @@ const userPoolsRouter = Router();
 userPoolsRouter.use(authentication);
 userPoolsRouter.get(
     '/:userPoolId',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {
@@ -50,7 +50,7 @@ userPoolsRouter.get(
 );
 userPoolsRouter.get(
     '/:userPoolId/clients',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {
@@ -83,7 +83,7 @@ userPoolsRouter.get(
 );
 userPoolsRouter.get(
     '/:userPoolId/clients/:clientId',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {

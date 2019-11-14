@@ -35,7 +35,7 @@ moneyTransferTransactionsRouter.use(authentication);
 
 moneyTransferTransactionsRouter.post(
     '/start',
-    permitScopes(['admin', 'customer', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     ...[
         body('expires', 'invalid expires')
             .not()
@@ -152,7 +152,7 @@ moneyTransferTransactionsRouter.post(
 
 moneyTransferTransactionsRouter.put(
     '/:transactionId/confirm',
-    permitScopes(['admin', 'customer', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -214,7 +214,7 @@ moneyTransferTransactionsRouter.put(
  */
 moneyTransferTransactionsRouter.put(
     '/:transactionId/cancel',
-    permitScopes(['admin', 'customer', 'transactions']),
+    permitScopes(['customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -261,7 +261,7 @@ moneyTransferTransactionsRouter.put(
  */
 moneyTransferTransactionsRouter.get(
     '',
-    permitScopes(['admin']),
+    permitScopes([]),
     ...[
         query('startFrom')
             .optional()
@@ -307,7 +307,7 @@ moneyTransferTransactionsRouter.get(
  */
 moneyTransferTransactionsRouter.get(
     '/:transactionId/actions',
-    permitScopes(['admin']),
+    permitScopes([]),
     validator,
     async (req, res, next) => {
         try {

@@ -24,7 +24,7 @@ sellersRouter.use(authentication);
  */
 sellersRouter.post(
     '',
-    permitScopes(['admin', 'sellers']),
+    permitScopes(['sellers']),
     ...[
         body('typeOf')
             .not()
@@ -151,7 +151,7 @@ sellersRouter.get(
 // tslint:disable-next-line:use-default-type-parameter
 sellersRouter.put<ParamsDictionary>(
     '/:id',
-    permitScopes(['admin', 'sellers']),
+    permitScopes(['sellers']),
     ...[
         body('typeOf')
             .not()
@@ -220,7 +220,7 @@ sellersRouter.put<ParamsDictionary>(
  */
 sellersRouter.delete(
     '/:id',
-    permitScopes(['admin', 'sellers']),
+    permitScopes(['sellers']),
     validator,
     async (req, res, next) => {
         try {

@@ -27,7 +27,7 @@ sellersRouter.use(authentication_1.default);
 /**
  * 販売者作成
  */
-sellersRouter.post('', permitScopes_1.default(['admin', 'sellers']), ...[
+sellersRouter.post('', permitScopes_1.default(['sellers']), ...[
     check_1.body('typeOf')
         .not()
         .isEmpty()
@@ -123,7 +123,7 @@ sellersRouter.get('/:id', permitScopes_1.default(['customer', 'sellers', 'seller
  * 販売者更新
  */
 // tslint:disable-next-line:use-default-type-parameter
-sellersRouter.put('/:id', permitScopes_1.default(['admin', 'sellers']), ...[
+sellersRouter.put('/:id', permitScopes_1.default(['sellers']), ...[
     check_1.body('typeOf')
         .not()
         .isEmpty()
@@ -181,7 +181,7 @@ sellersRouter.put('/:id', permitScopes_1.default(['admin', 'sellers']), ...[
 /**
  * 販売者削除
  */
-sellersRouter.delete('/:id', permitScopes_1.default(['admin', 'sellers']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+sellersRouter.delete('/:id', permitScopes_1.default(['sellers']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         yield sellerRepo.deleteById({

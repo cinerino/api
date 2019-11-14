@@ -27,7 +27,7 @@ const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServicePr
 });
 const userPoolsRouter = express_1.Router();
 userPoolsRouter.use(authentication_1.default);
-userPoolsRouter.get('/:userPoolId', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+userPoolsRouter.get('/:userPoolId', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userPool = yield new Promise((resolve, reject) => {
             cognitoIdentityServiceProvider.describeUserPool({
@@ -52,7 +52,7 @@ userPoolsRouter.get('/:userPoolId', permitScopes_1.default(['admin']), validator
         next(error);
     }
 }));
-userPoolsRouter.get('/:userPoolId/clients', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+userPoolsRouter.get('/:userPoolId/clients', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const clients = yield new Promise((resolve, reject) => {
             cognitoIdentityServiceProvider.listUserPoolClients({
@@ -80,7 +80,7 @@ userPoolsRouter.get('/:userPoolId/clients', permitScopes_1.default(['admin']), v
         next(error);
     }
 }));
-userPoolsRouter.get('/:userPoolId/clients/:clientId', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+userPoolsRouter.get('/:userPoolId/clients/:clientId', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const client = yield new Promise((resolve, reject) => {
             cognitoIdentityServiceProvider.describeUserPoolClient({

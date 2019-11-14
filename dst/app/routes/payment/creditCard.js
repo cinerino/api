@@ -33,7 +33,7 @@ creditCardPaymentRouter.use(authentication_1.default);
  * クレジットカード決済承認
  */
 // tslint:disable-next-line:use-default-type-parameter
-creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'customer', 'transactions']), ...[
+creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['customer', 'transactions']), ...[
     check_1.body('object')
         .not()
         .isEmpty(),
@@ -113,7 +113,7 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['admin', 'cus
 /**
  * クレジットカード決済承認取消
  */
-creditCardPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['admin', 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+creditCardPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id

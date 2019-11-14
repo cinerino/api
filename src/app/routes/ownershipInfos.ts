@@ -25,7 +25,7 @@ ownershipInfosRouter.use(authentication);
  */
 ownershipInfosRouter.get(
     '',
-    permitScopes(['admin']),
+    permitScopes([]),
     ...[
         query('ownedFrom')
             .optional()
@@ -117,7 +117,7 @@ ownershipInfosRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 ownershipInfosRouter.get<ParamsDictionary>(
     '/:id/actions/checkToken',
-    permitScopes(['admin']),
+    permitScopes([]),
     ...[
         query('startFrom')
             .optional()
