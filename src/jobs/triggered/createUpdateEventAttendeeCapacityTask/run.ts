@@ -13,8 +13,11 @@ const debug = createDebug('cinerino-api:jobs');
 /**
  * 上映イベントを何週間後までインポートするか
  */
-const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS !== undefined)
+const IMPORT_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS !== undefined)
     ? Number(process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS)
+    : 1;
+const IMPORT_EVENTS_PER_WEEKS = (process.env.IMPORT_EVENTS_PER_WEEKS !== undefined)
+    ? Number(process.env.IMPORT_EVENTS_PER_WEEKS)
     : 1;
 
 // tslint:disable-next-line:max-func-body-length
@@ -53,21 +56,17 @@ export default async (params: {
             const sellers = await sellerRepo.search({
                 project: (params.project !== undefined) ? { ids: [params.project.id] } : undefined
             });
-            const now = moment()
-                .toDate();
-            // const importThrough = moment()
-            //     .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
-            //     .toDate();
-            const runsAt = new Date();
+            const now = new Date();
+            const runsAt = now;
 
             // 1週間ずつインポート
             // tslint:disable-next-line:prefer-array-literal
-            await Promise.all([...Array(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS)].map(async (_, i) => {
+            await Promise.all([...Array(Math.ceil(IMPORT_EVENTS_IN_WEEKS / IMPORT_EVENTS_PER_WEEKS))].map(async (_, i) => {
                 const importFrom = moment(now)
                     .add(i, 'weeks')
                     .toDate();
                 const importThrough = moment(importFrom)
-                    .add(1, 'weeks')
+                    .add(IMPORT_EVENTS_PER_WEEKS, 'weeks')
                     .toDate();
 
                 await Promise.all(sellers.map(async (seller) => {
@@ -100,36 +99,6 @@ export default async (params: {
                     }
                 }));
             }));
-
-            // await Promise.all(sellers.map(async (seller) => {
-            //     try {
-            //         if (Array.isArray(seller.makesOffer)) {
-            //             await Promise.all(seller.makesOffer.map(async (offer) => {
-            //                 const taskAttributes:
-            //                     cinerino.factory.task.IAttributes<cinerino.factory.taskName.UpdateEventAttendeeCapacity>
-            //                     = {
-            //                     name: cinerino.factory.taskName.UpdateEventAttendeeCapacity,
-            //                     status: cinerino.factory.taskStatus.Ready,
-            //                     runsAt: runsAt,
-            //                     remainingNumberOfTries: 1,
-            //                     numberOfTried: 0,
-            //                     executionResults: [],
-            //                     data: {
-            //                         project: params.project,
-            //                         locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
-            //                         offeredThrough: offer.offeredThrough,
-            //                         importFrom: importFrom,
-            //                         importThrough: importThrough
-            //                     },
-            //                     project: params.project
-            //                 };
-            //                 await taskRepo.save(taskAttributes);
-            //             }));
-            //         }
-            //     } catch (error) {
-            //         console.error(error);
-            //     }
-            // }));
         },
         undefined,
         true
