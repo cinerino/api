@@ -177,11 +177,11 @@ eventsRouter.get('/:id/offers/ticket', permitScopes_1.default(['customer', 'even
     check_1.query('seller')
         .not()
         .isEmpty()
-        .withMessage((_, __) => 'required'),
+        .withMessage(() => 'required'),
     check_1.query('store')
         .not()
         .isEmpty()
-        .withMessage((_, __) => 'required')
+        .withMessage(() => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const eventRepo = new cinerino.repository.Event(mongoose.connection);

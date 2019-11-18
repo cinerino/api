@@ -218,11 +218,11 @@ eventsRouter.get<ParamsDictionary>(
         query('seller')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required'),
+            .withMessage(() => 'required'),
         query('store')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
+            .withMessage(() => 'required')
     ],
     validator,
     async (req, res, next) => {

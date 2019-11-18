@@ -21,6 +21,14 @@ const redis = require("../../../redis");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
+const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const screeningEventRouter = express_1.Router();
 /**
  * イベント検索
@@ -93,11 +101,7 @@ screeningEventRouter.get('', permitScopes_1.default(['customer', 'events', 'even
             const searchEventsResult = yield cinerino.service.offer.searchEvents({
                 project: req.project,
                 conditions: searchConditions
-            })({
-                event: eventRepo,
-                attendeeCapacity: attendeeCapacityRepo,
-                project: projectRepo
-            });
+            })(Object.assign({ attendeeCapacity: attendeeCapacityRepo, project: projectRepo }, (USE_EVENT_REPO) ? { event: eventRepo } : undefined));
             events = searchEventsResult.data;
             totalCount = searchEventsResult.totalCount;
         }
@@ -115,6 +119,7 @@ screeningEventRouter.get('/:id', permitScopes_1.default(['customer', 'events', '
     try {
         const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         let event;
         // Cinemasunshine対応
         if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
@@ -125,7 +130,20 @@ screeningEventRouter.get('/:id', permitScopes_1.default(['customer', 'events', '
             });
         }
         else {
-            event = yield eventRepo.findById({ id: req.params.id });
+            if (USE_EVENT_REPO) {
+                event = yield eventRepo.findById({ id: req.params.id });
+            }
+            else {
+                const project = yield projectRepo.findById({ id: req.project.id });
+                if (project.settings === undefined || project.settings.chevre === undefined) {
+                    throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
+                }
+                const eventService = new cinerino.chevre.service.Event({
+                    endpoint: project.settings.chevre.endpoint,
+                    auth: chevreAuthClient
+                });
+                event = yield eventService.findById({ id: req.params.id });
+            }
         }
         res.json(event);
     }
@@ -143,10 +161,7 @@ screeningEventRouter.get('/:id/offers', permitScopes_1.default(['customer', 'eve
         const offers = yield cinerino.service.offer.searchEventOffers({
             project: req.project,
             event: { id: req.params.id }
-        })({
-            event: eventRepo,
-            project: projectRepo
-        });
+        })(Object.assign({ project: projectRepo }, (USE_EVENT_REPO) ? { event: eventRepo } : undefined));
         res.json(offers);
     }
     catch (error) {
@@ -161,11 +176,11 @@ screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['customer
     check_1.query('seller')
         .not()
         .isEmpty()
-        .withMessage((_, __) => 'required'),
+        .withMessage(() => 'required'),
     check_1.query('store')
         .not()
         .isEmpty()
-        .withMessage((_, __) => 'required')
+        .withMessage(() => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
@@ -176,11 +191,7 @@ screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['customer
             event: { id: req.params.id },
             seller: req.query.seller,
             store: req.query.store
-        })({
-            event: eventRepo,
-            project: projectRepo,
-            seller: sellerRepo
-        });
+        })(Object.assign({ project: projectRepo, seller: sellerRepo }, (USE_EVENT_REPO) ? { event: eventRepo } : undefined));
         res.json(offers);
     }
     catch (error) {
