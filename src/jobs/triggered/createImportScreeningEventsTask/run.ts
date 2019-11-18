@@ -16,8 +16,8 @@ const debug = createDebug('cinerino-api:jobs');
 /**
  * 上映イベントを何週間後までインポートするか
  */
-const IMPORT_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS !== undefined)
-    ? Number(process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS)
+const IMPORT_EVENTS_IN_WEEKS = (process.env.IMPORT_EVENTS_IN_WEEKS !== undefined)
+    ? Number(process.env.IMPORT_EVENTS_IN_WEEKS)
     : 1;
 const IMPORT_EVENTS_PER_WEEKS = (process.env.IMPORT_EVENTS_PER_WEEKS !== undefined)
     ? Number(process.env.IMPORT_EVENTS_PER_WEEKS)
