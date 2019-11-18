@@ -46,7 +46,21 @@ const isNotAdmin = (_, { req }) => !req.isAdmin;
 /**
  * 注文検索
  */
-ordersRouter.get('', permitScopes_1.default(['customer', 'orders', 'orders.read-only']), ...[
+ordersRouter.get('', permitScopes_1.default(['customer', 'orders', 'orders.read-only']), 
+// 互換性維持のため
+(req, _, next) => {
+    const now = moment();
+    if (typeof req.query.orderDateThrough !== 'string') {
+        req.query.orderDateThrough = moment(now)
+            .toISOString();
+    }
+    if (typeof req.query.orderDateFrom !== 'string') {
+        req.query.orderDateFrom = moment(now)
+            .add(-1, 'months') // とりあえず直近1カ月をデフォルト動作に設定
+            .toISOString();
+    }
+    next();
+}, ...[
     check_1.query('identifier.$all')
         .optional()
         .isArray(),
@@ -78,11 +92,13 @@ ordersRouter.get('', permitScopes_1.default(['customer', 'orders', 'orders.read-
         .isString()
         .isLength({ max: 512 }),
     check_1.query('orderDateFrom')
-        .optional()
+        .not()
+        .isEmpty()
         .isISO8601()
         .toDate(),
     check_1.query('orderDateThrough')
-        .optional()
+        .not()
+        .isEmpty()
         .isISO8601()
         .toDate(),
     check_1.query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
@@ -154,13 +170,29 @@ ordersRouter.get('', permitScopes_1.default(['customer', 'orders', 'orders.read-
 /**
  * ストリーミングダウンロード
  */
-ordersRouter.get('/download', permitScopes_1.default([]), ...[
+ordersRouter.get('/download', permitScopes_1.default([]), 
+// 互換性維持のため
+(req, _, next) => {
+    const now = moment();
+    if (typeof req.query.orderDateThrough !== 'string') {
+        req.query.orderDateThrough = moment(now)
+            .toISOString();
+    }
+    if (typeof req.query.orderDateFrom !== 'string') {
+        req.query.orderDateFrom = moment(now)
+            .add(-1, 'months') // とりあえず直近1カ月をデフォルト動作に設定
+            .toISOString();
+    }
+    next();
+}, ...[
     check_1.query('orderDateFrom')
-        .optional()
+        .not()
+        .isEmpty()
         .isISO8601()
         .toDate(),
     check_1.query('orderDateThrough')
-        .optional()
+        .not()
+        .isEmpty()
         .isISO8601()
         .toDate(),
     check_1.query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')

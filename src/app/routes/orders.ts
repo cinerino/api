@@ -50,6 +50,23 @@ const isNotAdmin: CustomValidator = (_, { req }) => !req.isAdmin;
 ordersRouter.get(
     '',
     permitScopes(['customer', 'orders', 'orders.read-only']),
+    // 互換性維持のため
+    (req, _, next) => {
+        const now = moment();
+
+        if (typeof req.query.orderDateThrough !== 'string') {
+            req.query.orderDateThrough = moment(now)
+                .toISOString();
+        }
+
+        if (typeof req.query.orderDateFrom !== 'string') {
+            req.query.orderDateFrom = moment(now)
+                .add(-1, 'months') // とりあえず直近1カ月をデフォルト動作に設定
+                .toISOString();
+        }
+
+        next();
+    },
     ...[
         query('identifier.$all')
             .optional()
@@ -82,11 +99,13 @@ ordersRouter.get(
             .isString()
             .isLength({ max: 512 }),
         query('orderDateFrom')
-            .optional()
+            .not()
+            .isEmpty()
             .isISO8601()
             .toDate(),
         query('orderDateThrough')
-            .optional()
+            .not()
+            .isEmpty()
             .isISO8601()
             .toDate(),
         query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
@@ -173,13 +192,32 @@ ordersRouter.get(
 ordersRouter.get(
     '/download',
     permitScopes([]),
+    // 互換性維持のため
+    (req, _, next) => {
+        const now = moment();
+
+        if (typeof req.query.orderDateThrough !== 'string') {
+            req.query.orderDateThrough = moment(now)
+                .toISOString();
+        }
+
+        if (typeof req.query.orderDateFrom !== 'string') {
+            req.query.orderDateFrom = moment(now)
+                .add(-1, 'months') // とりあえず直近1カ月をデフォルト動作に設定
+                .toISOString();
+        }
+
+        next();
+    },
     ...[
         query('orderDateFrom')
-            .optional()
+            .not()
+            .isEmpty()
             .isISO8601()
             .toDate(),
         query('orderDateThrough')
-            .optional()
+            .not()
+            .isEmpty()
             .isISO8601()
             .toDate(),
         query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
