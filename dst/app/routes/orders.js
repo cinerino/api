@@ -100,7 +100,19 @@ ordersRouter.get('', permitScopes_1.default(['customer', 'orders', 'orders.read-
         .not()
         .isEmpty()
         .isISO8601()
-        .toDate(),
+        .toDate()
+        .custom((value, { req }) => {
+        // 注文期間指定を限定
+        const orderDateThrough = moment(value);
+        if (req.query !== undefined) {
+            const orderDateThroughExpectedToBe = moment(req.query.orderDateFrom)
+                .add(1, 'months');
+            if (orderDateThrough.isAfter(orderDateThroughExpectedToBe)) {
+                throw new Error('Order date range too large');
+            }
+        }
+        return true;
+    }),
     check_1.query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
         .optional()
         .isISO8601()
