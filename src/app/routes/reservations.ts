@@ -36,6 +36,18 @@ reservationsRouter.get(
     (req, _, next) => {
         const now = moment();
 
+        if (typeof req.query.bookingThrough !== 'string') {
+            req.query.bookingThrough = moment(now)
+                .toISOString();
+        }
+
+        if (typeof req.query.bookingFrom !== 'string') {
+            req.query.bookingFrom = moment(now)
+                // tslint:disable-next-line:no-magic-numbers
+                .add(-1, 'months') // とりあえず直近1カ月をデフォルト動作に設定
+                .toISOString();
+        }
+
         if (typeof req.query.modifiedThrough !== 'string') {
             req.query.modifiedThrough = moment(now)
                 .toISOString();
@@ -51,6 +63,29 @@ reservationsRouter.get(
         next();
     },
     ...[
+        query('bookingFrom')
+            .not()
+            .isEmpty()
+            .isISO8601()
+            .toDate(),
+        query('bookingThrough')
+            .not()
+            .isEmpty()
+            .isISO8601()
+            .toDate()
+            .custom((value, { req }) => {
+                // 期間指定を限定
+                const bookingThrough = moment(value);
+                if (req.query !== undefined) {
+                    const bookingThroughExpectedToBe = moment(req.query.bookingFrom)
+                        .add(1, 'months');
+                    if (bookingThrough.isAfter(bookingThroughExpectedToBe)) {
+                        throw new Error('Booking time range too large');
+                    }
+                }
+
+                return true;
+            }),
         query('modifiedFrom')
             .not()
             .isEmpty()
