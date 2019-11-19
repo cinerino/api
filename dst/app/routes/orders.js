@@ -180,6 +180,65 @@ ordersRouter.get('', permitScopes_1.default(['customer', 'orders', 'orders.read-
     }
 }));
 /**
+ * 注文作成
+ */
+ordersRouter.post('', permitScopes_1.default([]), ...[
+    check_1.body('orderNumber')
+        .not()
+        .isEmpty()
+        .withMessage((_, __) => 'required')
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        const taskRepo = new cinerino.repository.Task(mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+        const orderNumber = req.body.orderNumber;
+        // 注文検索
+        const orders = yield orderRepo.search({
+            limit: 1,
+            project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
+            orderNumbers: [orderNumber]
+        });
+        let order = orders.shift();
+        // 注文未作成であれば作成
+        if (order === undefined) {
+            // 注文取引検索
+            const placeOrderTransactions = yield transactionRepo.search({
+                limit: 1,
+                typeOf: cinerino.factory.transactionType.PlaceOrder,
+                result: { order: { orderNumbers: [orderNumber] } }
+            });
+            const placeOrderTransaction = placeOrderTransactions.shift();
+            if (placeOrderTransaction === undefined) {
+                throw new cinerino.factory.errors.NotFound('Transaction');
+            }
+            const transactionResult = placeOrderTransaction.result;
+            const orderActionAttributes = {
+                agent: req.agent,
+                object: transactionResult.order,
+                potentialActions: {},
+                project: placeOrderTransaction.project,
+                typeOf: cinerino.factory.actionType.OrderAction
+            };
+            yield cinerino.service.order.placeOrder(orderActionAttributes)({
+                action: actionRepo,
+                invoice: invoiceRepo,
+                order: orderRepo,
+                task: taskRepo,
+                transaction: transactionRepo
+            });
+            order =
+                placeOrderTransaction.result.order;
+        }
+        res.json(order);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
  * ストリーミングダウンロード
  */
 ordersRouter.get('/download', permitScopes_1.default([]), 
@@ -294,107 +353,6 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['customer', 
     }
 }));
 /**
- * 注文作成
- */
-ordersRouter.post('', permitScopes_1.default([]), ...[
-    check_1.body('orderNumber')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required')
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
-        const orderRepo = new cinerino.repository.Order(mongoose.connection);
-        const taskRepo = new cinerino.repository.Task(mongoose.connection);
-        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        const orderNumber = req.body.orderNumber;
-        // 注文検索
-        const orders = yield orderRepo.search({
-            limit: 1,
-            project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
-            orderNumbers: [orderNumber]
-        });
-        let order = orders.shift();
-        // 注文未作成であれば作成
-        if (order === undefined) {
-            // 注文取引検索
-            const placeOrderTransactions = yield transactionRepo.search({
-                limit: 1,
-                typeOf: cinerino.factory.transactionType.PlaceOrder,
-                result: { order: { orderNumbers: [orderNumber] } }
-            });
-            const placeOrderTransaction = placeOrderTransactions.shift();
-            if (placeOrderTransaction === undefined) {
-                throw new cinerino.factory.errors.NotFound('Transaction');
-            }
-            const transactionResult = placeOrderTransaction.result;
-            const orderActionAttributes = {
-                agent: req.agent,
-                object: transactionResult.order,
-                potentialActions: {},
-                project: placeOrderTransaction.project,
-                typeOf: cinerino.factory.actionType.OrderAction
-            };
-            yield cinerino.service.order.placeOrder(orderActionAttributes)({
-                action: actionRepo,
-                invoice: invoiceRepo,
-                order: orderRepo,
-                task: taskRepo,
-                transaction: transactionRepo
-            });
-            order =
-                placeOrderTransaction.result.order;
-        }
-        res.json(order);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * 注文配送
- */
-ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        const orderRepo = new cinerino.repository.Order(mongoose.connection);
-        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-        const taskRepo = new cinerino.repository.Task(mongoose.connection);
-        const registerActionInProgressRepo = new cinerino.repository.action.RegisterProgramMembershipInProgress(redis.getClient());
-        const orderNumber = req.params.orderNumber;
-        // 注文検索
-        const order = yield orderRepo.findByOrderNumber({
-            orderNumber: orderNumber
-        });
-        if (order.orderStatus !== cinerino.factory.orderStatus.OrderDelivered) {
-            // APIユーザーとして注文配送を実行する
-            const sendOrderActionAttributes = {
-                agent: req.agent,
-                object: order,
-                potentialActions: {
-                    sendEmailMessage: undefined
-                },
-                project: order.project,
-                recipient: order.customer,
-                typeOf: cinerino.factory.actionType.SendAction
-            };
-            yield cinerino.service.delivery.sendOrder(sendOrderActionAttributes)({
-                action: actionRepo,
-                order: orderRepo,
-                ownershipInfo: ownershipInfoRepo,
-                registerActionInProgress: registerActionInProgressRepo,
-                task: taskRepo
-            });
-        }
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
  * 確認番号で注文照会
  */
 ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['customer', 'orders', 'orders.read-only']), ...[
@@ -468,6 +426,63 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['customer
             throw new cinerino.factory.errors.NotFound('Order');
         }
         res.json(order);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 注文取得
+ */
+ordersRouter.get('/:orderNumber', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        const order = yield orderRepo.findByOrderNumber({
+            orderNumber: req.params.orderNumber
+        });
+        res.json(order);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 注文配送
+ */
+ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+        const taskRepo = new cinerino.repository.Task(mongoose.connection);
+        const registerActionInProgressRepo = new cinerino.repository.action.RegisterProgramMembershipInProgress(redis.getClient());
+        const orderNumber = req.params.orderNumber;
+        // 注文検索
+        const order = yield orderRepo.findByOrderNumber({
+            orderNumber: orderNumber
+        });
+        if (order.orderStatus !== cinerino.factory.orderStatus.OrderDelivered) {
+            // APIユーザーとして注文配送を実行する
+            const sendOrderActionAttributes = {
+                agent: req.agent,
+                object: order,
+                potentialActions: {
+                    sendEmailMessage: undefined
+                },
+                project: order.project,
+                recipient: order.customer,
+                typeOf: cinerino.factory.actionType.SendAction
+            };
+            yield cinerino.service.delivery.sendOrder(sendOrderActionAttributes)({
+                action: actionRepo,
+                order: orderRepo,
+                ownershipInfo: ownershipInfoRepo,
+                registerActionInProgress: registerActionInProgressRepo,
+                task: taskRepo
+            });
+        }
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);
