@@ -16,6 +16,7 @@ const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
+const moment = require("moment");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -32,7 +33,31 @@ reservationsRouter.use(authentication_1.default);
 /**
  * 管理者として予約検索
  */
-reservationsRouter.get('', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+reservationsRouter.get('', permitScopes_1.default([]), (req, _, next) => {
+    const now = moment();
+    if (typeof req.query.modifiedThrough !== 'string') {
+        req.query.modifiedThrough = moment(now)
+            .toISOString();
+    }
+    if (typeof req.query.modifiedFrom !== 'string') {
+        req.query.modifiedFrom = moment(now)
+            // tslint:disable-next-line:no-magic-numbers
+            .add(-6, 'months') // とりあえず直近6カ月をデフォルト動作に設定
+            .toISOString();
+    }
+    next();
+}, ...[
+    check_1.query('modifiedFrom')
+        .not()
+        .isEmpty()
+        .isISO8601()
+        .toDate(),
+    check_1.query('modifiedThrough')
+        .not()
+        .isEmpty()
+        .isISO8601()
+        .toDate()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -59,7 +84,31 @@ reservationsRouter.get('', permitScopes_1.default([]), validator_1.default, (req
  * 管理者として予約検索
  * @deprecated Use /reservations
  */
-reservationsRouter.get('/eventReservation/screeningEvent', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+reservationsRouter.get('/eventReservation/screeningEvent', permitScopes_1.default([]), (req, _, next) => {
+    const now = moment();
+    if (typeof req.query.modifiedThrough !== 'string') {
+        req.query.modifiedThrough = moment(now)
+            .toISOString();
+    }
+    if (typeof req.query.modifiedFrom !== 'string') {
+        req.query.modifiedFrom = moment(now)
+            // tslint:disable-next-line:no-magic-numbers
+            .add(-6, 'months') // とりあえず直近6カ月をデフォルト動作に設定
+            .toISOString();
+    }
+    next();
+}, ...[
+    check_1.query('modifiedFrom')
+        .not()
+        .isEmpty()
+        .isISO8601()
+        .toDate(),
+    check_1.query('modifiedThrough')
+        .not()
+        .isEmpty()
+        .isISO8601()
+        .toDate()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });

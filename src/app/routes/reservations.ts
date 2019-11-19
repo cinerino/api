@@ -4,7 +4,8 @@
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
-import { body } from 'express-validator/check';
+import { body, query } from 'express-validator/check';
+import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
@@ -32,6 +33,35 @@ reservationsRouter.use(authentication);
 reservationsRouter.get(
     '',
     permitScopes([]),
+    (req, _, next) => {
+        const now = moment();
+
+        if (typeof req.query.modifiedThrough !== 'string') {
+            req.query.modifiedThrough = moment(now)
+                .toISOString();
+        }
+
+        if (typeof req.query.modifiedFrom !== 'string') {
+            req.query.modifiedFrom = moment(now)
+                // tslint:disable-next-line:no-magic-numbers
+                .add(-6, 'months') // とりあえず直近6カ月をデフォルト動作に設定
+                .toISOString();
+        }
+
+        next();
+    },
+    ...[
+        query('modifiedFrom')
+            .not()
+            .isEmpty()
+            .isISO8601()
+            .toDate(),
+        query('modifiedThrough')
+            .not()
+            .isEmpty()
+            .isISO8601()
+            .toDate()
+    ],
     validator,
     async (req, res, next) => {
         try {
@@ -69,6 +99,35 @@ reservationsRouter.get(
 reservationsRouter.get(
     '/eventReservation/screeningEvent',
     permitScopes([]),
+    (req, _, next) => {
+        const now = moment();
+
+        if (typeof req.query.modifiedThrough !== 'string') {
+            req.query.modifiedThrough = moment(now)
+                .toISOString();
+        }
+
+        if (typeof req.query.modifiedFrom !== 'string') {
+            req.query.modifiedFrom = moment(now)
+                // tslint:disable-next-line:no-magic-numbers
+                .add(-6, 'months') // とりあえず直近6カ月をデフォルト動作に設定
+                .toISOString();
+        }
+
+        next();
+    },
+    ...[
+        query('modifiedFrom')
+            .not()
+            .isEmpty()
+            .isISO8601()
+            .toDate(),
+        query('modifiedThrough')
+            .not()
+            .isEmpty()
+            .isISO8601()
+            .toDate()
+    ],
     validator,
     async (req, res, next) => {
         try {
