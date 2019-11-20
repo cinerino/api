@@ -33,6 +33,7 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
             next();
             return;
         }
+        const routeIdentifier = `${req.baseUrl}${req.path}`;
         yield middlewares.rateLimit({
             redisClient: redisClient,
             aggregationUnitInSeconds: UNIT_IN_SECONDS,
@@ -44,7 +45,7 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                 nextOnLimitExceeded(new cinerino.factory.errors.RateLimitExceeded(message));
             },
             // スコープ生成ロジックをカスタマイズ
-            scopeGenerator: (_) => `api:rateLimit:${req.path}:${req.method}`
+            scopeGenerator: () => `api:rateLimit:${routeIdentifier}:${req.method}`
         })(req, res, next);
     }
     catch (error) {
