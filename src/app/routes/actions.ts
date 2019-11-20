@@ -10,6 +10,7 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
@@ -23,6 +24,7 @@ actionsRouter.use(authentication);
 actionsRouter.get(
     '',
     permitScopes([]),
+    rateLimit,
     ...[
         query('startFrom')
             .optional()
@@ -63,6 +65,7 @@ actionsRouter.get(
 actionsRouter.post(
     '/print/ticket',
     permitScopes(['customer', 'actions']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -89,6 +92,7 @@ actionsRouter.post(
 actionsRouter.get(
     '/print/ticket',
     permitScopes(['customer', 'actions', 'actions.read-only']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {

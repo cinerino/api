@@ -8,6 +8,7 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const iamRouter = express.Router();
@@ -19,6 +20,7 @@ iamRouter.use(authentication);
 iamRouter.get(
     '/groups',
     permitScopes([]),
+    rateLimit,
     validator,
     async (_, res, next) => {
         try {
@@ -36,6 +38,7 @@ iamRouter.get(
 iamRouter.get(
     '/roles',
     permitScopes([]),
+    rateLimit,
     validator,
     async (_, res, next) => {
         try {
@@ -53,6 +56,7 @@ iamRouter.get(
 iamRouter.get(
     '/users',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -89,6 +93,7 @@ iamRouter.get(
 iamRouter.get(
     '/users/:id',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {

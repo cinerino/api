@@ -20,6 +20,7 @@ const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
+const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
@@ -32,7 +33,7 @@ returnOrderTransactionsRouter.use(authentication_1.default);
 function escapeRegExp(params) {
     return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
 }
-returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions', 'pos']), ...[
+returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions', 'pos']), rateLimit_1.default, ...[
     check_1.body('expires')
         .not()
         .isEmpty()
@@ -125,7 +126,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
     }
 }));
 // tslint:disable-next-line:use-default-type-parameter
-returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['transactions', 'pos']), ...[
+returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['transactions', 'pos']), rateLimit_1.default, ...[
     // Eメールカスタマイズのバリデーション
     check_1.body([
         'potentialActions.returnOrder.potentialActions.refundCreditCard.potentialActions.sendEmailMessage.object.about',
@@ -180,7 +181,7 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
 /**
  * 取引検索
  */
-returnOrderTransactionsRouter.get('', permitScopes_1.default([]), ...[
+returnOrderTransactionsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
     check_1.query('startFrom')
         .optional()
         .isISO8601()

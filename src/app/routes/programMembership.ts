@@ -7,6 +7,7 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const programMembershipsRouter = Router();
@@ -16,6 +17,7 @@ programMembershipsRouter.use(authentication);
 programMembershipsRouter.get(
     '',
     permitScopes(['customer', 'programMemberships', 'programMemberships.read-only']),
+    rateLimit,
     validator,
     async (__, res, next) => {
         try {

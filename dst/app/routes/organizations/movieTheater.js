@@ -17,13 +17,14 @@ const express_1 = require("express");
 const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
+const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
 const movieTheaterRouter = express_1.Router();
 movieTheaterRouter.use(authentication_1.default);
 /**
  * @deprecated Use /sellers
  */
-movieTheaterRouter.get('', permitScopes_1.default(['customer', 'organizations', 'organizations.read-only']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+movieTheaterRouter.get('', permitScopes_1.default(['customer', 'organizations', 'organizations.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const searchCoinditions = Object.assign(Object.assign({}, req.query), { 
             // tslint:disable-next-line:no-magic-numbers
@@ -54,7 +55,7 @@ movieTheaterRouter.get('', permitScopes_1.default(['customer', 'organizations', 
 /**
  * @deprecated Use /sellers
  */
-movieTheaterRouter.get('/:branchCode([0-9]{3})', permitScopes_1.default(['customer', 'organizations', 'organizations.read-only']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+movieTheaterRouter.get('/:branchCode([0-9]{3})', permitScopes_1.default(['customer', 'organizations', 'organizations.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const movieTheaters = yield sellerRepo.search({
@@ -84,7 +85,7 @@ movieTheaterRouter.get('/:branchCode([0-9]{3})', permitScopes_1.default(['custom
 /**
  * @deprecated Use /sellers
  */
-movieTheaterRouter.get('/:id', permitScopes_1.default(['customer', 'organizations', 'organizations.read-only']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+movieTheaterRouter.get('/:id', permitScopes_1.default(['customer', 'organizations', 'organizations.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const movieTheater = yield sellerRepo.findById({

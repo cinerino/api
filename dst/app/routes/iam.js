@@ -18,13 +18,14 @@ const express = require("express");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
+const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const iamRouter = express.Router();
 iamRouter.use(authentication_1.default);
 /**
  * IAMグループ検索
  */
-iamRouter.get('/groups', permitScopes_1.default([]), validator_1.default, (_, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+iamRouter.get('/groups', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (_, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         res.set('X-Total-Count', '0');
         res.json([]);
@@ -36,7 +37,7 @@ iamRouter.get('/groups', permitScopes_1.default([]), validator_1.default, (_, re
 /**
  * IAMロール検索
  */
-iamRouter.get('/roles', permitScopes_1.default([]), validator_1.default, (_, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+iamRouter.get('/roles', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (_, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         res.set('X-Total-Count', '0');
         res.json([]);
@@ -48,7 +49,7 @@ iamRouter.get('/roles', permitScopes_1.default([]), validator_1.default, (_, res
 /**
  * IAMユーザー検索
  */
-iamRouter.get('/users', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+iamRouter.get('/users', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -77,7 +78,7 @@ iamRouter.get('/users', permitScopes_1.default([]), validator_1.default, (req, r
 /**
  * IDでユーザー検索
  */
-iamRouter.get('/users/:id', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+iamRouter.get('/users/:id', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });

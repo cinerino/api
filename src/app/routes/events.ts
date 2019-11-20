@@ -14,6 +14,7 @@ import * as redis from '../../redis';
 import authentication from '../middlewares/authentication';
 
 import permitScopes from '../middlewares/permitScopes';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 import screeningEventRouter from './events/screeningEvent';
@@ -40,6 +41,7 @@ eventsRouter.use('/screeningEvent', screeningEventRouter);
 eventsRouter.get(
     '',
     permitScopes(['customer', 'events', 'events.read-only']),
+    rateLimit,
     ...[
         query('inSessionFrom')
             .optional()
@@ -141,6 +143,7 @@ eventsRouter.get(
 eventsRouter.get(
     '/:id',
     permitScopes(['customer', 'events', 'events.read-only']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -186,6 +189,7 @@ eventsRouter.get(
 eventsRouter.get(
     '/:id/offers',
     permitScopes(['customer', 'events', 'events.read-only']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -214,6 +218,7 @@ eventsRouter.get(
 eventsRouter.get<ParamsDictionary>(
     '/:id/offers/ticket',
     permitScopes(['customer', 'events', 'events.read-only']),
+    rateLimit,
     ...[
         query('seller')
             .not()

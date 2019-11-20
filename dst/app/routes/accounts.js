@@ -23,6 +23,7 @@ const mongoose = require("mongoose");
 const redis = require("../../redis");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
+const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const accountsRouter = express_1.Router();
 accountsRouter.use(authentication_1.default);
@@ -36,7 +37,7 @@ accountsRouter.post('', permitScopes_1.default([]), ...[
     check_1.body('name', 'invalid name')
         .not()
         .isEmpty()
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+], rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const account = yield cinerino.service.account.openWithoutOwnershipInfo({
             project: req.project,
@@ -56,7 +57,7 @@ accountsRouter.post('', permitScopes_1.default([]), ...[
 /**
  * 管理者として口座解約
  */
-accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield cinerino.service.account.close({
             project: req.project,

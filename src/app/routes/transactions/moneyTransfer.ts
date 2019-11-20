@@ -13,6 +13,7 @@ import * as mongoose from 'mongoose';
 import authentication from '../../middlewares/authentication';
 import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
+import rateLimit from '../../middlewares/rateLimit';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
@@ -262,6 +263,7 @@ moneyTransferTransactionsRouter.put(
 moneyTransferTransactionsRouter.get(
     '',
     permitScopes([]),
+    rateLimit,
     ...[
         query('startFrom')
             .optional()
@@ -308,6 +310,7 @@ moneyTransferTransactionsRouter.get(
 moneyTransferTransactionsRouter.get(
     '/:transactionId/actions',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {

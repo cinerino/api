@@ -16,6 +16,7 @@ import * as mongoose from 'mongoose';
 import authentication from '../../middlewares/authentication';
 import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
+import rateLimit from '../../middlewares/rateLimit';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
@@ -1281,6 +1282,7 @@ placeOrderTransactionsRouter.put(
 placeOrderTransactionsRouter.get(
     '',
     permitScopes([]),
+    rateLimit,
     ...[
         query('startFrom')
             .optional()
@@ -1327,6 +1329,7 @@ placeOrderTransactionsRouter.get(
 placeOrderTransactionsRouter.get(
     '/:transactionId/actions',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -1351,6 +1354,7 @@ placeOrderTransactionsRouter.get(
 placeOrderTransactionsRouter.get(
     '/report',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {

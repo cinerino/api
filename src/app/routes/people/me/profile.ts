@@ -6,6 +6,7 @@ import { Router } from 'express';
 import { NO_CONTENT } from 'http-status';
 
 import permitScopes from '../../../middlewares/permitScopes';
+import rateLimit from '../../../middlewares/rateLimit';
 import validator from '../../../middlewares/validator';
 
 const profileRouter = Router();
@@ -16,6 +17,7 @@ const profileRouter = Router();
 profileRouter.get(
     '',
     permitScopes(['customer']),
+    rateLimit,
     async (req, res, next) => {
         try {
             const personRepo = new cinerino.repository.Person({
@@ -35,6 +37,7 @@ profileRouter.get(
 profileRouter.patch(
     '',
     permitScopes(['customer']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {

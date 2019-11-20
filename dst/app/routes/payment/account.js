@@ -21,6 +21,7 @@ const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
 const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
+const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
 const accountPaymentRouter = express_1.Router();
@@ -29,7 +30,7 @@ accountPaymentRouter.use(authentication_1.default);
  * 口座確保
  */
 // tslint:disable-next-line:use-default-type-parameter
-accountPaymentRouter.post('/authorize', permitScopes_1.default(['customer', 'transactions']), ...[
+accountPaymentRouter.post('/authorize', permitScopes_1.default(['customer', 'transactions']), rateLimit_1.default, ...[
     check_1.body('object')
         .not()
         .isEmpty(),
@@ -171,7 +172,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['customer', 'tra
 /**
  * 口座承認取消
  */
-accountPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+accountPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['customer', 'transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id

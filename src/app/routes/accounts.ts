@@ -14,6 +14,7 @@ import * as redis from '../../redis';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const accountsRouter = Router();
@@ -34,6 +35,7 @@ accountsRouter.post(
             .not()
             .isEmpty()
     ],
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -60,6 +62,7 @@ accountsRouter.post(
 accountsRouter.put(
     '/:accountType/:accountNumber/close',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {

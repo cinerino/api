@@ -19,13 +19,14 @@ const check_1 = require("express-validator/check");
 const mongoose = require("mongoose");
 const authentication_1 = require("../../../middlewares/authentication");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
+const rateLimit_1 = require("../../../middlewares/rateLimit");
 const validator_1 = require("../../../middlewares/validator");
 const ordersRouter = express_1.Router();
 ordersRouter.use(authentication_1.default);
 /**
  * 注文検索
  */
-ordersRouter.get('', permitScopes_1.default(['customer']), ...[
+ordersRouter.get('', permitScopes_1.default(['customer']), rateLimit_1.default, ...[
     check_1.query('orderDateFrom')
         .not()
         .isEmpty()

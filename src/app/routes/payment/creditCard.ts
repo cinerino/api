@@ -13,6 +13,7 @@ import * as mongoose from 'mongoose';
 import authentication from '../../middlewares/authentication';
 import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
+import rateLimit from '../../middlewares/rateLimit';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
@@ -31,6 +32,7 @@ creditCardPaymentRouter.use(authentication);
 creditCardPaymentRouter.post<ParamsDictionary>(
     '/authorize',
     permitScopes(['customer', 'transactions']),
+    rateLimit,
     ...[
         body('object')
             .not()
@@ -137,6 +139,7 @@ creditCardPaymentRouter.post<ParamsDictionary>(
 creditCardPaymentRouter.put(
     '/authorize/:actionId/void',
     permitScopes(['customer', 'transactions']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({

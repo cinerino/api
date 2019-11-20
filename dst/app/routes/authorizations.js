@@ -19,6 +19,7 @@ const check_1 = require("express-validator/check");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
+const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const authorizationsRouter = express_1.Router();
@@ -26,7 +27,7 @@ authorizationsRouter.use(authentication_1.default);
 /**
  * 承認検索
  */
-authorizationsRouter.get('', permitScopes_1.default([]), ...[
+authorizationsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
     check_1.query('validFrom')
         .optional()
         .isISO8601()

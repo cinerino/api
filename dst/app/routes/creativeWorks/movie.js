@@ -17,6 +17,7 @@ const express_1 = require("express");
 const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
+const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
@@ -30,7 +31,7 @@ movieRouter.use(authentication_1.default);
 /**
  * 映画作品検索
  */
-movieRouter.get('', permitScopes_1.default(['creativeWorks', 'creativeWorks.read-only']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+movieRouter.get('', permitScopes_1.default(['creativeWorks', 'creativeWorks.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });

@@ -10,6 +10,7 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 type IPayload =
@@ -33,6 +34,7 @@ reservationsRouter.use(authentication);
 reservationsRouter.get(
     '',
     permitScopes([]),
+    rateLimit,
     (req, _, next) => {
         const now = moment();
 
@@ -199,6 +201,7 @@ reservationsRouter.get(
 reservationsRouter.post(
     '/eventReservation/screeningEvent/findByToken',
     permitScopes(['tokens', 'tokens.read-only']),
+    rateLimit,
     ...[
         body('token')
             .not()

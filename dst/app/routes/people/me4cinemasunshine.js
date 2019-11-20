@@ -20,6 +20,7 @@ const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../../middlewares/permitScopes");
+const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
 /**
  * GMOメンバーIDにユーザーネームを使用するかどうか
@@ -30,7 +31,7 @@ const me4cinemasunshineRouter = express_1.Router();
 /**
  * 会員プログラム登録
  */
-me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.default(['customer', 'people.ownershipInfos']), validator_1.default, 
+me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.default(['customer', 'people.ownershipInfos']), rateLimit_1.default, validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -198,7 +199,7 @@ function checkCard(req, amount) {
  * 所有権のidentifierをURLで指定
  * @deprecated シネマサンシャインで「退会処理」として使用(機を見てエンドポイントを変更したい)
  */
-me4cinemasunshineRouter.put('/ownershipInfos/programMembership/:identifier/unRegister', permitScopes_1.default(['customer', 'people.ownershipInfos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+me4cinemasunshineRouter.put('/ownershipInfos/programMembership/:identifier/unRegister', permitScopes_1.default(['customer', 'people.ownershipInfos']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);

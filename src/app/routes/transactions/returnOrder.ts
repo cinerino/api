@@ -12,6 +12,7 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
+import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
 import * as redis from '../../../redis';
@@ -33,6 +34,7 @@ function escapeRegExp(params: string) {
 returnOrderTransactionsRouter.post(
     '/start',
     permitScopes(['transactions', 'pos']),
+    rateLimit,
     ...[
         body('expires')
             .not()
@@ -141,6 +143,7 @@ returnOrderTransactionsRouter.post(
 returnOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/confirm',
     permitScopes(['transactions', 'pos']),
+    rateLimit,
     ...[
         // Eメールカスタマイズのバリデーション
         body([
@@ -209,6 +212,7 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
 returnOrderTransactionsRouter.get(
     '',
     permitScopes([]),
+    rateLimit,
     ...[
         query('startFrom')
             .optional()

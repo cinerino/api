@@ -10,6 +10,7 @@ import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import permitScopes from '../../middlewares/permitScopes';
+import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
 /**
@@ -26,6 +27,7 @@ const me4cinemasunshineRouter = Router();
 me4cinemasunshineRouter.put(
     '/ownershipInfos/programMembership/register',
     permitScopes(['customer', 'people.ownershipInfos']),
+    rateLimit,
     validator,
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
@@ -210,6 +212,7 @@ async function checkCard(req: Request, amount: number) {
 me4cinemasunshineRouter.put(
     '/ownershipInfos/programMembership/:identifier/unRegister',
     permitScopes(['customer', 'people.ownershipInfos']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {

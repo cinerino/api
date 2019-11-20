@@ -13,6 +13,7 @@ import * as mongoose from 'mongoose';
 import authentication from '../../middlewares/authentication';
 import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
+import rateLimit from '../../middlewares/rateLimit';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
@@ -35,6 +36,7 @@ movieTicketPaymentRouter.use(authentication);
 movieTicketPaymentRouter.post(
     '/actions/check',
     permitScopes(['customer', 'tokens']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -78,6 +80,7 @@ movieTicketPaymentRouter.post(
 movieTicketPaymentRouter.post<ParamsDictionary>(
     '/authorize',
     permitScopes(['customer', 'transactions']),
+    rateLimit,
     ...[
         body('object')
             .not()
@@ -175,6 +178,7 @@ movieTicketPaymentRouter.post<ParamsDictionary>(
 movieTicketPaymentRouter.put(
     '/authorize/:actionId/void',
     permitScopes(['customer', 'transactions']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({

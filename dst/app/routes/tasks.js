@@ -21,6 +21,7 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
+const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const tasksRouter = express_1.Router();
@@ -29,7 +30,7 @@ tasksRouter.use(authentication_1.default);
  * タスク作成
  */
 // tslint:disable-next-line:use-default-type-parameter
-tasksRouter.post('/:name', permitScopes_1.default([]), ...[
+tasksRouter.post('/:name', permitScopes_1.default([]), rateLimit_1.default, ...[
     check_1.body('runsAt')
         .not()
         .isEmpty()
@@ -70,7 +71,7 @@ tasksRouter.post('/:name', permitScopes_1.default([]), ...[
  * タスク確認
  */
 // tslint:disable-next-line:use-default-type-parameter
-tasksRouter.get('/:name/:id', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+tasksRouter.get('/:name/:id', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const task = yield taskRepo.findById({
@@ -86,7 +87,7 @@ tasksRouter.get('/:name/:id', permitScopes_1.default([]), validator_1.default, (
 /**
  * タスク検索
  */
-tasksRouter.get('', permitScopes_1.default([]), ...[
+tasksRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
     check_1.query('runsFrom')
         .optional()
         .isISO8601()

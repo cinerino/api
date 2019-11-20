@@ -11,6 +11,7 @@ import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
 import permitScopes from '../../../../middlewares/permitScopes';
+import rateLimit from '../../../../middlewares/rateLimit';
 import validator from '../../../../middlewares/validator';
 
 import * as redis from '../../../../../redis';
@@ -24,6 +25,7 @@ const accountsRouter = Router();
 accountsRouter.post<ParamsDictionary>(
     '/:accountType',
     permitScopes(['customer']),
+    rateLimit,
     ...[
         body('name')
             .not()
@@ -62,6 +64,7 @@ accountsRouter.post<ParamsDictionary>(
 accountsRouter.put(
     '/:accountType/:accountNumber/close',
     permitScopes(['customer']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -93,6 +96,7 @@ accountsRouter.put(
 accountsRouter.get(
     '/actions/moneyTransfer',
     permitScopes(['customer']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {

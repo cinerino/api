@@ -17,13 +17,14 @@ const express_1 = require("express");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
+const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const projectsRouter = express_1.Router();
 projectsRouter.use(authentication_1.default);
 /**
  * プロジェクト検索
  */
-projectsRouter.get('', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+projectsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const searchCoinditions = Object.assign(Object.assign({}, req.query), { 
             // tslint:disable-next-line:no-magic-numbers
@@ -41,7 +42,7 @@ projectsRouter.get('', permitScopes_1.default([]), validator_1.default, (req, re
 /**
  * IDでプロジェクト検索
  */
-projectsRouter.get('/:id', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+projectsRouter.get('/:id', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const seller = yield projectRepo.findById({ id: req.params.id }, undefined);

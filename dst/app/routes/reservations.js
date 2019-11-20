@@ -20,6 +20,7 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
+const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
@@ -33,7 +34,7 @@ reservationsRouter.use(authentication_1.default);
 /**
  * 管理者として予約検索
  */
-reservationsRouter.get('', permitScopes_1.default([]), (req, _, next) => {
+reservationsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, (req, _, next) => {
     const now = moment();
     if (typeof req.query.bookingThrough !== 'string') {
         req.query.bookingThrough = moment(now)
@@ -176,7 +177,7 @@ reservationsRouter.get('', permitScopes_1.default([]), (req, _, next) => {
 /**
  * トークンで予約照会
  */
-reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitScopes_1.default(['tokens', 'tokens.read-only']), ...[
+reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitScopes_1.default(['tokens', 'tokens.read-only']), rateLimit_1.default, ...[
     check_1.body('token')
         .not()
         .isEmpty()

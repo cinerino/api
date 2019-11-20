@@ -7,6 +7,7 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const projectsRouter = Router();
@@ -18,6 +19,7 @@ projectsRouter.use(authentication);
 projectsRouter.get(
     '',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -49,6 +51,7 @@ projectsRouter.get(
 projectsRouter.get(
     '/:id',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {

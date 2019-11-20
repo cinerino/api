@@ -22,6 +22,7 @@ const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
 const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
+const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
@@ -224,7 +225,7 @@ moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.def
 /**
  * 取引検索
  */
-moneyTransferTransactionsRouter.get('', permitScopes_1.default([]), ...[
+moneyTransferTransactionsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
     check_1.query('startFrom')
         .optional()
         .isISO8601()
@@ -259,7 +260,7 @@ moneyTransferTransactionsRouter.get('', permitScopes_1.default([]), ...[
 /**
  * 取引に対するアクション検索
  */
-moneyTransferTransactionsRouter.get('/:transactionId/actions', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+moneyTransferTransactionsRouter.get('/:transactionId/actions', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const actions = yield actionRepo.searchByPurpose({

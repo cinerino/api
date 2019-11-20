@@ -7,6 +7,7 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
+import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
@@ -26,6 +27,7 @@ movieRouter.use(authentication);
 movieRouter.get(
     '',
     permitScopes(['creativeWorks', 'creativeWorks.read-only']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {

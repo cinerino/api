@@ -13,6 +13,7 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
@@ -27,6 +28,7 @@ tasksRouter.use(authentication);
 tasksRouter.post<ParamsDictionary>(
     '/:name',
     permitScopes([]),
+    rateLimit,
     ...[
         body('runsAt')
             .not()
@@ -76,6 +78,7 @@ tasksRouter.post<ParamsDictionary>(
 tasksRouter.get<ParamsDictionary>(
     '/:name/:id',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -97,6 +100,7 @@ tasksRouter.get<ParamsDictionary>(
 tasksRouter.get(
     '',
     permitScopes([]),
+    rateLimit,
     ...[
         query('runsFrom')
             .optional()

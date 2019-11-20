@@ -17,6 +17,7 @@ const express_1 = require("express");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../../../../middlewares/permitScopes");
+const rateLimit_1 = require("../../../../middlewares/rateLimit");
 const validator_1 = require("../../../../middlewares/validator");
 /**
  * GMOメンバーIDにユーザーネームを使用するかどうか
@@ -26,7 +27,7 @@ const creditCardsRouter = express_1.Router();
 /**
  * 会員クレジットカード追加
  */
-creditCardsRouter.post('', permitScopes_1.default(['customer']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+creditCardsRouter.post('', permitScopes_1.default(['customer']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -54,7 +55,7 @@ creditCardsRouter.post('', permitScopes_1.default(['customer']), validator_1.def
 /**
  * 会員クレジットカード検索
  */
-creditCardsRouter.get('', permitScopes_1.default(['customer']), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+creditCardsRouter.get('', permitScopes_1.default(['customer']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -78,7 +79,7 @@ creditCardsRouter.get('', permitScopes_1.default(['customer']), (req, res, next)
 /**
  * 会員クレジットカード削除
  */
-creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['customer']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['customer']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });

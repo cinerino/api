@@ -17,11 +17,12 @@ const express_1 = require("express");
 const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
+const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const movieTicketPaymentMethodsRouter = express_1.Router();
 movieTicketPaymentMethodsRouter.use(authentication_1.default);
-movieTicketPaymentMethodsRouter.get('', permitScopes_1.default([]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+movieTicketPaymentMethodsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const paymentMethodRepo = new cinerino.repository.PaymentMethod(mongoose.connection);
         const searchCoinditions = Object.assign(Object.assign({}, req.query), { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 

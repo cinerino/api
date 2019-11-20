@@ -12,6 +12,7 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
@@ -25,6 +26,7 @@ sellersRouter.use(authentication);
 sellersRouter.post(
     '',
     permitScopes(['sellers']),
+    rateLimit,
     ...[
         body('typeOf')
             .not()
@@ -94,6 +96,7 @@ sellersRouter.post(
 sellersRouter.get(
     '',
     permitScopes(['customer', 'sellers', 'sellers.read-only', 'pos']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -127,6 +130,7 @@ sellersRouter.get(
 sellersRouter.get(
     '/:id',
     permitScopes(['customer', 'sellers', 'sellers.read-only']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -152,6 +156,7 @@ sellersRouter.get(
 sellersRouter.put<ParamsDictionary>(
     '/:id',
     permitScopes(['sellers']),
+    rateLimit,
     ...[
         body('typeOf')
             .not()
@@ -221,6 +226,7 @@ sellersRouter.put<ParamsDictionary>(
 sellersRouter.delete(
     '/:id',
     permitScopes(['sellers']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {

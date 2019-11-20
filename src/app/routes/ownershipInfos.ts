@@ -12,6 +12,7 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
@@ -26,6 +27,7 @@ ownershipInfosRouter.use(authentication);
 ownershipInfosRouter.get(
     '',
     permitScopes([]),
+    rateLimit,
     ...[
         query('ownedFrom')
             .optional()
@@ -92,6 +94,7 @@ ownershipInfosRouter.get(
 ownershipInfosRouter.post(
     '/tokens',
     permitScopes(['customer', 'tokens']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -118,6 +121,7 @@ ownershipInfosRouter.post(
 ownershipInfosRouter.get<ParamsDictionary>(
     '/:id/actions/checkToken',
     permitScopes([]),
+    rateLimit,
     ...[
         query('startFrom')
             .optional()
@@ -221,6 +225,7 @@ ownershipInfosRouter.get<ParamsDictionary>(
 ownershipInfosRouter.get(
     '/countByRegisterDateAndTheater',
     permitScopes(['customer']),
+    rateLimit,
     ...[
         query('fromDate')
             .not()

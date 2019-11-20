@@ -13,6 +13,7 @@ import * as mongoose from 'mongoose';
 import authentication from '../../middlewares/authentication';
 import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
+import rateLimit from '../../middlewares/rateLimit';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
@@ -26,6 +27,7 @@ anyPaymentRouter.use(authentication);
 anyPaymentRouter.post<ParamsDictionary>(
     '/authorize',
     permitScopes(['pos']),
+    rateLimit,
     ...[
         body('object')
             .not()
@@ -102,6 +104,7 @@ anyPaymentRouter.post<ParamsDictionary>(
 anyPaymentRouter.put(
     '/authorize/:actionId/void',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({

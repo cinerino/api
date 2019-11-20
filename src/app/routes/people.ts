@@ -12,6 +12,7 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 /**
@@ -29,6 +30,7 @@ peopleRouter.use(authentication);
 peopleRouter.get(
     '',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -64,6 +66,7 @@ peopleRouter.get(
 peopleRouter.get(
     '/:id',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -93,6 +96,7 @@ peopleRouter.get(
 peopleRouter.delete(
     '/:id',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -179,6 +183,7 @@ peopleRouter.delete(
 peopleRouter.get<ParamsDictionary>(
     '/:id/ownershipInfos',
     permitScopes([]),
+    rateLimit,
     ...[
         query('typeOfGood')
             .not()
@@ -252,6 +257,7 @@ peopleRouter.get<ParamsDictionary>(
 peopleRouter.get(
     '/:id/ownershipInfos/creditCards',
     permitScopes([]),
+    rateLimit,
     async (req, res, next) => {
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -298,6 +304,7 @@ peopleRouter.get(
 peopleRouter.delete(
     '/:id/ownershipInfos/creditCards/:cardSeq',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -349,6 +356,7 @@ peopleRouter.delete(
 peopleRouter.get(
     '/:id/profile',
     permitScopes([]),
+    rateLimit,
     async (req, res, next) => {
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -391,6 +399,7 @@ peopleRouter.get(
 peopleRouter.patch(
     '/:id/profile',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {

@@ -7,6 +7,7 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
+import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
 type ICreditCardPaymentAccepted = cinerino.factory.seller.IPaymentAccepted<cinerino.factory.paymentMethodType.CreditCard>;
@@ -20,6 +21,7 @@ movieTheaterRouter.use(authentication);
 movieTheaterRouter.get(
     '',
     permitScopes(['customer', 'organizations', 'organizations.read-only']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -64,6 +66,7 @@ movieTheaterRouter.get(
 movieTheaterRouter.get(
     '/:branchCode([0-9]{3})',
     permitScopes(['customer', 'organizations', 'organizations.read-only']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -103,6 +106,7 @@ movieTheaterRouter.get(
 movieTheaterRouter.get(
     '/:id',
     permitScopes(['customer', 'organizations', 'organizations.read-only']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {

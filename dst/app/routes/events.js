@@ -20,6 +20,7 @@ const mongoose = require("mongoose");
 const redis = require("../../redis");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
+const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const screeningEvent_1 = require("./events/screeningEvent");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
@@ -37,7 +38,7 @@ eventsRouter.use('/screeningEvent', screeningEvent_1.default);
 /**
  * イベント検索
  */
-eventsRouter.get('', permitScopes_1.default(['customer', 'events', 'events.read-only']), ...[
+eventsRouter.get('', permitScopes_1.default(['customer', 'events', 'events.read-only']), rateLimit_1.default, ...[
     check_1.query('inSessionFrom')
         .optional()
         .isISO8601()
@@ -117,7 +118,7 @@ eventsRouter.get('', permitScopes_1.default(['customer', 'events', 'events.read-
 /**
  * IDでイベント検索
  */
-eventsRouter.get('/:id', permitScopes_1.default(['customer', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+eventsRouter.get('/:id', permitScopes_1.default(['customer', 'events', 'events.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
@@ -155,7 +156,7 @@ eventsRouter.get('/:id', permitScopes_1.default(['customer', 'events', 'events.r
 /**
  * イベントに対するオファー検索
  */
-eventsRouter.get('/:id/offers', permitScopes_1.default(['customer', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+eventsRouter.get('/:id/offers', permitScopes_1.default(['customer', 'events', 'events.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -173,7 +174,7 @@ eventsRouter.get('/:id/offers', permitScopes_1.default(['customer', 'events', 'e
  * イベントに対する券種オファー検索
  */
 // tslint:disable-next-line:use-default-type-parameter
-eventsRouter.get('/:id/offers/ticket', permitScopes_1.default(['customer', 'events', 'events.read-only']), ...[
+eventsRouter.get('/:id/offers/ticket', permitScopes_1.default(['customer', 'events', 'events.read-only']), rateLimit_1.default, ...[
     check_1.query('seller')
         .not()
         .isEmpty()

@@ -20,6 +20,7 @@ const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
+const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const actionsRouter = express_1.Router();
@@ -27,7 +28,7 @@ actionsRouter.use(authentication_1.default);
 /**
  * アクション検索
  */
-actionsRouter.get('', permitScopes_1.default([]), ...[
+actionsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
     check_1.query('startFrom')
         .optional()
         .isISO8601()
@@ -54,7 +55,7 @@ actionsRouter.get('', permitScopes_1.default([]), ...[
 /**
  * チケット印刷アクション追加
  */
-actionsRouter.post('/print/ticket', permitScopes_1.default(['customer', 'actions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+actionsRouter.post('/print/ticket', permitScopes_1.default(['customer', 'actions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const ticket = {
             ticketToken: req.body.ticketToken
@@ -70,7 +71,7 @@ actionsRouter.post('/print/ticket', permitScopes_1.default(['customer', 'actions
 /**
  * チケット印刷アクション検索
  */
-actionsRouter.get('/print/ticket', permitScopes_1.default(['customer', 'actions', 'actions.read-only']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+actionsRouter.get('/print/ticket', permitScopes_1.default(['customer', 'actions', 'actions.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actions = yield new cinerino.repository.Action(mongoose.connection).searchPrintTicket({
             agentId: req.user.sub,

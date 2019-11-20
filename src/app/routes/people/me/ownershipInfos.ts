@@ -8,6 +8,7 @@ import { query } from 'express-validator/check';
 import * as mongoose from 'mongoose';
 
 import permitScopes from '../../../middlewares/permitScopes';
+import rateLimit from '../../../middlewares/rateLimit';
 import validator from '../../../middlewares/validator';
 
 import accountsRouter from './ownershipInfos/accounts';
@@ -36,6 +37,7 @@ ownershipInfosRouter.use('/reservations', reservationsRouter);
 ownershipInfosRouter.get(
     '',
     permitScopes(['customer']),
+    rateLimit,
     ...[
         query('typeOfGood')
             .not()
@@ -108,6 +110,7 @@ ownershipInfosRouter.get(
 ownershipInfosRouter.post(
     '/:id/authorize',
     permitScopes(['customer']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {

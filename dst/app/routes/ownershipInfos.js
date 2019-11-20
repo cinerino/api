@@ -20,6 +20,7 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
+const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const TOKEN_EXPIRES_IN = 1800;
@@ -28,7 +29,7 @@ ownershipInfosRouter.use(authentication_1.default);
 /**
  * 所有権検索
  */
-ownershipInfosRouter.get('', permitScopes_1.default([]), ...[
+ownershipInfosRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
     check_1.query('ownedFrom')
         .optional()
         .isISO8601()
@@ -75,7 +76,7 @@ ownershipInfosRouter.get('', permitScopes_1.default([]), ...[
 /**
  * コードから所有権に対するアクセストークンを発行する
  */
-ownershipInfosRouter.post('/tokens', permitScopes_1.default(['customer', 'tokens']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+ownershipInfosRouter.post('/tokens', permitScopes_1.default(['customer', 'tokens']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const codeRepo = new cinerino.repository.Code(mongoose.connection);
         const token = yield cinerino.service.code.getToken({
@@ -94,7 +95,7 @@ ownershipInfosRouter.post('/tokens', permitScopes_1.default(['customer', 'tokens
  * 所有権に対するトークン検証アクションを検索する
  */
 // tslint:disable-next-line:use-default-type-parameter
-ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default([]), ...[
+ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default([]), rateLimit_1.default, ...[
     check_1.query('startFrom')
         .optional()
         .isISO8601()
@@ -183,7 +184,7 @@ ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default([]), 
  * Cinemasunshine対応
  * @deprecated
  */
-ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.default(['customer']), ...[
+ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.default(['customer']), rateLimit_1.default, ...[
     check_1.query('fromDate')
         .not()
         .isEmpty()

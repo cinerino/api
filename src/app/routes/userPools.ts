@@ -6,6 +6,7 @@ import { Router } from 'express';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
@@ -21,6 +22,7 @@ userPoolsRouter.use(authentication);
 userPoolsRouter.get(
     '/:userPoolId',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -51,6 +53,7 @@ userPoolsRouter.get(
 userPoolsRouter.get(
     '/:userPoolId/clients',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -84,6 +87,7 @@ userPoolsRouter.get(
 userPoolsRouter.get(
     '/:userPoolId/clients/:clientId',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {

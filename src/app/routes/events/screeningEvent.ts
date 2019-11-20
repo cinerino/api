@@ -12,6 +12,7 @@ import * as mongoose from 'mongoose';
 import * as redis from '../../../redis';
 
 import permitScopes from '../../middlewares/permitScopes';
+import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
@@ -33,6 +34,7 @@ const screeningEventRouter = Router();
 screeningEventRouter.get(
     '',
     permitScopes(['customer', 'events', 'events.read-only']),
+    rateLimit,
     ...[
         query('inSessionFrom')
             .optional()
@@ -139,6 +141,7 @@ screeningEventRouter.get(
 screeningEventRouter.get(
     '/:id',
     permitScopes(['customer', 'events', 'events.read-only']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -185,6 +188,7 @@ screeningEventRouter.get(
 screeningEventRouter.get(
     '/:id/offers',
     permitScopes(['customer', 'events', 'events.read-only']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -213,6 +217,7 @@ screeningEventRouter.get(
 screeningEventRouter.get<ParamsDictionary>(
     '/:id/offers/ticket',
     permitScopes(['customer', 'events', 'events.read-only']),
+    rateLimit,
     ...[
         query('seller')
             .not()

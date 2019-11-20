@@ -7,6 +7,7 @@ import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
 import permitScopes from '../../../../middlewares/permitScopes';
+import rateLimit from '../../../../middlewares/rateLimit';
 import validator from '../../../../middlewares/validator';
 
 /**
@@ -22,6 +23,7 @@ const creditCardsRouter = Router();
 creditCardsRouter.post(
     '',
     permitScopes(['customer']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -57,6 +59,7 @@ creditCardsRouter.post(
 creditCardsRouter.get(
     '',
     permitScopes(['customer']),
+    rateLimit,
     async (req, res, next) => {
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -87,6 +90,7 @@ creditCardsRouter.get(
 creditCardsRouter.delete(
     '/:cardSeq',
     permitScopes(['customer']),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {

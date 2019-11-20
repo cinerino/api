@@ -16,6 +16,7 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 import * as redis from '../../redis';
@@ -50,6 +51,7 @@ const isNotAdmin: CustomValidator = (_, { req }) => !req.isAdmin;
 ordersRouter.get(
     '',
     permitScopes(['customer', 'orders', 'orders.read-only']),
+    rateLimit,
     // 互換性維持のため
     (req, _, next) => {
         const now = moment();
@@ -205,6 +207,7 @@ ordersRouter.get(
 ordersRouter.post(
     '',
     permitScopes([]),
+    rateLimit,
     ...[
         body('orderNumber')
             .not()
@@ -277,6 +280,7 @@ ordersRouter.post(
 ordersRouter.get(
     '/download',
     permitScopes([]),
+    rateLimit,
     // 互換性維持のため
     (req, _, next) => {
         const now = moment();
@@ -354,6 +358,7 @@ ordersRouter.get(
 ordersRouter.post(
     '/findByOrderInquiryKey',
     permitScopes(['customer', 'orders', 'orders.read-only']),
+    rateLimit,
     ...[
         body('theaterCode')
             .not()
@@ -418,6 +423,7 @@ ordersRouter.post(
 ordersRouter.post(
     '/findByConfirmationNumber',
     permitScopes(['customer', 'orders', 'orders.read-only']),
+    rateLimit,
     ...[
         query('orderDateFrom')
             .optional()
@@ -509,6 +515,7 @@ ordersRouter.post(
 ordersRouter.get(
     '/:orderNumber',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -530,6 +537,7 @@ ordersRouter.get(
 ordersRouter.post(
     '/:orderNumber/deliver',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {
@@ -583,6 +591,7 @@ ordersRouter.post(
 ordersRouter.post<ParamsDictionary>(
     '/:orderNumber/ownershipInfos/authorize',
     permitScopes(['customer', 'orders', 'orders.read-only']),
+    rateLimit,
     ...[
         body('customer')
             .not()
@@ -716,6 +725,7 @@ ordersRouter.post<ParamsDictionary>(
 ordersRouter.get(
     '/:orderNumber/actions',
     permitScopes([]),
+    rateLimit,
     validator,
     async (req, res, next) => {
         try {

@@ -9,6 +9,7 @@ import * as mongoose from 'mongoose';
 
 import authentication from '../../../middlewares/authentication';
 import permitScopes from '../../../middlewares/permitScopes';
+import rateLimit from '../../../middlewares/rateLimit';
 import validator from '../../../middlewares/validator';
 
 const ordersRouter = Router();
@@ -20,6 +21,7 @@ ordersRouter.use(authentication);
 ordersRouter.get(
     '',
     permitScopes(['customer']),
+    rateLimit,
     ...[
         query('orderDateFrom')
             .not()

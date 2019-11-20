@@ -20,6 +20,7 @@ const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
+const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const sellersRouter = express_1.Router();
@@ -27,7 +28,7 @@ sellersRouter.use(authentication_1.default);
 /**
  * 販売者作成
  */
-sellersRouter.post('', permitScopes_1.default(['sellers']), ...[
+sellersRouter.post('', permitScopes_1.default(['sellers']), rateLimit_1.default, ...[
     check_1.body('typeOf')
         .not()
         .isEmpty()
@@ -85,7 +86,7 @@ sellersRouter.post('', permitScopes_1.default(['sellers']), ...[
 /**
  * 販売者検索
  */
-sellersRouter.get('', permitScopes_1.default(['customer', 'sellers', 'sellers.read-only', 'pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+sellersRouter.get('', permitScopes_1.default(['customer', 'sellers', 'sellers.read-only', 'pos']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const searchCoinditions = Object.assign(Object.assign({}, req.query), { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
             // tslint:disable-next-line:no-magic-numbers
@@ -105,7 +106,7 @@ sellersRouter.get('', permitScopes_1.default(['customer', 'sellers', 'sellers.re
 /**
  * IDで販売者検索
  */
-sellersRouter.get('/:id', permitScopes_1.default(['customer', 'sellers', 'sellers.read-only']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+sellersRouter.get('/:id', permitScopes_1.default(['customer', 'sellers', 'sellers.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const seller = yield sellerRepo.findById({
@@ -123,7 +124,7 @@ sellersRouter.get('/:id', permitScopes_1.default(['customer', 'sellers', 'seller
  * 販売者更新
  */
 // tslint:disable-next-line:use-default-type-parameter
-sellersRouter.put('/:id', permitScopes_1.default(['sellers']), ...[
+sellersRouter.put('/:id', permitScopes_1.default(['sellers']), rateLimit_1.default, ...[
     check_1.body('typeOf')
         .not()
         .isEmpty()
@@ -181,7 +182,7 @@ sellersRouter.put('/:id', permitScopes_1.default(['sellers']), ...[
 /**
  * 販売者削除
  */
-sellersRouter.delete('/:id', permitScopes_1.default(['sellers']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+sellersRouter.delete('/:id', permitScopes_1.default(['sellers']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         yield sellerRepo.deleteById({
