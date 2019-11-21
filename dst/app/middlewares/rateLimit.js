@@ -45,7 +45,7 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                 nextOnLimitExceeded(new cinerino.factory.errors.RateLimitExceeded(message));
             },
             // スコープ生成ロジックをカスタマイズ
-            scopeGenerator: () => `api:rateLimit:${routeIdentifier}:${req.method}`
+            scopeGenerator: () => `api:rateLimit:${req.project.id}:${routeIdentifier}:${req.method}`
         })(req, res, next);
     }
     catch (error) {
