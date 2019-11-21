@@ -228,27 +228,38 @@ reservationsRouter.post(
                     secret: <string>process.env.TOKEN_SECRET,
                     issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
                 })({ action: new cinerino.repository.Action(mongoose.connection) });
+
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-            const ownershipInfo = await ownershipInfoRepo.search<cinerino.factory.chevre.reservationType.EventReservation>({
-                typeOfGood: {
-                    typeOf: cinerino.factory.chevre.reservationType.EventReservation,
-                    id: payload.typeOfGood.id
-                }
-            })
-                .then((infos) => {
-                    if (infos.length === 0) {
-                        throw new cinerino.factory.errors.NotFound('OwnershipInfo');
-                    }
 
-                    return infos[0];
-                });
+            // const ownershipInfo = await ownershipInfoRepo.search<cinerino.factory.chevre.reservationType.EventReservation>({
+            //     typeOfGood: {
+            //         typeOf: cinerino.factory.chevre.reservationType.EventReservation,
+            //         id: payload.typeOfGood.id
+            //     }
+            // })
+            //     .then((infos) => {
+            //         if (infos.length === 0) {
+            //             throw new cinerino.factory.errors.NotFound('OwnershipInfo');
+            //         }
 
+            //         return infos[0];
+            //     });
+            // 所有権検索
+            const ownershipInfo = await ownershipInfoRepo.findById({
+                id: payload.id
+            });
+            const typeOfGood = ownershipInfo.typeOfGood;
+            if (typeOfGood.typeOf !== cinerino.factory.chevre.reservationType.EventReservation) {
+                throw new cinerino.factory.errors.Argument('token', 'Not reservation');
+            }
+
+            // 予約検索
             const reservationService = new cinerino.chevre.service.Reservation({
                 endpoint: project.settings.chevre.endpoint,
                 auth: chevreAuthClient
             });
             const reservation = await reservationService.findById<cinerino.factory.chevre.reservationType.EventReservation>({
-                id: <string>ownershipInfo.typeOfGood.id
+                id: <string>typeOfGood.id
             });
 
             // 入場

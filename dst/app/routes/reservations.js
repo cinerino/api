@@ -200,24 +200,33 @@ reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitSc
             issuer: process.env.RESOURCE_SERVER_IDENTIFIER
         })({ action: new cinerino.repository.Action(mongoose.connection) });
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-        const ownershipInfo = yield ownershipInfoRepo.search({
-            typeOfGood: {
-                typeOf: cinerino.factory.chevre.reservationType.EventReservation,
-                id: payload.typeOfGood.id
-            }
-        })
-            .then((infos) => {
-            if (infos.length === 0) {
-                throw new cinerino.factory.errors.NotFound('OwnershipInfo');
-            }
-            return infos[0];
+        // const ownershipInfo = await ownershipInfoRepo.search<cinerino.factory.chevre.reservationType.EventReservation>({
+        //     typeOfGood: {
+        //         typeOf: cinerino.factory.chevre.reservationType.EventReservation,
+        //         id: payload.typeOfGood.id
+        //     }
+        // })
+        //     .then((infos) => {
+        //         if (infos.length === 0) {
+        //             throw new cinerino.factory.errors.NotFound('OwnershipInfo');
+        //         }
+        //         return infos[0];
+        //     });
+        // 所有権検索
+        const ownershipInfo = yield ownershipInfoRepo.findById({
+            id: payload.id
         });
+        const typeOfGood = ownershipInfo.typeOfGood;
+        if (typeOfGood.typeOf !== cinerino.factory.chevre.reservationType.EventReservation) {
+            throw new cinerino.factory.errors.Argument('token', 'Not reservation');
+        }
+        // 予約検索
         const reservationService = new cinerino.chevre.service.Reservation({
             endpoint: project.settings.chevre.endpoint,
             auth: chevreAuthClient
         });
         const reservation = yield reservationService.findById({
-            id: ownershipInfo.typeOfGood.id
+            id: typeOfGood.id
         });
         // 入場
         yield reservationService.attendScreeningEvent(reservation);
