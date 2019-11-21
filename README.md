@@ -52,7 +52,6 @@
 | `TRANSACTION_RATE_LIMIT_THRESHOLD`       | true     |                | Transaction rate limit threshold           |
 | `USE_IN_MEMORY_OFFER_REPO`               | false    | 1 or 0         | インメモリオファーリポジトリ使用フラグ     |
 | `USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO` | false    | 1 or 0         | イベント在庫状況Redisリポジトリ使用フラグ  |
-| `USE_TELEPHONE_LAST_DIGIT_ORDER_INQUIRY` | false    | 1 or 0         | 電話番号下数桁での注文照会使用フラグ       |
 | `USE_USERNAME_AS_GMO_MEMBER_ID`          | false    | 1 or 0         | Use username flag for GMO member ID        |
 | `VALIDATE_MOVIE_TICKET`                  | false    | 1 or 0         | Validation flag for movie tickets          |
 | `WAITER_DISABLED`                        | false    | 1 or 0         | WAITER Disable Flag                        |

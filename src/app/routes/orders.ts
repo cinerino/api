@@ -22,7 +22,6 @@ import validator from '../middlewares/validator';
 import * as redis from '../../redis';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-const USE_TELEPHONE_LAST_DIGIT_ORDER_INQUIRY = process.env.USE_TELEPHONE_LAST_DIGIT_ORDER_INQUIRY === '1';
 
 /**
  * 正規表現をエスケープする
@@ -486,10 +485,7 @@ ordersRouter.post(
                         ? `^${escapeRegExp(customer.email)}$`
                         : undefined,
                     telephone: (customer.telephone !== undefined)
-                        ? (USE_TELEPHONE_LAST_DIGIT_ORDER_INQUIRY)
-                            ? `${escapeRegExp(customer.telephone)}$`
-                            : `^${escapeRegExp(customer.telephone)}$`
-
+                        ? `^${escapeRegExp(customer.telephone)}$`
                         : undefined
                 },
                 orderDateFrom: orderDateFrom,
