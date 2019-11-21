@@ -30,6 +30,7 @@ const placeOrder4cinemasunshine_1 = require("./placeOrder4cinemasunshine");
 const redis = require("../../../redis");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
+const USE_TRANSACTION_CLIENT_USER = process.env.USE_TRANSACTION_CLIENT_USER === '1';
 /**
  * GMOメンバーIDにユーザーネームを使用するかどうか
  */
@@ -167,9 +168,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 
                         : []
                 ] }),
             seller: req.body.seller,
-            object: Object.assign({ passport: passport }, {
-                clientUser: req.user
-            }),
+            object: Object.assign({ passport: passport }, (USE_TRANSACTION_CLIENT_USER) ? { clientUser: req.user } : undefined),
             passportValidator: passportValidator
         })({
             project: projectRepo,

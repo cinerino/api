@@ -26,6 +26,7 @@ import * as redis from '../../../redis';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
+const USE_TRANSACTION_CLIENT_USER = process.env.USE_TRANSACTION_CLIENT_USER === '1';
 
 /**
  * GMOメンバーIDにユーザーネームを使用するかどうか
@@ -194,9 +195,7 @@ placeOrderTransactionsRouter.post(
                 seller: req.body.seller,
                 object: {
                     passport: passport,
-                    ...{
-                        clientUser: req.user
-                    }
+                    ...(USE_TRANSACTION_CLIENT_USER) ? { clientUser: req.user } : undefined
                 },
                 passportValidator: passportValidator
             })({
