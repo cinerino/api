@@ -5,7 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import * as middlewares from '@motionpicture/express-middleware';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
-import { body } from 'express-validator/check';
+import { body, query } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as ioredis from 'ioredis';
 import * as mongoose from 'mongoose';
@@ -16,6 +16,14 @@ import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
+
+const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
+    domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.PECORINO_CLIENT_ID,
+    clientSecret: <string>process.env.PECORINO_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 
 const accountsRouter = Router();
 
@@ -77,6 +85,136 @@ accountsRouter.put(
 
             res.status(NO_CONTENT)
                 .end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 口座検索
+ */
+accountsRouter.get(
+    '',
+    permitScopes([]),
+    rateLimit,
+    ...[
+        query('accountType', 'invalid accountType')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+        // query('bookingFrom')
+        //     .not()
+        //     .isEmpty()
+        //     .isISO8601()
+        //     .toDate(),
+        // query('bookingThrough')
+        //     .not()
+        //     .isEmpty()
+        //     .isISO8601()
+        //     .toDate()
+        //     .custom((value, { req }) => {
+        //         // 期間指定を限定
+        //         const bookingThrough = moment(value);
+        //         if (req.query !== undefined) {
+        //             const bookingThroughExpectedToBe = moment(req.query.bookingFrom)
+        //                 .add(1, 'months');
+        //             if (bookingThrough.isAfter(bookingThroughExpectedToBe)) {
+        //                 throw new Error('Booking time range too large');
+        //             }
+        //         }
+
+        //         return true;
+        //     })
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+            if (project.settings.pecorino === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+            }
+
+            // クエリをそのままPecorino検索へパス
+            const accountService = new cinerino.pecorinoapi.service.Account({
+                endpoint: project.settings.pecorino.endpoint,
+                auth: pecorinoAuthClient
+            });
+            const searchResult = await accountService.searchWithTotalCount({
+                ...req.query,
+                project: { ids: [req.project.id] }
+            });
+            res.set('X-Total-Count', searchResult.totalCount.toString());
+            res.json(searchResult.data);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 取引履歴検索
+ */
+accountsRouter.get(
+    '/actions/moneyTransfer',
+    permitScopes([]),
+    rateLimit,
+    ...[
+        query('accountType', 'invalid accountType')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+        // query('bookingFrom')
+        //     .not()
+        //     .isEmpty()
+        //     .isISO8601()
+        //     .toDate(),
+        // query('bookingThrough')
+        //     .not()
+        //     .isEmpty()
+        //     .isISO8601()
+        //     .toDate()
+        //     .custom((value, { req }) => {
+        //         // 期間指定を限定
+        //         const bookingThrough = moment(value);
+        //         if (req.query !== undefined) {
+        //             const bookingThroughExpectedToBe = moment(req.query.bookingFrom)
+        //                 .add(1, 'months');
+        //             if (bookingThrough.isAfter(bookingThroughExpectedToBe)) {
+        //                 throw new Error('Booking time range too large');
+        //             }
+        //         }
+
+        //         return true;
+        //     })
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+            if (project.settings.pecorino === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+            }
+
+            // クエリをそのままPecorino検索へパス
+            const actionService = new cinerino.pecorinoapi.service.Action({
+                endpoint: project.settings.pecorino.endpoint,
+                auth: pecorinoAuthClient
+            });
+            const searchResult = await actionService.searchMoneyTransferActions({
+                ...req.query,
+                project: { ids: [req.project.id] }
+            });
+            res.set('X-Total-Count', searchResult.totalCount.toString());
+            res.json(searchResult.data);
         } catch (error) {
             next(error);
         }
