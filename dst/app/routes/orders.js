@@ -574,12 +574,6 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
                         code: codeRepo
                     });
                     offer.itemOffered.reservedTicket.ticketToken = authorization.code;
-                    // offer.itemOffered.reservedTicket.ticketToken = await codeRepo.publish({
-                    //     project: req.project,
-                    //     data: ownershipInfo,
-                    //     validFrom: now,
-                    //     expiresInSeconds: CODE_EXPIRES_IN_SECONDS
-                    // });
                 }
             }
             return offer;
