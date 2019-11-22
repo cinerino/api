@@ -23,6 +23,8 @@ import * as redis from '../../../redis';
 
 const debug = createDebug('cinerino-api:router');
 
+const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
+
 export interface ICOATicket extends cinerino.COA.services.master.ITicketResult {
     theaterCode: string;
 }
@@ -511,6 +513,7 @@ placeOrder4cinemasunshineRouter.post(
             id: req.params.transactionId
         })(req, res, next);
     },
+    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             const orderDate = new Date();
@@ -563,7 +566,7 @@ placeOrder4cinemasunshineRouter.post(
                         confirmationNumber: (params) => {
                             const firstOffer = params.acceptedOffers[0];
 
-                            // COAに適合させるため、座席予約の場合、確認番号をCOA予約番号に強制変換
+                            // COAに適合させるため、座席予約の場合、予約番号を確認番号として設定
                             if (firstOffer !== undefined
                                 && firstOffer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
                                 return String(firstOffer.itemOffered.reservationNumber);
@@ -583,7 +586,7 @@ placeOrder4cinemasunshineRouter.post(
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
             // tslint:disable-next-line:no-floating-promises
             cinerino.service.transaction.placeOrder.exportTasks({
-                project: undefined,
+                project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
                 status: cinerino.factory.transactionStatusType.Confirmed
             })({
                 task: new cinerino.repository.Task(mongoose.connection),

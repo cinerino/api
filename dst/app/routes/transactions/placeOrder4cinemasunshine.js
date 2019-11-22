@@ -27,6 +27,7 @@ const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4t
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
 const debug = createDebug('cinerino-api:router');
+const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 let coaTickets;
 function initializeCOATickets() {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
@@ -418,7 +419,9 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/confirm', permitScopes_1.d
         typeOf: cinerino.factory.transactionType.PlaceOrder,
         id: req.params.transactionId
     })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+}), 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const orderDate = new Date();
         const sendEmailMessage = req.body.sendEmailMessage === true;
@@ -459,7 +462,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/confirm', permitScopes_1.d
                     orderDate: orderDate,
                     confirmationNumber: (params) => {
                         const firstOffer = params.acceptedOffers[0];
-                        // COAに適合させるため、座席予約の場合、確認番号をCOA予約番号に強制変換
+                        // COAに適合させるため、座席予約の場合、予約番号を確認番号として設定
                         if (firstOffer !== undefined
                             && firstOffer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
                             return String(firstOffer.itemOffered.reservationNumber);
@@ -478,7 +481,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/confirm', permitScopes_1.d
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
         // tslint:disable-next-line:no-floating-promises
         cinerino.service.transaction.placeOrder.exportTasks({
-            project: undefined,
+            project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
             status: cinerino.factory.transactionStatusType.Confirmed
         })({
             task: new cinerino.repository.Task(mongoose.connection),

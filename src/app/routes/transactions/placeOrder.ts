@@ -27,6 +27,7 @@ import * as redis from '../../../redis';
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
 const USE_TRANSACTION_CLIENT_USER = process.env.USE_TRANSACTION_CLIENT_USER === '1';
+const USE_RESERVATION_NUMBER_AS_CONFIRMATION_NUMBER = process.env.USE_RESERVATION_NUMBER_AS_CONFIRMATION_NUMBER === '1';
 
 /**
  * GMOメンバーIDにユーザーネームを使用するかどうか
@@ -1169,8 +1170,22 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 });
             }
 
-            const confirmationNumber:
-                string | cinerino.service.transaction.placeOrderInProgress.IConfirmationNumberGenerator | undefined = undefined;
+            let confirmationNumber:
+                string | cinerino.service.transaction.placeOrderInProgress.IConfirmationNumberGenerator | undefined;
+
+            if (USE_RESERVATION_NUMBER_AS_CONFIRMATION_NUMBER) {
+                confirmationNumber = (params) => {
+                    const firstOffer = params.acceptedOffers[0];
+
+                    // COAに適合させるため、座席予約の場合、予約番号を確認番号として設定
+                    if (firstOffer !== undefined
+                        && firstOffer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
+                        return String(firstOffer.itemOffered.reservationNumber);
+                    } else {
+                        return params.confirmationNumber;
+                    }
+                };
+            }
 
             const resultOrderParams: cinerino.service.transaction.placeOrderInProgress.IResultOrderParams = {
                 ...(req.body.result !== undefined && req.body.result !== null) ? req.body.result.order : undefined,
