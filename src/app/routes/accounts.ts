@@ -146,7 +146,7 @@ accountsRouter.get(
             });
             const searchResult = await accountService.searchWithTotalCount({
                 ...req.query,
-                project: { ids: [req.project.id] }
+                project: { id: { $eq: req.project.id } }
             });
             res.set('X-Total-Count', searchResult.totalCount.toString());
             res.json(searchResult.data);
@@ -211,7 +211,7 @@ accountsRouter.get(
             });
             const searchResult = await actionService.searchMoneyTransferActions({
                 ...req.query,
-                project: { ids: [req.project.id] }
+                project: { id: { $eq: req.project.id } }
             });
             res.set('X-Total-Count', searchResult.totalCount.toString());
             res.json(searchResult.data);
