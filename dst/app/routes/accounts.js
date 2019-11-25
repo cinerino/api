@@ -126,7 +126,7 @@ accountsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
             endpoint: project.settings.pecorino.endpoint,
             auth: pecorinoAuthClient
         });
-        const searchResult = yield accountService.searchWithTotalCount(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }));
+        const searchResult = yield accountService.search(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }));
         res.set('X-Total-Count', searchResult.totalCount.toString());
         res.json(searchResult.data);
     }

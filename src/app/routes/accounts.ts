@@ -144,7 +144,7 @@ accountsRouter.get(
                 endpoint: project.settings.pecorino.endpoint,
                 auth: pecorinoAuthClient
             });
-            const searchResult = await accountService.searchWithTotalCount({
+            const searchResult = await accountService.search({
                 ...req.query,
                 project: { id: { $eq: req.project.id } }
             });
