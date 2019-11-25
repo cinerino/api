@@ -222,10 +222,10 @@ accountsRouter.get(
 );
 
 // tslint:disable-next-line:no-magic-numbers
-const UNIT_IN_SECONDS = 60;
+const UNIT_IN_SECONDS = 1;
 
 // tslint:disable-next-line:no-magic-numbers
-const THRESHOLD = 60;
+const THRESHOLD = 1;
 
 const redisClient = new ioredis({
     host: <string>process.env.REDIS_HOST,
