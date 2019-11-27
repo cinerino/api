@@ -5,6 +5,8 @@ import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 
+import { } from '../../@types/index';
+
 const debug = createDebug('cinerino-api:middlewares');
 
 export const SCOPE_ADMIN = 'admin';
