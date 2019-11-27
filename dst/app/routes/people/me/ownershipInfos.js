@@ -113,12 +113,6 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['customer'])
             project: projectRepo
         });
         const code = authorization.code;
-        // const code = await codeRepo.publish({
-        //     project: req.project,
-        //     data: ownershipInfo,
-        //     validFrom: new Date(),
-        //     expiresInSeconds: CODE_EXPIRES_IN_SECONDS
-        // });
         // 座席予約に対する所有権であれば、Chevreでチェックイン
         if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
             if (project.settings === undefined) {
