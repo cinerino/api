@@ -23,7 +23,6 @@ const validator_1 = require("../../../middlewares/validator");
 const accounts_1 = require("./ownershipInfos/accounts");
 const creditCards_1 = require("./ownershipInfos/creditCards");
 const reservations_1 = require("./ownershipInfos/reservations");
-const CODE_EXPIRES_IN_SECONDS = Number(process.env.CODE_EXPIRES_IN_SECONDS);
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -107,11 +106,11 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['customer'])
             recipient: req.agent,
             object: ownershipInfo,
             purpose: {},
-            validFrom: new Date(),
-            expiresInSeconds: CODE_EXPIRES_IN_SECONDS
+            validFrom: new Date()
         })({
             action: actionRepo,
-            code: codeRepo
+            code: codeRepo,
+            project: projectRepo
         });
         const code = authorization.code;
         // const code = await codeRepo.publish({

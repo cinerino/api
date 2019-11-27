@@ -133,6 +133,7 @@ peopleRouter.delete('/:id', permitScopes_1.default([]), rateLimit_1.default, val
             action: actionRepo,
             creditCard: creditCardRepo,
             person: personRepo,
+            project: projectRepo,
             task: taskRepo
         });
         res.status(http_status_1.NO_CONTENT)

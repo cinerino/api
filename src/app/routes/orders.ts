@@ -31,7 +31,7 @@ function escapeRegExp(params: string) {
 }
 
 type EventReservationGoodType = cinerino.factory.ownershipInfo.IGood<cinerino.factory.chevre.reservationType.EventReservation>;
-const CODE_EXPIRES_IN_SECONDS = Number(process.env.CODE_EXPIRES_IN_SECONDS);
+
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -677,11 +677,11 @@ ordersRouter.post<ParamsDictionary>(
                             recipient: req.agent,
                             object: ownershipInfo,
                             purpose: {},
-                            validFrom: now,
-                            expiresInSeconds: CODE_EXPIRES_IN_SECONDS
+                            validFrom: now
                         })({
                             action: actionRepo,
-                            code: codeRepo
+                            code: codeRepo,
+                            project: projectRepo
                         });
 
                         offer.itemOffered.reservedTicket.ticketToken = authorization.code;

@@ -15,8 +15,6 @@ import accountsRouter from './ownershipInfos/accounts';
 import creditCardsRouter from './ownershipInfos/creditCards';
 import reservationsRouter from './ownershipInfos/reservations';
 
-const CODE_EXPIRES_IN_SECONDS = Number(process.env.CODE_EXPIRES_IN_SECONDS);
-
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -132,20 +130,13 @@ ownershipInfosRouter.post(
                 recipient: req.agent,
                 object: ownershipInfo,
                 purpose: {},
-                validFrom: new Date(),
-                expiresInSeconds: CODE_EXPIRES_IN_SECONDS
+                validFrom: new Date()
             })({
                 action: actionRepo,
-                code: codeRepo
+                code: codeRepo,
+                project: projectRepo
             });
             const code = authorization.code;
-
-            // const code = await codeRepo.publish({
-            //     project: req.project,
-            //     data: ownershipInfo,
-            //     validFrom: new Date(),
-            //     expiresInSeconds: CODE_EXPIRES_IN_SECONDS
-            // });
 
             // 座席予約に対する所有権であれば、Chevreでチェックイン
             if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {

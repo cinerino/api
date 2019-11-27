@@ -1212,6 +1212,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 }
             })({
                 action: actionRepo,
+                project: projectRepo,
                 transaction: transactionRepo,
                 confirmationNumber: confirmationNumberRepo,
                 orderNumber: orderNumberRepo,
@@ -1224,6 +1225,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
                 status: cinerino.factory.transactionStatusType.Confirmed
             })({
+                project: projectRepo,
                 task: taskRepo,
                 transaction: transactionRepo
             })
@@ -1267,8 +1269,10 @@ placeOrderTransactionsRouter.put(
     },
     async (req, res, next) => {
         try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+
             await transactionRepo.cancel({
                 typeOf: cinerino.factory.transactionType.PlaceOrder,
                 id: req.params.transactionId
@@ -1280,6 +1284,7 @@ placeOrderTransactionsRouter.put(
                 project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
                 status: cinerino.factory.transactionStatusType.Canceled
             })({
+                project: projectRepo,
                 task: taskRepo,
                 transaction: transactionRepo
             });

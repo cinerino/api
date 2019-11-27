@@ -159,6 +159,7 @@ peopleRouter.delete(
                 action: actionRepo,
                 creditCard: creditCardRepo,
                 person: personRepo,
+                project: projectRepo,
                 task: taskRepo
             });
 

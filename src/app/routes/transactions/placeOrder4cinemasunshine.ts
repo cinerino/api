@@ -554,6 +554,8 @@ placeOrder4cinemasunshineRouter.post(
                 });
             }
 
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+
             const result = await cinerino.service.transaction.placeOrderInProgress.confirm({
                 ...req.body,
                 agent: { id: req.user.sub },
@@ -578,6 +580,7 @@ placeOrder4cinemasunshineRouter.post(
                 }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
+                project: projectRepo,
                 transaction: new cinerino.repository.Transaction(mongoose.connection),
                 orderNumber: new cinerino.repository.OrderNumber(redis.getClient()),
                 seller: new cinerino.repository.Seller(mongoose.connection)
@@ -589,6 +592,7 @@ placeOrder4cinemasunshineRouter.post(
                 project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
                 status: cinerino.factory.transactionStatusType.Confirmed
             })({
+                project: projectRepo,
                 task: new cinerino.repository.Task(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             })

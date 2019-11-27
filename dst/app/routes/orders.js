@@ -32,7 +32,6 @@ const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 function escapeRegExp(params) {
     return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
 }
-const CODE_EXPIRES_IN_SECONDS = Number(process.env.CODE_EXPIRES_IN_SECONDS);
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -567,11 +566,11 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
                         recipient: req.agent,
                         object: ownershipInfo,
                         purpose: {},
-                        validFrom: now,
-                        expiresInSeconds: CODE_EXPIRES_IN_SECONDS
+                        validFrom: now
                     })({
                         action: actionRepo,
-                        code: codeRepo
+                        code: codeRepo,
+                        project: projectRepo
                     });
                     offer.itemOffered.reservedTicket.ticketToken = authorization.code;
                 }

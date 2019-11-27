@@ -991,6 +991,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             } });
         const result = yield cinerino.service.transaction.placeOrderInProgress.confirm(Object.assign(Object.assign({}, req.body), { agent: { id: req.user.sub }, id: req.params.transactionId, potentialActions: potentialActions, project: req.project, result: Object.assign(Object.assign({}, req.body.result), { order: resultOrderParams }) }))({
             action: actionRepo,
+            project: projectRepo,
             transaction: transactionRepo,
             confirmationNumber: confirmationNumberRepo,
             orderNumber: orderNumberRepo,
@@ -1002,6 +1003,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
             status: cinerino.factory.transactionStatusType.Confirmed
         })({
+            project: projectRepo,
             task: taskRepo,
             transaction: transactionRepo
         })
@@ -1037,6 +1039,7 @@ placeOrderTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.defaul
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         yield transactionRepo.cancel({
@@ -1049,6 +1052,7 @@ placeOrderTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.defaul
             project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
             status: cinerino.factory.transactionStatusType.Canceled
         })({
+            project: projectRepo,
             task: taskRepo,
             transaction: transactionRepo
         });

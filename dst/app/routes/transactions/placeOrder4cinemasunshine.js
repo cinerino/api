@@ -457,6 +457,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/confirm', permitScopes_1.d
                 object: email
             });
         }
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const result = yield cinerino.service.transaction.placeOrderInProgress.confirm(Object.assign(Object.assign({}, req.body), { agent: { id: req.user.sub }, id: req.params.transactionId, potentialActions: potentialActions, project: req.project, result: {
                 order: {
                     orderDate: orderDate,
@@ -474,6 +475,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/confirm', permitScopes_1.d
                 }
             } }))({
             action: new cinerino.repository.Action(mongoose.connection),
+            project: projectRepo,
             transaction: new cinerino.repository.Transaction(mongoose.connection),
             orderNumber: new cinerino.repository.OrderNumber(redis.getClient()),
             seller: new cinerino.repository.Seller(mongoose.connection)
@@ -484,6 +486,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/confirm', permitScopes_1.d
             project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
             status: cinerino.factory.transactionStatusType.Confirmed
         })({
+            project: projectRepo,
             task: new cinerino.repository.Task(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         })
