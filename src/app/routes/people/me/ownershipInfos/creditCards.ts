@@ -10,11 +10,6 @@ import permitScopes from '../../../../middlewares/permitScopes';
 import rateLimit from '../../../../middlewares/rateLimit';
 import validator from '../../../../middlewares/validator';
 
-/**
- * GMOメンバーIDにユーザーネームを使用するかどうか
- */
-const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
-
 const creditCardsRouter = Router();
 
 /**
@@ -34,7 +29,8 @@ creditCardsRouter.post(
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
 
-            const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? <string>req.user.username : req.user.sub;
+            const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+            const memberId = (useUsernameAsGMOMemberId) ? <string>req.user.username : req.user.sub;
             const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
                 siteId: project.settings.gmo.siteId,
                 sitePass: project.settings.gmo.sitePass,
@@ -69,7 +65,8 @@ creditCardsRouter.get(
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
 
-            const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? <string>req.user.username : req.user.sub;
+            const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+            const memberId = (useUsernameAsGMOMemberId) ? <string>req.user.username : req.user.sub;
             const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
                 siteId: project.settings.gmo.siteId,
                 sitePass: project.settings.gmo.sitePass,
@@ -101,7 +98,8 @@ creditCardsRouter.delete(
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
 
-            const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? <string>req.user.username : req.user.sub;
+            const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+            const memberId = (useUsernameAsGMOMemberId) ? <string>req.user.username : req.user.sub;
             const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
                 siteId: project.settings.gmo.siteId,
                 sitePass: project.settings.gmo.sitePass,

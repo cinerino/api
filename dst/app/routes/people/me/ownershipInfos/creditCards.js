@@ -19,10 +19,6 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../../../../middlewares/permitScopes");
 const rateLimit_1 = require("../../../../middlewares/rateLimit");
 const validator_1 = require("../../../../middlewares/validator");
-/**
- * GMOメンバーIDにユーザーネームを使用するかどうか
- */
-const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
 const creditCardsRouter = express_1.Router();
 /**
  * 会員クレジットカード追加
@@ -35,7 +31,8 @@ creditCardsRouter.post('', permitScopes_1.default(['customer']), rateLimit_1.def
             || project.settings.gmo === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
         }
-        const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
+        const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+        const memberId = (useUsernameAsGMOMemberId) ? req.user.username : req.user.sub;
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
             siteId: project.settings.gmo.siteId,
             sitePass: project.settings.gmo.sitePass,
@@ -63,7 +60,8 @@ creditCardsRouter.get('', permitScopes_1.default(['customer']), rateLimit_1.defa
             || project.settings.gmo === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
         }
-        const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
+        const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+        const memberId = (useUsernameAsGMOMemberId) ? req.user.username : req.user.sub;
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
             siteId: project.settings.gmo.siteId,
             sitePass: project.settings.gmo.sitePass,
@@ -87,7 +85,8 @@ creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['customer']), rate
             || project.settings.gmo === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
         }
-        const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
+        const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+        const memberId = (useUsernameAsGMOMemberId) ? req.user.username : req.user.sub;
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
             siteId: project.settings.gmo.siteId,
             sitePass: project.settings.gmo.sitePass,

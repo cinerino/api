@@ -27,12 +27,7 @@ import * as redis from '../../../redis';
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
 const USE_TRANSACTION_CLIENT_USER = process.env.USE_TRANSACTION_CLIENT_USER === '1';
-const USE_RESERVATION_NUMBER_AS_CONFIRMATION_NUMBER = process.env.USE_RESERVATION_NUMBER_AS_CONFIRMATION_NUMBER === '1';
 
-/**
- * GMOメンバーIDにユーザーネームを使用するかどうか
- */
-const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== undefined)
     ? Number(process.env.NUM_ORDER_ITEMS_MAX_VALUE)
@@ -585,9 +580,13 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
     },
     async (req, res, next) => {
         try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+
             // 会員IDを強制的にログイン中の人物IDに変更
             type ICreditCard4authorizeAction = cinerino.factory.action.authorize.paymentMethod.creditCard.ICreditCard;
-            const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? <string>req.user.username : req.user.sub;
+            const memberId = (useUsernameAsGMOMemberId) ? <string>req.user.username : req.user.sub;
             const creditCard: ICreditCard4authorizeAction = {
                 ...req.body.creditCard,
                 memberId: memberId
@@ -613,7 +612,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
                 purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                project: new cinerino.repository.Project(mongoose.connection),
+                project: projectRepo,
                 transaction: new cinerino.repository.Transaction(mongoose.connection),
                 seller: new cinerino.repository.Seller(mongoose.connection)
             });
@@ -1128,6 +1127,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
             const orderDate = new Date();
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
             const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
@@ -1173,7 +1173,10 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
             let confirmationNumber:
                 string | cinerino.service.transaction.placeOrderInProgress.IConfirmationNumberGenerator | undefined;
 
-            if (USE_RESERVATION_NUMBER_AS_CONFIRMATION_NUMBER) {
+            const project = await projectRepo.findById({ id: req.project.id });
+            const useReservationNumberAsConfirmationNumber =
+                project.settings !== undefined && project.settings.useReservationNumberAsConfirmationNumber === true;
+            if (useReservationNumberAsConfirmationNumber) {
                 confirmationNumber = (params) => {
                     const firstOffer = params.acceptedOffers[0];
 
@@ -1206,8 +1209,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 result: {
                     ...req.body.result,
                     order: resultOrderParams
-                },
-                validateMovieTicket: (process.env.VALIDATE_MOVIE_TICKET === '1')
+                }
             })({
                 action: actionRepo,
                 transaction: transactionRepo,

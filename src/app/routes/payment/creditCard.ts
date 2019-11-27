@@ -17,11 +17,6 @@ import rateLimit from '../../middlewares/rateLimit';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
-/**
- * GMOメンバーIDにユーザーネームを使用するかどうか
- */
-const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
-
 const creditCardPaymentRouter = Router();
 creditCardPaymentRouter.use(authentication);
 
@@ -90,9 +85,13 @@ creditCardPaymentRouter.post<ParamsDictionary>(
     },
     async (req, res, next) => {
         try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+
             // 会員IDを強制的にログイン中の人物IDに変更
             type ICreditCard4authorizeAction = cinerino.factory.action.authorize.paymentMethod.creditCard.ICreditCard;
-            const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? <string>req.user.username : req.user.sub;
+            const memberId = (useUsernameAsGMOMemberId) ? <string>req.user.username : req.user.sub;
             const creditCard: ICreditCard4authorizeAction = {
                 ...req.body.object.creditCard,
                 memberId: memberId
@@ -117,7 +116,7 @@ creditCardPaymentRouter.post<ParamsDictionary>(
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                project: new cinerino.repository.Project(mongoose.connection),
+                project: projectRepo,
                 transaction: new cinerino.repository.Transaction(mongoose.connection),
                 seller: new cinerino.repository.Seller(mongoose.connection)
             });

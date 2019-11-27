@@ -15,12 +15,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-/**
- * GMOメンバーIDにユーザーネームを使用するかどうか
- * @deprecated 互換性維持目的であれば、基本的にユーザーIDを使用すること
- */
-const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
-
 const peopleRouter = Router();
 peopleRouter.use(authentication);
 
@@ -268,9 +262,11 @@ peopleRouter.get(
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
 
+            const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+
             let memberId = req.params.id;
 
-            if (USE_USERNAME_AS_GMO_MEMBER_ID) {
+            if (useUsernameAsGMOMemberId) {
                 const personRepo = new cinerino.repository.Person({
                     userPoolId: project.settings.cognito.customerUserPool.id
                 });
@@ -318,7 +314,9 @@ peopleRouter.delete(
 
             let memberId = req.params.id;
 
-            if (USE_USERNAME_AS_GMO_MEMBER_ID) {
+            const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+
+            if (useUsernameAsGMOMemberId) {
                 const personRepo = new cinerino.repository.Person({
                     userPoolId: project.settings.cognito.customerUserPool.id
                 });

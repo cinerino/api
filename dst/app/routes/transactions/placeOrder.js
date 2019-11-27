@@ -31,11 +31,6 @@ const redis = require("../../../redis");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
 const USE_TRANSACTION_CLIENT_USER = process.env.USE_TRANSACTION_CLIENT_USER === '1';
-const USE_RESERVATION_NUMBER_AS_CONFIRMATION_NUMBER = process.env.USE_RESERVATION_NUMBER_AS_CONFIRMATION_NUMBER === '1';
-/**
- * GMOメンバーIDにユーザーネームを使用するかどうか
- */
-const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== undefined)
     ? Number(process.env.NUM_ORDER_ITEMS_MAX_VALUE)
@@ -491,7 +486,10 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+        const memberId = (useUsernameAsGMOMemberId) ? req.user.username : req.user.sub;
         const creditCard = Object.assign(Object.assign({}, req.body.creditCard), { memberId: memberId });
         debug('authorizing credit card...', creditCard);
         debug('authorizing credit card...', req.body.creditCard);
@@ -506,7 +504,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
+            project: projectRepo,
             transaction: new cinerino.repository.Transaction(mongoose.connection),
             seller: new cinerino.repository.Seller(mongoose.connection)
         });
@@ -932,6 +930,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
     try {
         const orderDate = new Date();
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
         const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
@@ -971,7 +970,9 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             });
         }
         let confirmationNumber;
-        if (USE_RESERVATION_NUMBER_AS_CONFIRMATION_NUMBER) {
+        const project = yield projectRepo.findById({ id: req.project.id });
+        const useReservationNumberAsConfirmationNumber = project.settings !== undefined && project.settings.useReservationNumberAsConfirmationNumber === true;
+        if (useReservationNumberAsConfirmationNumber) {
             confirmationNumber = (params) => {
                 const firstOffer = params.acceptedOffers[0];
                 // COAに適合させるため、座席予約の場合、予約番号を確認番号として設定
@@ -988,7 +989,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
                 maxValue: NUM_ORDER_ITEMS_MAX_VALUE
                 // minValue: 0
             } });
-        const result = yield cinerino.service.transaction.placeOrderInProgress.confirm(Object.assign(Object.assign({}, req.body), { agent: { id: req.user.sub }, id: req.params.transactionId, potentialActions: potentialActions, project: req.project, result: Object.assign(Object.assign({}, req.body.result), { order: resultOrderParams }), validateMovieTicket: (process.env.VALIDATE_MOVIE_TICKET === '1') }))({
+        const result = yield cinerino.service.transaction.placeOrderInProgress.confirm(Object.assign(Object.assign({}, req.body), { agent: { id: req.user.sub }, id: req.params.transactionId, potentialActions: potentialActions, project: req.project, result: Object.assign(Object.assign({}, req.body.result), { order: resultOrderParams }) }))({
             action: actionRepo,
             transaction: transactionRepo,
             confirmationNumber: confirmationNumberRepo,

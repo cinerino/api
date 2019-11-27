@@ -24,10 +24,6 @@ const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
-/**
- * GMOメンバーIDにユーザーネームを使用するかどうか
- */
-const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
 const creditCardPaymentRouter = express_1.Router();
 creditCardPaymentRouter.use(authentication_1.default);
 /**
@@ -87,7 +83,10 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['customer', '
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+        const memberId = (useUsernameAsGMOMemberId) ? req.user.username : req.user.sub;
         const creditCard = Object.assign(Object.assign({}, req.body.object.creditCard), { memberId: memberId });
         const action = yield cinerino.service.payment.creditCard.authorize({
             project: req.project,
@@ -100,7 +99,7 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['customer', '
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
+            project: projectRepo,
             transaction: new cinerino.repository.Transaction(mongoose.connection),
             seller: new cinerino.repository.Seller(mongoose.connection)
         });

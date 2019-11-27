@@ -22,10 +22,6 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
-/**
- * GMOメンバーIDにユーザーネームを使用するかどうか
- */
-const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
 const CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP = process.env.CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP === '1';
 const me4cinemasunshineRouter = express_1.Router();
 /**
@@ -133,7 +129,8 @@ function checkCard(req, amount) {
             throw new cinerino.factory.errors.Argument('transaction', 'Credit card payment settings not enough');
         }
         // 事前にクレジットカードを登録しているはず
-        const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? req.user.username : req.user.sub;
+        const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+        const memberId = (useUsernameAsGMOMemberId) ? req.user.username : req.user.sub;
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
             siteId: project.settings.gmo.siteId,
             sitePass: project.settings.gmo.sitePass,

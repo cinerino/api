@@ -13,10 +13,6 @@ import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
-/**
- * GMOメンバーIDにユーザーネームを使用するかどうか
- */
-const USE_USERNAME_AS_GMO_MEMBER_ID = process.env.USE_USERNAME_AS_GMO_MEMBER_ID === '1';
 const CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP = process.env.CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP === '1';
 
 const me4cinemasunshineRouter = Router();
@@ -140,7 +136,8 @@ async function checkCard(req: Request, amount: number) {
     }
 
     // 事前にクレジットカードを登録しているはず
-    const memberId = (USE_USERNAME_AS_GMO_MEMBER_ID) ? <string>req.user.username : req.user.sub;
+    const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+    const memberId = (useUsernameAsGMOMemberId) ? <string>req.user.username : req.user.sub;
     const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
         siteId: project.settings.gmo.siteId,
         sitePass: project.settings.gmo.sitePass,
