@@ -35,6 +35,6 @@ export default (params: {
             next(new cinerino.factory.errors.RateLimitExceeded(message));
         },
         // スコープ生成ロジックをカスタマイズ
-        scopeGenerator: (_) => `api:rateLimit4transactionInProgress:${params.typeOf}:${params.id}`
+        scopeGenerator: (req) => `api:${req.project.id}:rateLimit4transactionInProgress:${params.typeOf}:${params.id}`
     });
 };
