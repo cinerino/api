@@ -25,9 +25,7 @@ import placeOrder4cinemasunshineRouter from './placeOrder4cinemasunshine';
 import * as redis from '../../../redis';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
 const USE_TRANSACTION_CLIENT_USER = process.env.USE_TRANSACTION_CLIENT_USER === '1';
-
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== undefined)
     ? Number(process.env.NUM_ORDER_ITEMS_MAX_VALUE)
@@ -359,7 +357,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
                 project: projectRepo,
                 seller: new cinerino.repository.Seller(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection),
-                ...(USE_EVENT_REPO) ? { event: new cinerino.repository.Event(mongoose.connection) } : undefined
+                event: new cinerino.repository.Event(mongoose.connection)
             });
 
             res.status(CREATED)
@@ -940,7 +938,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
                     endpoint: project.settings.mvtkReserve.endpoint,
                     auth: mvtkReserveAuthClient
                 }),
-                ...(USE_EVENT_REPO) ? { event: new cinerino.repository.Event(mongoose.connection) } : undefined
+                event: new cinerino.repository.Event(mongoose.connection)
             });
             res.status(CREATED)
                 .json(action);

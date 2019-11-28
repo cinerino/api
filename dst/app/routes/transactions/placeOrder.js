@@ -29,7 +29,6 @@ const validator_1 = require("../../middlewares/validator");
 const placeOrder4cinemasunshine_1 = require("./placeOrder4cinemasunshine");
 const redis = require("../../../redis");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
 const USE_TRANSACTION_CLIENT_USER = process.env.USE_TRANSACTION_CLIENT_USER === '1';
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== undefined)
@@ -295,10 +294,17 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
             object: Object.assign({}, req.body),
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId }
-        })(Object.assign({ action: new cinerino.repository.Action(mongoose.connection), movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
+        })({
+            action: new cinerino.repository.Action(mongoose.connection),
+            movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
                 endpoint: project.settings.mvtkReserve.endpoint,
                 auth: mvtkReserveAuthClient
-            }), project: projectRepo, seller: new cinerino.repository.Seller(mongoose.connection), transaction: new cinerino.repository.Transaction(mongoose.connection) }, (USE_EVENT_REPO) ? { event: new cinerino.repository.Event(mongoose.connection) } : undefined));
+            }),
+            project: projectRepo,
+            seller: new cinerino.repository.Seller(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection),
+            event: new cinerino.repository.Event(mongoose.connection)
+        });
         res.status(http_status_1.CREATED)
             .json(action);
     }
@@ -774,10 +780,17 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
                 movieTickets: req.body.movieTickets
             },
             purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
-        })(Object.assign({ action: new cinerino.repository.Action(mongoose.connection), project: new cinerino.repository.Project(mongoose.connection), seller: new cinerino.repository.Seller(mongoose.connection), transaction: new cinerino.repository.Transaction(mongoose.connection), movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
+        })({
+            action: new cinerino.repository.Action(mongoose.connection),
+            project: new cinerino.repository.Project(mongoose.connection),
+            seller: new cinerino.repository.Seller(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection),
+            movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
                 endpoint: project.settings.mvtkReserve.endpoint,
                 auth: mvtkReserveAuthClient
-            }) }, (USE_EVENT_REPO) ? { event: new cinerino.repository.Event(mongoose.connection) } : undefined));
+            }),
+            event: new cinerino.repository.Event(mongoose.connection)
+        });
         res.status(http_status_1.CREATED)
             .json(action);
     }

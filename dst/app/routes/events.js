@@ -24,7 +24,6 @@ const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const screeningEvent_1 = require("./events/screeningEvent");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -104,7 +103,11 @@ eventsRouter.get('', permitScopes_1.default(['customer', 'events', 'events.read-
             const searchEventsResult = yield cinerino.service.offer.searchEvents({
                 project: req.project,
                 conditions: searchConditions
-            })(Object.assign({ attendeeCapacity: attendeeCapacityRepo, project: projectRepo }, (USE_EVENT_REPO) ? { event: eventRepo } : undefined));
+            })({
+                attendeeCapacity: attendeeCapacityRepo,
+                project: projectRepo,
+                event: eventRepo
+            });
             events = searchEventsResult.data;
             totalCount = searchEventsResult.totalCount;
         }
@@ -124,6 +127,8 @@ eventsRouter.get('/:id', permitScopes_1.default(['customer', 'events', 'events.r
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         let event;
+        const project = yield projectRepo.findById({ id: req.project.id });
+        const useEventRepo = project.settings !== undefined && project.settings.useEventRepo === true;
         // Cinemasunshine対応
         if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
             event = yield cinerino.service.offer.findEventById4cinemasunshine(req.params.id)({
@@ -132,11 +137,10 @@ eventsRouter.get('/:id', permitScopes_1.default(['customer', 'events', 'events.r
             });
         }
         else {
-            if (USE_EVENT_REPO) {
+            if (useEventRepo) {
                 event = yield eventRepo.findById({ id: req.params.id });
             }
             else {
-                const project = yield projectRepo.findById({ id: req.project.id });
                 if (project.settings === undefined || project.settings.chevre === undefined) {
                     throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
                 }
@@ -163,7 +167,10 @@ eventsRouter.get('/:id/offers', permitScopes_1.default(['customer', 'events', 'e
         const offers = yield cinerino.service.offer.searchEventOffers({
             project: req.project,
             event: { id: req.params.id }
-        })(Object.assign({ project: projectRepo }, (USE_EVENT_REPO) ? { event: eventRepo } : undefined));
+        })({
+            project: projectRepo,
+            event: eventRepo
+        });
         res.json(offers);
     }
     catch (error) {
@@ -193,7 +200,11 @@ eventsRouter.get('/:id/offers/ticket', permitScopes_1.default(['customer', 'even
             event: { id: req.params.id },
             seller: req.query.seller,
             store: req.query.store
-        })(Object.assign({ project: projectRepo, seller: sellerRepo }, (USE_EVENT_REPO) ? { event: eventRepo } : undefined));
+        })({
+            project: projectRepo,
+            seller: sellerRepo,
+            event: eventRepo
+        });
         res.json(offers);
     }
     catch (error) {

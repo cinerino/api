@@ -16,7 +16,6 @@ import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
 
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
@@ -121,7 +120,7 @@ screeningEventRouter.get(
                 })({
                     attendeeCapacity: attendeeCapacityRepo,
                     project: projectRepo,
-                    ...(USE_EVENT_REPO) ? { event: eventRepo } : undefined
+                    event: eventRepo
                 });
                 events = searchEventsResult.data;
                 totalCount = searchEventsResult.totalCount;
@@ -151,6 +150,9 @@ screeningEventRouter.get(
 
             let event: cinerino.factory.chevre.event.screeningEvent.IEvent;
 
+            const project = await projectRepo.findById({ id: req.project.id });
+            const useEventRepo = project.settings !== undefined && project.settings.useEventRepo === true;
+
             // Cinemasunshine対応
             if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
                 event = await cinerino.service.offer.findEventById4cinemasunshine(req.params.id)({
@@ -159,10 +161,9 @@ screeningEventRouter.get(
                     // itemAvailability: new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient())
                 });
             } else {
-                if (USE_EVENT_REPO) {
+                if (useEventRepo) {
                     event = await eventRepo.findById({ id: req.params.id });
                 } else {
-                    const project = await projectRepo.findById({ id: req.project.id });
                     if (project.settings === undefined || project.settings.chevre === undefined) {
                         throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
                     }
@@ -200,7 +201,7 @@ screeningEventRouter.get(
                 event: { id: req.params.id }
             })({
                 project: projectRepo,
-                ...(USE_EVENT_REPO) ? { event: eventRepo } : undefined
+                event: eventRepo
             });
 
             res.json(offers);
@@ -243,7 +244,7 @@ screeningEventRouter.get<ParamsDictionary>(
             })({
                 project: projectRepo,
                 seller: sellerRepo,
-                ...(USE_EVENT_REPO) ? { event: eventRepo } : undefined
+                event: eventRepo
             });
             res.json(offers);
         } catch (error) {

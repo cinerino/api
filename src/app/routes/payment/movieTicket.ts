@@ -17,8 +17,6 @@ import rateLimit from '../../middlewares/rateLimit';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
-const USE_EVENT_REPO = process.env.USE_EVENT_REPO === '1';
-
 const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials({
     domain: <string>process.env.MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.MVTK_RESERVE_CLIENT_ID,
@@ -63,7 +61,7 @@ movieTicketPaymentRouter.post(
                     auth: mvtkReserveAuthClient
                 }),
                 paymentMethod: new cinerino.repository.PaymentMethod(mongoose.connection),
-                ...(USE_EVENT_REPO) ? { event: new cinerino.repository.Event(mongoose.connection) } : undefined
+                event: new cinerino.repository.Event(mongoose.connection)
             });
             res.status(CREATED)
                 .json(action);
@@ -162,7 +160,7 @@ movieTicketPaymentRouter.post<ParamsDictionary>(
                     endpoint: project.settings.mvtkReserve.endpoint,
                     auth: mvtkReserveAuthClient
                 }),
-                ...(USE_EVENT_REPO) ? { event: new cinerino.repository.Event(mongoose.connection) } : undefined
+                event: new cinerino.repository.Event(mongoose.connection)
             });
             res.status(CREATED)
                 .json(action);
