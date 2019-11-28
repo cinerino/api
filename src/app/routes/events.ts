@@ -90,11 +90,15 @@ eventsRouter.get(
             const eventRepo = new cinerino.repository.Event(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
+            const project = await projectRepo.findById({ id: req.project.id });
+            const useRedisEventItemAvailabilityRepo =
+                project.settings !== undefined && project.settings.useRedisEventItemAvailabilityRepo === true;
+
             let events: cinerino.factory.chevre.event.screeningEvent.IEvent[];
             let totalCount: number;
 
             // Cinemasunshine対応
-            if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
+            if (useRedisEventItemAvailabilityRepo) {
                 const searchConditions: cinerino.chevre.factory.event.screeningEvent.ISearchConditions = {
                     ...req.query,
                     // tslint:disable-next-line:no-magic-numbers
@@ -154,9 +158,11 @@ eventsRouter.get(
 
             const project = await projectRepo.findById({ id: req.project.id });
             const useEventRepo = project.settings !== undefined && project.settings.useEventRepo === true;
+            const useRedisEventItemAvailabilityRepo =
+                project.settings !== undefined && project.settings.useRedisEventItemAvailabilityRepo === true;
 
             // Cinemasunshine対応
-            if (process.env.USE_REDIS_EVENT_ITEM_AVAILABILITY_REPO === '1') {
+            if (useRedisEventItemAvailabilityRepo) {
                 event = await cinerino.service.offer.findEventById4cinemasunshine(req.params.id)({
                     attendeeCapacity: attendeeCapacityRepo,
                     event: new cinerino.repository.Event(mongoose.connection)
