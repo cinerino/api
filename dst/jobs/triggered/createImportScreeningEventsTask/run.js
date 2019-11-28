@@ -21,19 +21,10 @@ const util = require("util");
 const connectMongo_1 = require("../../../connectMongo");
 const singletonProcess = require("../../../singletonProcess");
 const debug = createDebug('cinerino-api:jobs');
-/**
- * 上映イベントを何週間後までインポートするか
- */
-const IMPORT_EVENTS_IN_WEEKS = (process.env.IMPORT_EVENTS_IN_WEEKS !== undefined)
-    ? Number(process.env.IMPORT_EVENTS_IN_WEEKS)
-    : 1;
 const IMPORT_EVENTS_PER_WEEKS = (process.env.IMPORT_EVENTS_PER_WEEKS !== undefined)
     ? Number(process.env.IMPORT_EVENTS_PER_WEEKS)
     : 1;
 const MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES = 60;
-const IMPORT_EVENTS_INTERVAL_IN_MINUTES = (process.env.IMPORT_EVENTS_INTERVAL_IN_MINUTES !== undefined)
-    ? Math.min(Number(process.env.IMPORT_EVENTS_INTERVAL_IN_MINUTES), MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES)
-    : MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES;
 // tslint:disable-next-line:max-func-body-length
 exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     let holdSingletonProcess = false;
@@ -47,13 +38,21 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     // tslint:disable-next-line:no-magic-numbers
     10000);
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
-    const job = new cron_1.CronJob(`*/${IMPORT_EVENTS_INTERVAL_IN_MINUTES} * * * *`, 
+    const projectRepo = new cinerino.repository.Project(connection);
+    const project = yield projectRepo.findById({ id: params.project.id });
+    const importEventsInWeeks = (project.settings !== undefined && typeof project.settings.importEventsInWeeks === 'number')
+        ? project.settings.importEventsInWeeks : 1;
+    const importEventsIntervalInMinutes = (project.settings !== undefined && typeof project.settings.importEventsIntervalInMinutes === 'number')
+        ? Math.min(Number(project.settings.importEventsIntervalInMinutes), MAX_IMPORT_EVENTS_INTERVAL_IN_MINUTES)
+        : 1;
+    const importEventsStopped = project.settings !== undefined && project.settings.importEventsStopped === true;
+    const job = new cron_1.CronJob(`*/${importEventsIntervalInMinutes} * * * *`, 
     // tslint:disable-next-line:max-func-body-length
     () => __awaiter(void 0, void 0, void 0, function* () {
         if (process.env.DEBUG_SINGLETON_PROCESS === '1') {
-            yield cinerino.service.notification.report2developers(`[${process.env.PROJECT_ID}] api:singletonProcess`, util.format('%s\n%s\n%s\n%s\n%s', `key: 'createImportScreeningEventsTask'`, `IMPORT_EVENTS_INTERVAL_IN_MINUTES: ${IMPORT_EVENTS_INTERVAL_IN_MINUTES}`, `holdSingletonProcess: ${holdSingletonProcess}`, `os.hostname: ${os.hostname}`, `pid: ${process.pid}`))();
+            yield cinerino.service.notification.report2developers(`[${process.env.PROJECT_ID}] api:singletonProcess`, util.format('%s\n%s\n%s\n%s\n%s', `key: 'createImportScreeningEventsTask'`, `importEventsIntervalInMinutes: ${importEventsIntervalInMinutes}`, `holdSingletonProcess: ${holdSingletonProcess}`, `os.hostname: ${os.hostname}`, `pid: ${process.pid}`))();
         }
-        if (process.env.IMPORT_EVENTS_STOPPED === '1') {
+        if (importEventsStopped) {
             return;
         }
         if (!holdSingletonProcess) {
@@ -68,7 +67,7 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
         const runsAt = now;
         // 1週間ずつインポート
         // tslint:disable-next-line:prefer-array-literal
-        yield Promise.all([...Array(Math.ceil(IMPORT_EVENTS_IN_WEEKS / IMPORT_EVENTS_PER_WEEKS))].map((_, i) => __awaiter(void 0, void 0, void 0, function* () {
+        yield Promise.all([...Array(Math.ceil(importEventsInWeeks / IMPORT_EVENTS_PER_WEEKS))].map((_, i) => __awaiter(void 0, void 0, void 0, function* () {
             const importFrom = moment(now)
                 .add(i, 'weeks')
                 .toDate();

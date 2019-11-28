@@ -10,12 +10,7 @@ import { connectMongo } from '../../../connectMongo';
 import * as singletonProcess from '../../../singletonProcess';
 
 const debug = createDebug('cinerino-api:jobs');
-/**
- * 上映イベントを何週間後までインポートするか
- */
-const IMPORT_EVENTS_IN_WEEKS = (process.env.IMPORT_EVENTS_IN_WEEKS !== undefined)
-    ? Number(process.env.IMPORT_EVENTS_IN_WEEKS)
-    : 1;
+
 const IMPORT_EVENTS_PER_WEEKS = (process.env.IMPORT_EVENTS_PER_WEEKS !== undefined)
     ? Number(process.env.IMPORT_EVENTS_PER_WEEKS)
     : 1;
@@ -39,10 +34,16 @@ export default async (params: {
 
     const connection = await connectMongo({ defaultConnection: false });
 
+    const projectRepo = new cinerino.repository.Project(connection);
+    const project = await projectRepo.findById({ id: params.project.id });
+    const importEventsInWeeks = (project.settings !== undefined && typeof project.settings.importEventsInWeeks === 'number')
+        ? project.settings.importEventsInWeeks : 1;
+    const importEventsStopped = project.settings !== undefined && project.settings.importEventsStopped === true;
+
     const job = new CronJob(
         `* * * * *`,
         async () => {
-            if (process.env.IMPORT_EVENTS_STOPPED === '1') {
+            if (importEventsStopped) {
                 return;
             }
 
@@ -61,7 +62,7 @@ export default async (params: {
 
             // 1週間ずつインポート
             // tslint:disable-next-line:prefer-array-literal
-            await Promise.all([...Array(Math.ceil(IMPORT_EVENTS_IN_WEEKS / IMPORT_EVENTS_PER_WEEKS))].map(async (_, i) => {
+            await Promise.all([...Array(Math.ceil(importEventsInWeeks / IMPORT_EVENTS_PER_WEEKS))].map(async (_, i) => {
                 const importFrom = moment(now)
                     .add(i, 'weeks')
                     .toDate();

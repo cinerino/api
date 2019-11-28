@@ -19,12 +19,6 @@ const moment = require("moment");
 const connectMongo_1 = require("../../../connectMongo");
 const singletonProcess = require("../../../singletonProcess");
 const debug = createDebug('cinerino-api:jobs');
-/**
- * 上映イベントを何週間後までインポートするか
- */
-const IMPORT_EVENTS_IN_WEEKS = (process.env.IMPORT_EVENTS_IN_WEEKS !== undefined)
-    ? Number(process.env.IMPORT_EVENTS_IN_WEEKS)
-    : 1;
 const IMPORT_EVENTS_PER_WEEKS = (process.env.IMPORT_EVENTS_PER_WEEKS !== undefined)
     ? Number(process.env.IMPORT_EVENTS_PER_WEEKS)
     : 1;
@@ -41,8 +35,13 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     // tslint:disable-next-line:no-magic-numbers
     10000);
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
+    const projectRepo = new cinerino.repository.Project(connection);
+    const project = yield projectRepo.findById({ id: params.project.id });
+    const importEventsInWeeks = (project.settings !== undefined && typeof project.settings.importEventsInWeeks === 'number')
+        ? project.settings.importEventsInWeeks : 1;
+    const importEventsStopped = project.settings !== undefined && project.settings.importEventsStopped === true;
     const job = new cron_1.CronJob(`* * * * *`, () => __awaiter(void 0, void 0, void 0, function* () {
-        if (process.env.IMPORT_EVENTS_STOPPED === '1') {
+        if (importEventsStopped) {
             return;
         }
         if (!holdSingletonProcess) {
@@ -57,7 +56,7 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
         const runsAt = now;
         // 1週間ずつインポート
         // tslint:disable-next-line:prefer-array-literal
-        yield Promise.all([...Array(Math.ceil(IMPORT_EVENTS_IN_WEEKS / IMPORT_EVENTS_PER_WEEKS))].map((_, i) => __awaiter(void 0, void 0, void 0, function* () {
+        yield Promise.all([...Array(Math.ceil(importEventsInWeeks / IMPORT_EVENTS_PER_WEEKS))].map((_, i) => __awaiter(void 0, void 0, void 0, function* () {
             const importFrom = moment(now)
                 .add(i, 'weeks')
                 .toDate();
