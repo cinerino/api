@@ -136,7 +136,12 @@ reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitSc
             agent: req.agent,
             token: req.body.token,
             secret: process.env.TOKEN_SECRET,
-            issuer: process.env.RESOURCE_SERVER_IDENTIFIER
+            issuer: [
+                process.env.RESOURCE_SERVER_IDENTIFIER,
+                ...(typeof process.env.RESOURCE_SERVER_IDENTIFIER_OLD === 'string')
+                    ? [process.env.RESOURCE_SERVER_IDENTIFIER_OLD]
+                    : []
+            ]
         })({ action: new cinerino.repository.Action(mongoose.connection) });
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         // 所有権検索

@@ -160,7 +160,12 @@ reservationsRouter.post(
                     agent: req.agent,
                     token: req.body.token,
                     secret: <string>process.env.TOKEN_SECRET,
-                    issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
+                    issuer: [
+                        <string>process.env.RESOURCE_SERVER_IDENTIFIER,
+                        ...(typeof process.env.RESOURCE_SERVER_IDENTIFIER_OLD === 'string')
+                            ? [process.env.RESOURCE_SERVER_IDENTIFIER_OLD]
+                            : []
+                    ]
                 })({ action: new cinerino.repository.Action(mongoose.connection) });
 
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
