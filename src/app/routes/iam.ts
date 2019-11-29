@@ -3,7 +3,7 @@
  */
 import * as cinerino from '@cinerino/domain';
 import * as express from 'express';
-// import { OK } from 'http-status';
+import { NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
@@ -112,6 +112,95 @@ iamRouter.get(
             });
 
             res.json(user);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * プロフィール検索
+ */
+iamRouter.get(
+    '/users/:id/profile',
+    permitScopes([]),
+    rateLimit,
+    async (req, res, next) => {
+        try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined
+                || project.settings.cognito === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+
+            const personRepo = new cinerino.repository.Person({
+                userPoolId: project.settings.cognito.adminUserPool.id
+            });
+            const person = await personRepo.findById({
+                userId: req.params.id
+            });
+
+            if (person.memberOf === undefined) {
+                throw new cinerino.factory.errors.NotFound('Person.memberOf');
+            }
+
+            const username = person.memberOf.membershipNumber;
+            if (username === undefined) {
+                throw new cinerino.factory.errors.NotFound('Person.memberOf.membershipNumber');
+            }
+
+            const profile = await personRepo.getUserAttributes({
+                username: username
+            });
+
+            res.json(profile);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * プロフィール更新
+ */
+iamRouter.patch(
+    '/users/:id/profile',
+    permitScopes([]),
+    rateLimit,
+    validator,
+    async (req, res, next) => {
+        try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined
+                || project.settings.cognito === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+
+            const personRepo = new cinerino.repository.Person({
+                userPoolId: project.settings.cognito.adminUserPool.id
+            });
+            const person = await personRepo.findById({
+                userId: req.params.id
+            });
+
+            if (person.memberOf === undefined) {
+                throw new cinerino.factory.errors.NotFound('Person.memberOf');
+            }
+
+            const username = person.memberOf.membershipNumber;
+            if (username === undefined) {
+                throw new cinerino.factory.errors.NotFound('Person.memberOf.membershipNumber');
+            }
+
+            await personRepo.updateProfile({
+                username: username,
+                profile: req.body
+            });
+
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }
