@@ -11,6 +11,14 @@ const debug = createDebug('cinerino-api:middlewares');
 
 export const SCOPE_ADMIN = 'admin';
 export const SCOPE_CUSTOMER = 'customer';
+export const SCOPE_COGNITO_USER_ADMIN = 'aws.cognito.signin.user.admin';
+
+const CLIENTS_AS_ADMIN: string[] = (process.env.CLIENTS_AS_ADMIN !== undefined)
+    ? /* istanbul ignore next */ process.env.CLIENTS_AS_ADMIN.split(',')
+    : [];
+const CLIENTS_AS_CUSTOMER: string[] = (process.env.CLIENTS_AS_CUSTOMER !== undefined)
+    ? /* istanbul ignore next */ process.env.CLIENTS_AS_CUSTOMER.split(',')
+    : [];
 
 /**
  * スコープインターフェース
@@ -59,6 +67,24 @@ export default (specifiedPermittedScopes: IScope[]) => {
         /* istanbul ignore if */
         if (permittedScopes.indexOf(SCOPE_CUSTOMER) >= 0) {
             permittedScopesWithResourceServerIdentifier.push(...CUSTOMER_ADDITIONAL_PERMITTED_SCOPES);
+        }
+
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
+        if (req.user.scopes.indexOf(SCOPE_COGNITO_USER_ADMIN) >= 0) {
+            // aws.cognito.signin.user.adminスコープのみでadminとして認定するクライアント
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore if */
+            if (CLIENTS_AS_ADMIN.indexOf(req.user.client_id) >= 0) {
+                req.user.scopes.push(SCOPE_ADMIN);
+            }
+
+            // aws.cognito.signin.user.adminスコープのみでcustomerとして認定するクライアント
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore if */
+            if (CLIENTS_AS_CUSTOMER.indexOf(req.user.client_id) >= 0) {
+                req.user.scopes.push(SCOPE_CUSTOMER);
+            }
         }
 
         // スコープチェック

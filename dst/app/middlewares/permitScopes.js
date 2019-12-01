@@ -8,6 +8,13 @@ const createDebug = require("debug");
 const debug = createDebug('cinerino-api:middlewares');
 exports.SCOPE_ADMIN = 'admin';
 exports.SCOPE_CUSTOMER = 'customer';
+exports.SCOPE_COGNITO_USER_ADMIN = 'aws.cognito.signin.user.admin';
+const CLIENTS_AS_ADMIN = (process.env.CLIENTS_AS_ADMIN !== undefined)
+    ? /* istanbul ignore next */ process.env.CLIENTS_AS_ADMIN.split(',')
+    : [];
+const CLIENTS_AS_CUSTOMER = (process.env.CLIENTS_AS_CUSTOMER !== undefined)
+    ? /* istanbul ignore next */ process.env.CLIENTS_AS_CUSTOMER.split(',')
+    : [];
 exports.default = (specifiedPermittedScopes) => {
     return (req, __, next) => {
         if (process.env.RESOURCE_SERVER_IDENTIFIER === undefined) {
@@ -41,6 +48,16 @@ exports.default = (specifiedPermittedScopes) => {
         /* istanbul ignore if */
         if (permittedScopes.indexOf(exports.SCOPE_CUSTOMER) >= 0) {
             permittedScopesWithResourceServerIdentifier.push(...CUSTOMER_ADDITIONAL_PERMITTED_SCOPES);
+        }
+        if (req.user.scopes.indexOf(exports.SCOPE_COGNITO_USER_ADMIN) >= 0) {
+            // aws.cognito.signin.user.adminスコープのみでadminとして認定するクライアント
+            if (CLIENTS_AS_ADMIN.indexOf(req.user.client_id) >= 0) {
+                req.user.scopes.push(exports.SCOPE_ADMIN);
+            }
+            // aws.cognito.signin.user.adminスコープのみでcustomerとして認定するクライアント
+            if (CLIENTS_AS_CUSTOMER.indexOf(req.user.client_id) >= 0) {
+                req.user.scopes.push(exports.SCOPE_CUSTOMER);
+            }
         }
         // スコープチェック
         try {
