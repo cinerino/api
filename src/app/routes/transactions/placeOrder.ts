@@ -25,7 +25,6 @@ import placeOrder4cinemasunshineRouter from './placeOrder4cinemasunshine';
 import * as redis from '../../../redis';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-const USE_TRANSACTION_CLIENT_USER = process.env.USE_TRANSACTION_CLIENT_USER === '1';
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== undefined)
     ? Number(process.env.NUM_ORDER_ITEMS_MAX_VALUE)
@@ -172,6 +171,10 @@ placeOrderTransactionsRouter.post(
                     return validIssuer && validScope && validClient;
                 };
 
+            const project = await projectRepo.findById({ id: req.project.id });
+            const useTransactionClientUser =
+                project.settings !== undefined && (<any>project.settings).useTransactionClientUser === true;
+
             const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
                 project: req.project,
                 expires: expires,
@@ -189,7 +192,7 @@ placeOrderTransactionsRouter.post(
                 seller: req.body.seller,
                 object: {
                     passport: passport,
-                    ...(USE_TRANSACTION_CLIENT_USER) ? { clientUser: req.user } : undefined
+                    ...(useTransactionClientUser) ? { clientUser: req.user } : undefined
                 },
                 passportValidator: passportValidator
             })({

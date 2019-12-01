@@ -29,7 +29,6 @@ const validator_1 = require("../../middlewares/validator");
 const placeOrder4cinemasunshine_1 = require("./placeOrder4cinemasunshine");
 const redis = require("../../../redis");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-const USE_TRANSACTION_CLIENT_USER = process.env.USE_TRANSACTION_CLIENT_USER === '1';
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== undefined)
     ? Number(process.env.NUM_ORDER_ITEMS_MAX_VALUE)
@@ -151,6 +150,8 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 
             }
             return validIssuer && validScope && validClient;
         };
+        const project = yield projectRepo.findById({ id: req.project.id });
+        const useTransactionClientUser = project.settings !== undefined && project.settings.useTransactionClientUser === true;
         const transaction = yield cinerino.service.transaction.placeOrderInProgress.start({
             project: req.project,
             expires: expires,
@@ -163,7 +164,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 
                         : []
                 ] }),
             seller: req.body.seller,
-            object: Object.assign({ passport: passport }, (USE_TRANSACTION_CLIENT_USER) ? { clientUser: req.user } : undefined),
+            object: Object.assign({ passport: passport }, (useTransactionClientUser) ? { clientUser: req.user } : undefined),
             passportValidator: passportValidator
         })({
             project: projectRepo,
