@@ -49,12 +49,18 @@ exports.default = (specifiedPermittedScopes) => {
         if (permittedScopes.indexOf(exports.SCOPE_CUSTOMER) >= 0) {
             permittedScopesWithResourceServerIdentifier.push(...CUSTOMER_ADDITIONAL_PERMITTED_SCOPES);
         }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (req.user.scopes.indexOf(exports.SCOPE_COGNITO_USER_ADMIN) >= 0) {
             // aws.cognito.signin.user.adminスコープのみでadminとして認定するクライアント
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore if */
             if (CLIENTS_AS_ADMIN.indexOf(req.user.client_id) >= 0) {
                 req.user.scopes.push(exports.SCOPE_ADMIN);
             }
             // aws.cognito.signin.user.adminスコープのみでcustomerとして認定するクライアント
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore if */
             if (CLIENTS_AS_CUSTOMER.indexOf(req.user.client_id) >= 0) {
                 req.user.scopes.push(exports.SCOPE_CUSTOMER);
             }
