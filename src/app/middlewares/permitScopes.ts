@@ -29,6 +29,8 @@ type IScope = string;
 
 export default (specifiedPermittedScopes: IScope[]) => {
     return (req: Request, __: Response, next: NextFunction) => {
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (RESOURCE_SERVER_IDENTIFIER === undefined) {
             next(new Error('RESOURCE_SERVER_IDENTIFIER undefined'));
 
