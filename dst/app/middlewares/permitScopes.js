@@ -15,9 +15,10 @@ const CLIENTS_AS_ADMIN = (process.env.CLIENTS_AS_ADMIN !== undefined)
 const CLIENTS_AS_CUSTOMER = (process.env.CLIENTS_AS_CUSTOMER !== undefined)
     ? /* istanbul ignore next */ process.env.CLIENTS_AS_CUSTOMER.split(',')
     : [];
+const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
 exports.default = (specifiedPermittedScopes) => {
     return (req, __, next) => {
-        if (process.env.RESOURCE_SERVER_IDENTIFIER === undefined) {
+        if (RESOURCE_SERVER_IDENTIFIER === undefined) {
             next(new Error('RESOURCE_SERVER_IDENTIFIER undefined'));
             return;
         }
@@ -32,14 +33,30 @@ exports.default = (specifiedPermittedScopes) => {
         permittedScopes.push(exports.SCOPE_ADMIN);
         permittedScopes = [...new Set(permittedScopes)];
         debug('permittedScopes:', permittedScopes);
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
+        if (req.user.scopes.indexOf(exports.SCOPE_COGNITO_USER_ADMIN) >= 0) {
+            // aws.cognito.signin.user.adminスコープのみでadminとして認定するクライアント
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore if */
+            if (CLIENTS_AS_ADMIN.indexOf(req.user.client_id) >= 0) {
+                req.user.scopes.push(`${RESOURCE_SERVER_IDENTIFIER}/${exports.SCOPE_ADMIN}`);
+            }
+            // aws.cognito.signin.user.adminスコープのみでcustomerとして認定するクライアント
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore if */
+            if (CLIENTS_AS_CUSTOMER.indexOf(req.user.client_id) >= 0) {
+                req.user.scopes.push(`${RESOURCE_SERVER_IDENTIFIER}/${exports.SCOPE_CUSTOMER}`);
+            }
+        }
         debug('req.user.scopes:', req.user.scopes);
         req.isAdmin =
-            req.user.scopes.indexOf(`${process.env.RESOURCE_SERVER_IDENTIFIER}/${exports.SCOPE_ADMIN}`) >= 0
+            req.user.scopes.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/${exports.SCOPE_ADMIN}`) >= 0
                 || ADMIN_ADDITIONAL_PERMITTED_SCOPES.some((scope) => req.user.scopes.indexOf(scope) >= 0);
         // ドメインつきのカスタムスコープリストを許容するように変更
         const permittedScopesWithResourceServerIdentifier = [
-            ...permittedScopes.map((permittedScope) => `${process.env.RESOURCE_SERVER_IDENTIFIER}/${permittedScope}`),
-            ...permittedScopes.map((permittedScope) => `${process.env.RESOURCE_SERVER_IDENTIFIER}/auth/${permittedScope}`)
+            ...permittedScopes.map((permittedScope) => `${RESOURCE_SERVER_IDENTIFIER}/${permittedScope}`),
+            ...permittedScopes.map((permittedScope) => `${RESOURCE_SERVER_IDENTIFIER}/auth/${permittedScope}`)
         ];
         // 管理者の追加許可スコープをセット
         permittedScopesWithResourceServerIdentifier.push(...ADMIN_ADDITIONAL_PERMITTED_SCOPES);
@@ -48,16 +65,6 @@ exports.default = (specifiedPermittedScopes) => {
         /* istanbul ignore if */
         if (permittedScopes.indexOf(exports.SCOPE_CUSTOMER) >= 0) {
             permittedScopesWithResourceServerIdentifier.push(...CUSTOMER_ADDITIONAL_PERMITTED_SCOPES);
-        }
-        if (req.user.scopes.indexOf(exports.SCOPE_COGNITO_USER_ADMIN) >= 0) {
-            // aws.cognito.signin.user.adminスコープのみでadminとして認定するクライアント
-            if (CLIENTS_AS_ADMIN.indexOf(req.user.client_id) >= 0) {
-                req.user.scopes.push(exports.SCOPE_ADMIN);
-            }
-            // aws.cognito.signin.user.adminスコープのみでcustomerとして認定するクライアント
-            if (CLIENTS_AS_CUSTOMER.indexOf(req.user.client_id) >= 0) {
-                req.user.scopes.push(exports.SCOPE_CUSTOMER);
-            }
         }
         // スコープチェック
         try {
