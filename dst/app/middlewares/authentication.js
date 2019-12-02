@@ -14,6 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
  */
 const cinerino = require("@cinerino/domain");
+const mongoose = require("mongoose");
 const express_middleware_1 = require("@motionpicture/express-middleware");
 // 許可発行者リスト
 const ISSUERS = process.env.TOKEN_ISSUERS.split(',');
@@ -21,7 +22,6 @@ const ISSUERS = process.env.TOKEN_ISSUERS.split(',');
 /* istanbul ignore next */
 exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        req.project = { typeOf: 'Project', id: process.env.PROJECT_ID };
         yield express_middleware_1.cognitoAuth({
             issuers: ISSUERS,
             authorizedHandler: (user, token) => __awaiter(void 0, void 0, void 0, function* () {
@@ -64,6 +64,23 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                         url: user.iss
                     };
                 }
+                let project;
+                // プロジェクトアプリケーションの存在確認
+                const applicationRepo = new cinerino.repository.Application(mongoose.connection);
+                try {
+                    const application = yield applicationRepo.findById({ id: user.client_id });
+                    if (application.project !== undefined && application.project !== null) {
+                        project = { typeOf: 'Project', id: application.project.id };
+                    }
+                }
+                catch (error) {
+                    // no op
+                }
+                if (project === undefined) {
+                    // 環境変数
+                    project = { typeOf: 'Project', id: process.env.PROJECT_ID };
+                }
+                req.project = project;
                 req.user = user;
                 req.accessToken = token;
                 req.agent = {

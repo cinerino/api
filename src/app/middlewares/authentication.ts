@@ -3,6 +3,7 @@
  * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
  */
 import * as cinerino from '@cinerino/domain';
+import * as mongoose from 'mongoose';
 
 import { cognitoAuth } from '@motionpicture/express-middleware';
 import { NextFunction, Request, Response } from 'express';
@@ -14,8 +15,6 @@ const ISSUERS = (<string>process.env.TOKEN_ISSUERS).split(',');
 /* istanbul ignore next */
 export default async (req: Request, res: Response, next: NextFunction) => {
     try {
-        req.project = { typeOf: 'Project', id: <string>process.env.PROJECT_ID };
-
         await cognitoAuth({
             issuers: ISSUERS,
             authorizedHandler: async (user, token) => {
@@ -60,6 +59,25 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                     };
                 }
 
+                let project: cinerino.factory.project.IProject | undefined;
+
+                // プロジェクトアプリケーションの存在確認
+                const applicationRepo = new cinerino.repository.Application(mongoose.connection);
+                try {
+                    const application = await applicationRepo.findById({ id: user.client_id });
+                    if ((<any>application).project !== undefined && (<any>application).project !== null) {
+                        project = { typeOf: 'Project', id: (<any>application).project.id };
+                    }
+                } catch (error) {
+                    // no op
+                }
+
+                if (project === undefined) {
+                    // 環境変数
+                    project = { typeOf: 'Project', id: <string>process.env.PROJECT_ID };
+                }
+
+                req.project = project;
                 req.user = user;
                 req.accessToken = token;
                 req.agent = {
