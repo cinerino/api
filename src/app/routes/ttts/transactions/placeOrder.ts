@@ -12,7 +12,7 @@ import authentication from '../../../middlewares/authentication';
 import permitScopes from '../../../middlewares/permitScopes';
 import validator from '../../../middlewares/validator';
 
-import * as redis from '../../../../redis';
+// import * as redis from '../../../../redis';
 
 placeOrderTransactionsRouter.use(authentication);
 
@@ -47,7 +47,7 @@ placeOrderTransactionsRouter.post(
                 }
             })(
                 new cinerino.repository.Action(mongoose.connection),
-                new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()),
+                // new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()),
                 new cinerino.repository.Transaction(mongoose.connection),
                 new cinerino.repository.Project(mongoose.connection)
             );
@@ -77,7 +77,7 @@ placeOrderTransactionsRouter.delete(
             })(
                 new cinerino.repository.Transaction(mongoose.connection),
                 new cinerino.repository.Action(mongoose.connection),
-                new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()),
+                // new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()),
                 new cinerino.repository.Project(mongoose.connection)
             );
 

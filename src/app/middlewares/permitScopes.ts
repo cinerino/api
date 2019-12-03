@@ -20,8 +20,6 @@ const CLIENTS_AS_CUSTOMER: string[] = (process.env.CLIENTS_AS_CUSTOMER !== undef
     ? /* istanbul ignore next */ process.env.CLIENTS_AS_CUSTOMER.split(',')
     : [];
 
-const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
-
 /**
  * スコープインターフェース
  */
@@ -29,6 +27,8 @@ type IScope = string;
 
 export default (specifiedPermittedScopes: IScope[]) => {
     return (req: Request, __: Response, next: NextFunction) => {
+        const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
+
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */
         if (RESOURCE_SERVER_IDENTIFIER === undefined) {

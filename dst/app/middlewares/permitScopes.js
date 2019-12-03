@@ -15,9 +15,9 @@ const CLIENTS_AS_ADMIN = (process.env.CLIENTS_AS_ADMIN !== undefined)
 const CLIENTS_AS_CUSTOMER = (process.env.CLIENTS_AS_CUSTOMER !== undefined)
     ? /* istanbul ignore next */ process.env.CLIENTS_AS_CUSTOMER.split(',')
     : [];
-const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
 exports.default = (specifiedPermittedScopes) => {
     return (req, __, next) => {
+        const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */
         if (RESOURCE_SERVER_IDENTIFIER === undefined) {
