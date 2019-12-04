@@ -76,9 +76,23 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                 catch (error) {
                     // no op
                 }
+                // 環境変数設定が存在する場合
+                if (typeof process.env.PROJECT_ID === 'string') {
+                    if (project === undefined) {
+                        // 環境変数
+                        project = { typeOf: 'Project', id: process.env.PROJECT_ID };
+                    }
+                    else {
+                        // アプリケーション設定と環境変数設定両方が存在する場合、プロジェクトが異なればforbidden
+                        if (project.id !== process.env.PROJECT_ID) {
+                            next(new cinerino.factory.errors.Forbidden(`client for ${project.id} forbidden`));
+                            return;
+                        }
+                    }
+                }
                 if (project === undefined) {
-                    // 環境変数
-                    project = { typeOf: 'Project', id: process.env.PROJECT_ID };
+                    next(new cinerino.factory.errors.Forbidden(`project of the client unknown: ${user.client_id}`));
+                    return;
                 }
                 req.project = project;
                 req.user = user;
