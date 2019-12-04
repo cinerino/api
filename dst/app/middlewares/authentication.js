@@ -20,6 +20,7 @@ const express_middleware_1 = require("@motionpicture/express-middleware");
 const ISSUERS = process.env.TOKEN_ISSUERS.split(',');
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
+// tslint:disable-next-line:max-func-body-length
 exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield express_middleware_1.cognitoAuth({
@@ -68,13 +69,18 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                 // プロジェクトアプリケーションの存在確認
                 const applicationRepo = new cinerino.repository.Application(mongoose.connection);
                 try {
-                    const application = yield applicationRepo.findById({ id: user.client_id });
-                    if (application.project !== undefined && application.project !== null) {
-                        project = { typeOf: 'Project', id: application.project.id };
+                    const applications = yield applicationRepo.search({ id: { $eq: user.client_id } });
+                    if (applications.length > 0) {
+                        const application = applications[0];
+                        if (application.project !== undefined && application.project !== null) {
+                            project = { typeOf: 'Project', id: application.project.id };
+                        }
                     }
                 }
                 catch (error) {
                     // no op
+                    next(error);
+                    return;
                 }
                 // 環境変数設定が存在する場合
                 if (typeof process.env.PROJECT_ID === 'string') {

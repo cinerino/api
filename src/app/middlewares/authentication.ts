@@ -13,6 +13,7 @@ const ISSUERS = (<string>process.env.TOKEN_ISSUERS).split(',');
 
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
+// tslint:disable-next-line:max-func-body-length
 export default async (req: Request, res: Response, next: NextFunction) => {
     try {
         await cognitoAuth({
@@ -64,12 +65,18 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 // プロジェクトアプリケーションの存在確認
                 const applicationRepo = new cinerino.repository.Application(mongoose.connection);
                 try {
-                    const application = await applicationRepo.findById({ id: user.client_id });
-                    if ((<any>application).project !== undefined && (<any>application).project !== null) {
-                        project = { typeOf: 'Project', id: (<any>application).project.id };
+                    const applications = await applicationRepo.search({ id: { $eq: user.client_id } });
+                    if (applications.length > 0) {
+                        const application = applications[0];
+                        if ((<any>application).project !== undefined && (<any>application).project !== null) {
+                            project = { typeOf: 'Project', id: (<any>application).project.id };
+                        }
                     }
                 } catch (error) {
                     // no op
+                    next(error);
+
+                    return;
                 }
 
                 // 環境変数設定が存在する場合
