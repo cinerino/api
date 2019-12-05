@@ -12,7 +12,6 @@ import * as mongoose from 'mongoose';
 
 import * as redis from '../../redis';
 
-import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
@@ -26,8 +25,6 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
 });
 
 const accountsRouter = Router();
-
-accountsRouter.use(authentication);
 
 /**
  * 管理者として口座開設

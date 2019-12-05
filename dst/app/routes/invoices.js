@@ -17,13 +17,11 @@ const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
 const mongoose = require("mongoose");
-const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const invoicesRouter = express_1.Router();
-invoicesRouter.use(authentication_1.default);
 /**
  * インボイス検索
  */

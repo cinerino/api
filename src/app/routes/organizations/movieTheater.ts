@@ -5,7 +5,6 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import * as mongoose from 'mongoose';
 
-import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
@@ -13,7 +12,6 @@ import validator from '../../middlewares/validator';
 type ICreditCardPaymentAccepted = cinerino.factory.seller.IPaymentAccepted<cinerino.factory.paymentMethodType.CreditCard>;
 
 const movieTheaterRouter = Router();
-movieTheaterRouter.use(authentication);
 
 /**
  * @deprecated Use /sellers

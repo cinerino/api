@@ -10,7 +10,6 @@ import { query } from 'express-validator/check';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
-import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
@@ -19,7 +18,6 @@ const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const TOKEN_EXPIRES_IN = 1800;
 
 const ownershipInfosRouter = Router();
-ownershipInfosRouter.use(authentication);
 
 /**
  * 所有権検索

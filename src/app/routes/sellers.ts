@@ -10,7 +10,6 @@ import { body } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
-import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
@@ -18,7 +17,6 @@ import validator from '../middlewares/validator';
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 
 const sellersRouter = Router();
-sellersRouter.use(authentication);
 
 /**
  * 販売者作成

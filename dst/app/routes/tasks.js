@@ -19,13 +19,11 @@ const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
-const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const tasksRouter = express_1.Router();
-tasksRouter.use(authentication_1.default);
 /**
  * タスク作成
  */

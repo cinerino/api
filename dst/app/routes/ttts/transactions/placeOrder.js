@@ -17,11 +17,9 @@ const express_1 = require("express");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const placeOrderTransactionsRouter = express_1.Router();
-const authentication_1 = require("../../../middlewares/authentication");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const validator_1 = require("../../../middlewares/validator");
 // import * as redis from '../../../../redis';
-placeOrderTransactionsRouter.use(authentication_1.default);
 /**
  * 座席仮予約
  */

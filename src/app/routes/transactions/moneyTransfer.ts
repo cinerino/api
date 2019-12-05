@@ -10,7 +10,6 @@ import { body, query } from 'express-validator/check';
 import { NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
-import authentication from '../../middlewares/authentication';
 import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
@@ -31,8 +30,6 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-
-moneyTransferTransactionsRouter.use(authentication);
 
 moneyTransferTransactionsRouter.post(
     '/start',

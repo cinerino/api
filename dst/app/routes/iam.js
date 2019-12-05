@@ -16,12 +16,10 @@ const cinerino = require("@cinerino/domain");
 const express = require("express");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
-const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const iamRouter = express.Router();
-iamRouter.use(authentication_1.default);
 /**
  * IAMグループ検索
  */

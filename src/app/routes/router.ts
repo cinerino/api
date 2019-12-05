@@ -3,30 +3,12 @@
  */
 import * as express from 'express';
 
-import accountsRouter from './accounts';
-import actionsRouter from './actions';
-import authorizationsRouter from './authorizations';
-import creativeWorksRouter from './creativeWorks';
-import eventsRouter from './events';
 import healthRouter from './health';
-import iamRouter from './iam';
-import invoicesRouter from './invoices';
-import ordersRouter from './orders';
-import organizationsRouter from './organizations';
-import ownershipInfosRouter from './ownershipInfos';
-import paymentRouter from './payment';
-import paymentMethodsRouter from './paymentMethods';
-import peopleRouter from './people';
-import meRouter from './people/me';
-import programMembershipsRouter from './programMembership';
 import projectsRouter from './projects';
-import reservationsRouter from './reservations';
-import sellersRouter from './sellers';
+import projectDetailRouter from './projects/detail';
 import statsRouter from './stats';
-import tasksRouter from './tasks';
-import transactionsRouter from './transactions';
-import tttsRouter from './ttts';
-import userPoolsRouter from './userPools';
+
+import authentication from '../middlewares/authentication';
 
 const router = express.Router();
 
@@ -36,29 +18,15 @@ const router = express.Router();
 //   next()
 // })
 
-router.use('/accounts', accountsRouter);
-router.use('/actions', actionsRouter);
-router.use('/authorizations', authorizationsRouter);
-router.use('/creativeWorks', creativeWorksRouter);
-router.use('/events', eventsRouter);
+// 例外的なpublic router
 router.use('/health', healthRouter);
-router.use('/iam', iamRouter);
-router.use('/invoices', invoicesRouter);
-router.use('/organizations', organizationsRouter);
-router.use('/orders', ordersRouter);
-router.use('/ownershipInfos', ownershipInfosRouter);
-router.use('/payment', paymentRouter);
-router.use('/paymentMethods', paymentMethodsRouter);
-router.use('/people/me', meRouter);
-router.use('/people', peopleRouter);
-router.use('/programMemberships', programMembershipsRouter);
-router.use('/projects', projectsRouter);
-router.use('/reservations', reservationsRouter);
-router.use('/sellers', sellersRouter);
 router.use('/stats', statsRouter);
-router.use('/tasks', tasksRouter);
-router.use('/transactions', transactionsRouter);
-router.use('/ttts', tttsRouter);
-router.use('/userPools', userPoolsRouter);
+
+// 認証
+router.use(authentication);
+
+router.use('', projectDetailRouter);
+
+router.use('/projects', projectsRouter);
 
 export default router;

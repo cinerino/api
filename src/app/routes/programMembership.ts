@@ -5,14 +5,11 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import * as mongoose from 'mongoose';
 
-import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const programMembershipsRouter = Router();
-
-programMembershipsRouter.use(authentication);
 
 programMembershipsRouter.get(
     '',

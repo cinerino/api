@@ -18,7 +18,6 @@ const express_1 = require("express");
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
-const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
@@ -26,7 +25,6 @@ const redis = require("../../../redis");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const CANCELLATION_FEE = 1000;
 const returnOrderTransactionsRouter = express_1.Router();
-returnOrderTransactionsRouter.use(authentication_1.default);
 /**
  * 正規表現をエスケープする
  */

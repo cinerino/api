@@ -14,7 +14,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
@@ -27,7 +26,6 @@ const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServicePr
     })
 });
 const userPoolsRouter = express_1.Router();
-userPoolsRouter.use(authentication_1.default);
 userPoolsRouter.get('/:userPoolId', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userPool = yield new Promise((resolve, reject) => {

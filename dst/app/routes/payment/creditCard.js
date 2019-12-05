@@ -18,14 +18,12 @@ const express_1 = require("express");
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
-const authentication_1 = require("../../middlewares/authentication");
 const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
 const creditCardPaymentRouter = express_1.Router();
-creditCardPaymentRouter.use(authentication_1.default);
 /**
  * クレジットカード決済承認
  */

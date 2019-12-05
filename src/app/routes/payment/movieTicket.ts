@@ -10,7 +10,6 @@ import { body } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
-import authentication from '../../middlewares/authentication';
 import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
@@ -26,7 +25,6 @@ const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials
 });
 
 const movieTicketPaymentRouter = Router();
-movieTicketPaymentRouter.use(authentication);
 
 /**
  * ムビチケ購入番号確認

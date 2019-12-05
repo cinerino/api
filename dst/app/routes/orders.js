@@ -20,7 +20,6 @@ const google_libphonenumber_1 = require("google-libphonenumber");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
-const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
@@ -40,7 +39,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 const ordersRouter = express_1.Router();
-ordersRouter.use(authentication_1.default);
 const isNotAdmin = (_, { req }) => !req.isAdmin;
 /**
  * 注文検索

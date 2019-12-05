@@ -18,14 +18,12 @@ const express_1 = require("express");
 const check_1 = require("express-validator/check");
 const moment = require("moment");
 const mongoose = require("mongoose");
-const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const TOKEN_EXPIRES_IN = 1800;
 const ownershipInfosRouter = express_1.Router();
-ownershipInfosRouter.use(authentication_1.default);
 /**
  * 所有権検索
  */

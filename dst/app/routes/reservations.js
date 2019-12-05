@@ -18,7 +18,6 @@ const express_1 = require("express");
 const check_1 = require("express-validator/check");
 const moment = require("moment");
 const mongoose = require("mongoose");
-const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
@@ -30,7 +29,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 const reservationsRouter = express_1.Router();
-reservationsRouter.use(authentication_1.default);
 /**
  * 管理者として予約検索
  */

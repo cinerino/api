@@ -20,7 +20,6 @@ const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
-const authentication_1 = require("../../middlewares/authentication");
 const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
@@ -43,7 +42,6 @@ const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials
     scopes: [],
     state: ''
 });
-placeOrderTransactionsRouter.use(authentication_1.default);
 // Cinemasunshine対応
 placeOrderTransactionsRouter.use(placeOrder4cinemasunshine_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 'transactions', 'pos']), 

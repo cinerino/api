@@ -10,13 +10,11 @@ import { query } from 'express-validator/check';
 import { NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
-import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const peopleRouter = Router();
-peopleRouter.use(authentication);
 
 /**
  * 会員検索

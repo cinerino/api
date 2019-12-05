@@ -19,7 +19,6 @@ const express_1 = require("express");
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
-const authentication_1 = require("../../middlewares/authentication");
 const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
@@ -37,7 +36,6 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-moneyTransferTransactionsRouter.use(authentication_1.default);
 moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['customer', 'transactions']), ...[
     check_1.body('expires', 'invalid expires')
         .not()

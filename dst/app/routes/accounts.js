@@ -21,7 +21,6 @@ const http_status_1 = require("http-status");
 const ioredis = require("ioredis");
 const mongoose = require("mongoose");
 const redis = require("../../redis");
-const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
@@ -33,7 +32,6 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     state: ''
 });
 const accountsRouter = express_1.Router();
-accountsRouter.use(authentication_1.default);
 /**
  * 管理者として口座開設
  */

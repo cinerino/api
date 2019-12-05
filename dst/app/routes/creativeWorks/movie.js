@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const mongoose = require("mongoose");
-const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
@@ -27,7 +26,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 const movieRouter = express_1.Router();
-movieRouter.use(authentication_1.default);
 /**
  * 映画作品検索
  */

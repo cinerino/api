@@ -5,7 +5,6 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import * as mongoose from 'mongoose';
 
-import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
@@ -19,7 +18,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 });
 
 const movieRouter = Router();
-movieRouter.use(authentication);
 
 /**
  * 映画作品検索

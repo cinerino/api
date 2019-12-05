@@ -10,7 +10,6 @@ import { body, query } from 'express-validator/check';
 import { NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
-import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
@@ -22,7 +21,6 @@ const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const CANCELLATION_FEE = 1000;
 
 const returnOrderTransactionsRouter = Router();
-returnOrderTransactionsRouter.use(authentication);
 
 /**
  * 正規表現をエスケープする

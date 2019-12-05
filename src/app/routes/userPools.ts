@@ -4,7 +4,6 @@
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 
-import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
@@ -17,8 +16,9 @@ const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServicePr
         secretAccessKey: <string>process.env.AWS_SECRET_ACCESS_KEY
     })
 });
+
 const userPoolsRouter = Router();
-userPoolsRouter.use(authentication);
+
 userPoolsRouter.get(
     '/:userPoolId',
     permitScopes([]),

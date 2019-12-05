@@ -3,7 +3,6 @@
  */
 import { Router } from 'express';
 
-import authentication from '../../middlewares/authentication';
 import requireMember from '../../middlewares/requireMember';
 
 import ordersRouter from './me/orders';
@@ -13,7 +12,6 @@ import me4cinemasunshineRouter from './me4cinemasunshine';
 
 const meRouter = Router();
 
-meRouter.use(authentication);
 meRouter.use(requireMember); // 自分のリソースへのアクセスなので、ログイン必須
 
 meRouter.use('/orders', ordersRouter);

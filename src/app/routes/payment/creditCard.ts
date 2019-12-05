@@ -10,7 +10,6 @@ import { body } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
-import authentication from '../../middlewares/authentication';
 import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
@@ -18,7 +17,6 @@ import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transac
 import validator from '../../middlewares/validator';
 
 const creditCardPaymentRouter = Router();
-creditCardPaymentRouter.use(authentication);
 
 /**
  * クレジットカード決済承認

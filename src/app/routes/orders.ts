@@ -14,7 +14,6 @@ import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
-import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
@@ -40,7 +39,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 const ordersRouter = Router();
-ordersRouter.use(authentication);
 
 const isNotAdmin: CustomValidator = (_, { req }) => !req.isAdmin;
 

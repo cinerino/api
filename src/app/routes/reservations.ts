@@ -8,7 +8,6 @@ import { body, query } from 'express-validator/check';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
-import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
@@ -25,8 +24,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 });
 
 const reservationsRouter = Router();
-
-reservationsRouter.use(authentication);
 
 /**
  * 管理者として予約検索

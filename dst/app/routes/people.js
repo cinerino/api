@@ -18,12 +18,10 @@ const express_1 = require("express");
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
-const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const peopleRouter = express_1.Router();
-peopleRouter.use(authentication_1.default);
 /**
  * 会員検索
  */

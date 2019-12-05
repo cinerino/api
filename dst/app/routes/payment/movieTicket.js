@@ -18,7 +18,6 @@ const express_1 = require("express");
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
-const authentication_1 = require("../../middlewares/authentication");
 const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
@@ -32,7 +31,6 @@ const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials
     state: ''
 });
 const movieTicketPaymentRouter = express_1.Router();
-movieTicketPaymentRouter.use(authentication_1.default);
 /**
  * ムビチケ購入番号確認
  */

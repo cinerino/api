@@ -5,13 +5,13 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import * as mongoose from 'mongoose';
 
-import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
+import projectDetailRouter from './projects/detail';
+
 const projectsRouter = Router();
-projectsRouter.use(authentication);
 
 /**
  * プロジェクト検索
@@ -68,5 +68,17 @@ projectsRouter.get(
         }
     }
 );
+
+projectsRouter.all(
+    '/:id/*',
+    async (req, _, next) => {
+        // プロジェクト指定ルーティング配下については、すべてreq.projectを上書き
+        req.project = { typeOf: 'Project', id: req.params.id };
+
+        next();
+    }
+);
+
+projectsRouter.use('/:id', projectDetailRouter);
 
 export default projectsRouter;

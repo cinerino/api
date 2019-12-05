@@ -18,7 +18,6 @@ const express_1 = require("express");
 const check_1 = require("express-validator/check");
 const mongoose = require("mongoose");
 const redis = require("../../redis");
-const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
@@ -32,7 +31,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 const eventsRouter = express_1.Router();
-eventsRouter.use(authentication_1.default);
 eventsRouter.use('/screeningEvent', screeningEvent_1.default);
 /**
  * イベント検索

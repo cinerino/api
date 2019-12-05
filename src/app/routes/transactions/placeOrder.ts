@@ -13,7 +13,6 @@ import { CREATED, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
-import authentication from '../../middlewares/authentication';
 import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
@@ -41,8 +40,6 @@ const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials
     scopes: [],
     state: ''
 });
-
-placeOrderTransactionsRouter.use(authentication);
 
 // Cinemasunshine対応
 placeOrderTransactionsRouter.use(placeOrder4cinemasunshineRouter);

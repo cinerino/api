@@ -8,13 +8,10 @@ import * as mongoose from 'mongoose';
 
 const placeOrderTransactionsRouter = Router();
 
-import authentication from '../../../middlewares/authentication';
 import permitScopes from '../../../middlewares/permitScopes';
 import validator from '../../../middlewares/validator';
 
 // import * as redis from '../../../../redis';
-
-placeOrderTransactionsRouter.use(authentication);
 
 /**
  * 座席仮予約
