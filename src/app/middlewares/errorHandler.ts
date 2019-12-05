@@ -19,8 +19,8 @@ import { APIError } from '../error/api';
 
 const debug = createDebug('cinerino-api:middlewares');
 
-export default (err: any, __: Request, res: Response, next: NextFunction) => {
-    debug(err);
+export default (err: any, req: Request, res: Response, next: NextFunction) => {
+    debug(req.originalUrl, err);
 
     if (res.headersSent) {
         next(err);

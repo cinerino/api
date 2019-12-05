@@ -10,6 +10,7 @@ const createDebug = require("debug");
 const express = require("express");
 const helmet = require("helmet");
 const qs = require("qs");
+const favicon = require("serve-favicon");
 const connectMongo_1 = require("../connectMongo");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
@@ -77,6 +78,7 @@ if (process.env.NODE_ENV !== 'production') {
 // view engine setup
 // app.set('views', `${__dirname}/views`);
 // app.set('view engine', 'ejs');
+app.use(favicon(`${__dirname}/../../public/favicon.ico`));
 app.use(bodyParser.json());
 // The extended option allows to choose between parsing the URL-encoded data
 // with the querystring library (when false) or the qs library (when true).

@@ -18,7 +18,6 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const detail_1 = require("./projects/detail");
 const projectsRouter = express_1.Router();
 /**
  * プロジェクト検索
@@ -51,10 +50,4 @@ projectsRouter.get('/:id', permitScopes_1.default([]), rateLimit_1.default, vali
         next(error);
     }
 }));
-projectsRouter.all('/:id/*', (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
-    // プロジェクト指定ルーティング配下については、すべてreq.projectを上書き
-    req.project = { typeOf: 'Project', id: req.params.id };
-    next();
-}));
-projectsRouter.use('/:id', detail_1.default);
 exports.default = projectsRouter;

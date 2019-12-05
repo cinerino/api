@@ -4,7 +4,6 @@
 import * as express from 'express';
 
 import healthRouter from './health';
-import projectsRouter from './projects';
 import projectDetailRouter from './projects/detail';
 import statsRouter from './stats';
 
@@ -27,6 +26,15 @@ router.use(authentication);
 
 router.use('', projectDetailRouter);
 
-router.use('/projects', projectsRouter);
+router.use(
+    '/projects/:id',
+    (req, _, next) => {
+        // プロジェクト指定ルーティング配下については、すべてreq.projectを上書き
+        req.project = { typeOf: 'Project', id: req.params.id };
+
+        next();
+    },
+    projectDetailRouter
+);
 
 export default router;

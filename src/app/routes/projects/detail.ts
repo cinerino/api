@@ -3,6 +3,9 @@
  */
 import * as express from 'express';
 
+import healthRouter from '../health';
+import statsRouter from '../stats';
+
 import accountsRouter from '../accounts';
 import actionsRouter from '../actions';
 import authorizationsRouter from '../authorizations';
@@ -18,6 +21,7 @@ import paymentMethodsRouter from '../paymentMethods';
 import peopleRouter from '../people';
 import meRouter from '../people/me';
 import programMembershipsRouter from '../programMembership';
+import projectsRouter from '../projects';
 import reservationsRouter from '../reservations';
 import sellersRouter from '../sellers';
 import tasksRouter from '../tasks';
@@ -26,6 +30,9 @@ import tttsRouter from '../ttts';
 import userPoolsRouter from '../userPools';
 
 const projectDetailRouter = express.Router();
+
+projectDetailRouter.use('/health', healthRouter);
+projectDetailRouter.use('/stats', statsRouter);
 
 projectDetailRouter.use('/accounts', accountsRouter);
 projectDetailRouter.use('/actions', actionsRouter);
@@ -42,6 +49,7 @@ projectDetailRouter.use('/paymentMethods', paymentMethodsRouter);
 projectDetailRouter.use('/people/me', meRouter);
 projectDetailRouter.use('/people', peopleRouter);
 projectDetailRouter.use('/programMemberships', programMembershipsRouter);
+projectDetailRouter.use('/projects', projectsRouter);
 projectDetailRouter.use('/reservations', reservationsRouter);
 projectDetailRouter.use('/sellers', sellersRouter);
 projectDetailRouter.use('/tasks', tasksRouter);

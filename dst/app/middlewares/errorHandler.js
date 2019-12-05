@@ -8,8 +8,8 @@ const createDebug = require("debug");
 const http_status_1 = require("http-status");
 const api_1 = require("../error/api");
 const debug = createDebug('cinerino-api:middlewares');
-exports.default = (err, __, res, next) => {
-    debug(err);
+exports.default = (err, req, res, next) => {
+    debug(req.originalUrl, err);
     if (res.headersSent) {
         next(err);
         return;

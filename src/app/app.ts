@@ -10,6 +10,7 @@ import * as createDebug from 'debug';
 import * as express from 'express';
 import * as helmet from 'helmet';
 import * as qs from 'qs';
+import * as favicon from 'serve-favicon';
 
 import { connectMongo } from '../connectMongo';
 
@@ -88,6 +89,8 @@ if (process.env.NODE_ENV !== 'production') {
 // view engine setup
 // app.set('views', `${__dirname}/views`);
 // app.set('view engine', 'ejs');
+
+app.use(favicon(`${__dirname}/../../public/favicon.ico`));
 
 app.use(bodyParser.json());
 // The extended option allows to choose between parsing the URL-encoded data
