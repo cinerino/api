@@ -47,7 +47,12 @@ import createImportScreeningEventsTask from './triggered/createImportScreeningEv
 import createUpdateEventAttendeeCapacityTask from './triggered/createUpdateEventAttendeeCapacityTask/run';
 
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-const project: factory.project.IProject = { typeOf: 'Project', id: <string>process.env.PROJECT_ID };
+const project: factory.project.IProject | undefined = (typeof process.env.PROJECT_ID === 'string')
+    ? { typeOf: 'Project', id: process.env.PROJECT_ID }
+    : undefined;
+const importEventsProjects = (typeof process.env.IMPORT_EVENTS_PROJECTS === 'string')
+    ? process.env.IMPORT_EVENTS_PROJECTS.split(',')
+    : [];
 
 // tslint:disable-next-line:cyclomatic-complexity
 export default async () => {
@@ -91,6 +96,8 @@ export default async () => {
     await unRegisterProgramMembership({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     await updateEventAttendeeCapacity({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
 
-    await createImportScreeningEventsTask({ project: project });
-    await createUpdateEventAttendeeCapacityTask({ project: project });
+    await Promise.all(importEventsProjects.map(async (projectId) => {
+        await createImportScreeningEventsTask({ project: { typeOf: 'Project', id: projectId } });
+        await createUpdateEventAttendeeCapacityTask({ project: { typeOf: 'Project', id: projectId } });
+    }));
 };

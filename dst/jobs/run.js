@@ -49,7 +49,12 @@ const run_37 = require("./continuous/updateEventAttendeeCapacity/run");
 const run_38 = require("./triggered/createImportScreeningEventsTask/run");
 const run_39 = require("./triggered/createUpdateEventAttendeeCapacityTask/run");
 const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-const project = { typeOf: 'Project', id: process.env.PROJECT_ID };
+const project = (typeof process.env.PROJECT_ID === 'string')
+    ? { typeOf: 'Project', id: process.env.PROJECT_ID }
+    : undefined;
+const importEventsProjects = (typeof process.env.IMPORT_EVENTS_PROJECTS === 'string')
+    ? process.env.IMPORT_EVENTS_PROJECTS.split(',')
+    : [];
 // tslint:disable-next-line:cyclomatic-complexity
 exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_1.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
@@ -89,6 +94,8 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_35.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     yield run_36.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
     yield run_37.default({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    yield run_38.default({ project: project });
-    yield run_39.default({ project: project });
+    yield Promise.all(importEventsProjects.map((projectId) => __awaiter(void 0, void 0, void 0, function* () {
+        yield run_38.default({ project: { typeOf: 'Project', id: projectId } });
+        yield run_39.default({ project: { typeOf: 'Project', id: projectId } });
+    })));
 });
