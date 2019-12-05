@@ -20,14 +20,6 @@ router.use('/stats', stats_1.default);
 // 認証
 router.use(authentication_1.default);
 router.use('', detail_1.default);
-// router.all(
-//     '/projects/:id/*',
-//     (req, _, next) => {
-//         // プロジェクト指定ルーティング配下については、すべてreq.projectを上書き
-//         req.project = { typeOf: 'Project', id: req.params.id };
-//         next();
-//     }
-// );
 router.use('/projects/:id', (req, _, next) => {
     // プロジェクト指定ルーティング配下については、すべてreq.projectを上書き
     req.project = { typeOf: 'Project', id: req.params.id };
