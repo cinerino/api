@@ -144,16 +144,22 @@ ordersRouter.get('', permitScopes_1.default(['customer', 'orders', 'orders.read-
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         // 管理者でない場合、検索条件を限定
         if (!req.isAdmin) {
-            const orderDateThrough = (req.query.orderDateThrough instanceof Date)
-                ? req.query.orderDateThrough
-                : moment()
-                    .toDate();
-            const orderDateFrom = (req.query.orderDateFrom instanceof Date)
-                ? req.query.orderDateFrom
-                : moment(orderDateThrough)
-                    // tslint:disable-next-line:no-magic-numbers
-                    .add(-3, 'months') // とりあえず直近3カ月をデフォルト動作に設定
-                    .toDate();
+            // const orderDateThrough = (req.query.orderDateThrough instanceof Date)
+            //     ? req.query.orderDateThrough
+            //     : moment()
+            //         .toDate();
+            // const orderDateFrom = (req.query.orderDateFrom instanceof Date)
+            //     ? req.query.orderDateFrom
+            //     : moment(orderDateThrough)
+            //         // tslint:disable-next-line:no-magic-numbers
+            //         .add(-3, 'months') // とりあえず直近3カ月をデフォルト動作に設定
+            //         .toDate();
+            const orderDateThrough = moment()
+                .toDate();
+            const orderDateFrom = moment(orderDateThrough)
+                // tslint:disable-next-line:no-magic-numbers
+                .add(-3, 'months') // とりあえず直近3カ月をデフォルト動作に設定
+                .toDate();
             searchConditions = {
                 project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
                 // tslint:disable-next-line:no-magic-numbers
