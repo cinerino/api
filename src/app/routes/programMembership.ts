@@ -9,17 +9,34 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
+const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
+
 const programMembershipsRouter = Router();
 
+/**
+ * 会員プログラム検索
+ */
 programMembershipsRouter.get(
     '',
     permitScopes(['customer', 'programMemberships', 'programMemberships.read-only']),
     rateLimit,
     validator,
-    async (__, res, next) => {
+    async (req, res, next) => {
         try {
-            const repository = new cinerino.repository.ProgramMembership(mongoose.connection);
-            const programMemberships = await repository.search({});
+            const programMembershipRepo = new cinerino.repository.ProgramMembership(mongoose.connection);
+
+            const searchConditions: cinerino.factory.programMembership.ISearchConditions = {
+                ...req.query,
+                project: (MULTI_TENANT_SUPPORTED) ? { id: { $eq: req.project.id } } : undefined,
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
+            };
+
+            const totalCount = await programMembershipRepo.count(searchConditions);
+            const programMemberships = await programMembershipRepo.search(searchConditions);
+
+            res.set('X-Total-Count', totalCount.toString());
             res.json(programMemberships);
         } catch (error) {
             next(error);

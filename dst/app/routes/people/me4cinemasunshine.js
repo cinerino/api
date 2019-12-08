@@ -27,12 +27,13 @@ const me4cinemasunshineRouter = express_1.Router();
 /**
  * 会員プログラム登録
  */
-me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.default(['customer', 'people.ownershipInfos']), rateLimit_1.default, validator_1.default, 
-// tslint:disable-next-line:max-func-body-length
-(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.default(['customer', 'people.ownershipInfos']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const programMembershipRepo = new cinerino.repository.ProgramMembership(mongoose.connection);
-        const programMemberships = yield programMembershipRepo.search({ id: req.body.programMembershipId });
+        const programMemberships = yield programMembershipRepo.search({
+            project: { id: { $eq: req.project.id } },
+            id: { $eq: req.body.programMembershipId }
+        });
         const programMembership = programMemberships.shift();
         if (programMembership === undefined) {
             throw new cinerino.factory.errors.NotFound('ProgramMembership');

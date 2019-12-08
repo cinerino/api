@@ -25,11 +25,13 @@ me4cinemasunshineRouter.put(
     permitScopes(['customer', 'people.ownershipInfos']),
     rateLimit,
     validator,
-    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             const programMembershipRepo = new cinerino.repository.ProgramMembership(mongoose.connection);
-            const programMemberships = await programMembershipRepo.search({ id: req.body.programMembershipId });
+            const programMemberships = await programMembershipRepo.search({
+                project: { id: { $eq: req.project.id } },
+                id: { $eq: <string>req.body.programMembershipId }
+            });
             const programMembership = programMemberships.shift();
             if (programMembership === undefined) {
                 throw new cinerino.factory.errors.NotFound('ProgramMembership');
