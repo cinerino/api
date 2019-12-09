@@ -1,6 +1,7 @@
 /**
  * ルーター
  */
+import * as cinerino from '@cinerino/domain';
 import * as express from 'express';
 
 import healthRouter from './health';
@@ -24,17 +25,29 @@ router.use('/stats', statsRouter);
 // 認証
 router.use(authentication);
 
-router.use('', projectDetailRouter);
-
+// プロジェクト指定ルーティング配下については、すべてreq.projectを上書き
 router.use(
     '/projects/:id',
     (req, _, next) => {
-        // プロジェクト指定ルーティング配下については、すべてreq.projectを上書き
         req.project = { typeOf: 'Project', id: req.params.id };
 
         next();
-    },
-    projectDetailRouter
+    }
 );
+
+router.use((req, _, next) => {
+    // プロジェクト未指定は拒否
+    if (req.project === undefined || req.project === null || typeof req.project.id !== 'string') {
+        next(new cinerino.factory.errors.Forbidden('project not specified'));
+
+        return;
+    }
+
+    next();
+});
+
+// 以下、プロジェクト指定済の状態でルーティング
+router.use('', projectDetailRouter);
+router.use('/projects/:id', projectDetailRouter);
 
 export default router;
