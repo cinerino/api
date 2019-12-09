@@ -27,7 +27,6 @@ const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4t
 const validator_1 = require("../../middlewares/validator");
 const placeOrder4cinemasunshine_1 = require("./placeOrder4cinemasunshine");
 const redis = require("../../../redis");
-const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== undefined)
     ? Number(process.env.NUM_ORDER_ITEMS_MAX_VALUE)
@@ -1012,7 +1011,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
         // tslint:disable-next-line:no-floating-promises
         cinerino.service.transaction.placeOrder.exportTasks({
-            project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
+            project: req.project,
             status: cinerino.factory.transactionStatusType.Confirmed
         })({
             project: projectRepo,
@@ -1061,7 +1060,7 @@ placeOrderTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.defaul
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
         // tslint:disable-next-line:no-floating-promises
         cinerino.service.transaction.placeOrder.exportTasks({
-            project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
+            project: req.project,
             status: cinerino.factory.transactionStatusType.Canceled
         })({
             project: projectRepo,
@@ -1098,7 +1097,7 @@ placeOrderTransactionsRouter.get('', permitScopes_1.default([]), rateLimit_1.def
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        const searchConditions = Object.assign(Object.assign({}, req.query), { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, typeOf: cinerino.factory.transactionType.PlaceOrder });
         const transactions = yield transactionRepo.search(searchConditions);
@@ -1138,7 +1137,7 @@ placeOrderTransactionsRouter.get('/report', permitScopes_1.default([]), rateLimi
         const searchConditions = {
             limit: undefined,
             page: undefined,
-            project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
+            project: { ids: [req.project.id] },
             typeOf: cinerino.factory.transactionType.PlaceOrder,
             ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
             statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,

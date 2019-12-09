@@ -15,8 +15,6 @@ import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
-const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -111,7 +109,7 @@ screeningEventRouter.get(
             } else {
                 const searchConditions: cinerino.chevre.factory.event.screeningEvent.ISearchConditions = {
                     ...req.query,
-                    project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
+                    project: { ids: [req.project.id] },
                     // tslint:disable-next-line:no-magic-numbers
                     limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                     page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,

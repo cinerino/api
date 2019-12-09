@@ -25,7 +25,6 @@ const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
-const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 // const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const moneyTransferTransactionsRouter = express_1.Router();
 const debug = createDebug('cinerino-api:router');
@@ -159,7 +158,7 @@ moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.de
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
         // tslint:disable-next-line:no-floating-promises
         cinerino.service.transaction.moneyTransfer.exportTasks({
-            project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
+            project: req.project,
             status: cinerino.factory.transactionStatusType.Confirmed
         })({
             task: taskRepo,
@@ -207,7 +206,7 @@ moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.def
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
         // tslint:disable-next-line:no-floating-promises
         cinerino.service.transaction.moneyTransfer.exportTasks({
-            project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
+            project: req.project,
             status: cinerino.factory.transactionStatusType.Canceled
         })({
             task: taskRepo,
@@ -243,7 +242,7 @@ moneyTransferTransactionsRouter.get('', permitScopes_1.default([]), rateLimit_1.
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        const searchConditions = Object.assign(Object.assign({}, req.query), { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, typeOf: cinerino.factory.transactionType.MoneyTransfer });
         const transactions = yield transactionRepo.search(searchConditions);

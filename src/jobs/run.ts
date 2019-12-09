@@ -46,7 +46,6 @@ import updateEventAttendeeCapacity from './continuous/updateEventAttendeeCapacit
 import createImportScreeningEventsTask from './triggered/createImportScreeningEventsTask/run';
 import createUpdateEventAttendeeCapacityTask from './triggered/createUpdateEventAttendeeCapacityTask/run';
 
-const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const project: factory.project.IProject | undefined = (typeof process.env.PROJECT_ID === 'string')
     ? { typeOf: 'Project', id: process.env.PROJECT_ID }
     : undefined;
@@ -56,45 +55,45 @@ const importEventsProjects = (typeof process.env.IMPORT_EVENTS_PROJECTS === 'str
 
 // tslint:disable-next-line:cyclomatic-complexity
 export default async () => {
-    await abortTasks({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await retryTasks({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await makeTransactionExpired({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await reexportTransactionTasks({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    await abortTasks({ project: project });
+    await retryTasks({ project: project });
+    await makeTransactionExpired({ project: project });
+    await reexportTransactionTasks({ project: project });
 
-    await onCanceledPlaceOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await onCanceledReturnOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await onConfirmedMoneyTransfer({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await onConfirmedPlaceOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await onConfirmedReturnOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await onExpiredPlaceOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await onExpiredReturnOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    await onCanceledPlaceOrder({ project: project });
+    await onCanceledReturnOrder({ project: project });
+    await onConfirmedMoneyTransfer({ project: project });
+    await onConfirmedPlaceOrder({ project: project });
+    await onConfirmedReturnOrder({ project: project });
+    await onExpiredPlaceOrder({ project: project });
+    await onExpiredReturnOrder({ project: project });
 
-    await cancelAccount({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await cancelCreditCard({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await cancelPointAward({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await cancelReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await cancelSeatReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await confirmReservation({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await deleteMember({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await givePointAward({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await importScreeningEvents({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await moneyTransfer({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await orderProgramMembership({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await payAccount({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await payCreditCard({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await payMovieTicket({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await placeOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await refundAccount({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await refundCreditCard({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await refundMovieTicket({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await registerProgramMembership({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await returnOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await returnPointAward({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await sendEmailMessage({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await sendOrder({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await triggerWebhook({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await unRegisterProgramMembership({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
-    await updateEventAttendeeCapacity({ project: (MULTI_TENANT_SUPPORTED) ? project : undefined });
+    await cancelAccount({ project: project });
+    await cancelCreditCard({ project: project });
+    await cancelPointAward({ project: project });
+    await cancelReservation({ project: project });
+    await cancelSeatReservation({ project: project });
+    await confirmReservation({ project: project });
+    await deleteMember({ project: project });
+    await givePointAward({ project: project });
+    await importScreeningEvents({ project: project });
+    await moneyTransfer({ project: project });
+    await orderProgramMembership({ project: project });
+    await payAccount({ project: project });
+    await payCreditCard({ project: project });
+    await payMovieTicket({ project: project });
+    await placeOrder({ project: project });
+    await refundAccount({ project: project });
+    await refundCreditCard({ project: project });
+    await refundMovieTicket({ project: project });
+    await registerProgramMembership({ project: project });
+    await returnOrder({ project: project });
+    await returnPointAward({ project: project });
+    await sendEmailMessage({ project: project });
+    await sendOrder({ project: project });
+    await triggerWebhook({ project: project });
+    await unRegisterProgramMembership({ project: project });
+    await updateEventAttendeeCapacity({ project: project });
 
     await Promise.all(importEventsProjects.map(async (projectId) => {
         await createImportScreeningEventsTask({ project: { typeOf: 'Project', id: projectId } });

@@ -18,8 +18,6 @@ import validator from '../../middlewares/validator';
 
 import * as redis from '../../../redis';
 
-const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-
 // const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const moneyTransferTransactionsRouter = Router();
 const debug = createDebug('cinerino-api:router');
@@ -181,7 +179,7 @@ moneyTransferTransactionsRouter.put(
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
             // tslint:disable-next-line:no-floating-promises
             cinerino.service.transaction.moneyTransfer.exportTasks({
-                project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
+                project: req.project,
                 status: cinerino.factory.transactionStatusType.Confirmed
             })({
                 task: taskRepo,
@@ -239,7 +237,7 @@ moneyTransferTransactionsRouter.put(
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
             // tslint:disable-next-line:no-floating-promises
             cinerino.service.transaction.moneyTransfer.exportTasks({
-                project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
+                project: req.project,
                 status: cinerino.factory.transactionStatusType.Canceled
             })({
                 task: taskRepo,
@@ -285,7 +283,7 @@ moneyTransferTransactionsRouter.get(
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             const searchConditions: any = {
                 ...req.query,
-                project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
+                project: { ids: [req.project.id] },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,

@@ -9,8 +9,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-
 const programMembershipsRouter = Router();
 
 /**
@@ -27,7 +25,7 @@ programMembershipsRouter.get(
 
             const searchConditions: cinerino.factory.programMembership.ISearchConditions = {
                 ...req.query,
-                project: (MULTI_TENANT_SUPPORTED) ? { id: { $eq: req.project.id } } : undefined,
+                project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1

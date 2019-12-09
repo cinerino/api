@@ -23,7 +23,6 @@ import placeOrder4cinemasunshineRouter from './placeOrder4cinemasunshine';
 
 import * as redis from '../../../redis';
 
-const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== undefined)
     ? Number(process.env.NUM_ORDER_ITEMS_MAX_VALUE)
@@ -1220,7 +1219,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
             // tslint:disable-next-line:no-floating-promises
             cinerino.service.transaction.placeOrder.exportTasks({
-                project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
+                project: req.project,
                 status: cinerino.factory.transactionStatusType.Confirmed
             })({
                 project: projectRepo,
@@ -1279,7 +1278,7 @@ placeOrderTransactionsRouter.put(
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
             // tslint:disable-next-line:no-floating-promises
             cinerino.service.transaction.placeOrder.exportTasks({
-                project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
+                project: req.project,
                 status: cinerino.factory.transactionStatusType.Canceled
             })({
                 project: projectRepo,
@@ -1326,7 +1325,7 @@ placeOrderTransactionsRouter.get(
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             const searchConditions: cinerino.factory.transaction.ISearchConditions<cinerino.factory.transactionType.PlaceOrder> = {
                 ...req.query,
-                project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
+                project: { ids: [req.project.id] },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
@@ -1381,7 +1380,7 @@ placeOrderTransactionsRouter.get(
             const searchConditions: cinerino.factory.transaction.ISearchConditions<cinerino.factory.transactionType.PlaceOrder> = {
                 limit: undefined,
                 page: undefined,
-                project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
+                project: { ids: [req.project.id] },
                 typeOf: cinerino.factory.transactionType.PlaceOrder,
                 ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
                 statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,

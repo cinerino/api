@@ -27,7 +27,6 @@ const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4t
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
 const debug = createDebug('cinerino-api:router');
-const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 let coaTickets;
 function initializeCOATickets() {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
@@ -483,7 +482,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/confirm', permitScopes_1.d
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
         // tslint:disable-next-line:no-floating-promises
         cinerino.service.transaction.placeOrder.exportTasks({
-            project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
+            project: req.project,
             status: cinerino.factory.transactionStatusType.Confirmed
         })({
             project: projectRepo,

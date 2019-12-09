@@ -23,8 +23,6 @@ import * as redis from '../../../redis';
 
 const debug = createDebug('cinerino-api:router');
 
-const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-
 export interface ICOATicket extends cinerino.COA.services.master.ITicketResult {
     theaterCode: string;
 }
@@ -589,7 +587,7 @@ placeOrder4cinemasunshineRouter.post(
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
             // tslint:disable-next-line:no-floating-promises
             cinerino.service.transaction.placeOrder.exportTasks({
-                project: (MULTI_TENANT_SUPPORTED) ? req.project : undefined,
+                project: req.project,
                 status: cinerino.factory.transactionStatusType.Confirmed
             })({
                 project: projectRepo,

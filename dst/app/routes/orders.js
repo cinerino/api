@@ -24,7 +24,6 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const redis = require("../../redis");
-const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
 /**
  * 正規表現をエスケープする
  */
@@ -139,7 +138,7 @@ ordersRouter.get('', permitScopes_1.default(['customer', 'orders', 'orders.read-
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
-        let searchConditions = Object.assign(Object.assign({}, req.query), { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined, 
+        let searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         // 管理者でない場合、検索条件を限定
@@ -161,7 +160,7 @@ ordersRouter.get('', permitScopes_1.default(['customer', 'orders', 'orders.read-
                 .add(-3, 'months') // とりあえず直近3カ月をデフォルト動作に設定
                 .toDate();
             searchConditions = {
-                project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
+                project: { ids: [req.project.id] },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
@@ -201,7 +200,7 @@ ordersRouter.post('', permitScopes_1.default([]), rateLimit_1.default, ...[
         // 注文検索
         const orders = yield orderRepo.search({
             limit: 1,
-            project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
+            project: { ids: [req.project.id] },
             orderNumbers: [orderNumber]
         });
         let order = orders.shift();
@@ -288,7 +287,7 @@ ordersRouter.get('/download', permitScopes_1.default([]), rateLimit_1.default,
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
-        const searchConditions = Object.assign(Object.assign({}, req.query), { project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined });
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] } });
         const format = req.query.format;
         const stream = yield cinerino.service.report.order.stream({
             conditions: searchConditions,
@@ -408,7 +407,7 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['customer
         const orders = yield orderRepo.search({
             limit: 1,
             sort: { orderDate: cinerino.factory.sortType.Descending },
-            project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
+            project: { ids: [req.project.id] },
             confirmationNumbers: [req.body.confirmationNumber],
             customer: {
                 email: (customer.email !== undefined)

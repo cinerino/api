@@ -20,8 +20,6 @@ import validator from '../middlewares/validator';
 
 import * as redis from '../../redis';
 
-const MULTI_TENANT_SUPPORTED = process.env.MULTI_TENANT_SUPPORTED === '1';
-
 /**
  * 正規表現をエスケープする
  */
@@ -154,7 +152,7 @@ ordersRouter.get(
 
             let searchConditions: cinerino.factory.order.ISearchConditions = {
                 ...req.query,
-                project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
+                project: { ids: [req.project.id] },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
@@ -180,7 +178,7 @@ ordersRouter.get(
                     .toDate();
 
                 searchConditions = {
-                    project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
+                    project: { ids: [req.project.id] },
                     // tslint:disable-next-line:no-magic-numbers
                     limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                     page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
@@ -231,7 +229,7 @@ ordersRouter.post(
             // 注文検索
             const orders = await orderRepo.search({
                 limit: 1,
-                project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
+                project: { ids: [req.project.id] },
                 orderNumbers: [orderNumber]
             });
             let order = orders.shift();
@@ -336,7 +334,7 @@ ordersRouter.get(
 
             const searchConditions: cinerino.factory.order.ISearchConditions = {
                 ...req.query,
-                project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined
+                project: { ids: [req.project.id] }
             };
 
             const format = req.query.format;
@@ -482,7 +480,7 @@ ordersRouter.post(
             const orders = await orderRepo.search({
                 limit: 1,
                 sort: { orderDate: cinerino.factory.sortType.Descending },
-                project: (MULTI_TENANT_SUPPORTED) ? { ids: [req.project.id] } : undefined,
+                project: { ids: [req.project.id] },
                 confirmationNumbers: [<string>req.body.confirmationNumber],
                 customer: {
                     email: (customer.email !== undefined)

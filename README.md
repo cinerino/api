@@ -25,14 +25,10 @@
 | `CUSTOMER_ADDITIONAL_PERMITTED_SCOPES`   | true     |                | 会員追加許可スコープ                   |
 | `DEBUG`                                  | false    | cinerino-api:* | Debug                                  |
 | `DEBUG_SINGLETON_PROCESS`                | false    | 1 or 0         | Singleton Process Debug Flag           |
-| `IMPORT_EVENTS_INTERVAL_IN_MINUTES`      | true     |                | イベントインポートインターバル         |
-| `IMPORT_EVENTS_IN_WEEKS`                 | true     |                | イベントインポート期間                 |
 | `IMPORT_EVENTS_PER_WEEKS`                | true     |                | イベントインポート処理単位期間         |
-| `IMPORT_EVENTS_STOPPED`                  | false    | 1 or 0         | イベントインポート停止フラグ           |
 | `JOBS_STOPPED`                           | true     | 1 or 0         | 非同期ジョブ停止フラグ                 |
 | `MONGOLAB_URI`                           | true     |                | MongoDB connection URI                 |
 | `MONGO_AUTO_INDEX_DISABLED`              | false    | 1 or 0         | MongoDB auto index flag                |
-| `MULTI_TENANT_SUPPORTED`                 | false    | 1 or 0         | Multitenant support flag               |
 | `MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN`   | true     |                | Mvtk credentials                       |
 | `MVTK_RESERVE_CLIENT_ID`                 | true     |                | Mvtk credentials                       |
 | `MVTK_RESERVE_CLIENT_SECRET`             | true     |                | Mvtk credentials                       |
