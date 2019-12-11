@@ -661,32 +661,32 @@ ordersRouter.post<ParamsDictionary>(
             });
             // 所有権に対してコード発行
             order.acceptedOffers = await Promise.all(order.acceptedOffers.map(async (offer) => {
-                // 実際の予約データで置き換え
-                const reservation = searchReservationsResult.data.find((r) => r.id === offer.itemOffered.id);
-                if (reservation !== undefined) {
-                    offer.itemOffered = reservation;
-                }
+                const itemOffered = offer.itemOffered;
+                if (itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
+                    // 実際の予約データで置き換え
+                    const reservation = searchReservationsResult.data.find((r) => r.id === itemOffered.id);
+                    if (reservation !== undefined) {
+                        // 所有権コード情報を追加
+                        const ownershipInfo = ownershipInfos
+                            .filter((o) => o.typeOfGood.typeOf === reservation.typeOf)
+                            .find((o) => (<EventReservationGoodType>o.typeOfGood).id === reservation.id);
+                        if (ownershipInfo !== undefined) {
+                            const authorization = await cinerino.service.code.publish({
+                                project: req.project,
+                                agent: req.agent,
+                                recipient: req.agent,
+                                object: ownershipInfo,
+                                purpose: {},
+                                validFrom: now
+                            })({
+                                action: actionRepo,
+                                code: codeRepo,
+                                project: projectRepo
+                            });
 
-                // 所有権コード情報を追加
-                const ownershipInfo = ownershipInfos
-                    .filter((o) => o.typeOfGood.typeOf === offer.itemOffered.typeOf)
-                    .find((o) => (<EventReservationGoodType>o.typeOfGood).id === offer.itemOffered.id);
-                if (ownershipInfo !== undefined) {
-                    if (offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
-                        const authorization = await cinerino.service.code.publish({
-                            project: req.project,
-                            agent: req.agent,
-                            recipient: req.agent,
-                            object: ownershipInfo,
-                            purpose: {},
-                            validFrom: now
-                        })({
-                            action: actionRepo,
-                            code: codeRepo,
-                            project: projectRepo
-                        });
-
-                        offer.itemOffered.reservedTicket.ticketToken = authorization.code;
+                            reservation.reservedTicket.ticketToken = authorization.code;
+                            offer.itemOffered = reservation;
+                        }
                     }
                 }
 

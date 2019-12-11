@@ -41,6 +41,10 @@ moneyTransferTransactionsRouter.post(
         body('object')
             .not()
             .isEmpty(),
+        body('object.amount')
+            .optional()
+            .isInt()
+            .toInt(),
         body('agent.identifier')
             .optional()
             .isArray({ max: 10 }),
@@ -99,6 +103,7 @@ moneyTransferTransactionsRouter.post(
                 endpoint: project.settings.pecorino.endpoint,
                 auth: pecorinoAuthClient
             });
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
@@ -118,8 +123,8 @@ moneyTransferTransactionsRouter.post(
                     ]
                 },
                 object: {
-                    // amount: Number(req.body.object.amount),
-                    // toLocation: req.body.object.toLocation,
+                    amount: req.body.object.amount,
+                    toLocation: req.body.object.toLocation,
                     authorizeActions: [],
                     ...(typeof req.body.object.description === 'string') ? { description: req.body.object.description } : {}
                 },
@@ -132,6 +137,8 @@ moneyTransferTransactionsRouter.post(
                 seller: req.body.seller
             })({
                 accountService: accountService,
+                action: actionRepo,
+                project: projectRepo,
                 seller: sellerRepo,
                 transaction: transactionRepo
             });

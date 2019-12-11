@@ -44,6 +44,10 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['customer
     check_1.body('object')
         .not()
         .isEmpty(),
+    check_1.body('object.amount')
+        .optional()
+        .isInt()
+        .toInt(),
     check_1.body('agent.identifier')
         .optional()
         .isArray({ max: 10 }),
@@ -100,6 +104,7 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['customer
             endpoint: project.settings.pecorino.endpoint,
             auth: pecorinoAuthClient
         });
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const transaction = yield cinerino.service.transaction.moneyTransfer.start({
@@ -113,14 +118,13 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['customer
                         })
                         : []
                 ] }),
-            object: Object.assign({ 
-                // amount: Number(req.body.object.amount),
-                // toLocation: req.body.object.toLocation,
-                authorizeActions: [] }, (typeof req.body.object.description === 'string') ? { description: req.body.object.description } : {}),
+            object: Object.assign({ amount: req.body.object.amount, toLocation: req.body.object.toLocation, authorizeActions: [] }, (typeof req.body.object.description === 'string') ? { description: req.body.object.description } : {}),
             recipient: Object.assign(Object.assign({ typeOf: req.body.recipient.typeOf, id: req.body.recipient.id }, (typeof req.body.recipient.name === 'string') ? { name: req.body.recipient.name } : {}), (typeof req.body.recipient.url === 'string') ? { url: req.body.recipient.url } : {}),
             seller: req.body.seller
         })({
             accountService: accountService,
+            action: actionRepo,
+            project: projectRepo,
             seller: sellerRepo,
             transaction: transactionRepo
         });
