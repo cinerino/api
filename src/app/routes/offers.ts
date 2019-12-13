@@ -69,7 +69,7 @@ offersRouter.post<ParamsDictionary>(
     },
     async (req, res, next) => {
         try {
-            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.moneyTransfer.authorize({
+            const action = await cinerino.service.offer.moneyTransfer.authorize({
                 project: req.project,
                 object: {
                     typeOf: cinerino.factory.actionType.MoneyTransfer,
@@ -124,7 +124,7 @@ offersRouter.put<ParamsDictionary>(
     },
     async (req, res, next) => {
         try {
-            await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.moneyTransfer.voidTransaction({
+            await cinerino.service.offer.moneyTransfer.voidTransaction({
                 project: req.project,
                 id: req.params.actionId,
                 agent: { id: req.user.sub },

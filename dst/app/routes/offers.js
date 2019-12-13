@@ -67,7 +67,7 @@ offersRouter.post('/moneyTransfer/authorize', permitScopes_1.default(['customer'
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.moneyTransfer.authorize({
+        const action = yield cinerino.service.offer.moneyTransfer.authorize({
             project: req.project,
             object: {
                 typeOf: cinerino.factory.actionType.MoneyTransfer,
@@ -112,7 +112,7 @@ offersRouter.put('/moneyTransfer/authorize/:actionId/void', permitScopes_1.defau
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.moneyTransfer.voidTransaction({
+        yield cinerino.service.offer.moneyTransfer.voidTransaction({
             project: req.project,
             id: req.params.actionId,
             agent: { id: req.user.sub },

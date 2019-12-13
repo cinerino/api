@@ -46,8 +46,9 @@ const run_34 = require("./continuous/sendOrder/run");
 const run_35 = require("./continuous/triggerWebhook/run");
 const run_36 = require("./continuous/unRegisterProgramMembership/run");
 const run_37 = require("./continuous/updateEventAttendeeCapacity/run");
-const run_38 = require("./triggered/createImportScreeningEventsTask/run");
-const run_39 = require("./triggered/createUpdateEventAttendeeCapacityTask/run");
+const run_38 = require("./continuous/voidMoneyTransfer/run");
+const run_39 = require("./triggered/createImportScreeningEventsTask/run");
+const run_40 = require("./triggered/createUpdateEventAttendeeCapacityTask/run");
 const project = (typeof process.env.PROJECT_ID === 'string')
     ? { typeOf: 'Project', id: process.env.PROJECT_ID }
     : undefined;
@@ -93,8 +94,9 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_35.default({ project: project });
     yield run_36.default({ project: project });
     yield run_37.default({ project: project });
+    yield run_38.default({ project: project });
     yield Promise.all(importEventsProjects.map((projectId) => __awaiter(void 0, void 0, void 0, function* () {
-        yield run_38.default({ project: { typeOf: 'Project', id: projectId } });
         yield run_39.default({ project: { typeOf: 'Project', id: projectId } });
+        yield run_40.default({ project: { typeOf: 'Project', id: projectId } });
     })));
 });

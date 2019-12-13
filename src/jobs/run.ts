@@ -42,6 +42,7 @@ import sendOrder from './continuous/sendOrder/run';
 import triggerWebhook from './continuous/triggerWebhook/run';
 import unRegisterProgramMembership from './continuous/unRegisterProgramMembership/run';
 import updateEventAttendeeCapacity from './continuous/updateEventAttendeeCapacity/run';
+import voidMoneyTransfer from './continuous/voidMoneyTransfer/run';
 
 import createImportScreeningEventsTask from './triggered/createImportScreeningEventsTask/run';
 import createUpdateEventAttendeeCapacityTask from './triggered/createUpdateEventAttendeeCapacityTask/run';
@@ -94,6 +95,7 @@ export default async () => {
     await triggerWebhook({ project: project });
     await unRegisterProgramMembership({ project: project });
     await updateEventAttendeeCapacity({ project: project });
+    await voidMoneyTransfer({ project: project });
 
     await Promise.all(importEventsProjects.map(async (projectId) => {
         await createImportScreeningEventsTask({ project: { typeOf: 'Project', id: projectId } });
