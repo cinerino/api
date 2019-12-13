@@ -34,6 +34,13 @@ offersRouter.post('/moneyTransfer/authorize', permitScopes_1.default(['customer'
         .isEmpty()
         .withMessage(() => 'required')
         .isInt(),
+    check_1.body('object.toLocation')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required'),
+    check_1.body('object.toLocation.accountType')
+        .isIn([cinerino.factory.accountType.Coin])
+        .withMessage(() => `must be "${cinerino.factory.accountType.Coin}"`),
     check_1.body('object.additionalProperty')
         .optional()
         .isArray({ max: 10 }),

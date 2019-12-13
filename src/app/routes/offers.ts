@@ -32,6 +32,13 @@ offersRouter.post<ParamsDictionary>(
             .isEmpty()
             .withMessage(() => 'required')
             .isInt(),
+        body('object.toLocation')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required'),
+        body('object.toLocation.accountType')
+            .isIn([cinerino.factory.accountType.Coin])
+            .withMessage(() => `must be "${cinerino.factory.accountType.Coin}"`),
         body('object.additionalProperty')
             .optional()
             .isArray({ max: 10 }),
