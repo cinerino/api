@@ -12,16 +12,6 @@ import runJobs from './jobs/run';
 
 const debug = createDebug('cinerino-api:server');
 
-if (process.env.JOBS_STOPPED !== '1') {
-    runJobs()
-        .then()
-        .catch((err) => {
-            // tslint:disable-next-line:no-console
-            console.error('runJobs:', err);
-            process.exit(1);
-        });
-}
-
 /**
  * Get port from environment and store in Express.
  */
@@ -48,6 +38,16 @@ const server = https.createServer(options, app);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+if (process.env.JOBS_STOPPED !== '1') {
+    runJobs()
+        .then()
+        .catch((err) => {
+            // tslint:disable-next-line:no-console
+            console.error('runJobs:', err);
+            process.exit(1);
+        });
+}
 
 /**
  * Normalize a port into a number, string, or false.
