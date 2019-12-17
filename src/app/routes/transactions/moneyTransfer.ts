@@ -4,7 +4,9 @@
 import * as cinerino from '@cinerino/domain';
 
 import * as createDebug from 'debug';
-import { Router } from 'express';
+import { Request, Router } from 'express';
+// tslint:disable-next-line:no-implicit-dependencies
+import { ParamsDictionary } from 'express-serve-static-core';
 // tslint:disable-next-line:no-submodule-imports
 import { body, query } from 'express-validator/check';
 import { NO_CONTENT } from 'http-status';
@@ -29,22 +31,34 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     state: ''
 });
 
-moneyTransferTransactionsRouter.post(
+// tslint:disable-next-line:use-default-type-parameter
+moneyTransferTransactionsRouter.post<ParamsDictionary>(
     '/start',
     permitScopes(['customer', 'transactions']),
     ...[
         body('expires', 'invalid expires')
             .not()
             .isEmpty()
+            .withMessage(() => 'required')
             .isISO8601()
             .toDate(),
         body('object')
             .not()
-            .isEmpty(),
+            .isEmpty()
+            .withMessage(() => 'required'),
         body('object.amount')
-            .optional()
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
             .isInt()
             .toInt(),
+        body('object.fromLocation')
+            .not()
+            .isEmpty(),
+        body('object.toLocation')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required'),
         body('agent.identifier')
             .optional()
             .isArray({ max: 10 }),
@@ -63,39 +77,35 @@ moneyTransferTransactionsRouter.post(
         body('recipient')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required'),
+            .withMessage(() => 'required'),
         body('recipient.typeOf')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
+            .withMessage(() => 'required')
             .isString(),
         body('seller')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required'),
+            .withMessage(() => 'required'),
         body('seller.typeOf')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
+            .withMessage(() => 'required')
             .isString(),
         body('seller.id')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
+            .withMessage(() => 'required')
             .isString()
         // if (!WAITER_DISABLED) {
         // }
     ],
     validator,
-    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-            }
-            if (project.settings.pecorino === undefined) {
+            if (project.settings === undefined || project.settings.pecorino === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
             }
 
@@ -106,6 +116,8 @@ moneyTransferTransactionsRouter.post(
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+
+            const fromLocation = await validateFromLocation(req);
 
             const transaction = await cinerino.service.transaction.moneyTransfer.start({
                 project: req.project,
@@ -124,6 +136,7 @@ moneyTransferTransactionsRouter.post(
                 },
                 object: {
                     amount: req.body.object.amount,
+                    fromLocation: fromLocation,
                     toLocation: req.body.object.toLocation,
                     authorizeActions: [],
                     ...(typeof req.body.object.description === 'string') ? { description: req.body.object.description } : {}
@@ -152,6 +165,50 @@ moneyTransferTransactionsRouter.post(
         }
     }
 );
+
+async function validateFromLocation(req: Request): Promise<cinerino.factory.transaction.moneyTransfer.IFromLocation<any>> {
+    let fromLocation: cinerino.factory.transaction.moneyTransfer.IFromLocation<any> = req.body.object.fromLocation;
+
+    // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
+    if (typeof fromLocation === 'string') {
+        // tslint:disable-next-line:max-line-length
+        type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.ownershipInfo.AccountGoodType.Account>>;
+        const accountOwnershipInfo = await cinerino.service.code.verifyToken<IPayload>({
+            project: req.project,
+            agent: req.agent,
+            token: fromLocation,
+            secret: <string>process.env.TOKEN_SECRET,
+            issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
+        })({ action: new cinerino.repository.Action(mongoose.connection) });
+        const account = accountOwnershipInfo.typeOfGood;
+        if (account.accountType !== cinerino.factory.accountType.Coin) {
+            throw new cinerino.factory.errors.Argument('fromAccount', 'Invalid token');
+        }
+        fromLocation = <any>account;
+    } else {
+        // 口座情報がトークンでない、かつ、APIユーザーが管理者でない場合、許可されるリクエストかどうか確認
+        if (!req.isAdmin) {
+            // 口座に所有権があるかどうか確認
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+            const count = await ownershipInfoRepo.count<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
+                limit: 1,
+                ownedBy: { id: req.user.sub },
+                ownedFrom: new Date(),
+                ownedThrough: new Date(),
+                typeOfGood: {
+                    typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                    accountType: fromLocation.accountType,
+                    accountNumber: fromLocation.accountNumber
+                }
+            });
+            if (count === 0) {
+                throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
+            }
+        }
+    }
+
+    return fromLocation;
+}
 
 moneyTransferTransactionsRouter.put(
     '/:transactionId/confirm',
