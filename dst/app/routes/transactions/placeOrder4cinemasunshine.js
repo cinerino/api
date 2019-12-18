@@ -484,7 +484,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/confirm', permitScopes_1.d
         cinerino.service.transaction.exportTasks({
             project: req.project,
             status: cinerino.factory.transactionStatusType.Confirmed,
-            typeOf: cinerino.factory.transactionType.PlaceOrder
+            typeOf: { $in: [cinerino.factory.transactionType.PlaceOrder] }
         })({
             project: projectRepo,
             task: new cinerino.repository.Task(mongoose.connection),

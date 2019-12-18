@@ -10,12 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 確定通貨転送取引監視
+ * 中止取引監視
  */
 const cinerino = require("@cinerino/domain");
-const createDebug = require("debug");
 const connectMongo_1 = require("../../../connectMongo");
-const debug = createDebug('cinerino-api');
 exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     let countExecute = 0;
@@ -30,11 +28,16 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
         }
         countExecute += 1;
         try {
-            debug('exporting tasks...');
             yield cinerino.service.transaction.exportTasks({
                 project: params.project,
-                status: cinerino.factory.transactionStatusType.Confirmed,
-                typeOf: cinerino.factory.transactionType.MoneyTransfer
+                status: cinerino.factory.transactionStatusType.Canceled,
+                typeOf: {
+                    $in: [
+                        cinerino.factory.transactionType.MoneyTransfer,
+                        cinerino.factory.transactionType.PlaceOrder,
+                        cinerino.factory.transactionType.ReturnOrder
+                    ]
+                }
             })({
                 project: projectRepo,
                 task: taskRepo,

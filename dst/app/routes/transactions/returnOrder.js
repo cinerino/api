@@ -154,7 +154,7 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
         cinerino.service.transaction.exportTasks({
             project: req.project,
             status: cinerino.factory.transactionStatusType.Confirmed,
-            typeOf: cinerino.factory.transactionType.ReturnOrder
+            typeOf: { $in: [cinerino.factory.transactionType.ReturnOrder] }
         })({
             project: projectRepo,
             task: taskRepo,

@@ -215,7 +215,7 @@ moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.de
         cinerino.service.transaction.exportTasks({
             project: req.project,
             status: cinerino.factory.transactionStatusType.Confirmed,
-            typeOf: cinerino.factory.transactionType.MoneyTransfer
+            typeOf: { $in: [cinerino.factory.transactionType.MoneyTransfer] }
         })({
             project: projectRepo,
             task: taskRepo,
@@ -266,7 +266,7 @@ moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.def
         cinerino.service.transaction.exportTasks({
             project: req.project,
             status: cinerino.factory.transactionStatusType.Canceled,
-            typeOf: cinerino.factory.transactionType.MoneyTransfer
+            typeOf: { $in: [cinerino.factory.transactionType.MoneyTransfer] }
         })({
             project: projectRepo,
             task: taskRepo,

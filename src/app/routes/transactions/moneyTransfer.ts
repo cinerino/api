@@ -246,7 +246,7 @@ moneyTransferTransactionsRouter.put(
             cinerino.service.transaction.exportTasks({
                 project: req.project,
                 status: cinerino.factory.transactionStatusType.Confirmed,
-                typeOf: cinerino.factory.transactionType.MoneyTransfer
+                typeOf: { $in: [cinerino.factory.transactionType.MoneyTransfer] }
             })({
                 project: projectRepo,
                 task: taskRepo,
@@ -307,7 +307,7 @@ moneyTransferTransactionsRouter.put(
             cinerino.service.transaction.exportTasks({
                 project: req.project,
                 status: cinerino.factory.transactionStatusType.Canceled,
-                typeOf: cinerino.factory.transactionType.MoneyTransfer
+                typeOf: { $in: [cinerino.factory.transactionType.MoneyTransfer] }
             })({
                 project: projectRepo,
                 task: taskRepo,

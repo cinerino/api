@@ -1221,7 +1221,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
             cinerino.service.transaction.exportTasks({
                 project: req.project,
                 status: cinerino.factory.transactionStatusType.Confirmed,
-                typeOf: cinerino.factory.transactionType.PlaceOrder
+                typeOf: { $in: [cinerino.factory.transactionType.PlaceOrder] }
             })({
                 project: projectRepo,
                 task: taskRepo,
@@ -1281,7 +1281,7 @@ placeOrderTransactionsRouter.put(
             cinerino.service.transaction.exportTasks({
                 project: req.project,
                 status: cinerino.factory.transactionStatusType.Canceled,
-                typeOf: cinerino.factory.transactionType.PlaceOrder
+                typeOf: { $in: [cinerino.factory.transactionType.PlaceOrder] }
             })({
                 project: projectRepo,
                 task: taskRepo,

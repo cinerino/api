@@ -10,12 +10,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 中止注文返品取引監視
+ * 期限切れ取引監視
  */
 const cinerino = require("@cinerino/domain");
-const createDebug = require("debug");
 const connectMongo_1 = require("../../../connectMongo");
-const debug = createDebug('cinerino-api');
+const RUNS_TASKS_AFTER_IN_SECONDS = 120;
 exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     let countExecute = 0;
@@ -30,11 +29,17 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
         }
         countExecute += 1;
         try {
-            debug('exporting tasks...');
             yield cinerino.service.transaction.exportTasks({
                 project: params.project,
-                status: cinerino.factory.transactionStatusType.Canceled,
-                typeOf: cinerino.factory.transactionType.ReturnOrder
+                status: cinerino.factory.transactionStatusType.Expired,
+                typeOf: {
+                    $in: [
+                        cinerino.factory.transactionType.MoneyTransfer,
+                        cinerino.factory.transactionType.PlaceOrder,
+                        cinerino.factory.transactionType.ReturnOrder
+                    ]
+                },
+                runsTasksAfterInSeconds: RUNS_TASKS_AFTER_IN_SECONDS
             })({
                 project: projectRepo,
                 task: taskRepo,

@@ -1013,7 +1013,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
         cinerino.service.transaction.exportTasks({
             project: req.project,
             status: cinerino.factory.transactionStatusType.Confirmed,
-            typeOf: cinerino.factory.transactionType.PlaceOrder
+            typeOf: { $in: [cinerino.factory.transactionType.PlaceOrder] }
         })({
             project: projectRepo,
             task: taskRepo,
@@ -1063,7 +1063,7 @@ placeOrderTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.defaul
         cinerino.service.transaction.exportTasks({
             project: req.project,
             status: cinerino.factory.transactionStatusType.Canceled,
-            typeOf: cinerino.factory.transactionType.PlaceOrder
+            typeOf: { $in: [cinerino.factory.transactionType.PlaceOrder] }
         })({
             project: projectRepo,
             task: taskRepo,

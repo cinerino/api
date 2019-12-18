@@ -8,14 +8,9 @@ import makeTransactionExpired from './continuous/makeTransactionExpired/run';
 import reexportTransactionTasks from './continuous/reexportTransactionTasks/run';
 import retryTasks from './continuous/retryTasks/run';
 
-import onCanceledPlaceOrder from './continuous/onCanceledPlaceOrder/run';
-import onCanceledReturnOrder from './continuous/onCanceledReturnOrder/run';
-import onConfirmedMoneyTransfer from './continuous/onConfirmedMoneyTransfer/run';
-import onConfirmedPlaceOrder from './continuous/onConfirmedPlaceOrder/run';
-import onConfirmedReturnOrder from './continuous/onConfirmedReturnOrder/run';
-import onExpiredMoneyTransfer from './continuous/onExpiredMoneyTransfer/run';
-import onExpiredPlaceOrder from './continuous/onExpiredPlaceOrder/run';
-import onExpiredReturnOrder from './continuous/onExpiredReturnOrder/run';
+import onTransactionCanceled from './continuous/onTransactionCanceled/run';
+import onTransactionConfirmed from './continuous/onTransactionConfirmed/run';
+import onTransactionExpired from './continuous/onTransactionExpired/run';
 
 import cancelAccount from './continuous/cancelAccount/run';
 import cancelCreditCard from './continuous/cancelCreditCard/run';
@@ -62,14 +57,9 @@ export default async () => {
     await makeTransactionExpired({ project: project });
     await reexportTransactionTasks({ project: project });
 
-    await onCanceledPlaceOrder({ project: project });
-    await onCanceledReturnOrder({ project: project });
-    await onConfirmedMoneyTransfer({ project: project });
-    await onConfirmedPlaceOrder({ project: project });
-    await onConfirmedReturnOrder({ project: project });
-    await onExpiredMoneyTransfer({ project: project });
-    await onExpiredPlaceOrder({ project: project });
-    await onExpiredReturnOrder({ project: project });
+    await onTransactionCanceled({ project: project });
+    await onTransactionConfirmed({ project: project });
+    await onTransactionExpired({ project: project });
 
     await cancelAccount({ project: project });
     await cancelCreditCard({ project: project });

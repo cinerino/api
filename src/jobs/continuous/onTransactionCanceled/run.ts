@@ -1,14 +1,9 @@
 /**
- * 期限切れ注文取引監視
+ * 中止取引監視
  */
 import * as cinerino from '@cinerino/domain';
-import * as createDebug from 'debug';
 
 import { connectMongo } from '../../../connectMongo';
-
-const debug = createDebug('cinerino-api');
-
-const RUNS_TASKS_AFTER_IN_SECONDS = 120;
 
 export default async (params: {
     project?: cinerino.factory.project.IProject;
@@ -18,7 +13,7 @@ export default async (params: {
     let countExecute = 0;
 
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
-    const INTERVAL_MILLISECONDS = 500;
+    const INTERVAL_MILLISECONDS = 200;
 
     const projectRepo = new cinerino.repository.Project(connection);
     const taskRepo = new cinerino.repository.Task(connection);
@@ -33,12 +28,16 @@ export default async (params: {
             countExecute += 1;
 
             try {
-                debug('exporting tasks...');
                 await cinerino.service.transaction.exportTasks({
                     project: params.project,
-                    status: cinerino.factory.transactionStatusType.Expired,
-                    typeOf: cinerino.factory.transactionType.PlaceOrder,
-                    runsTasksAfterInSeconds: RUNS_TASKS_AFTER_IN_SECONDS
+                    status: cinerino.factory.transactionStatusType.Canceled,
+                    typeOf: {
+                        $in: [
+                            cinerino.factory.transactionType.MoneyTransfer,
+                            cinerino.factory.transactionType.PlaceOrder,
+                            cinerino.factory.transactionType.ReturnOrder
+                        ]
+                    }
                 })({
                     project: projectRepo,
                     task: taskRepo,
