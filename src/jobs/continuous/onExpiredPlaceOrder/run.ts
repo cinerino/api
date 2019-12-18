@@ -34,9 +34,10 @@ export default async (params: {
 
             try {
                 debug('exporting tasks...');
-                await cinerino.service.transaction.placeOrder.exportTasks({
+                await cinerino.service.transaction.exportTasks({
                     project: params.project,
                     status: cinerino.factory.transactionStatusType.Expired,
+                    typeOf: cinerino.factory.transactionType.PlaceOrder,
                     runsTasksAfterInSeconds: RUNS_TASKS_AFTER_IN_SECONDS
                 })({
                     project: projectRepo,

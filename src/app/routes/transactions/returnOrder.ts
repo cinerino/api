@@ -159,6 +159,7 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
@@ -175,10 +176,12 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
 
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
             // tslint:disable-next-line:no-floating-promises
-            cinerino.service.transaction.returnOrder.exportTasks({
+            cinerino.service.transaction.exportTasks({
                 project: req.project,
-                status: cinerino.factory.transactionStatusType.Confirmed
+                status: cinerino.factory.transactionStatusType.Confirmed,
+                typeOf: cinerino.factory.transactionType.ReturnOrder
             })({
+                project: projectRepo,
                 task: taskRepo,
                 transaction: transactionRepo
             })

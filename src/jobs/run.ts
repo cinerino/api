@@ -13,6 +13,7 @@ import onCanceledReturnOrder from './continuous/onCanceledReturnOrder/run';
 import onConfirmedMoneyTransfer from './continuous/onConfirmedMoneyTransfer/run';
 import onConfirmedPlaceOrder from './continuous/onConfirmedPlaceOrder/run';
 import onConfirmedReturnOrder from './continuous/onConfirmedReturnOrder/run';
+import onExpiredMoneyTransfer from './continuous/onExpiredMoneyTransfer/run';
 import onExpiredPlaceOrder from './continuous/onExpiredPlaceOrder/run';
 import onExpiredReturnOrder from './continuous/onExpiredReturnOrder/run';
 
@@ -66,6 +67,7 @@ export default async () => {
     await onConfirmedMoneyTransfer({ project: project });
     await onConfirmedPlaceOrder({ project: project });
     await onConfirmedReturnOrder({ project: project });
+    await onExpiredMoneyTransfer({ project: project });
     await onExpiredPlaceOrder({ project: project });
     await onExpiredReturnOrder({ project: project });
 

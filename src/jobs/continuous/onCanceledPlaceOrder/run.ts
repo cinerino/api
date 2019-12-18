@@ -32,9 +32,10 @@ export default async (params: {
 
             try {
                 debug('exporting tasks...');
-                await cinerino.service.transaction.placeOrder.exportTasks({
+                await cinerino.service.transaction.exportTasks({
                     project: params.project,
-                    status: cinerino.factory.transactionStatusType.Canceled
+                    status: cinerino.factory.transactionStatusType.Canceled,
+                    typeOf: cinerino.factory.transactionType.PlaceOrder
                 })({
                     project: projectRepo,
                     task: taskRepo,

@@ -10,17 +10,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 確定通貨転送取引監視
+ * 期限切れ通貨転送取引監視
  */
 const cinerino = require("@cinerino/domain");
-const createDebug = require("debug");
 const connectMongo_1 = require("../../../connectMongo");
-const debug = createDebug('cinerino-api');
+const RUNS_TASKS_AFTER_IN_SECONDS = 120;
 exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     let countExecute = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
-    const INTERVAL_MILLISECONDS = 200;
+    const INTERVAL_MILLISECONDS = 500;
     const projectRepo = new cinerino.repository.Project(connection);
     const taskRepo = new cinerino.repository.Task(connection);
     const transactionRepo = new cinerino.repository.Transaction(connection);
@@ -30,11 +29,11 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
         }
         countExecute += 1;
         try {
-            debug('exporting tasks...');
             yield cinerino.service.transaction.exportTasks({
                 project: params.project,
-                status: cinerino.factory.transactionStatusType.Confirmed,
-                typeOf: cinerino.factory.transactionType.MoneyTransfer
+                status: cinerino.factory.transactionStatusType.Expired,
+                typeOf: cinerino.factory.transactionType.MoneyTransfer,
+                runsTasksAfterInSeconds: RUNS_TASKS_AFTER_IN_SECONDS
             })({
                 project: projectRepo,
                 task: taskRepo,

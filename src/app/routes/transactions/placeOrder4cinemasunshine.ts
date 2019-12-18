@@ -586,9 +586,10 @@ placeOrder4cinemasunshineRouter.post(
 
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
             // tslint:disable-next-line:no-floating-promises
-            cinerino.service.transaction.placeOrder.exportTasks({
+            cinerino.service.transaction.exportTasks({
                 project: req.project,
-                status: cinerino.factory.transactionStatusType.Confirmed
+                status: cinerino.factory.transactionStatusType.Confirmed,
+                typeOf: cinerino.factory.transactionType.PlaceOrder
             })({
                 project: projectRepo,
                 task: new cinerino.repository.Task(mongoose.connection),

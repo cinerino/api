@@ -31,9 +31,10 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
         countExecute += 1;
         try {
             debug('exporting tasks...');
-            yield cinerino.service.transaction.placeOrder.exportTasks({
+            yield cinerino.service.transaction.exportTasks({
                 project: params.project,
-                status: cinerino.factory.transactionStatusType.Confirmed
+                status: cinerino.factory.transactionStatusType.Confirmed,
+                typeOf: cinerino.factory.transactionType.PlaceOrder
             })({
                 project: projectRepo,
                 task: taskRepo,

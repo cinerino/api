@@ -229,6 +229,7 @@ moneyTransferTransactionsRouter.put(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
 
@@ -242,10 +243,12 @@ moneyTransferTransactionsRouter.put(
 
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
             // tslint:disable-next-line:no-floating-promises
-            cinerino.service.transaction.moneyTransfer.exportTasks({
+            cinerino.service.transaction.exportTasks({
                 project: req.project,
-                status: cinerino.factory.transactionStatusType.Confirmed
+                status: cinerino.factory.transactionStatusType.Confirmed,
+                typeOf: cinerino.factory.transactionType.MoneyTransfer
             })({
+                project: projectRepo,
                 task: taskRepo,
                 transaction: transactionRepo
             })
@@ -290,6 +293,7 @@ moneyTransferTransactionsRouter.put(
     },
     async (req, res, next) => {
         try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
@@ -300,10 +304,12 @@ moneyTransferTransactionsRouter.put(
 
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
             // tslint:disable-next-line:no-floating-promises
-            cinerino.service.transaction.moneyTransfer.exportTasks({
+            cinerino.service.transaction.exportTasks({
                 project: req.project,
-                status: cinerino.factory.transactionStatusType.Canceled
+                status: cinerino.factory.transactionStatusType.Canceled,
+                typeOf: cinerino.factory.transactionType.MoneyTransfer
             })({
+                project: projectRepo,
                 task: taskRepo,
                 transaction: transactionRepo
             });

@@ -1010,9 +1010,10 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
         });
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
         // tslint:disable-next-line:no-floating-promises
-        cinerino.service.transaction.placeOrder.exportTasks({
+        cinerino.service.transaction.exportTasks({
             project: req.project,
-            status: cinerino.factory.transactionStatusType.Confirmed
+            status: cinerino.factory.transactionStatusType.Confirmed,
+            typeOf: cinerino.factory.transactionType.PlaceOrder
         })({
             project: projectRepo,
             task: taskRepo,
@@ -1059,9 +1060,10 @@ placeOrderTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.defaul
         });
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
         // tslint:disable-next-line:no-floating-promises
-        cinerino.service.transaction.placeOrder.exportTasks({
+        cinerino.service.transaction.exportTasks({
             project: req.project,
-            status: cinerino.factory.transactionStatusType.Canceled
+            status: cinerino.factory.transactionStatusType.Canceled,
+            typeOf: cinerino.factory.transactionType.PlaceOrder
         })({
             project: projectRepo,
             task: taskRepo,

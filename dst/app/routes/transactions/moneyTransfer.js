@@ -200,6 +200,7 @@ moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.de
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         yield cinerino.service.transaction.moneyTransfer.confirm({
@@ -211,10 +212,12 @@ moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.de
         debug('transaction confirmed');
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
         // tslint:disable-next-line:no-floating-promises
-        cinerino.service.transaction.moneyTransfer.exportTasks({
+        cinerino.service.transaction.exportTasks({
             project: req.project,
-            status: cinerino.factory.transactionStatusType.Confirmed
+            status: cinerino.factory.transactionStatusType.Confirmed,
+            typeOf: cinerino.factory.transactionType.MoneyTransfer
         })({
+            project: projectRepo,
             task: taskRepo,
             transaction: transactionRepo
         })
@@ -251,6 +254,7 @@ moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.def
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         yield transactionRepo.cancel({
@@ -259,10 +263,12 @@ moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.def
         });
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
         // tslint:disable-next-line:no-floating-promises
-        cinerino.service.transaction.moneyTransfer.exportTasks({
+        cinerino.service.transaction.exportTasks({
             project: req.project,
-            status: cinerino.factory.transactionStatusType.Canceled
+            status: cinerino.factory.transactionStatusType.Canceled,
+            typeOf: cinerino.factory.transactionType.MoneyTransfer
         })({
+            project: projectRepo,
             task: taskRepo,
             transaction: transactionRepo
         });
