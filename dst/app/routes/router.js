@@ -22,6 +22,14 @@ router.use('/stats', stats_1.default);
 router.use(authentication_1.default);
 // プロジェクト指定ルーティング配下については、すべてreq.projectを上書き
 router.use('/projects/:id', (req, _, next) => {
+    // authenticationにてアプリケーションによってプロジェクト決定済であれば、比較
+    // 本番マルチテナントサービスを設置するまで保留
+    // if (req.project !== undefined && req.project !== null) {
+    //     if (req.project.id !== req.params.id) {
+    //         next(new cinerino.factory.errors.Forbidden(`client for ${req.project.id} forbidden`));
+    //         return;
+    //     }
+    // }
     req.project = { typeOf: 'Project', id: req.params.id };
     next();
 });
