@@ -19,8 +19,6 @@ import permitScopes from '../../middlewares/permitScopes';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
-import * as redis from '../../../redis';
-
 const debug = createDebug('cinerino-api:router');
 
 export interface ICOATicket extends cinerino.COA.services.master.ITicketResult {
@@ -489,129 +487,6 @@ placeOrder4cinemasunshineRouter.delete(
             });
             res.status(NO_CONTENT)
                 .end();
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-placeOrder4cinemasunshineRouter.post(
-    '/:transactionId/confirm',
-    permitScopes(['customer', 'transactions']),
-    validator,
-    async (req, res, next) => {
-        await rateLimit4transactionInProgress({
-            typeOf: cinerino.factory.transactionType.PlaceOrder,
-            id: req.params.transactionId
-        })(req, res, next);
-    },
-    async (req, res, next) => {
-        await lockTransaction({
-            typeOf: cinerino.factory.transactionType.PlaceOrder,
-            id: req.params.transactionId
-        })(req, res, next);
-    },
-    // tslint:disable-next-line:max-func-body-length
-    async (req, res, next) => {
-        try {
-            const orderDate = new Date();
-
-            const sendEmailMessage = req.body.sendEmailMessage === true;
-            let email: cinerino.factory.creativeWork.message.email.ICustomization | undefined = req.body.email;
-
-            // 互換性維持のため、テンプレートオプションを変換
-            if (req.body.emailTemplate !== undefined) {
-                if (email === undefined) {
-                    email = {};
-                }
-                email.template = String(req.body.emailTemplate);
-            }
-
-            let potentialActions: cinerino.factory.transaction.placeOrder.IPotentialActionsParams | undefined = req.body.potentialActions;
-            if (potentialActions === undefined) {
-                potentialActions = {};
-            }
-            if (potentialActions.order === undefined) {
-                potentialActions.order = {};
-            }
-            if (potentialActions.order.potentialActions === undefined) {
-                potentialActions.order.potentialActions = {};
-            }
-            if (potentialActions.order.potentialActions.sendOrder === undefined) {
-                potentialActions.order.potentialActions.sendOrder = {};
-            }
-            if (potentialActions.order.potentialActions.sendOrder.potentialActions === undefined) {
-                potentialActions.order.potentialActions.sendOrder.potentialActions = {};
-            }
-            if (!Array.isArray(potentialActions.order.potentialActions.sendOrder.potentialActions.sendEmailMessage)) {
-                potentialActions.order.potentialActions.sendOrder.potentialActions.sendEmailMessage = [];
-            }
-            if (sendEmailMessage) {
-                potentialActions.order.potentialActions.sendOrder.potentialActions.sendEmailMessage.push({
-                    object: email
-                });
-            }
-
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
-            const result = await cinerino.service.transaction.placeOrderInProgress.confirm({
-                ...req.body,
-                agent: { id: req.user.sub },
-                id: req.params.transactionId,
-                potentialActions: potentialActions,
-                project: req.project,
-                result: {
-                    order: {
-                        orderDate: orderDate,
-                        confirmationNumber: (params) => {
-                            const firstOffer = params.acceptedOffers[0];
-
-                            // COAに適合させるため、座席予約の場合、予約番号を確認番号として設定
-                            if (firstOffer !== undefined
-                                && firstOffer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
-                                return String(firstOffer.itemOffered.reservationNumber);
-                            } else {
-                                return params.confirmationNumber;
-                            }
-                        }
-                    }
-                }
-            })({
-                action: new cinerino.repository.Action(mongoose.connection),
-                project: projectRepo,
-                transaction: new cinerino.repository.Transaction(mongoose.connection),
-                orderNumber: new cinerino.repository.OrderNumber(redis.getClient()),
-                seller: new cinerino.repository.Seller(mongoose.connection)
-            });
-
-            // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
-            // tslint:disable-next-line:no-floating-promises
-            cinerino.service.transaction.exportTasks({
-                project: req.project,
-                status: cinerino.factory.transactionStatusType.Confirmed,
-                typeOf: { $in: [cinerino.factory.transactionType.PlaceOrder] }
-            })({
-                project: projectRepo,
-                task: new cinerino.repository.Task(mongoose.connection),
-                transaction: new cinerino.repository.Transaction(mongoose.connection)
-            })
-                .then(async (tasks) => {
-                    // タスクがあればすべて実行
-                    if (Array.isArray(tasks)) {
-                        await Promise.all(tasks.map(async (task) => {
-                            await cinerino.service.task.executeByName(task)({
-                                connection: mongoose.connection,
-                                redisClient: redis.getClient()
-                            });
-                        }));
-                    }
-                });
-
-            res.status(CREATED)
-                .json({
-                    ...result,
-                    ...result.order
-                });
         } catch (error) {
             next(error);
         }
