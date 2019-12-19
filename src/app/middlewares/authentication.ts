@@ -94,13 +94,17 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                     }
                 }
 
-                if (project === undefined) {
-                    next(new cinerino.factory.errors.Forbidden(`project of the client unknown: ${user.client_id}`));
+                // if (project === undefined) {
+                //     next(new cinerino.factory.errors.Forbidden(`project of the client unknown: ${user.client_id}`));
 
-                    return;
+                //     return;
+                // }
+                // req.project = project;
+
+                if (project !== undefined) {
+                    req.project = project;
                 }
 
-                req.project = project;
                 req.user = user;
                 req.accessToken = token;
                 req.agent = {
