@@ -210,6 +210,65 @@ async function validateFromLocation(req: Request): Promise<cinerino.factory.tran
     return fromLocation;
 }
 
+/**
+ * 取引人プロフィール変更
+ */
+// tslint:disable-next-line:use-default-type-parameter
+moneyTransferTransactionsRouter.put<ParamsDictionary>(
+    '/:transactionId/agent',
+    permitScopes(['customer', 'transactions']),
+    ...[
+        body('additionalProperty')
+            .optional()
+            .isArray({ max: 10 }),
+        body('additionalProperty.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: 256 }),
+        body('additionalProperty.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: 512 })
+    ],
+    validator,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.MoneyTransfer,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.MoneyTransfer,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        try {
+            await cinerino.service.transaction.updateAgent({
+                typeOf: cinerino.factory.transactionType.MoneyTransfer,
+                id: req.params.transactionId,
+                agent: {
+                    ...req.body,
+                    typeOf: cinerino.factory.personType.Person,
+                    id: req.user.sub
+                }
+            })({
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
+            });
+
+            res.status(NO_CONTENT)
+                .end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 moneyTransferTransactionsRouter.put(
     '/:transactionId/confirm',
     permitScopes(['customer', 'transactions']),

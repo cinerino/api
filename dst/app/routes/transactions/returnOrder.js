@@ -18,8 +18,10 @@ const express_1 = require("express");
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
+const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
+const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
 const CANCELLATION_FEE = 1000;
@@ -117,6 +119,52 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
         // const host = req.headers['host'];
         // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
         res.json(transaction);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 取引人プロフィール変更
+ */
+// tslint:disable-next-line:use-default-type-parameter
+returnOrderTransactionsRouter.put('/:transactionId/agent', permitScopes_1.default(['customer', 'transactions']), ...[
+    check_1.body('additionalProperty')
+        .optional()
+        .isArray({ max: 10 }),
+    check_1.body('additionalProperty.*.name')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: 256 }),
+    check_1.body('additionalProperty.*.value')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: 512 })
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: cinerino.factory.transactionType.ReturnOrder,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    yield lockTransaction_1.default({
+        typeOf: cinerino.factory.transactionType.ReturnOrder,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield cinerino.service.transaction.updateAgent({
+            typeOf: cinerino.factory.transactionType.ReturnOrder,
+            id: req.params.transactionId,
+            agent: Object.assign(Object.assign({}, req.body), { typeOf: cinerino.factory.personType.Person, id: req.user.sub })
+        })({
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
+        });
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);

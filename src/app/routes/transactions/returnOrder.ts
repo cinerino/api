@@ -10,8 +10,10 @@ import { body, query } from 'express-validator/check';
 import { NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
+import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
+import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
 import * as redis from '../../../redis';
@@ -129,6 +131,65 @@ returnOrderTransactionsRouter.post(
             // const host = req.headers['host'];
             // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
             res.json(transaction);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 取引人プロフィール変更
+ */
+// tslint:disable-next-line:use-default-type-parameter
+returnOrderTransactionsRouter.put<ParamsDictionary>(
+    '/:transactionId/agent',
+    permitScopes(['customer', 'transactions']),
+    ...[
+        body('additionalProperty')
+            .optional()
+            .isArray({ max: 10 }),
+        body('additionalProperty.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: 256 }),
+        body('additionalProperty.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: 512 })
+    ],
+    validator,
+    async (req, res, next) => {
+        await rateLimit4transactionInProgress({
+            typeOf: cinerino.factory.transactionType.ReturnOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        await lockTransaction({
+            typeOf: cinerino.factory.transactionType.ReturnOrder,
+            id: req.params.transactionId
+        })(req, res, next);
+    },
+    async (req, res, next) => {
+        try {
+            await cinerino.service.transaction.updateAgent({
+                typeOf: cinerino.factory.transactionType.ReturnOrder,
+                id: req.params.transactionId,
+                agent: {
+                    ...req.body,
+                    typeOf: cinerino.factory.personType.Person,
+                    id: req.user.sub
+                }
+            })({
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
+            });
+
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }

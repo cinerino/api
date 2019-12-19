@@ -187,6 +187,52 @@ function validateFromLocation(req) {
         return fromLocation;
     });
 }
+/**
+ * 取引人プロフィール変更
+ */
+// tslint:disable-next-line:use-default-type-parameter
+moneyTransferTransactionsRouter.put('/:transactionId/agent', permitScopes_1.default(['customer', 'transactions']), ...[
+    check_1.body('additionalProperty')
+        .optional()
+        .isArray({ max: 10 }),
+    check_1.body('additionalProperty.*.name')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: 256 }),
+    check_1.body('additionalProperty.*.value')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: 512 })
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: cinerino.factory.transactionType.MoneyTransfer,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    yield lockTransaction_1.default({
+        typeOf: cinerino.factory.transactionType.MoneyTransfer,
+        id: req.params.transactionId
+    })(req, res, next);
+}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield cinerino.service.transaction.updateAgent({
+            typeOf: cinerino.factory.transactionType.MoneyTransfer,
+            id: req.params.transactionId,
+            agent: Object.assign(Object.assign({}, req.body), { typeOf: cinerino.factory.personType.Person, id: req.user.sub })
+        })({
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
+        });
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.MoneyTransfer,
