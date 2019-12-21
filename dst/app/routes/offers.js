@@ -26,15 +26,19 @@ const validator_1 = require("../middlewares/validator");
 const offersRouter = express_1.Router();
 if (process.env.USE_MONEY_TRANSFER === '1') {
     // tslint:disable-next-line:use-default-type-parameter
-    offersRouter.post('/moneyTransfer/authorize', permitScopes_1.default(['customer', 'transactions']), rateLimit_1.default, ...[
+    offersRouter.post('/monetaryAmount/authorize', permitScopes_1.default(['customer', 'transactions']), rateLimit_1.default, ...[
         check_1.body('object')
             .not()
             .isEmpty(),
-        check_1.body('object.amount')
+        check_1.body('object.itemOffered')
+            .not()
+            .isEmpty(),
+        check_1.body('object.itemOffered.value')
             .not()
             .isEmpty()
             .withMessage(() => 'required')
-            .isInt(),
+            .isInt()
+            .toInt(),
         check_1.body('object.toLocation')
             .not()
             .isEmpty()
@@ -75,11 +79,19 @@ if (process.env.USE_MONEY_TRANSFER === '1') {
         })(req, res, next);
     }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const action = yield cinerino.service.offer.moneyTransfer.authorize({
+            const action = yield cinerino.service.offer.monetaryAmount.authorize({
                 project: req.project,
                 object: {
-                    typeOf: cinerino.factory.actionType.MoneyTransfer,
-                    amount: Number(req.body.object.amount),
+                    typeOf: 'Offer',
+                    itemOffered: {
+                        typeOf: 'MonetaryAmount',
+                        value: Number(req.body.object.itemOffered.value),
+                        currency: cinerino.factory.priceCurrency.JPY
+                    },
+                    seller: {},
+                    priceCurrency: cinerino.factory.priceCurrency.JPY,
+                    // typeOf: cinerino.factory.actionType.MoneyTransfer,
+                    // amount: Number(req.body.object.amount),
                     toLocation: req.body.object.toLocation
                     // additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     //     ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
@@ -105,7 +117,7 @@ if (process.env.USE_MONEY_TRANSFER === '1') {
     }));
 }
 // tslint:disable-next-line:use-default-type-parameter
-offersRouter.put('/moneyTransfer/authorize/:actionId/void', permitScopes_1.default(['customer', 'transactions']), rateLimit_1.default, ...[
+offersRouter.put('/monetaryAmount/authorize/:actionId/void', permitScopes_1.default(['customer', 'transactions']), rateLimit_1.default, ...[
     check_1.body('purpose')
         .not()
         .isEmpty()
@@ -121,7 +133,7 @@ offersRouter.put('/moneyTransfer/authorize/:actionId/void', permitScopes_1.defau
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield cinerino.service.offer.moneyTransfer.voidTransaction({
+        yield cinerino.service.offer.monetaryAmount.voidTransaction({
             project: req.project,
             id: req.params.actionId,
             agent: { id: req.user.sub },
