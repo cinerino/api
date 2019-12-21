@@ -61,9 +61,6 @@ if (process.env.USE_MONEY_TRANSFER === '1') {
             .isEmpty()
             .isString()
             .isLength({ max: 512 }),
-        check_1.body('recipient')
-            .not()
-            .isEmpty(),
         check_1.body('purpose')
             .not()
             .isEmpty()
@@ -86,7 +83,7 @@ if (process.env.USE_MONEY_TRANSFER === '1') {
                     itemOffered: {
                         typeOf: 'MonetaryAmount',
                         value: Number(req.body.object.itemOffered.value),
-                        currency: cinerino.factory.priceCurrency.JPY
+                        currency: req.body.object.toLocation.accountType
                     },
                     seller: {},
                     priceCurrency: cinerino.factory.priceCurrency.JPY,
@@ -100,7 +97,6 @@ if (process.env.USE_MONEY_TRANSFER === '1') {
                     //     : [],
                 },
                 agent: { id: req.user.sub },
-                recipient: req.body.recipient,
                 purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
