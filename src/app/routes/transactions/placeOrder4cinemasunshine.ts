@@ -21,7 +21,7 @@ import validator from '../../middlewares/validator';
 
 const debug = createDebug('cinerino-api:router');
 
-export interface ICOATicket extends cinerino.COA.services.master.ITicketResult {
+export interface ICOATicket extends cinerino.COA.factory.master.ITicketResult {
     theaterCode: string;
 }
 
@@ -40,8 +40,15 @@ function initializeCOATickets() {
                 }
             });
 
+            const masterService = new cinerino.COA.service.Master({
+                endpoint: cinerino.credentials.coa.endpoint,
+                auth: new cinerino.COA.auth.RefreshToken({
+                    endpoint: cinerino.credentials.coa.endpoint,
+                    refreshToken: cinerino.credentials.coa.refreshToken
+                })
+            });
             await Promise.all(branchCodes.map(async (branchCode) => {
-                const ticketResults = await cinerino.COA.services.master.ticket({ theaterCode: branchCode });
+                const ticketResults = await masterService.ticket({ theaterCode: branchCode });
                 debug(branchCode, ticketResults.length, 'COA Tickets found');
                 tickets.push(...ticketResults.map((t) => {
                     return { ...t, theaterCode: branchCode };

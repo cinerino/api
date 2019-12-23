@@ -38,8 +38,15 @@ function initializeCOATickets() {
                     branchCodes.push(...seller.makesOffer.map((o) => o.itemOffered.reservationFor.location.branchCode));
                 }
             }));
+            const masterService = new cinerino.COA.service.Master({
+                endpoint: cinerino.credentials.coa.endpoint,
+                auth: new cinerino.COA.auth.RefreshToken({
+                    endpoint: cinerino.credentials.coa.endpoint,
+                    refreshToken: cinerino.credentials.coa.refreshToken
+                })
+            });
             yield Promise.all(branchCodes.map((branchCode) => __awaiter(this, void 0, void 0, function* () {
-                const ticketResults = yield cinerino.COA.services.master.ticket({ theaterCode: branchCode });
+                const ticketResults = yield masterService.ticket({ theaterCode: branchCode });
                 debug(branchCode, ticketResults.length, 'COA Tickets found');
                 tickets.push(...ticketResults.map((t) => {
                     return Object.assign(Object.assign({}, t), { theaterCode: branchCode });
