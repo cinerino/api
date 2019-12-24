@@ -27,18 +27,9 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
             issuers: ISSUERS,
             authorizedHandler: (user, token) => __awaiter(void 0, void 0, void 0, function* () {
                 const identifier = [
-                    {
-                        name: 'tokenIssuer',
-                        value: user.iss
-                    },
-                    {
-                        name: 'clientId',
-                        value: user.client_id
-                    },
-                    {
-                        name: 'hostname',
-                        value: req.hostname
-                    }
+                    { name: 'tokenIssuer', value: user.iss },
+                    { name: 'clientId', value: user.client_id },
+                    { name: 'hostname', value: req.hostname }
                 ];
                 // リクエストユーザーの属性を識別子に追加
                 try {
@@ -59,7 +50,8 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                     programMembership = {
                         award: [],
                         membershipNumber: user.username,
-                        programName: 'Amazon Cognito',
+                        name: 'Default Program Membership',
+                        programName: 'Default Program Membership',
                         project: req.project,
                         typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership,
                         url: user.iss
@@ -96,22 +88,19 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                         }
                     }
                 }
-                // if (project === undefined) {
-                //     next(new cinerino.factory.errors.Forbidden(`project of the client unknown: ${user.client_id}`));
-                //     return;
-                // }
-                // req.project = project;
+                // プロジェクトが決定すればリクエストに設定
                 if (project !== undefined) {
                     req.project = project;
                 }
                 req.user = user;
                 req.accessToken = token;
-                req.agent = {
-                    typeOf: cinerino.factory.personType.Person,
-                    id: user.sub,
-                    memberOf: programMembership,
-                    identifier: identifier
-                };
+                req.agent = Object.assign({ 
+                    // ログインユーザーであればPerson、クライアント認証であればアプリケーション
+                    typeOf: (programMembership !== undefined)
+                        ? cinerino.factory.personType.Person
+                        : 'WebApplication', id: user.sub, identifier: identifier }, (programMembership !== undefined)
+                    ? { memberOf: programMembership }
+                    : {});
                 next();
             }),
             unauthorizedHandler: (err) => {

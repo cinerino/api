@@ -20,18 +20,9 @@ export default async (req: Request, res: Response, next: NextFunction) => {
             issuers: ISSUERS,
             authorizedHandler: async (user, token) => {
                 const identifier: cinerino.factory.person.IIdentifier = [
-                    {
-                        name: 'tokenIssuer',
-                        value: user.iss
-                    },
-                    {
-                        name: 'clientId',
-                        value: user.client_id
-                    },
-                    {
-                        name: 'hostname',
-                        value: req.hostname
-                    }
+                    { name: 'tokenIssuer', value: user.iss },
+                    { name: 'clientId', value: user.client_id },
+                    { name: 'hostname', value: req.hostname }
                 ];
 
                 // リクエストユーザーの属性を識別子に追加
@@ -53,7 +44,8 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                     programMembership = {
                         award: [],
                         membershipNumber: user.username,
-                        programName: 'Amazon Cognito',
+                        name: 'Default Program Membership',
+                        programName: 'Default Program Membership',
                         project: req.project,
                         typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership,
                         url: user.iss
@@ -94,13 +86,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                     }
                 }
 
-                // if (project === undefined) {
-                //     next(new cinerino.factory.errors.Forbidden(`project of the client unknown: ${user.client_id}`));
-
-                //     return;
-                // }
-                // req.project = project;
-
+                // プロジェクトが決定すればリクエストに設定
                 if (project !== undefined) {
                     req.project = project;
                 }
@@ -108,10 +94,15 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 req.user = user;
                 req.accessToken = token;
                 req.agent = {
-                    typeOf: cinerino.factory.personType.Person,
+                    // ログインユーザーであればPerson、クライアント認証であればアプリケーション
+                    typeOf: (programMembership !== undefined)
+                        ? cinerino.factory.personType.Person
+                        : <any>'WebApplication',
                     id: user.sub,
-                    memberOf: programMembership,
-                    identifier: identifier
+                    identifier: identifier,
+                    ...(programMembership !== undefined)
+                        ? { memberOf: programMembership }
+                        : {}
                 };
 
                 next();

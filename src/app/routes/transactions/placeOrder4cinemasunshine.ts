@@ -112,7 +112,7 @@ placeOrder4cinemasunshineRouter.post(
     },
     async (req, res, next) => {
         try {
-            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4coa.create({
+            const action = await cinerino.service.offer.seatReservation4coa.create({
                 object: {
                     event: { id: <string>req.body.eventIdentifier },
                     acceptedOffer: req.body.offers
@@ -155,7 +155,7 @@ placeOrder4cinemasunshineRouter.delete(
     },
     async (req, res, next) => {
         try {
-            await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4coa.cancel({
+            await cinerino.service.offer.seatReservation4coa.cancel({
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId },
                 id: req.params.actionId
@@ -193,7 +193,7 @@ placeOrder4cinemasunshineRouter.patch(
     },
     async (req, res, next) => {
         try {
-            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4coa.changeOffers({
+            const action = await cinerino.service.offer.seatReservation4coa.changeOffers({
                 object: {
                     event: { id: req.body.eventIdentifier },
                     acceptedOffer: req.body.offers

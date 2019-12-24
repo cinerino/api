@@ -400,7 +400,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
             }
 
-            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create({
+            const action = await cinerino.service.offer.seatReservation.create({
                 project: req.project,
                 object: {
                     ...req.body
@@ -449,7 +449,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
     },
     async (req, res, next) => {
         try {
-            await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.cancel({
+            await cinerino.service.offer.seatReservation.cancel({
                 project: req.project,
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId },

@@ -29,7 +29,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             req.body.offers = [];
         }
         const performanceId = req.body.performance_id;
-        const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4ttts.create({
+        const action = yield cinerino.service.offer.seatReservation4ttts.create({
             project: req.project,
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId },
@@ -58,7 +58,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['transactions', 'pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4ttts.cancel({
+        yield cinerino.service.offer.seatReservation4ttts.cancel({
             project: req.project,
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId },

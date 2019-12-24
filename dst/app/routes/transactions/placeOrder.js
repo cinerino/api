@@ -334,7 +334,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         if (project.settings.mvtkReserve === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
         }
-        const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create({
+        const action = yield cinerino.service.offer.seatReservation.create({
             project: req.project,
             object: Object.assign({}, req.body),
             agent: { id: req.user.sub },
@@ -373,7 +373,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatRe
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.cancel({
+        yield cinerino.service.offer.seatReservation.cancel({
             project: req.project,
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId },

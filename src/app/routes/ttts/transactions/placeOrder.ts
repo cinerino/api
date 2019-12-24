@@ -28,7 +28,7 @@ placeOrderTransactionsRouter.post(
 
             const performanceId: string = req.body.performance_id;
 
-            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4ttts.create({
+            const action = await cinerino.service.offer.seatReservation4ttts.create({
                 project: req.project,
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId },
@@ -66,7 +66,7 @@ placeOrderTransactionsRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4ttts.cancel({
+            await cinerino.service.offer.seatReservation4ttts.cancel({
                 project: req.project,
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId },

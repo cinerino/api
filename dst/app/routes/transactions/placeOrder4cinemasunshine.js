@@ -98,7 +98,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/seatRese
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4coa.create({
+        const action = yield cinerino.service.offer.seatReservation4coa.create({
             object: {
                 event: { id: req.body.eventIdentifier },
                 acceptedOffer: req.body.offers
@@ -133,7 +133,7 @@ placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/seatRe
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4coa.cancel({
+        yield cinerino.service.offer.seatReservation4coa.cancel({
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId },
             id: req.params.actionId
@@ -163,7 +163,7 @@ placeOrder4cinemasunshineRouter.patch('/:transactionId/actions/authorize/seatRes
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4coa.changeOffers({
+        const action = yield cinerino.service.offer.seatReservation4coa.changeOffers({
             object: {
                 event: { id: req.body.eventIdentifier },
                 acceptedOffer: req.body.offers
