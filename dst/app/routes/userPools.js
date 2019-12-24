@@ -48,6 +48,7 @@ userPoolsRouter.get('/:userPoolId', permitScopes_1.default([]), rateLimit_1.defa
         res.json(userPool);
     }
     catch (error) {
+        error = cinerino.errorHandler.handleAWSError(error);
         next(error);
     }
 }));
@@ -76,6 +77,7 @@ userPoolsRouter.get('/:userPoolId/clients', permitScopes_1.default([]), rateLimi
         res.json(clients);
     }
     catch (error) {
+        error = cinerino.errorHandler.handleAWSError(error);
         next(error);
     }
 }));
@@ -102,6 +104,7 @@ userPoolsRouter.get('/:userPoolId/clients/:clientId', permitScopes_1.default([])
         res.json(client);
     }
     catch (error) {
+        error = cinerino.errorHandler.handleAWSError(error);
         next(error);
     }
 }));

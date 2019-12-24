@@ -46,10 +46,12 @@ userPoolsRouter.get(
             });
             res.json(userPool);
         } catch (error) {
+            error = cinerino.errorHandler.handleAWSError(error);
             next(error);
         }
     }
 );
+
 userPoolsRouter.get(
     '/:userPoolId/clients',
     permitScopes([]),
@@ -80,10 +82,12 @@ userPoolsRouter.get(
             res.set('X-Total-Count', clients.length.toString());
             res.json(clients);
         } catch (error) {
+            error = cinerino.errorHandler.handleAWSError(error);
             next(error);
         }
     }
 );
+
 userPoolsRouter.get(
     '/:userPoolId/clients/:clientId',
     permitScopes([]),
@@ -112,8 +116,10 @@ userPoolsRouter.get(
             });
             res.json(client);
         } catch (error) {
+            error = cinerino.errorHandler.handleAWSError(error);
             next(error);
         }
     }
 );
+
 export default userPoolsRouter;
