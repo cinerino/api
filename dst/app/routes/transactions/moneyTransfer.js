@@ -15,8 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
 const express_1 = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const lockTransaction_1 = require("../../middlewares/lockTransaction");
@@ -37,63 +36,63 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
 });
 // tslint:disable-next-line:use-default-type-parameter
 moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['customer', 'transactions']), ...[
-    check_1.body('expires', 'invalid expires')
+    express_validator_1.body('expires', 'invalid expires')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
         .isISO8601()
         .toDate(),
-    check_1.body('object')
+    express_validator_1.body('object')
         .not()
         .isEmpty()
         .withMessage(() => 'required'),
-    check_1.body('object.amount')
+    express_validator_1.body('object.amount')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
         .isInt()
         .toInt(),
-    check_1.body('object.fromLocation')
+    express_validator_1.body('object.fromLocation')
         .not()
         .isEmpty(),
-    check_1.body('object.toLocation')
+    express_validator_1.body('object.toLocation')
         .not()
         .isEmpty()
         .withMessage(() => 'required'),
-    check_1.body('agent.identifier')
+    express_validator_1.body('agent.identifier')
         .optional()
         .isArray({ max: 10 }),
-    check_1.body('agent.identifier.*.name')
+    express_validator_1.body('agent.identifier.*.name')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 256 }),
-    check_1.body('agent.identifier.*.value')
+    express_validator_1.body('agent.identifier.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 512 }),
-    check_1.body('recipient')
+    express_validator_1.body('recipient')
         .not()
         .isEmpty()
         .withMessage(() => 'required'),
-    check_1.body('recipient.typeOf')
+    express_validator_1.body('recipient.typeOf')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
         .isString(),
-    check_1.body('seller')
+    express_validator_1.body('seller')
         .not()
         .isEmpty()
         .withMessage(() => 'required'),
-    check_1.body('seller.typeOf')
+    express_validator_1.body('seller.typeOf')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
         .isString(),
-    check_1.body('seller.id')
+    express_validator_1.body('seller.id')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
@@ -119,7 +118,7 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['customer
             project: req.project,
             expires: req.body.expires,
             agent: Object.assign(Object.assign(Object.assign({}, req.agent), (req.body.agent !== undefined && req.body.agent.name !== undefined) ? { name: req.body.agent.name } : {}), { identifier: [
-                    ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
+                    ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
                     ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
                         ? req.body.agent.identifier.map((p) => {
                             return { name: String(p.name), value: String(p.value) };
@@ -192,16 +191,16 @@ function validateFromLocation(req) {
  */
 // tslint:disable-next-line:use-default-type-parameter
 moneyTransferTransactionsRouter.put('/:transactionId/agent', permitScopes_1.default(['customer', 'transactions']), ...[
-    check_1.body('additionalProperty')
+    express_validator_1.body('additionalProperty')
         .optional()
         .isArray({ max: 10 }),
-    check_1.body('additionalProperty.*.name')
+    express_validator_1.body('additionalProperty.*.name')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 256 }),
-    check_1.body('additionalProperty.*.value')
+    express_validator_1.body('additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
@@ -329,19 +328,19 @@ moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.def
  * 取引検索
  */
 moneyTransferTransactionsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
-    check_1.query('startFrom')
+    express_validator_1.query('startFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('startThrough')
+    express_validator_1.query('startThrough')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('endFrom')
+    express_validator_1.query('endFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('endThrough')
+    express_validator_1.query('endThrough')
         .optional()
         .isISO8601()
         .toDate()

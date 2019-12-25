@@ -53,7 +53,7 @@ app.use(helmet.referrerPolicy({ policy: 'no-referrer' }));
 const SIXTY_DAYS_IN_SECONDS = 5184000;
 app.use(helmet.hsts({
     maxAge: SIXTY_DAYS_IN_SECONDS,
-    includeSubdomains: false
+    includeSubDomains: false
 }));
 // api version
 // tslint:disable-next-line:no-require-imports no-var-requires

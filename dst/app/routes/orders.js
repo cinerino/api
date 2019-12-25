@@ -14,8 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const google_libphonenumber_1 = require("google-libphonenumber");
 const http_status_1 = require("http-status");
 const moment = require("moment");
@@ -57,42 +56,42 @@ ordersRouter.get('', permitScopes_1.default(['customer', 'orders', 'orders.read-
     }
     next();
 }, ...[
-    check_1.query('identifier.$all')
+    express_validator_1.query('identifier.$all')
         .optional()
         .isArray(),
-    check_1.query('identifier.$in')
+    express_validator_1.query('identifier.$in')
         .optional()
         .isArray(),
-    check_1.query('identifier.$all.*.name')
+    express_validator_1.query('identifier.$all.*.name')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 256 }),
-    check_1.query('identifier.$all.*.value')
+    express_validator_1.query('identifier.$all.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 512 }),
-    check_1.query('identifier.$in.*.name')
+    express_validator_1.query('identifier.$in.*.name')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 256 }),
-    check_1.query('identifier.$in.*.value')
+    express_validator_1.query('identifier.$in.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 512 }),
-    check_1.query('orderDateFrom')
+    express_validator_1.query('orderDateFrom')
         .not()
         .isEmpty()
         .isISO8601()
         .toDate(),
-    check_1.query('orderDateThrough')
+    express_validator_1.query('orderDateThrough')
         .not()
         .isEmpty()
         .isISO8601()
@@ -109,26 +108,26 @@ ordersRouter.get('', permitScopes_1.default(['customer', 'orders', 'orders.read-
         }
         return true;
     }),
-    check_1.query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
+    express_validator_1.query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
+    express_validator_1.query('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('acceptedOffers.itemOffered.reservationFor.startFrom')
+    express_validator_1.query('acceptedOffers.itemOffered.reservationFor.startFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('acceptedOffers.itemOffered.reservationFor.startThrough')
+    express_validator_1.query('acceptedOffers.itemOffered.reservationFor.startThrough')
         .optional()
         .isISO8601()
         .toDate()
 ], 
 // 管理者でなければバリデーション追加
 ...[
-    check_1.query('identifier.$all')
+    express_validator_1.query('identifier.$all')
         .if(isNotAdmin)
         .not()
         .isEmpty()
@@ -185,7 +184,7 @@ ordersRouter.get('', permitScopes_1.default(['customer', 'orders', 'orders.read-
  * 注文作成
  */
 ordersRouter.post('', permitScopes_1.default([]), rateLimit_1.default, ...[
-    check_1.body('orderNumber')
+    express_validator_1.body('orderNumber')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
@@ -258,29 +257,29 @@ ordersRouter.get('/download', permitScopes_1.default([]), rateLimit_1.default,
     }
     next();
 }, ...[
-    check_1.query('orderDateFrom')
+    express_validator_1.query('orderDateFrom')
         .not()
         .isEmpty()
         .isISO8601()
         .toDate(),
-    check_1.query('orderDateThrough')
+    express_validator_1.query('orderDateThrough')
         .not()
         .isEmpty()
         .isISO8601()
         .toDate(),
-    check_1.query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
+    express_validator_1.query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
+    express_validator_1.query('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('acceptedOffers.itemOffered.reservationFor.startFrom')
+    express_validator_1.query('acceptedOffers.itemOffered.reservationFor.startFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('acceptedOffers.itemOffered.reservationFor.startThrough')
+    express_validator_1.query('acceptedOffers.itemOffered.reservationFor.startThrough')
         .optional()
         .isISO8601()
         .toDate()
@@ -305,15 +304,15 @@ ordersRouter.get('/download', permitScopes_1.default([]), rateLimit_1.default,
  * @deprecated 基本的にシネマサンシャイン互換性維持のためのエンドポイント
  */
 ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['customer', 'orders', 'orders.read-only']), rateLimit_1.default, ...[
-    check_1.body('theaterCode')
+    express_validator_1.body('theaterCode')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('confirmationNumber')
+    express_validator_1.body('confirmationNumber')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('telephone')
+    express_validator_1.body('telephone')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
@@ -358,27 +357,27 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['customer', 
  * 確認番号で注文照会
  */
 ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['customer', 'orders', 'orders.read-only']), rateLimit_1.default, ...[
-    check_1.query('orderDateFrom')
+    express_validator_1.query('orderDateFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('orderDateThrough')
+    express_validator_1.query('orderDateThrough')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.body('orderDateFrom')
+    express_validator_1.body('orderDateFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.body('orderDateThrough')
+    express_validator_1.body('orderDateThrough')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.body('confirmationNumber')
+    express_validator_1.body('confirmationNumber')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('customer')
+    express_validator_1.body('customer')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
@@ -493,7 +492,7 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default([]), rateLimit
  */
 // tslint:disable-next-line:use-default-type-parameter
 ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.default(['customer', 'orders', 'orders.read-only']), rateLimit_1.default, ...[
-    check_1.body('customer')
+    express_validator_1.body('customer')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')

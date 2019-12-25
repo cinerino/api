@@ -14,8 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const rateLimit_1 = require("../../../middlewares/rateLimit");
@@ -25,12 +24,12 @@ const ordersRouter = express_1.Router();
  * 注文検索
  */
 ordersRouter.get('', permitScopes_1.default(['customer']), rateLimit_1.default, ...[
-    check_1.query('orderDateFrom')
+    express_validator_1.query('orderDateFrom')
         .not()
         .isEmpty()
         .isISO8601()
         .toDate(),
-    check_1.query('orderDateThrough')
+    express_validator_1.query('orderDateThrough')
         .not()
         .isEmpty()
         .isISO8601()

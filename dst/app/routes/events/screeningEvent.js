@@ -14,8 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const mongoose = require("mongoose");
 const redis = require("../../../redis");
 const permitScopes_1 = require("../../middlewares/permitScopes");
@@ -33,43 +32,43 @@ const screeningEventRouter = express_1.Router();
  * イベント検索
  */
 screeningEventRouter.get('', permitScopes_1.default(['customer', 'events', 'events.read-only']), rateLimit_1.default, ...[
-    check_1.query('inSessionFrom')
+    express_validator_1.query('inSessionFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('inSessionThrough')
+    express_validator_1.query('inSessionThrough')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('startFrom')
+    express_validator_1.query('startFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('startThrough')
+    express_validator_1.query('startThrough')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('endFrom')
+    express_validator_1.query('endFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('endThrough')
+    express_validator_1.query('endThrough')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('offers.availableFrom')
+    express_validator_1.query('offers.availableFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('offers.availableThrough')
+    express_validator_1.query('offers.availableThrough')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('offers.validFrom')
+    express_validator_1.query('offers.validFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('offers.validThrough')
+    express_validator_1.query('offers.validThrough')
         .optional()
         .isISO8601()
         .toDate()
@@ -183,11 +182,11 @@ screeningEventRouter.get('/:id/offers', permitScopes_1.default(['customer', 'eve
  */
 // tslint:disable-next-line:use-default-type-parameter
 screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default(['customer', 'events', 'events.read-only']), rateLimit_1.default, ...[
-    check_1.query('seller')
+    express_validator_1.query('seller')
         .not()
         .isEmpty()
         .withMessage(() => 'required'),
-    check_1.query('store')
+    express_validator_1.query('store')
         .not()
         .isEmpty()
         .withMessage(() => 'required')

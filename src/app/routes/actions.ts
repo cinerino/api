@@ -3,8 +3,7 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
-// tslint:disable-next-line:no-submodule-imports
-import { query } from 'express-validator/check';
+import { query } from 'express-validator';
 import { CREATED } from 'http-status';
 import * as mongoose from 'mongoose';
 

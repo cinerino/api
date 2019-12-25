@@ -14,8 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
@@ -25,12 +24,12 @@ const invoicesRouter = express_1.Router();
  * インボイス検索
  */
 invoicesRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
-    check_1.query('createdFrom')
+    express_validator_1.query('createdFrom')
         .optional()
         .isISO8601()
         .withMessage((_, options) => `${options.path} must be ISO8601 timestamp`)
         .toDate(),
-    check_1.query('createdThrough')
+    express_validator_1.query('createdThrough')
         .optional()
         .isISO8601()
         .withMessage((_, options) => `${options.path} must be ISO8601 timestamp`)

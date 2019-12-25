@@ -7,8 +7,7 @@ import * as createDebug from 'debug';
 import { Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
-// tslint:disable-next-line:no-submodule-imports
-import { body, query } from 'express-validator/check';
+import { body, query } from 'express-validator';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
@@ -177,7 +176,7 @@ placeOrderTransactionsRouter.post(
                 agent: {
                     ...req.agent,
                     identifier: [
-                        ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
+                        ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
                         ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
                             ? (<any[]>req.body.agent.identifier).map((p: any) => {
                                 return { name: String(p.name), value: String(p.value) };

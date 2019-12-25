@@ -4,9 +4,7 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { NextFunction, Request, Response } from 'express';
-import { } from 'express-validator'; // 型を読み込んでおかないとテストコードでコンパイルエラー発生
-// tslint:disable-next-line:no-submodule-imports
-import { validationResult } from 'express-validator/check';
+import { validationResult } from 'express-validator';
 import { BAD_REQUEST } from 'http-status';
 
 import { APIError } from '../error/api';

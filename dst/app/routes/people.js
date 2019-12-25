@@ -14,8 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -146,14 +145,14 @@ peopleRouter.delete('/:id', permitScopes_1.default([]), rateLimit_1.default, val
  */
 // tslint:disable-next-line:use-default-type-parameter
 peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default([]), rateLimit_1.default, ...[
-    check_1.query('typeOfGood')
+    express_validator_1.query('typeOfGood')
         .not()
         .isEmpty(),
-    check_1.query('offers.ownedFrom')
+    express_validator_1.query('offers.ownedFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('offers.ownedThrough')
+    express_validator_1.query('offers.ownedThrough')
         .optional()
         .isISO8601()
         .toDate()

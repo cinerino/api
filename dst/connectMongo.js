@@ -27,6 +27,8 @@ const connectOptions = {
     socketTimeoutMS: 0,
     reconnectTries: 30,
     reconnectInterval: 1000,
+    useCreateIndex: true,
+    useFindAndModify: false,
     useNewUrlParser: true
 };
 function connectMongo(params) {

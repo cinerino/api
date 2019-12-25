@@ -15,8 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
 const express_1 = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const mongoose = require("mongoose");
@@ -59,38 +58,38 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 
     }
     next();
 }, ...[
-    check_1.body('expires')
+    express_validator_1.body('expires')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
         .isISO8601()
         .toDate(),
-    check_1.body('agent.identifier')
+    express_validator_1.body('agent.identifier')
         .optional()
         .isArray({ max: 10 }),
-    check_1.body('agent.identifier.*.name')
+    express_validator_1.body('agent.identifier.*.name')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 256 }),
-    check_1.body('agent.identifier.*.value')
+    express_validator_1.body('agent.identifier.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 512 }),
-    check_1.body('seller.typeOf')
+    express_validator_1.body('seller.typeOf')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('seller.id')
+    express_validator_1.body('seller.id')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
     ...(!WAITER_DISABLED)
         ? [
-            check_1.body('object.passport.token')
+            express_validator_1.body('object.passport.token')
                 .not()
                 .isEmpty()
                 .withMessage((_, __) => 'required')
@@ -153,7 +152,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 
             project: req.project,
             expires: expires,
             agent: Object.assign(Object.assign({}, req.agent), { identifier: [
-                    ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
+                    ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
                     ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
                         ? req.body.agent.identifier.map((p) => {
                             return { name: String(p.name), value: String(p.value) };
@@ -182,34 +181,34 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 
  */
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['customer', 'transactions', 'pos']), ...[
-    check_1.body('additionalProperty')
+    express_validator_1.body('additionalProperty')
         .optional()
         .isArray({ max: 10 }),
-    check_1.body('additionalProperty.*.name')
+    express_validator_1.body('additionalProperty.*.name')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 256 }),
-    check_1.body('additionalProperty.*.value')
+    express_validator_1.body('additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 512 }),
-    check_1.body('email')
+    express_validator_1.body('email')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('familyName')
+    express_validator_1.body('familyName')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('givenName')
+    express_validator_1.body('givenName')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('telephone')
+    express_validator_1.body('telephone')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
@@ -253,16 +252,16 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
  */
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put('/:transactionId/agent', permitScopes_1.default(['customer', 'transactions', 'pos']), ...[
-    check_1.body('additionalProperty')
+    express_validator_1.body('additionalProperty')
         .optional()
         .isArray({ max: 10 }),
-    check_1.body('additionalProperty.*.name')
+    express_validator_1.body('additionalProperty.*.name')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 256 }),
-    check_1.body('additionalProperty.*.value')
+    express_validator_1.body('additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
@@ -299,16 +298,16 @@ placeOrderTransactionsRouter.put('/:transactionId/agent', permitScopes_1.default
  */
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatReservation', permitScopes_1.default(['customer', 'transactions']), ...[
-    check_1.body('object.acceptedOffer.additionalProperty')
+    express_validator_1.body('object.acceptedOffer.additionalProperty')
         .optional()
         .isArray({ max: 10 }),
-    check_1.body('object.acceptedOffer.additionalProperty.*.name')
+    express_validator_1.body('object.acceptedOffer.additionalProperty.*.name')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 256 }),
-    check_1.body('object.acceptedOffer.additionalProperty.*.value')
+    express_validator_1.body('object.acceptedOffer.additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
@@ -396,25 +395,25 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatRe
  */
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/any', permitScopes_1.default([]), ...[
-    check_1.body('typeOf')
+    express_validator_1.body('typeOf')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('amount')
+    express_validator_1.body('amount')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
         .isInt(),
-    check_1.body('additionalProperty')
+    express_validator_1.body('additionalProperty')
         .optional()
         .isArray({ max: 10 }),
-    check_1.body('additionalProperty.*.name')
+    express_validator_1.body('additionalProperty.*.name')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 256 }),
-    check_1.body('additionalProperty.*.value')
+    express_validator_1.body('additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
@@ -488,40 +487,40 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
  */
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/creditCard', permitScopes_1.default(['customer', 'transactions']), ...[
-    check_1.body('typeOf')
+    express_validator_1.body('typeOf')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('amount')
+    express_validator_1.body('amount')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
         .isInt(),
-    check_1.body('additionalProperty')
+    express_validator_1.body('additionalProperty')
         .optional()
         .isArray({ max: 10 }),
-    check_1.body('additionalProperty.*.name')
+    express_validator_1.body('additionalProperty.*.name')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 256 }),
-    check_1.body('additionalProperty.*.value')
+    express_validator_1.body('additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 512 }),
-    check_1.body('orderId')
+    express_validator_1.body('orderId')
         .optional()
         .isString()
         .withMessage((_, options) => `${options.path} must be string`)
         .isLength({ max: 27 }),
-    check_1.body('method')
+    express_validator_1.body('method')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('creditCard')
+    express_validator_1.body('creditCard')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
@@ -607,31 +606,31 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
  */
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/movieTicket', permitScopes_1.default(['customer', 'transactions']), ...[
-    check_1.body('typeOf')
+    express_validator_1.body('typeOf')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('amount')
+    express_validator_1.body('amount')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
         .isInt(),
-    check_1.body('additionalProperty')
+    express_validator_1.body('additionalProperty')
         .optional()
         .isArray({ max: 10 }),
-    check_1.body('additionalProperty.*.name')
+    express_validator_1.body('additionalProperty.*.name')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 256 }),
-    check_1.body('additionalProperty.*.value')
+    express_validator_1.body('additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 512 }),
-    check_1.body('movieTickets')
+    express_validator_1.body('movieTickets')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
@@ -724,13 +723,13 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
  */
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accounts/point', permitScopes_1.default(['customer', 'transactions']), ...[
-    check_1.body('amount')
+    express_validator_1.body('amount')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
         .isInt()
         .toInt(),
-    check_1.body('toAccountNumber')
+    express_validator_1.body('toAccountNumber')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
@@ -800,7 +799,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accoun
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['customer', 'transactions', 'pos']), ...[
     // Eメールカスタマイズのバリデーション
-    check_1.body([
+    express_validator_1.body([
         'emailTemplate',
         'email.about',
         'email.template',
@@ -971,19 +970,19 @@ placeOrderTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.defaul
  * 取引検索
  */
 placeOrderTransactionsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
-    check_1.query('startFrom')
+    express_validator_1.query('startFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('startThrough')
+    express_validator_1.query('startThrough')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('endFrom')
+    express_validator_1.query('endFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('endThrough')
+    express_validator_1.query('endThrough')
         .optional()
         .isISO8601()
         .toDate()

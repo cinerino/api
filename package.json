@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@cinerino/domain": "1.0.0-alpha.468",
+    "@cinerino/domain": "1.0.0-alpha.469",
     "@motionpicture/express-middleware": "^0.1.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
@@ -23,7 +23,7 @@
     "ioredis": "^3.2.2",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.26",
-    "mongoose": "^5.7.12",
+    "mongoose": "^5.8.3",
     "qs": "^6.8.0",
     "redis": "^2.8.0",
     "serve-favicon": "^2.5.0"
@@ -37,7 +37,7 @@
     "@types/debug": "0.0.30",
     "@types/express": "^4.17.1",
     "@types/google-libphonenumber": "^7.4.17",
-    "@types/helmet": "0.0.36",
+    "@types/helmet": "0.0.45",
     "@types/http-status": "^0.2.30",
     "@types/ioredis": "^3.2.23",
     "@types/mocha": "^5.2.7",

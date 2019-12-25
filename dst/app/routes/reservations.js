@@ -14,8 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -56,12 +55,12 @@ reservationsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, (req
     }
     next();
 }, ...[
-    check_1.query('bookingFrom')
+    express_validator_1.query('bookingFrom')
         .not()
         .isEmpty()
         .isISO8601()
         .toDate(),
-    check_1.query('bookingThrough')
+    express_validator_1.query('bookingThrough')
         .not()
         .isEmpty()
         .isISO8601()
@@ -78,12 +77,12 @@ reservationsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, (req
         }
         return true;
     }),
-    check_1.query('modifiedFrom')
+    express_validator_1.query('modifiedFrom')
         .not()
         .isEmpty()
         .isISO8601()
         .toDate(),
-    check_1.query('modifiedThrough')
+    express_validator_1.query('modifiedThrough')
         .not()
         .isEmpty()
         .isISO8601()
@@ -115,7 +114,7 @@ reservationsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, (req
  * トークンで予約照会
  */
 reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitScopes_1.default(['tokens', 'tokens.read-only']), rateLimit_1.default, ...[
-    check_1.body('token')
+    express_validator_1.body('token')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')

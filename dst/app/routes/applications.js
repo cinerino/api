@@ -16,8 +16,7 @@ const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 // tslint:disable-next-line:no-implicit-dependencies
 // import { ParamsDictionary } from 'express-serve-static-core';
-// tslint:disable-next-line:no-submodule-imports
-// import { body } from 'express-validator/check';
+// import { body } from 'express-validator';
 // import { CREATED, NO_CONTENT } from 'http-status';
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");

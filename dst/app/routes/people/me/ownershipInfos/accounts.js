@@ -14,8 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../../../../middlewares/permitScopes");
@@ -28,7 +27,7 @@ const accountsRouter = express_1.Router();
  */
 // tslint:disable-next-line:use-default-type-parameter
 accountsRouter.post('/:accountType', permitScopes_1.default(['customer']), rateLimit_1.default, ...[
-    check_1.body('name')
+    express_validator_1.body('name')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')

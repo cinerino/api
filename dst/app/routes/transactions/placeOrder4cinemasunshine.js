@@ -17,8 +17,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
 const express_1 = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const lockTransaction_1 = require("../../middlewares/lockTransaction");
@@ -322,13 +321,13 @@ placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/mvtk/:
  */
 // tslint:disable-next-line:use-default-type-parameter
 placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/award/pecorino', permitScopes_1.default(['customer', 'transactions']), ...[
-    check_1.body('amount')
+    express_validator_1.body('amount')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
         .isInt()
         .toInt(),
-    check_1.body('toAccountNumber')
+    express_validator_1.body('toAccountNumber')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')

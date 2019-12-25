@@ -4,8 +4,7 @@
 import * as cinerino from '@cinerino/domain';
 import * as middlewares from '@motionpicture/express-middleware';
 import { Router } from 'express';
-// tslint:disable-next-line:no-submodule-imports
-import { body, query } from 'express-validator/check';
+import { body, query } from 'express-validator';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as ioredis from 'ioredis';
 import * as mongoose from 'mongoose';

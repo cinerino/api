@@ -14,8 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const lockTransaction_1 = require("../../middlewares/lockTransaction");
@@ -29,24 +28,24 @@ const accountPaymentRouter = express_1.Router();
  */
 // tslint:disable-next-line:use-default-type-parameter
 accountPaymentRouter.post('/authorize', permitScopes_1.default(['customer', 'transactions']), rateLimit_1.default, ...[
-    check_1.body('object')
+    express_validator_1.body('object')
         .not()
         .isEmpty(),
-    check_1.body('object.amount')
+    express_validator_1.body('object.amount')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
         .isInt(),
-    check_1.body('object.additionalProperty')
+    express_validator_1.body('object.additionalProperty')
         .optional()
         .isArray({ max: 10 }),
-    check_1.body('object.additionalProperty.*.name')
+    express_validator_1.body('object.additionalProperty.*.name')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 256 }),
-    check_1.body('object.additionalProperty.*.value')
+    express_validator_1.body('object.additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()

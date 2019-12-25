@@ -3,8 +3,7 @@
  * バリデーションミドルウェアテスト
  */
 import * as assert from 'assert';
-// tslint:disable-next-line:no-submodule-imports
-import * as checkAPI from 'express-validator/check';
+import * as expressValidator from 'express-validator';
 import * as nock from 'nock';
 import * as sinon from 'sinon';
 
@@ -36,7 +35,7 @@ describe('validator', () => {
             next: () => undefined
         };
 
-        sandbox.mock(checkAPI)
+        sandbox.mock(expressValidator)
             .expects('validationResult')
             .once()
             .returns(validatorResult);
@@ -65,7 +64,7 @@ describe('validator', () => {
             next: () => undefined
         };
 
-        sandbox.mock(checkAPI)
+        sandbox.mock(expressValidator)
             .expects('validationResult')
             .once()
             .returns(validatorResult);

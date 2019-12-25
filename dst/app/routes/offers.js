@@ -14,8 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const lockTransaction_1 = require("../middlewares/lockTransaction");
@@ -27,41 +26,41 @@ const offersRouter = express_1.Router();
 if (process.env.USE_MONEY_TRANSFER === '1') {
     // tslint:disable-next-line:use-default-type-parameter
     offersRouter.post('/monetaryAmount/authorize', permitScopes_1.default(['customer', 'transactions']), rateLimit_1.default, ...[
-        check_1.body('object')
+        express_validator_1.body('object')
             .not()
             .isEmpty(),
-        check_1.body('object.itemOffered')
+        express_validator_1.body('object.itemOffered')
             .not()
             .isEmpty(),
-        check_1.body('object.itemOffered.value')
+        express_validator_1.body('object.itemOffered.value')
             .not()
             .isEmpty()
             .withMessage(() => 'required')
             .isInt()
             .toInt(),
-        check_1.body('object.toLocation')
+        express_validator_1.body('object.toLocation')
             .not()
             .isEmpty()
             .withMessage(() => 'required'),
-        check_1.body('object.toLocation.accountType')
+        express_validator_1.body('object.toLocation.accountType')
             .isIn([cinerino.factory.accountType.Coin])
             .withMessage(() => `must be "${cinerino.factory.accountType.Coin}"`),
-        check_1.body('object.additionalProperty')
+        express_validator_1.body('object.additionalProperty')
             .optional()
             .isArray({ max: 10 }),
-        check_1.body('object.additionalProperty.*.name')
+        express_validator_1.body('object.additionalProperty.*.name')
             .optional()
             .not()
             .isEmpty()
             .isString()
             .isLength({ max: 256 }),
-        check_1.body('object.additionalProperty.*.value')
+        express_validator_1.body('object.additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
             .isString()
             .isLength({ max: 512 }),
-        check_1.body('purpose')
+        express_validator_1.body('purpose')
             .not()
             .isEmpty()
     ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -114,7 +113,7 @@ if (process.env.USE_MONEY_TRANSFER === '1') {
 }
 // tslint:disable-next-line:use-default-type-parameter
 offersRouter.put('/monetaryAmount/authorize/:actionId/void', permitScopes_1.default(['customer', 'transactions']), rateLimit_1.default, ...[
-    check_1.body('purpose')
+    express_validator_1.body('purpose')
         .not()
         .isEmpty()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {

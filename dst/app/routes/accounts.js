@@ -15,8 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const middlewares = require("@motionpicture/express-middleware");
 const express_1 = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const ioredis = require("ioredis");
 const mongoose = require("mongoose");
@@ -36,10 +35,10 @@ const accountsRouter = express_1.Router();
  * 管理者として口座開設
  */
 accountsRouter.post('', permitScopes_1.default([]), ...[
-    check_1.body('accountType', 'invalid accountType')
+    express_validator_1.body('accountType', 'invalid accountType')
         .not()
         .isEmpty(),
-    check_1.body('name', 'invalid name')
+    express_validator_1.body('name', 'invalid name')
         .not()
         .isEmpty()
 ], rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -83,7 +82,7 @@ accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(
  * 口座検索
  */
 accountsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
-    check_1.query('accountType', 'invalid accountType')
+    express_validator_1.query('accountType', 'invalid accountType')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
@@ -136,7 +135,7 @@ accountsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
  * 取引履歴検索
  */
 accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default([]), rateLimit_1.default, ...[
-    check_1.query('accountType', 'invalid accountType')
+    express_validator_1.query('accountType', 'invalid accountType')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
@@ -231,11 +230,11 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default([]),
     }
     next();
 }, ...[
-    check_1.body('recipient')
+    express_validator_1.body('recipient')
         .not()
         .isEmpty()
         .withMessage(() => 'required'),
-    check_1.body('object.amount')
+    express_validator_1.body('object.amount')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
@@ -248,7 +247,7 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default([]),
         return true;
     })
         .withMessage(() => 'Amount must be more than 0'),
-    check_1.body('object.toLocation.accountNumber')
+    express_validator_1.body('object.toLocation.accountNumber')
         .not()
         .isEmpty()
         .withMessage(() => 'required')

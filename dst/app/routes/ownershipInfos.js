@@ -14,8 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -27,11 +26,11 @@ const ownershipInfosRouter = express_1.Router();
  * 所有権検索
  */
 ownershipInfosRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
-    check_1.query('ownedFrom')
+    express_validator_1.query('ownedFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('ownedThrough')
+    express_validator_1.query('ownedThrough')
         .optional()
         .isISO8601()
         .toDate()
@@ -93,11 +92,11 @@ ownershipInfosRouter.post('/tokens', permitScopes_1.default(['customer', 'tokens
  */
 // tslint:disable-next-line:use-default-type-parameter
 ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default([]), rateLimit_1.default, ...[
-    check_1.query('startFrom')
+    express_validator_1.query('startFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('startThrough')
+    express_validator_1.query('startThrough')
         .optional()
         .isISO8601()
         .toDate()
@@ -182,11 +181,11 @@ ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default([]), 
  * @deprecated
  */
 ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.default(['customer']), rateLimit_1.default, ...[
-    check_1.query('fromDate')
+    express_validator_1.query('fromDate')
         .not()
         .isEmpty()
         .isISO8601(),
-    check_1.query('toDate')
+    express_validator_1.query('toDate')
         .not()
         .isEmpty()
         .isISO8601()

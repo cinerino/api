@@ -93,17 +93,19 @@ export default async (req: Request, res: Response, next: NextFunction) => {
 
                 req.user = user;
                 req.accessToken = token;
-                req.agent = {
-                    // ログインユーザーであればPerson、クライアント認証であればアプリケーション
-                    typeOf: (programMembership !== undefined)
-                        ? cinerino.factory.personType.Person
-                        : <any>'WebApplication',
-                    id: user.sub,
-                    identifier: identifier,
-                    ...(programMembership !== undefined)
-                        ? { memberOf: programMembership }
-                        : {}
-                };
+                // ログインユーザーであればPerson、クライアント認証であればアプリケーション
+                req.agent = (programMembership !== undefined)
+                    ? {
+                        typeOf: cinerino.factory.personType.Person,
+                        id: user.sub,
+                        identifier: identifier,
+                        memberOf: programMembership
+                    }
+                    : {
+                        typeOf: <any>cinerino.factory.creativeWorkType.WebApplication,
+                        id: user.sub,
+                        identifier: identifier
+                    };
 
                 next();
             },

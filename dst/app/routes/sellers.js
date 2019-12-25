@@ -14,8 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -26,47 +25,47 @@ const sellersRouter = express_1.Router();
  * 販売者作成
  */
 sellersRouter.post('', permitScopes_1.default(['sellers']), rateLimit_1.default, ...[
-    check_1.body('typeOf')
+    express_validator_1.body('typeOf')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('name.ja')
+    express_validator_1.body('name.ja')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('name.en')
+    express_validator_1.body('name.en')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('parentOrganization.typeOf')
+    express_validator_1.body('parentOrganization.typeOf')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('parentOrganization.name.ja')
+    express_validator_1.body('parentOrganization.name.ja')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('parentOrganization.name.en')
+    express_validator_1.body('parentOrganization.name.en')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('telephone')
+    express_validator_1.body('telephone')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('url')
+    express_validator_1.body('url')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
         .isURL(),
-    check_1.body('paymentAccepted')
+    express_validator_1.body('paymentAccepted')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
         .isArray(),
-    check_1.body('hasPOS')
+    express_validator_1.body('hasPOS')
         .isArray(),
-    check_1.body('areaServed')
+    express_validator_1.body('areaServed')
         .isArray()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -122,47 +121,47 @@ sellersRouter.get('/:id', permitScopes_1.default(['customer', 'sellers', 'seller
  */
 // tslint:disable-next-line:use-default-type-parameter
 sellersRouter.put('/:id', permitScopes_1.default(['sellers']), rateLimit_1.default, ...[
-    check_1.body('typeOf')
+    express_validator_1.body('typeOf')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('name.ja')
+    express_validator_1.body('name.ja')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('name.en')
+    express_validator_1.body('name.en')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('parentOrganization.typeOf')
+    express_validator_1.body('parentOrganization.typeOf')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('parentOrganization.name.ja')
+    express_validator_1.body('parentOrganization.name.ja')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('parentOrganization.name.en')
+    express_validator_1.body('parentOrganization.name.en')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('telephone')
+    express_validator_1.body('telephone')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required'),
-    check_1.body('url')
+    express_validator_1.body('url')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
         .isURL(),
-    check_1.body('paymentAccepted')
+    express_validator_1.body('paymentAccepted')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
         .isArray(),
-    check_1.body('hasPOS')
+    express_validator_1.body('hasPOS')
         .isArray(),
-    check_1.body('areaServed')
+    express_validator_1.body('areaServed')
         .isArray()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {

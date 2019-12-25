@@ -14,8 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-// tslint:disable-next-line:no-submodule-imports
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const lockTransaction_1 = require("../../middlewares/lockTransaction");
@@ -33,13 +32,13 @@ function escapeRegExp(params) {
     return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
 }
 returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions', 'pos']), rateLimit_1.default, ...[
-    check_1.body('expires')
+    express_validator_1.body('expires')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
         .isISO8601()
         .toDate(),
-    check_1.body('object.order.orderNumber')
+    express_validator_1.body('object.order.orderNumber')
         .not()
         .isEmpty()
         .withMessage((_, __) => 'required')
@@ -93,7 +92,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
         const transaction = yield cinerino.service.transaction.returnOrder.start({
             project: req.project,
             agent: Object.assign(Object.assign({}, req.agent), { identifier: [
-                    ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
+                    ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
                     ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
                         ? req.body.agent.identifier.map((p) => {
                             return { name: String(p.name), value: String(p.value) };
@@ -129,16 +128,16 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
  */
 // tslint:disable-next-line:use-default-type-parameter
 returnOrderTransactionsRouter.put('/:transactionId/agent', permitScopes_1.default(['customer', 'transactions']), ...[
-    check_1.body('additionalProperty')
+    express_validator_1.body('additionalProperty')
         .optional()
         .isArray({ max: 10 }),
-    check_1.body('additionalProperty.*.name')
+    express_validator_1.body('additionalProperty.*.name')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: 256 }),
-    check_1.body('additionalProperty.*.value')
+    express_validator_1.body('additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
@@ -173,7 +172,7 @@ returnOrderTransactionsRouter.put('/:transactionId/agent', permitScopes_1.defaul
 // tslint:disable-next-line:use-default-type-parameter
 returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['transactions', 'pos']), rateLimit_1.default, ...[
     // Eメールカスタマイズのバリデーション
-    check_1.body([
+    express_validator_1.body([
         'potentialActions.returnOrder.potentialActions.refundCreditCard.potentialActions.sendEmailMessage.object.about',
         'potentialActions.returnOrder.potentialActions.refundCreditCard.potentialActions.sendEmailMessage.object.template',
         'potentialActions.returnOrder.potentialActions.refundCreditCard.potentialActions.sendEmailMessage.object.sender.email',
@@ -230,19 +229,19 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
  * 取引検索
  */
 returnOrderTransactionsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
-    check_1.query('startFrom')
+    express_validator_1.query('startFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('startThrough')
+    express_validator_1.query('startThrough')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('endFrom')
+    express_validator_1.query('endFrom')
         .optional()
         .isISO8601()
         .toDate(),
-    check_1.query('endThrough')
+    express_validator_1.query('endThrough')
         .optional()
         .isISO8601()
         .toDate()

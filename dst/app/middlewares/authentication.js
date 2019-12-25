@@ -94,13 +94,19 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                 }
                 req.user = user;
                 req.accessToken = token;
-                req.agent = Object.assign({ 
-                    // ログインユーザーであればPerson、クライアント認証であればアプリケーション
-                    typeOf: (programMembership !== undefined)
-                        ? cinerino.factory.personType.Person
-                        : 'WebApplication', id: user.sub, identifier: identifier }, (programMembership !== undefined)
-                    ? { memberOf: programMembership }
-                    : {});
+                // ログインユーザーであればPerson、クライアント認証であればアプリケーション
+                req.agent = (programMembership !== undefined)
+                    ? {
+                        typeOf: cinerino.factory.personType.Person,
+                        id: user.sub,
+                        identifier: identifier,
+                        memberOf: programMembership
+                    }
+                    : {
+                        typeOf: cinerino.factory.creativeWorkType.WebApplication,
+                        id: user.sub,
+                        identifier: identifier
+                    };
                 next();
             }),
             unauthorizedHandler: (err) => {

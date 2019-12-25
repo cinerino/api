@@ -5,8 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
-// tslint:disable-next-line:no-submodule-imports
-import { query } from 'express-validator/check';
+import { query } from 'express-validator';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 

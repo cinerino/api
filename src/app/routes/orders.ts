@@ -5,10 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
-// tslint:disable-next-line:no-submodule-imports
-import { body, query } from 'express-validator/check';
-// tslint:disable-next-line:no-submodule-imports
-import { CustomValidator } from 'express-validator/src/base';
+import { body, CustomValidator, query } from 'express-validator';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
