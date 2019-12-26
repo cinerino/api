@@ -1,0 +1,23 @@
+{
+    "check-coverage": true,
+    "lines": 100,
+    "statements": 100,
+    "functions": 100,
+    "branches": 100,
+    "extension": [
+        ".ts"
+    ],
+    "exclude": [
+        "**/*.spec.ts",
+        "src/app/error/**/*.ts",
+        "src/app/routes/**/*.ts",
+        "src/jobs/**/*.ts"
+    ],
+    "include": [
+        "src/**/*.ts"
+    ],
+    "reporter": [
+        "lcov",
+        "text-summary"
+    ]
+}
