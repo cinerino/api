@@ -22,6 +22,11 @@ import placeOrder4cinemasunshineRouter from './placeOrder4cinemasunshine';
 
 import * as redis from '../../../redis';
 
+const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
+    ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
+    // tslint:disable-next-line:no-magic-numbers
+    : 256;
+
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== undefined)
     ? Number(process.env.NUM_ORDER_ITEMS_MAX_VALUE)
@@ -77,13 +82,13 @@ placeOrderTransactionsRouter.post(
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 256 }),
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         body('agent.identifier.*.value')
             .optional()
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 512 }),
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         body('seller.typeOf')
             .not()
             .isEmpty()
@@ -222,13 +227,13 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 256 }),
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         body('additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 512 }),
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         body('email')
             .not()
             .isEmpty()
@@ -308,13 +313,13 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 256 }),
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         body('additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 512 })
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH })
     ],
     validator,
     async (req, res, next) => {
@@ -367,13 +372,13 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 256 }),
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         body('object.acceptedOffer.additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 512 })
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH })
     ],
     validator,
     async (req, res, next) => {
@@ -493,7 +498,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 256 }),
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         body('additionalProperty.*.value')
             .optional()
             .not()
@@ -501,7 +506,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             // バリデーション強化前の数字リクエストに対する互換性維持のため
             .customSanitizer((value) => typeof value === 'number' ? String(value) : value)
             .isString()
-            .isLength({ max: 512 })
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH })
     ],
     validator,
     async (req, res, next) => {
@@ -600,13 +605,13 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 256 }),
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         body('additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 512 }),
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         body('orderId')
             .optional()
             .isString()
@@ -753,13 +758,13 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 256 }),
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         body('additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 512 }),
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         body('movieTickets')
             .not()
             .isEmpty()

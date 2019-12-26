@@ -24,6 +24,10 @@ const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
+const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
+    ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
+    // tslint:disable-next-line:no-magic-numbers
+    : 256;
 // const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const moneyTransferTransactionsRouter = express_1.Router();
 const debug = createDebug('cinerino-api:router');
@@ -67,13 +71,13 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['customer
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 256 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.body('agent.identifier.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 512 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.body('recipient')
         .not()
         .isEmpty()
@@ -199,13 +203,13 @@ moneyTransferTransactionsRouter.put('/:transactionId/agent', permitScopes_1.defa
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 256 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.body('additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 512 })
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH })
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.MoneyTransfer,

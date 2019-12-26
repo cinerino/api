@@ -19,6 +19,11 @@ import validator from '../../middlewares/validator';
 
 import * as redis from '../../../redis';
 
+const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
+    ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
+    // tslint:disable-next-line:no-magic-numbers
+    : 256;
+
 // const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const moneyTransferTransactionsRouter = Router();
 const debug = createDebug('cinerino-api:router');
@@ -66,13 +71,13 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 256 }),
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         body('agent.identifier.*.value')
             .optional()
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 512 }),
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         body('recipient')
             .not()
             .isEmpty()
@@ -225,13 +230,13 @@ moneyTransferTransactionsRouter.put<ParamsDictionary>(
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 256 }),
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         body('additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 512 })
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH })
     ],
     validator,
     async (req, res, next) => {

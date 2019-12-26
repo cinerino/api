@@ -60,8 +60,8 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                     const applications = await applicationRepo.search({ id: { $eq: user.client_id } });
                     if (applications.length > 0) {
                         const application = applications[0];
-                        if ((<any>application).project !== undefined && (<any>application).project !== null) {
-                            project = { typeOf: 'Project', id: (<any>application).project.id };
+                        if (application.project !== undefined && application.project !== null) {
+                            project = { typeOf: application.project.typeOf, id: application.project.id };
                         }
                     }
                 } catch (error) {

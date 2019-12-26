@@ -22,6 +22,10 @@ const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
+const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
+    ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
+    // tslint:disable-next-line:no-magic-numbers
+    : 256;
 const creditCardPaymentRouter = express_1.Router();
 /**
  * クレジットカード決済承認
@@ -48,13 +52,13 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['customer', '
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 256 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.body('object.additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 512 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.body('object.orderId')
         .optional()
         .isString()

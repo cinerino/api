@@ -17,6 +17,11 @@ import validator from '../../middlewares/validator';
 
 import * as redis from '../../../redis';
 
+const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
+    ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
+    // tslint:disable-next-line:no-magic-numbers
+    : 256;
+
 const CANCELLATION_FEE = 1000;
 
 const returnOrderTransactionsRouter = Router();
@@ -152,13 +157,13 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 256 }),
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         body('additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: 512 })
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH })
     ],
     validator,
     async (req, res, next) => {

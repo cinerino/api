@@ -22,6 +22,10 @@ const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
+const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
+    ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
+    // tslint:disable-next-line:no-magic-numbers
+    : 256;
 const anyPaymentRouter = express_1.Router();
 /**
  * 汎用決済承認
@@ -48,13 +52,13 @@ anyPaymentRouter.post('/authorize', permitScopes_1.default(['pos']), rateLimit_1
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 256 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.body('object.additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 512 })
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH })
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,

@@ -26,6 +26,10 @@ const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4t
 const validator_1 = require("../../middlewares/validator");
 const placeOrder4cinemasunshine_1 = require("./placeOrder4cinemasunshine");
 const redis = require("../../../redis");
+const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
+    ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
+    // tslint:disable-next-line:no-magic-numbers
+    : 256;
 const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== undefined)
     ? Number(process.env.NUM_ORDER_ITEMS_MAX_VALUE)
@@ -72,13 +76,13 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['customer', 
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 256 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.body('agent.identifier.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 512 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.body('seller.typeOf')
         .not()
         .isEmpty()
@@ -189,13 +193,13 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 256 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.body('additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 512 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.body('email')
         .not()
         .isEmpty()
@@ -260,13 +264,13 @@ placeOrderTransactionsRouter.put('/:transactionId/agent', permitScopes_1.default
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 256 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.body('additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 512 })
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH })
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
@@ -306,13 +310,13 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 256 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.body('object.acceptedOffer.additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 512 })
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH })
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
@@ -412,7 +416,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 256 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.body('additionalProperty.*.value')
         .optional()
         .not()
@@ -420,7 +424,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         // バリデーション強化前の数字リクエストに対する互換性維持のため
         .customSanitizer((value) => typeof value === 'number' ? String(value) : value)
         .isString()
-        .isLength({ max: 512 })
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH })
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
@@ -504,13 +508,13 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 256 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.body('additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 512 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.body('orderId')
         .optional()
         .isString()
@@ -623,13 +627,13 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 256 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.body('additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 512 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.body('movieTickets')
         .not()
         .isEmpty()

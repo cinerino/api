@@ -65,7 +65,7 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                     if (applications.length > 0) {
                         const application = applications[0];
                         if (application.project !== undefined && application.project !== null) {
-                            project = { typeOf: 'Project', id: application.project.id };
+                            project = { typeOf: application.project.typeOf, id: application.project.id };
                         }
                     }
                 }

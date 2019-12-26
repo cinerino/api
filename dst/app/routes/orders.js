@@ -23,6 +23,10 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const redis = require("../../redis");
+const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
+    ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
+    // tslint:disable-next-line:no-magic-numbers
+    : 256;
 /**
  * 正規表現をエスケープする
  */
@@ -67,25 +71,25 @@ ordersRouter.get('', permitScopes_1.default(['customer', 'orders', 'orders.read-
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 256 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.query('identifier.$all.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 512 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.query('identifier.$in.*.name')
         .optional()
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 256 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.query('identifier.$in.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: 512 }),
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.query('orderDateFrom')
         .not()
         .isEmpty()
