@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v1.0.0 - 2019-12-28
+
+### Added
+
+- 組織ルーターを追加
+
 ## v1.0.0 - 2019-12-26
 
 ### Added
