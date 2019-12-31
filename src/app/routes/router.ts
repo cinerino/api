@@ -5,6 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import * as express from 'express';
 
 import healthRouter from './health';
+import projectsRouter from './projects';
 import projectDetailRouter from './projects/detail';
 import statsRouter from './stats';
 
@@ -24,6 +25,9 @@ router.use('/stats', statsRouter);
 
 // 認証
 router.use(authentication);
+
+// プロジェクトルーター
+router.use('/projects', projectsRouter);
 
 // プロジェクト指定ルーティング配下については、すべてreq.projectを上書き
 router.use(

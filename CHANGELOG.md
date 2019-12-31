@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v1.2.0 - 2019-12-31
+
+### Changed
+
+- プロジェクト未指定でのプロジェクト検索を可能に変更
+
 ## v1.1.1 - 2019-12-31
 
 ### Fixed
