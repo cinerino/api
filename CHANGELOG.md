@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- プロジェクト未指定でのプロジェクト検索を可能に変更
+
 ### Deprecated
 
 ### Removed
