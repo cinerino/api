@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- ユーザーが閲覧権限を持つプロジェクトのみ検索できるように制限
+
 ### Deprecated
 
 ### Removed

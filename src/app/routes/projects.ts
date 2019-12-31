@@ -13,7 +13,7 @@ const projectsRouter = Router();
 
 /**
  * プロジェクト検索
- * 閲覧権限を持つプロジェクトを検索可能
+ * 閲覧権限を持つプロジェクトを検索
  */
 projectsRouter.get(
     '',
@@ -22,31 +22,39 @@ projectsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            // ownerロールを持つプロジェクト検索
             const memberRepo = new cinerino.repository.Member(mongoose.connection);
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+
+            // tslint:disable-next-line:no-magic-numbers
+            const limit = (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100;
+            const page = (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1;
+
+            // ownerロールを持つプロジェクト検索
+            const searchCoinditions = {
+                'member.id': req.user.sub,
+                'member.hasRole.roleName': 'owner'
+            };
+            const totalCount = await memberRepo.memberModel.countDocuments(searchCoinditions)
+                .setOptions({ maxTimeMS: 10000 })
+                .exec();
             const projectMembers = await memberRepo.memberModel.find(
-                {
-                    'member.id': req.user.sub,
-                    'member.hasRole.roleName': 'owner'
-                },
+                searchCoinditions,
                 { project: 1 }
             )
-                .exec();
+                .limit(limit)
+                .skip(limit * (page - 1))
+                .setOptions({ maxTimeMS: 10000 })
+                .exec()
+                .then((docs) => docs.map((doc) => doc.toObject()));
 
-            const searchCoinditions: cinerino.factory.project.ISearchConditions = {
-                ...req.query,
-                ids: projectMembers.map((m) => m.project.id),
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
-            };
-
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const projects = await projectRepo.search(
-                searchCoinditions,
-                undefined
+                {
+                    ids: projectMembers.map((m) => m.project.id),
+                    limit: limit
+                },
+                { settings: 0 }
             );
-            const totalCount = await projectRepo.count(searchCoinditions);
+            // const totalCount = await projectRepo.count(searchCoinditions);
 
             res.set('X-Total-Count', totalCount.toString());
             res.json(projects);
@@ -66,14 +74,31 @@ projectsRouter.get(
     validator,
     async (req, res, next) => {
         try {
+            const memberRepo = new cinerino.repository.Member(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
-            const seller = await projectRepo.findById(
+            // ownerロールを持つプロジェクト検索
+            const searchCoinditions = {
+                'project.id': req.params.id,
+                'member.id': req.user.sub,
+                'member.hasRole.roleName': 'owner'
+            };
+            const projectMember = await memberRepo.memberModel.findOne(
+                searchCoinditions,
+                { project: 1 }
+            )
+                .setOptions({ maxTimeMS: 10000 })
+                .exec();
+            if (projectMember === null) {
+                throw new cinerino.factory.errors.NotFound('Project');
+            }
+
+            const project = await projectRepo.findById(
                 { id: req.params.id },
                 undefined
             );
 
-            res.json(seller);
+            res.json(project);
         } catch (error) {
             next(error);
         }
