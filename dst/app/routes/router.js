@@ -6,9 +6,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express = require("express");
 const health_1 = require("./health");
+const projects_1 = require("./projects");
 const detail_1 = require("./projects/detail");
 const stats_1 = require("./stats");
 const authentication_1 = require("../middlewares/authentication");
+const setMemberPermissions_1 = require("../middlewares/setMemberPermissions");
 const router = express.Router();
 // middleware that is specific to this router
 // router.use((req, res, next) => {
@@ -20,6 +22,8 @@ router.use('/health', health_1.default);
 router.use('/stats', stats_1.default);
 // 認証
 router.use(authentication_1.default);
+// プロジェクトルーター
+router.use('/projects', projects_1.default);
 // プロジェクト指定ルーティング配下については、すべてreq.projectを上書き
 router.use('/projects/:id', (req, _, next) => {
     // authenticationにてアプリケーションによってプロジェクト決定済であれば、比較
@@ -30,7 +34,7 @@ router.use('/projects/:id', (req, _, next) => {
     //         return;
     //     }
     // }
-    req.project = { typeOf: 'Project', id: req.params.id };
+    req.project = { typeOf: cinerino.factory.organizationType.Project, id: req.params.id };
     next();
 });
 router.use((req, _, next) => {
@@ -41,6 +45,8 @@ router.use((req, _, next) => {
     }
     next();
 });
+// プロジェクトメンバーのスコープを確認
+router.use(setMemberPermissions_1.default);
 // 以下、プロジェクト指定済の状態でルーティング
 router.use('', detail_1.default);
 router.use('/projects/:id', detail_1.default);

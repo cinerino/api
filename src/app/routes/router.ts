@@ -5,10 +5,12 @@ import * as cinerino from '@cinerino/domain';
 import * as express from 'express';
 
 import healthRouter from './health';
+import projectsRouter from './projects';
 import projectDetailRouter from './projects/detail';
 import statsRouter from './stats';
 
 import authentication from '../middlewares/authentication';
+import setMemberPermissions from '../middlewares/setMemberPermissions';
 
 const router = express.Router();
 
@@ -25,6 +27,9 @@ router.use('/stats', statsRouter);
 // 認証
 router.use(authentication);
 
+// プロジェクトルーター
+router.use('/projects', projectsRouter);
+
 // プロジェクト指定ルーティング配下については、すべてreq.projectを上書き
 router.use(
     '/projects/:id',
@@ -39,7 +44,7 @@ router.use(
         //     }
         // }
 
-        req.project = { typeOf: 'Project', id: req.params.id };
+        req.project = { typeOf: cinerino.factory.organizationType.Project, id: req.params.id };
 
         next();
     }
@@ -55,6 +60,9 @@ router.use((req, _, next) => {
 
     next();
 });
+
+// プロジェクトメンバーのスコープを確認
+router.use(setMemberPermissions);
 
 // 以下、プロジェクト指定済の状態でルーティング
 router.use('', projectDetailRouter);

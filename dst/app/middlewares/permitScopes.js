@@ -75,6 +75,7 @@ exports.default = (specifiedPermittedScopes) => {
                 next(new cinerino.factory.errors.Forbidden('scope requirements not satisfied'));
             }
             else {
+                console.log('memberPermissions:', req.memberPermissions);
                 next();
             }
         }

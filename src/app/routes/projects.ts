@@ -13,6 +13,7 @@ const projectsRouter = Router();
 
 /**
  * プロジェクト検索
+ * 閲覧権限を持つプロジェクトを検索可能
  */
 projectsRouter.get(
     '',
@@ -21,8 +22,20 @@ projectsRouter.get(
     validator,
     async (req, res, next) => {
         try {
+            // ownerロールを持つプロジェクト検索
+            const memberRepo = new cinerino.repository.Member(mongoose.connection);
+            const projectMembers = await memberRepo.memberModel.find(
+                {
+                    'member.id': req.user.sub,
+                    'member.hasRole.roleName': 'owner'
+                },
+                { project: 1 }
+            )
+                .exec();
+
             const searchCoinditions: cinerino.factory.project.ISearchConditions = {
                 ...req.query,
+                ids: projectMembers.map((m) => m.project.id),
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1

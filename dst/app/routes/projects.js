@@ -21,10 +21,18 @@ const validator_1 = require("../middlewares/validator");
 const projectsRouter = express_1.Router();
 /**
  * プロジェクト検索
+ * 閲覧権限を持つプロジェクトを検索可能
  */
 projectsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const searchCoinditions = Object.assign(Object.assign({}, req.query), { 
+        // ownerロールを持つプロジェクト検索
+        const memberRepo = new cinerino.repository.Member(mongoose.connection);
+        const projectMembers = yield memberRepo.memberModel.find({
+            'member.id': req.user.sub,
+            'member.hasRole.roleName': 'owner'
+        }, { project: 1 })
+            .exec();
+        const searchCoinditions = Object.assign(Object.assign({}, req.query), { ids: projectMembers.map((m) => m.project.id), 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         const projectRepo = new cinerino.repository.Project(mongoose.connection);

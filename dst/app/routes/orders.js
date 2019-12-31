@@ -55,7 +55,7 @@ ordersRouter.get('', permitScopes_1.default(['customer', 'orders', 'orders.read-
     }
     if (typeof req.query.orderDateFrom !== 'string') {
         req.query.orderDateFrom = moment(now)
-            .add(-1, 'months') // とりあえず直近1カ月をデフォルト動作に設定
+            .add(-1, 'month') // とりあえず直近1カ月をデフォルト動作に設定
             .toISOString();
     }
     next();
