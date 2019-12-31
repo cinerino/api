@@ -16,12 +16,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
+### Security
+
+## v1.1.1 - 2019-12-31
+
+### Fixed
+
 - 注文検索のデフォルト注文日時条件が検索可能期間内に設定されないバグ対応
 - 予約検索のデフォルト予約日時条件が検索可能期間内に設定されないバグ対応
 
-### Security
-
-## v1.0.0 - 2019-12-28
+## v1.1.0 - 2019-12-28
 
 ### Added
 
