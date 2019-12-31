@@ -40,7 +40,7 @@ reservationsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, (req
     if (typeof req.query.bookingFrom !== 'string') {
         req.query.bookingFrom = moment(now)
             // tslint:disable-next-line:no-magic-numbers
-            .add(-1, 'months') // とりあえず直近1カ月をデフォルト動作に設定
+            .add(-31, 'days') // とりあえず直近1カ月をデフォルト動作に設定
             .toISOString();
     }
     if (typeof req.query.modifiedThrough !== 'string') {
@@ -70,7 +70,8 @@ reservationsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, (req
         const bookingThrough = moment(value);
         if (req.query !== undefined) {
             const bookingThroughExpectedToBe = moment(req.query.bookingFrom)
-                .add(1, 'months');
+                // tslint:disable-next-line:no-magic-numbers
+                .add(31, 'days');
             if (bookingThrough.isAfter(bookingThroughExpectedToBe)) {
                 throw new Error('Booking time range too large');
             }
