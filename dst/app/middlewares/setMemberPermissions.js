@@ -15,6 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const mongoose = require("mongoose");
 const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
+const ROLES = [
+    { roleName: 'owner', permissions: ['project'] }
+];
 exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const permissions = yield fixMemberPermissions(req)({
@@ -45,6 +48,3 @@ function fixMemberPermissions(req) {
         return permissions;
     });
 }
-const ROLES = [
-    { roleName: 'owner', permissions: ['project'] }
-];
