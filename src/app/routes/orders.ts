@@ -60,7 +60,8 @@ ordersRouter.get(
 
         if (typeof req.query.orderDateFrom !== 'string') {
             req.query.orderDateFrom = moment(now)
-                .add(-1, 'month') // とりあえず直近1カ月をデフォルト動作に設定
+                // tslint:disable-next-line:no-magic-numbers
+                .add(-31, 'days') // とりあえず直近1カ月をデフォルト動作に設定
                 .toISOString();
         }
 
@@ -112,7 +113,8 @@ ordersRouter.get(
                 const orderDateThrough = moment(value);
                 if (req.query !== undefined) {
                     const orderDateThroughExpectedToBe = moment(req.query.orderDateFrom)
-                        .add(1, 'months');
+                        // tslint:disable-next-line:no-magic-numbers
+                        .add(31, 'days');
                     if (orderDateThrough.isAfter(orderDateThroughExpectedToBe)) {
                         throw new Error('Order date range too large');
                     }
@@ -295,7 +297,8 @@ ordersRouter.get(
 
         if (typeof req.query.orderDateFrom !== 'string') {
             req.query.orderDateFrom = moment(now)
-                .add(-1, 'months') // とりあえず直近1カ月をデフォルト動作に設定
+                // tslint:disable-next-line:no-magic-numbers
+                .add(-31, 'days') // とりあえず直近1カ月をデフォルト動作に設定
                 .toISOString();
         }
 
