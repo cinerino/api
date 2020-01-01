@@ -33,7 +33,7 @@ router.use('/projects/:id', (req, _, next) => {
     //         return;
     //     }
     // }
-    req.project = { typeOf: 'Project', id: req.params.id };
+    req.project = { typeOf: cinerino.factory.organizationType.Project, id: req.params.id };
     next();
 });
 router.use((req, _, next) => {

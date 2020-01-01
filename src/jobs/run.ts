@@ -44,7 +44,7 @@ import createImportScreeningEventsTask from './triggered/createImportScreeningEv
 import createUpdateEventAttendeeCapacityTask from './triggered/createUpdateEventAttendeeCapacityTask/run';
 
 const project: factory.project.IProject | undefined = (typeof process.env.PROJECT_ID === 'string')
-    ? { typeOf: 'Project', id: process.env.PROJECT_ID }
+    ? { typeOf: factory.organizationType.Project, id: process.env.PROJECT_ID }
     : undefined;
 const importEventsProjects = (typeof process.env.IMPORT_EVENTS_PROJECTS === 'string')
     ? process.env.IMPORT_EVENTS_PROJECTS.split(',')
@@ -90,7 +90,7 @@ export default async () => {
     await voidMoneyTransfer({ project: project });
 
     await Promise.all(importEventsProjects.map(async (projectId) => {
-        await createImportScreeningEventsTask({ project: { typeOf: 'Project', id: projectId } });
-        await createUpdateEventAttendeeCapacityTask({ project: { typeOf: 'Project', id: projectId } });
+        await createImportScreeningEventsTask({ project: { typeOf: factory.organizationType.Project, id: projectId } });
+        await createUpdateEventAttendeeCapacityTask({ project: { typeOf: factory.organizationType.Project, id: projectId } });
     }));
 };

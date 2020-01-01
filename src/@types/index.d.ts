@@ -5,7 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import * as express from 'express';
 declare global {
     namespace Express {
-        export interface IRequestProject { typeOf: 'Project'; id: string; }
+        export interface IRequestProject { typeOf: cinerino.factory.organizationType.Project; id: string; }
 
         /**
          * APIユーザー(Cognitから認可を受ける)

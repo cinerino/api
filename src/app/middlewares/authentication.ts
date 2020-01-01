@@ -75,7 +75,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 if (typeof process.env.PROJECT_ID === 'string') {
                     if (project === undefined) {
                         // 環境変数
-                        project = { typeOf: 'Project', id: process.env.PROJECT_ID };
+                        project = { typeOf: cinerino.factory.organizationType.Project, id: process.env.PROJECT_ID };
                     } else {
                         // アプリケーション設定と環境変数設定両方が存在する場合、プロジェクトが異なればforbidden
                         if (project.id !== process.env.PROJECT_ID) {

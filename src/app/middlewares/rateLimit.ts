@@ -32,6 +32,9 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         }
 
         const routeIdentifier = `${req.baseUrl}${req.path}`;
+        const rateLimitScope = (req.project !== undefined && req.project !== null && typeof req.project.id === 'string')
+            ? `api:${req.project.id}:rateLimit:${routeIdentifier}:${req.method}`
+            : `api:rateLimit:${routeIdentifier}:${req.method}`;
 
         await middlewares.rateLimit({
             redisClient: redisClient,
@@ -44,7 +47,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 nextOnLimitExceeded(new cinerino.factory.errors.RateLimitExceeded(message));
             },
             // スコープ生成ロジックをカスタマイズ
-            scopeGenerator: () => `api:${req.project.id}:rateLimit:${routeIdentifier}:${req.method}`
+            scopeGenerator: () => rateLimitScope
         })(req, res, next);
     } catch (error) {
         next(error);

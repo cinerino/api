@@ -9,6 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * 非同期ジョブ
+ */
+const domain_1 = require("@cinerino/domain");
 const run_1 = require("./continuous/abortTasks/run");
 const run_2 = require("./continuous/makeTransactionExpired/run");
 const run_3 = require("./continuous/reexportTransactionTasks/run");
@@ -46,7 +50,7 @@ const run_34 = require("./continuous/voidMoneyTransfer/run");
 const run_35 = require("./triggered/createImportScreeningEventsTask/run");
 const run_36 = require("./triggered/createUpdateEventAttendeeCapacityTask/run");
 const project = (typeof process.env.PROJECT_ID === 'string')
-    ? { typeOf: 'Project', id: process.env.PROJECT_ID }
+    ? { typeOf: domain_1.factory.organizationType.Project, id: process.env.PROJECT_ID }
     : undefined;
 const importEventsProjects = (typeof process.env.IMPORT_EVENTS_PROJECTS === 'string')
     ? process.env.IMPORT_EVENTS_PROJECTS.split(',')
@@ -88,7 +92,7 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_33.default({ project: project });
     yield run_34.default({ project: project });
     yield Promise.all(importEventsProjects.map((projectId) => __awaiter(void 0, void 0, void 0, function* () {
-        yield run_35.default({ project: { typeOf: 'Project', id: projectId } });
-        yield run_36.default({ project: { typeOf: 'Project', id: projectId } });
+        yield run_35.default({ project: { typeOf: domain_1.factory.organizationType.Project, id: projectId } });
+        yield run_36.default({ project: { typeOf: domain_1.factory.organizationType.Project, id: projectId } });
     })));
 });
