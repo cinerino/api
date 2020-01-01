@@ -8,12 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- 組織タイプにProjectを追加
-- プロジェクトメンバーリポジトリを追加
-
 ### Changed
-
-- ユーザーが閲覧権限を持つプロジェクトのみ検索できるように制限
 
 ### Deprecated
 
@@ -22,6 +17,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v1.3.0 - 2020-01-01
+
+### Added
+
+- 組織タイプにProjectを追加
+- プロジェクトメンバーリポジトリを追加
+
+### Changed
+
+- ユーザーが閲覧権限を持つプロジェクトのみ検索できるように制限
 
 ## v1.2.0 - 2019-12-31
 
