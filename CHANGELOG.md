@@ -8,7 +8,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 組織タイプにProjectを追加
+- プロジェクトメンバーリポジトリを追加
+
 ### Changed
+
+- ユーザーが閲覧権限を持つプロジェクトのみ検索できるように制限
 
 ### Deprecated
 

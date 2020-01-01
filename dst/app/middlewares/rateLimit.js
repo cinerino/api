@@ -34,6 +34,9 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
             return;
         }
         const routeIdentifier = `${req.baseUrl}${req.path}`;
+        const rateLimitScope = (req.project !== undefined && req.project !== null && typeof req.project.id === 'string')
+            ? `api:${req.project.id}:rateLimit:${routeIdentifier}:${req.method}`
+            : `api:rateLimit:${routeIdentifier}:${req.method}`;
         yield middlewares.rateLimit({
             redisClient: redisClient,
             aggregationUnitInSeconds: UNIT_IN_SECONDS,
@@ -45,7 +48,7 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                 nextOnLimitExceeded(new cinerino.factory.errors.RateLimitExceeded(message));
             },
             // スコープ生成ロジックをカスタマイズ
-            scopeGenerator: () => `api:${req.project.id}:rateLimit:${routeIdentifier}:${req.method}`
+            scopeGenerator: () => rateLimitScope
         })(req, res, next);
     }
     catch (error) {
