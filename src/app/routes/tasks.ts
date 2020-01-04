@@ -14,6 +14,8 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
+import { Permission } from '../iam';
+
 const tasksRouter = Router();
 
 /**
@@ -22,7 +24,7 @@ const tasksRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 tasksRouter.post<ParamsDictionary>(
     '/:name',
-    permitScopes([]),
+    permitScopes([Permission.User]),
     rateLimit,
     ...[
         body('runsAt')

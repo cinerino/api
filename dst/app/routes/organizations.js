@@ -18,11 +18,12 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
+const iam_1 = require("../iam");
 const organizationsRouter = express_1.Router();
 /**
  * @deprecated Use /sellers
  */
-organizationsRouter.get('/movieTheater', permitScopes_1.default(['customer', 'organizations', 'organizations.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+organizationsRouter.get('/movieTheater', permitScopes_1.default([iam_1.Permission.User, 'customer', 'organizations', 'organizations.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const searchCoinditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
             // tslint:disable-next-line:no-magic-numbers

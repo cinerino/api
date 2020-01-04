@@ -13,6 +13,8 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
+import { Permission } from '../iam';
+
 const peopleRouter = Router();
 
 /**
@@ -20,7 +22,7 @@ const peopleRouter = Router();
  */
 peopleRouter.get(
     '',
-    permitScopes([]),
+    permitScopes([Permission.User]),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -56,7 +58,7 @@ peopleRouter.get(
  */
 peopleRouter.get(
     '/:id',
-    permitScopes([]),
+    permitScopes([Permission.User]),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -174,7 +176,7 @@ peopleRouter.delete(
 // tslint:disable-next-line:use-default-type-parameter
 peopleRouter.get<ParamsDictionary>(
     '/:id/ownershipInfos',
-    permitScopes([]),
+    permitScopes([Permission.User]),
     rateLimit,
     ...[
         query('typeOfGood')
@@ -248,7 +250,7 @@ peopleRouter.get<ParamsDictionary>(
  */
 peopleRouter.get(
     '/:id/ownershipInfos/creditCards',
-    permitScopes([]),
+    permitScopes([Permission.User]),
     rateLimit,
     async (req, res, next) => {
         try {
@@ -351,7 +353,7 @@ peopleRouter.delete(
  */
 peopleRouter.get(
     '/:id/profile',
-    permitScopes([]),
+    permitScopes([Permission.User]),
     rateLimit,
     async (req, res, next) => {
         try {

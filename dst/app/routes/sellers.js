@@ -20,6 +20,7 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
+const iam_1 = require("../iam");
 const sellersRouter = express_1.Router();
 /**
  * 販売者作成
@@ -82,7 +83,7 @@ sellersRouter.post('', permitScopes_1.default(['sellers']), rateLimit_1.default,
 /**
  * 販売者検索
  */
-sellersRouter.get('', permitScopes_1.default(['customer', 'sellers', 'sellers.read-only', 'pos']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+sellersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 'sellers', 'sellers.read-only', 'pos']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const searchCoinditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
             // tslint:disable-next-line:no-magic-numbers
@@ -102,7 +103,7 @@ sellersRouter.get('', permitScopes_1.default(['customer', 'sellers', 'sellers.re
 /**
  * IDで販売者検索
  */
-sellersRouter.get('/:id', permitScopes_1.default(['customer', 'sellers', 'sellers.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+sellersRouter.get('/:id', permitScopes_1.default([iam_1.Permission.User, 'customer', 'sellers', 'sellers.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const seller = yield sellerRepo.findById({

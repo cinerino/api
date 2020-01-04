@@ -8,7 +8,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- プロジェクトメンバーの簡易な権限管理を追加
+
 ### Changed
+
+- プロジェクトユーザーロールの使用可能サービスの許可スコープに`user`を追加
 
 ### Deprecated
 

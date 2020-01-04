@@ -22,6 +22,8 @@ import placeOrder4cinemasunshineRouter from './placeOrder4cinemasunshine';
 
 import * as redis from '../../../redis';
 
+import { Permission } from '../../iam';
+
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -49,7 +51,7 @@ placeOrderTransactionsRouter.use(placeOrder4cinemasunshineRouter);
 
 placeOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['customer', 'transactions', 'pos']),
+    permitScopes([Permission.User, 'customer', 'transactions', 'pos']),
     // Cinemasunshine互換性維持のため
     (req, _, next) => {
         if (typeof req.body.sellerId === 'string') {
@@ -217,7 +219,7 @@ placeOrderTransactionsRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/customerContact',
-    permitScopes(['customer', 'transactions', 'pos']),
+    permitScopes([Permission.User, 'customer', 'transactions', 'pos']),
     ...[
         body('additionalProperty')
             .optional()
@@ -303,7 +305,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/agent',
-    permitScopes(['customer', 'transactions', 'pos']),
+    permitScopes([Permission.User, 'customer', 'transactions', 'pos']),
     ...[
         body('additionalProperty')
             .optional()
@@ -362,7 +364,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/offer/seatReservation',
-    permitScopes(['customer', 'transactions']),
+    permitScopes([Permission.User, 'customer', 'transactions']),
     ...[
         body('object.acceptedOffer.additionalProperty')
             .optional()
@@ -437,7 +439,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/actions/authorize/offer/seatReservation/:actionId/cancel',
-    permitScopes(['customer', 'transactions']),
+    permitScopes([Permission.User, 'customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -479,7 +481,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/any',
-    permitScopes([]),
+    permitScopes([Permission.User]),
     ...[
         body('typeOf')
             .not()
@@ -547,7 +549,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel',
-    permitScopes([]),
+    permitScopes([Permission.User]),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -586,7 +588,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/creditCard',
-    permitScopes(['customer', 'transactions']),
+    permitScopes([Permission.User, 'customer', 'transactions']),
     ...[
         body('typeOf')
             .not()
@@ -696,7 +698,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/creditCard/:actionId/cancel',
-    permitScopes(['customer', 'transactions']),
+    permitScopes([Permission.User, 'customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -739,7 +741,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/movieTicket',
-    permitScopes(['customer', 'transactions']),
+    permitScopes([Permission.User, 'customer', 'transactions']),
     ...[
         body('typeOf')
             .not()
@@ -834,7 +836,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/movieTicket/:actionId/cancel',
-    permitScopes(['customer', 'transactions']),
+    permitScopes([Permission.User, 'customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -872,7 +874,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/award/accounts/point',
-    permitScopes(['customer', 'transactions']),
+    permitScopes([Permission.User, 'customer', 'transactions']),
     ...[
         body('amount')
             .not()
@@ -925,7 +927,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/actions/authorize/award/accounts/point/:actionId/cancel',
-    permitScopes(['customer', 'transactions']),
+    permitScopes([Permission.User, 'customer', 'transactions']),
     (__1, __2, next) => {
         next();
     },
@@ -965,7 +967,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/confirm',
-    permitScopes(['customer', 'transactions', 'pos']),
+    permitScopes([Permission.User, 'customer', 'transactions', 'pos']),
     ...[
         // Eメールカスタマイズのバリデーション
         body([
@@ -1131,7 +1133,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
  */
 placeOrderTransactionsRouter.put(
     '/:transactionId/cancel',
-    permitScopes(['customer', 'transactions']),
+    permitScopes([Permission.User, 'customer', 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({

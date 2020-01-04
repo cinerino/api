@@ -13,6 +13,8 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
+import { Permission } from '../iam';
+
 const TOKEN_EXPIRES_IN = 1800;
 
 const ownershipInfosRouter = Router();
@@ -22,7 +24,7 @@ const ownershipInfosRouter = Router();
  */
 ownershipInfosRouter.get(
     '',
-    permitScopes([]),
+    permitScopes([Permission.User]),
     rateLimit,
     ...[
         query('ownedFrom')
@@ -89,7 +91,7 @@ ownershipInfosRouter.get(
  */
 ownershipInfosRouter.post(
     '/tokens',
-    permitScopes(['customer', 'tokens']),
+    permitScopes([Permission.User, 'customer', 'tokens']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -116,7 +118,7 @@ ownershipInfosRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 ownershipInfosRouter.get<ParamsDictionary>(
     '/:id/actions/checkToken',
-    permitScopes([]),
+    permitScopes([Permission.User]),
     rateLimit,
     ...[
         query('startFrom')
@@ -220,7 +222,7 @@ ownershipInfosRouter.get<ParamsDictionary>(
  */
 ownershipInfosRouter.get(
     '/countByRegisterDateAndTheater',
-    permitScopes(['customer']),
+    permitScopes([Permission.User, 'customer']),
     rateLimit,
     ...[
         query('fromDate')

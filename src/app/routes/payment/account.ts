@@ -15,6 +15,8 @@ import rateLimit from '../../middlewares/rateLimit';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
+import { Permission } from '../../iam';
+
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -28,7 +30,7 @@ const accountPaymentRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 accountPaymentRouter.post<ParamsDictionary>(
     '/authorize',
-    permitScopes(['customer', 'transactions']),
+    permitScopes([Permission.User, 'customer', 'transactions']),
     rateLimit,
     ...[
         body('object')
@@ -199,7 +201,7 @@ accountPaymentRouter.post<ParamsDictionary>(
  */
 accountPaymentRouter.put(
     '/authorize/:actionId/void',
-    permitScopes(['customer', 'transactions']),
+    permitScopes([Permission.User, 'customer', 'transactions']),
     rateLimit,
     validator,
     async (req, res, next) => {

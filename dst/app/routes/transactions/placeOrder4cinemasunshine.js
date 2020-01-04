@@ -24,6 +24,7 @@ const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
+const iam_1 = require("../../iam");
 const debug = createDebug('cinerino-api:router');
 let coaTickets;
 function initializeCOATickets() {
@@ -85,7 +86,7 @@ const placeOrder4cinemasunshineRouter = express_1.Router();
 /**
  * 座席仮予約
  */
-placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
         id: req.params.transactionId
@@ -120,7 +121,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/seatRese
 /**
  * 座席仮予約削除
  */
-placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
         id: req.params.transactionId
@@ -150,7 +151,7 @@ placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/seatRe
 /**
  * 座席仮予へ変更(券種変更)
  */
-placeOrder4cinemasunshineRouter.patch('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrder4cinemasunshineRouter.patch('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
         id: req.params.transactionId
@@ -185,7 +186,7 @@ placeOrder4cinemasunshineRouter.patch('/:transactionId/actions/authorize/seatRes
 /**
  * 会員プログラムオファー承認アクション
  */
-placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/offer/programMembership', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/offer/programMembership', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
         id: req.params.transactionId
@@ -209,7 +210,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/offer/pr
 /**
  * 会員プログラムオファー承認アクション取消
  */
-placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/offer/programMembership/:actionId', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/offer/programMembership/:actionId', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
         id: req.params.transactionId
@@ -233,7 +234,7 @@ placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/offer/
 /**
  * ムビチケ追加
  */
-placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/mvtk', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/mvtk', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
         id: req.params.transactionId
@@ -289,7 +290,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/mvtk', p
 /**
  * ムビチケ取消
  */
-placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/mvtk/:actionId', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/mvtk/:actionId', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
         id: req.params.transactionId
@@ -320,7 +321,7 @@ placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/mvtk/:
  * ポイントインセンティブ承認アクション
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/award/pecorino', permitScopes_1.default(['customer', 'transactions']), ...[
+placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/award/pecorino', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), ...[
     express_validator_1.body('amount')
         .not()
         .isEmpty()
@@ -385,7 +386,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/award/pe
 /**
  * ポイントインセンティブ承認アクション取消
  */
-placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/award/pecorino/:actionId', permitScopes_1.default(['customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/award/pecorino/:actionId', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
         id: req.params.transactionId

@@ -15,6 +15,8 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
+import { Permission } from '../iam';
+
 const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.PECORINO_CLIENT_ID,
@@ -249,7 +251,7 @@ const depositAccountRateLimiet = middlewares.rateLimit({
  */
 accountsRouter.post(
     '/transactions/deposit',
-    permitScopes([]),
+    permitScopes([Permission.User]),
     // 互換性維持のため
     (req, _, next) => {
         if (req.body.object === undefined || req.body.object === null) {

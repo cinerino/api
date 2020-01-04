@@ -23,6 +23,7 @@ const redis = require("../../redis");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
+const iam_1 = require("../iam");
 const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.PECORINO_CLIENT_ID,
@@ -210,7 +211,7 @@ const depositAccountRateLimiet = middlewares.rateLimit({
 /**
  * 管理者として口座に入金する
  */
-accountsRouter.post('/transactions/deposit', permitScopes_1.default([]), 
+accountsRouter.post('/transactions/deposit', permitScopes_1.default([iam_1.Permission.User]), 
 // 互換性維持のため
 (req, _, next) => {
     if (req.body.object === undefined || req.body.object === null) {

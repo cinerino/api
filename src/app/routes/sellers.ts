@@ -13,6 +13,8 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
+import { Permission } from '../iam';
+
 const sellersRouter = Router();
 
 /**
@@ -90,7 +92,7 @@ sellersRouter.post(
  */
 sellersRouter.get(
     '',
-    permitScopes(['customer', 'sellers', 'sellers.read-only', 'pos']),
+    permitScopes([Permission.User, 'customer', 'sellers', 'sellers.read-only', 'pos']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -124,7 +126,7 @@ sellersRouter.get(
  */
 sellersRouter.get(
     '/:id',
-    permitScopes(['customer', 'sellers', 'sellers.read-only']),
+    permitScopes([Permission.User, 'customer', 'sellers', 'sellers.read-only']),
     rateLimit,
     validator,
     async (req, res, next) => {
