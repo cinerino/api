@@ -10,6 +10,7 @@ const projects_1 = require("./projects");
 const detail_1 = require("./projects/detail");
 const stats_1 = require("./stats");
 const authentication_1 = require("../middlewares/authentication");
+const setMemberPermissions_1 = require("../middlewares/setMemberPermissions");
 const router = express.Router();
 // middleware that is specific to this router
 // router.use((req, res, next) => {
@@ -44,6 +45,8 @@ router.use((req, _, next) => {
     }
     next();
 });
+// プロジェクトメンバー権限を確認
+router.use(setMemberPermissions_1.default);
 // 以下、プロジェクト指定済の状態でルーティング
 router.use('', detail_1.default);
 router.use('/projects/:id', detail_1.default);

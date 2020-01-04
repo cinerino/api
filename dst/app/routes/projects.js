@@ -17,23 +17,27 @@ const express_1 = require("express");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
+const setMemberPermissions_1 = require("../middlewares/setMemberPermissions");
 const validator_1 = require("../middlewares/validator");
+const iam_1 = require("../iam");
 const projectsRouter = express_1.Router();
 /**
  * プロジェクト検索
  * 閲覧権限を持つプロジェクトを検索
  */
-projectsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+projectsRouter.get('', 
+// permitScopes([]),
+rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         // tslint:disable-next-line:no-magic-numbers
         const limit = (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100;
         const page = (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1;
-        // ownerロールを持つプロジェクト検索
+        // 権限を持つプロジェクト検索
         const searchCoinditions = {
             'member.id': req.user.sub,
-            'member.hasRole.roleName': 'owner'
+            'member.hasRole.roleName': { $in: [iam_1.RoleName.Owner, iam_1.RoleName.Editor, iam_1.RoleName.Viewer] }
         };
         const totalCount = yield memberRepo.memberModel.countDocuments(searchCoinditions)
             .setOptions({ maxTimeMS: 10000 })
@@ -59,15 +63,18 @@ projectsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, validato
 /**
  * IDでプロジェクト検索
  */
-projectsRouter.get('/:id', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+projectsRouter.get('/:id', (req, _, next) => {
+    req.project = { typeOf: cinerino.factory.organizationType.Project, id: req.params.id };
+    next();
+}, setMemberPermissions_1.default, permitScopes_1.default(['projects', 'projects.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        // ownerロールを持つプロジェクト検索
+        // 権限を持つプロジェクト検索
         const searchCoinditions = {
             'project.id': req.params.id,
             'member.id': req.user.sub,
-            'member.hasRole.roleName': 'owner'
+            'member.hasRole.roleName': { $in: [iam_1.RoleName.Owner, iam_1.RoleName.Editor, iam_1.RoleName.Viewer] }
         };
         const projectMember = yield memberRepo.memberModel.findOne(searchCoinditions, { project: 1 })
             .setOptions({ maxTimeMS: 10000 })

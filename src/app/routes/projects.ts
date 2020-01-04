@@ -7,7 +7,10 @@ import * as mongoose from 'mongoose';
 
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
+import setMemberPermissions from '../middlewares/setMemberPermissions';
 import validator from '../middlewares/validator';
+
+import { RoleName } from '../iam';
 
 const projectsRouter = Router();
 
@@ -17,7 +20,7 @@ const projectsRouter = Router();
  */
 projectsRouter.get(
     '',
-    permitScopes([]),
+    // permitScopes([]),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -29,10 +32,10 @@ projectsRouter.get(
             const limit = (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100;
             const page = (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1;
 
-            // ownerロールを持つプロジェクト検索
+            // 権限を持つプロジェクト検索
             const searchCoinditions = {
                 'member.id': req.user.sub,
-                'member.hasRole.roleName': 'owner'
+                'member.hasRole.roleName': { $in: [RoleName.Owner, RoleName.Editor, RoleName.Viewer] }
             };
             const totalCount = await memberRepo.memberModel.countDocuments(searchCoinditions)
                 .setOptions({ maxTimeMS: 10000 })
@@ -69,7 +72,13 @@ projectsRouter.get(
  */
 projectsRouter.get(
     '/:id',
-    permitScopes([]),
+    (req, _, next) => {
+        req.project = { typeOf: cinerino.factory.organizationType.Project, id: req.params.id };
+
+        next();
+    },
+    setMemberPermissions,
+    permitScopes(['projects', 'projects.read-only']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -77,11 +86,11 @@ projectsRouter.get(
             const memberRepo = new cinerino.repository.Member(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
-            // ownerロールを持つプロジェクト検索
+            // 権限を持つプロジェクト検索
             const searchCoinditions = {
                 'project.id': req.params.id,
                 'member.id': req.user.sub,
-                'member.hasRole.roleName': 'owner'
+                'member.hasRole.roleName': { $in: [RoleName.Owner, RoleName.Editor, RoleName.Viewer] }
             };
             const projectMember = await memberRepo.memberModel.findOne(
                 searchCoinditions,

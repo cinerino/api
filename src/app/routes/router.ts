@@ -10,6 +10,7 @@ import projectDetailRouter from './projects/detail';
 import statsRouter from './stats';
 
 import authentication from '../middlewares/authentication';
+import setMemberPermissions from '../middlewares/setMemberPermissions';
 
 const router = express.Router();
 
@@ -59,6 +60,9 @@ router.use((req, _, next) => {
 
     next();
 });
+
+// プロジェクトメンバー権限を確認
+router.use(setMemberPermissions);
 
 // 以下、プロジェクト指定済の状態でルーティング
 router.use('', projectDetailRouter);

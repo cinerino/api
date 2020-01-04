@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 var Permission;
 (function (Permission) {
+    Permission["Admin"] = "admin";
     Permission["Customer"] = "customer";
     Permission["User"] = "user";
 })(Permission = exports.Permission || (exports.Permission = {}));
@@ -14,6 +15,7 @@ var RoleName;
     RoleName["Editor"] = "editor";
     RoleName["Viewer"] = "viewer";
     RoleName["User"] = "user";
+    RoleName["Custome"] = "customer";
 })(RoleName = exports.RoleName || (exports.RoleName = {}));
 /**
  * 役割
@@ -21,15 +23,15 @@ var RoleName;
 exports.roles = [
     {
         roleName: RoleName.Owner,
-        permissions: []
+        permissions: [Permission.Admin, 'projects']
     },
     {
         roleName: RoleName.Editor,
-        permissions: []
+        permissions: ['projects.read-only']
     },
     {
         roleName: RoleName.Viewer,
-        permissions: []
+        permissions: ['projects.read-only']
     },
     {
         roleName: RoleName.User,
