@@ -5,9 +5,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
+const iam_1 = require("../iam");
 const debug = createDebug('cinerino-api:middlewares');
-exports.SCOPE_ADMIN = 'admin';
-exports.SCOPE_CUSTOMER = 'customer';
+exports.SCOPE_ADMIN = iam_1.Permission.Admin;
+exports.SCOPE_CUSTOMER = iam_1.Permission.Customer;
 exports.SCOPE_COGNITO_USER_ADMIN = 'aws.cognito.signin.user.admin';
 const CLIENTS_AS_ADMIN = (process.env.CLIENTS_AS_ADMIN !== undefined)
     ? /* istanbul ignore next */ process.env.CLIENTS_AS_ADMIN.split(',')
@@ -35,26 +36,27 @@ exports.default = (specifiedPermittedScopes) => {
         permittedScopes.push(exports.SCOPE_ADMIN);
         permittedScopes = [...new Set(permittedScopes)];
         debug('permittedScopes:', permittedScopes);
+        const ownedScopes = [...req.user.scopes, ...req.memberPermissions];
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */
-        if (req.user.scopes.indexOf(exports.SCOPE_COGNITO_USER_ADMIN) >= 0) {
+        if (ownedScopes.indexOf(exports.SCOPE_COGNITO_USER_ADMIN) >= 0) {
             // aws.cognito.signin.user.adminスコープのみでadminとして認定するクライアント
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore if */
             if (CLIENTS_AS_ADMIN.indexOf(req.user.client_id) >= 0) {
-                req.user.scopes.push(`${RESOURCE_SERVER_IDENTIFIER}/${exports.SCOPE_ADMIN}`);
+                ownedScopes.push(`${RESOURCE_SERVER_IDENTIFIER}/${exports.SCOPE_ADMIN}`);
             }
             // aws.cognito.signin.user.adminスコープのみでcustomerとして認定するクライアント
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore if */
             if (CLIENTS_AS_CUSTOMER.indexOf(req.user.client_id) >= 0) {
-                req.user.scopes.push(`${RESOURCE_SERVER_IDENTIFIER}/${exports.SCOPE_CUSTOMER}`);
+                ownedScopes.push(`${RESOURCE_SERVER_IDENTIFIER}/${exports.SCOPE_CUSTOMER}`);
             }
         }
-        debug('req.user.scopes:', req.user.scopes);
+        debug('ownedScopes:', ownedScopes);
         req.isAdmin =
-            req.user.scopes.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/${exports.SCOPE_ADMIN}`) >= 0
-                || ADMIN_ADDITIONAL_PERMITTED_SCOPES.some((scope) => req.user.scopes.indexOf(scope) >= 0);
+            ownedScopes.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/${exports.SCOPE_ADMIN}`) >= 0
+                || ADMIN_ADDITIONAL_PERMITTED_SCOPES.some((scope) => ownedScopes.indexOf(scope) >= 0);
         // ドメインつきのカスタムスコープリストを許容するように変更
         const permittedScopesWithResourceServerIdentifier = [
             ...permittedScopes.map((permittedScope) => `${RESOURCE_SERVER_IDENTIFIER}/${permittedScope}`),
@@ -71,7 +73,7 @@ exports.default = (specifiedPermittedScopes) => {
         // スコープチェック
         try {
             debug('checking scope requirements...', permittedScopesWithResourceServerIdentifier);
-            if (!isScopesPermitted(req.user.scopes, permittedScopesWithResourceServerIdentifier)) {
+            if (!isScopesPermitted(ownedScopes, permittedScopesWithResourceServerIdentifier)) {
                 next(new cinerino.factory.errors.Forbidden('scope requirements not satisfied'));
             }
             else {
@@ -79,6 +81,8 @@ exports.default = (specifiedPermittedScopes) => {
             }
         }
         catch (error) {
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore next */
             next(error);
         }
     };
@@ -87,9 +91,6 @@ exports.default = (specifiedPermittedScopes) => {
  * 所有スコープが許可されたスコープかどうか
  */
 function isScopesPermitted(ownedScopes, permittedScopes) {
-    if (!Array.isArray(ownedScopes)) {
-        throw new Error('ownedScopes should be array of string');
-    }
     const permittedOwnedScope = permittedScopes.find((permittedScope) => ownedScopes.indexOf(permittedScope) >= 0);
     return (permittedOwnedScope !== undefined);
 }
