@@ -30,7 +30,7 @@ export const roles: IRole[] = [
     },
     {
         roleName: RoleName.Editor,
-        permissions: ['projects.read-only']
+        permissions: [Permission.User, 'projects.read-only']
     },
     {
         roleName: RoleName.Viewer,

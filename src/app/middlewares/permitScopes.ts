@@ -11,8 +11,6 @@ import { Permission } from '../iam';
 
 const debug = createDebug('cinerino-api:middlewares');
 
-export const SCOPE_ADMIN = Permission.Admin;
-export const SCOPE_CUSTOMER = Permission.Customer;
 export const SCOPE_COGNITO_USER_ADMIN = 'aws.cognito.signin.user.admin';
 
 const CLIENTS_AS_ADMIN: string[] = (process.env.CLIENTS_AS_ADMIN !== undefined)
@@ -48,8 +46,8 @@ export default (specifiedPermittedScopes: IScope[]) => {
 
         let permittedScopes = [...specifiedPermittedScopes];
 
-        // SCOPE_ADMINは全アクセス許可
-        permittedScopes.push(SCOPE_ADMIN);
+        // Permission.Adminは全アクセス許可
+        permittedScopes.push(Permission.Admin);
 
         permittedScopes = [...new Set(permittedScopes)];
         debug('permittedScopes:', permittedScopes);
@@ -63,20 +61,24 @@ export default (specifiedPermittedScopes: IScope[]) => {
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore if */
             if (CLIENTS_AS_ADMIN.indexOf(req.user.client_id) >= 0) {
-                ownedScopes.push(`${RESOURCE_SERVER_IDENTIFIER}/${SCOPE_ADMIN}`);
+                ownedScopes.push(`${RESOURCE_SERVER_IDENTIFIER}/${Permission.Admin}`);
+                ownedScopes.push(`${RESOURCE_SERVER_IDENTIFIER}/${Permission.User}`);
             }
 
             // aws.cognito.signin.user.adminスコープのみでcustomerとして認定するクライアント
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore if */
             if (CLIENTS_AS_CUSTOMER.indexOf(req.user.client_id) >= 0) {
-                ownedScopes.push(`${RESOURCE_SERVER_IDENTIFIER}/${SCOPE_CUSTOMER}`);
+                ownedScopes.push(`${RESOURCE_SERVER_IDENTIFIER}/${Permission.Customer}`);
             }
         }
 
         debug('ownedScopes:', ownedScopes);
+
+        // isAdminの条件は、とりあえず`admin`あるいは`user`権限を持つかどうか
         req.isAdmin =
-            ownedScopes.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/${SCOPE_ADMIN}`) >= 0
+            ownedScopes.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/${Permission.Admin}`) >= 0
+            || ownedScopes.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/${Permission.User}`) >= 0
             || ADMIN_ADDITIONAL_PERMITTED_SCOPES.some((scope) => ownedScopes.indexOf(scope) >= 0);
 
         // ドメインつきのカスタムスコープリストを許容するように変更
@@ -91,7 +93,7 @@ export default (specifiedPermittedScopes: IScope[]) => {
         // 会員の場合、追加許可スコープをセット
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */
-        if (permittedScopes.indexOf(SCOPE_CUSTOMER) >= 0) {
+        if (permittedScopes.indexOf(Permission.Customer) >= 0) {
             permittedScopesWithResourceServerIdentifier.push(...CUSTOMER_ADDITIONAL_PERMITTED_SCOPES);
         }
 
