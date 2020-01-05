@@ -18,11 +18,12 @@ const http_status_1 = require("http-status");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const rateLimit_1 = require("../../../middlewares/rateLimit");
 const validator_1 = require("../../../middlewares/validator");
+const iam_1 = require("../../../iam");
 const profileRouter = express_1.Router();
 /**
  * プロフィール検索
  */
-profileRouter.get('', permitScopes_1.default(['customer']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+profileRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person({
             userPoolId: '' // アクセストークンに情報が含まれるので必要なし
@@ -37,7 +38,7 @@ profileRouter.get('', permitScopes_1.default(['customer']), rateLimit_1.default,
 /**
  * プロフィール更新
  */
-profileRouter.patch('', permitScopes_1.default(['customer']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+profileRouter.patch('', permitScopes_1.default([iam_1.Permission.User, 'customer']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person({
             userPoolId: '' // アクセストークンに情報が含まれるので必要なし

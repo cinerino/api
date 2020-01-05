@@ -22,6 +22,7 @@ const validator_1 = require("../../../middlewares/validator");
 const accounts_1 = require("./ownershipInfos/accounts");
 const creditCards_1 = require("./ownershipInfos/creditCards");
 const reservations_1 = require("./ownershipInfos/reservations");
+const iam_1 = require("../../../iam");
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -36,7 +37,7 @@ ownershipInfosRouter.use('/reservations', reservations_1.default);
 /**
  * 所有権検索
  */
-ownershipInfosRouter.get('', permitScopes_1.default(['customer']), rateLimit_1.default, ...[
+ownershipInfosRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer']), rateLimit_1.default, ...[
     express_validator_1.query('typeOfGood')
         .not()
         .isEmpty(),
@@ -88,7 +89,7 @@ ownershipInfosRouter.get('', permitScopes_1.default(['customer']), rateLimit_1.d
 /**
  * 所有権に対して認可コードを発行する
  */
-ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['customer']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default([iam_1.Permission.User, 'customer']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);

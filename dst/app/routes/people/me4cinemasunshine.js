@@ -22,12 +22,13 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
+const iam_1 = require("../../iam");
 const CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP = process.env.CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP === '1';
 const me4cinemasunshineRouter = express_1.Router();
 /**
  * 会員プログラム登録
  */
-me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.default(['customer', 'people.ownershipInfos']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.default([iam_1.Permission.User, 'customer', 'people.ownershipInfos']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const programMembershipRepo = new cinerino.repository.ProgramMembership(mongoose.connection);
         const programMemberships = yield programMembershipRepo.search({
@@ -197,7 +198,7 @@ function checkCard(req, amount) {
  * 所有権のidentifierをURLで指定
  * @deprecated シネマサンシャインで「退会処理」として使用(機を見てエンドポイントを変更したい)
  */
-me4cinemasunshineRouter.put('/ownershipInfos/programMembership/:identifier/unRegister', permitScopes_1.default(['customer', 'people.ownershipInfos']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+me4cinemasunshineRouter.put('/ownershipInfos/programMembership/:identifier/unRegister', permitScopes_1.default([iam_1.Permission.User, 'customer', 'people.ownershipInfos']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);

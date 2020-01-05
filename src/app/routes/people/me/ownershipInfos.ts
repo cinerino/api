@@ -14,6 +14,8 @@ import accountsRouter from './ownershipInfos/accounts';
 import creditCardsRouter from './ownershipInfos/creditCards';
 import reservationsRouter from './ownershipInfos/reservations';
 
+import { Permission } from '../../../iam';
+
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -33,7 +35,7 @@ ownershipInfosRouter.use('/reservations', reservationsRouter);
  */
 ownershipInfosRouter.get(
     '',
-    permitScopes(['customer']),
+    permitScopes([Permission.User, 'customer']),
     rateLimit,
     ...[
         query('typeOfGood')
@@ -106,7 +108,7 @@ ownershipInfosRouter.get(
  */
 ownershipInfosRouter.post(
     '/:id/authorize',
-    permitScopes(['customer']),
+    permitScopes([Permission.User, 'customer']),
     rateLimit,
     validator,
     async (req, res, next) => {

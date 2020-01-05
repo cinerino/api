@@ -19,11 +19,12 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const rateLimit_1 = require("../../../middlewares/rateLimit");
 const validator_1 = require("../../../middlewares/validator");
+const iam_1 = require("../../../iam");
 const ordersRouter = express_1.Router();
 /**
  * 注文検索
  */
-ordersRouter.get('', permitScopes_1.default(['customer']), rateLimit_1.default, ...[
+ordersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer']), rateLimit_1.default, ...[
     express_validator_1.query('orderDateFrom')
         .not()
         .isEmpty()
