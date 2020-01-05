@@ -22,7 +22,6 @@
 | `CHEVRE_CLIENT_SECRET`                   | true     |                | Chevre client secret                   |
 | `COA_ENDPOINT`                           | true     |                | COA endpoint                           |
 | `COA_REFRESH_TOKEN`                      | true     |                | COA refresh token                      |
-| `CUSTOMER_ADDITIONAL_PERMITTED_SCOPES`   | true     |                | 会員追加許可スコープ                   |
 | `DEBUG`                                  | false    | cinerino-api:* | Debug                                  |
 | `DEBUG_SINGLETON_PROCESS`                | false    | 1 or 0         | Singleton Process Debug Flag           |
 | `IMPORT_EVENTS_PER_WEEKS`                | true     |                | イベントインポート処理単位期間         |

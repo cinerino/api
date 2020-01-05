@@ -77,23 +77,4 @@ describe('permitScopes.default()', () => {
         assert.equal(result, undefined);
         sandbox.verify();
     });
-
-    it('管理者追加許可スコープも許可されるはず', async () => {
-        process.env.ADMIN_ADDITIONAL_PERMITTED_SCOPES = 'custom';
-        const scopes = ['scope'];
-        const params = {
-            req: { user: { scopes: [process.env.ADMIN_ADDITIONAL_PERMITTED_SCOPES] }, memberPermissions: [] },
-            res: {},
-            next: () => undefined
-        };
-
-        sandbox.mock(params)
-            .expects('next')
-            .once()
-            .withExactArgs();
-
-        const result = await permitScopes.default(scopes)(<any>params.req, <any>params.res, params.next);
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
 });

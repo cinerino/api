@@ -37,13 +37,6 @@ export default (specifiedPermittedScopes: IScope[]) => {
             return;
         }
 
-        const ADMIN_ADDITIONAL_PERMITTED_SCOPES: string[] = (process.env.ADMIN_ADDITIONAL_PERMITTED_SCOPES !== undefined)
-            ? /* istanbul ignore next */ process.env.ADMIN_ADDITIONAL_PERMITTED_SCOPES.split(',')
-            : [];
-        const CUSTOMER_ADDITIONAL_PERMITTED_SCOPES: string[] = (process.env.CUSTOMER_ADDITIONAL_PERMITTED_SCOPES !== undefined)
-            ? /* istanbul ignore next */ process.env.CUSTOMER_ADDITIONAL_PERMITTED_SCOPES.split(',')
-            : [];
-
         let permittedScopes = [...specifiedPermittedScopes];
 
         // Permission.Adminは全アクセス許可
@@ -52,6 +45,7 @@ export default (specifiedPermittedScopes: IScope[]) => {
         permittedScopes = [...new Set(permittedScopes)];
         debug('permittedScopes:', permittedScopes);
 
+        const isProjectMember = Array.isArray(req.memberPermissions) && req.memberPermissions.length > 0;
         const ownedScopes: string[] = [...req.user.scopes, ...req.memberPermissions];
 
         // tslint:disable-next-line:no-single-line-block-comment
@@ -79,23 +73,13 @@ export default (specifiedPermittedScopes: IScope[]) => {
         req.isAdmin =
             ownedScopes.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/${Permission.Admin}`) >= 0
             || ownedScopes.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/${Permission.User}`) >= 0
-            || ADMIN_ADDITIONAL_PERMITTED_SCOPES.some((scope) => ownedScopes.indexOf(scope) >= 0);
+            || isProjectMember;
 
         // ドメインつきのカスタムスコープリストを許容するように変更
         const permittedScopesWithResourceServerIdentifier = [
             ...permittedScopes.map((permittedScope) => `${RESOURCE_SERVER_IDENTIFIER}/${permittedScope}`),
             ...permittedScopes.map((permittedScope) => `${RESOURCE_SERVER_IDENTIFIER}/auth/${permittedScope}`)
         ];
-
-        // 管理者の追加許可スコープをセット
-        permittedScopesWithResourceServerIdentifier.push(...ADMIN_ADDITIONAL_PERMITTED_SCOPES);
-
-        // 会員の場合、追加許可スコープをセット
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore if */
-        if (permittedScopes.indexOf(Permission.Customer) >= 0) {
-            permittedScopesWithResourceServerIdentifier.push(...CUSTOMER_ADDITIONAL_PERMITTED_SCOPES);
-        }
 
         // スコープチェック
         try {
