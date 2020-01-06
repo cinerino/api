@@ -69,11 +69,8 @@ export default (specifiedPermittedScopes: IScope[]) => {
 
         debug('ownedScopes:', ownedScopes);
 
-        // isAdminの条件は、とりあえず`admin`あるいは`user`権限を持つかどうか
-        req.isAdmin =
-            ownedScopes.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/${Permission.Admin}`) >= 0
-            || ownedScopes.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/${Permission.User}`) >= 0
-            || isProjectMember;
+        // isAdminの条件は、プロジェクトメンバーかどうか
+        req.isAdmin = isProjectMember;
 
         // ドメインつきのカスタムスコープリストを許容するように変更
         const permittedScopesWithResourceServerIdentifier = [
