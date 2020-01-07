@@ -89,8 +89,7 @@ projectsRouter.get(
             // 権限を持つプロジェクト検索
             const searchCoinditions = {
                 'project.id': req.params.id,
-                'member.id': req.user.sub,
-                'member.hasRole.roleName': { $in: [RoleName.Owner, RoleName.Editor, RoleName.Viewer] }
+                'member.id': req.user.sub
             };
             const projectMember = await memberRepo.memberModel.findOne(
                 searchCoinditions,

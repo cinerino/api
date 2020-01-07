@@ -6,7 +6,10 @@ import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 import * as mongoose from 'mongoose';
 
-import { roles } from '../iam';
+import { IRole } from '../iam';
+
+// tslint:disable-next-line:no-require-imports no-var-requires
+const roles: IRole[] = require('../../../roles.json');
 
 const debug = createDebug('cinerino-api:middlewares');
 

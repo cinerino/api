@@ -15,7 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
 const mongoose = require("mongoose");
-const iam_1 = require("../iam");
+// tslint:disable-next-line:no-require-imports no-var-requires
+const roles = require('../../../roles.json');
 const debug = createDebug('cinerino-api:middlewares');
 const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
 exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -43,7 +44,7 @@ function fixMemberPermissions(req) {
         });
         projectMembers.forEach((projectMember) => {
             projectMember.member.hasRole.forEach((memberRole) => {
-                const role = iam_1.roles.find((r) => r.roleName === memberRole.roleName);
+                const role = roles.find((r) => r.roleName === memberRole.roleName);
                 if (role !== undefined) {
                     permissions.push(...role.permissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`));
                 }

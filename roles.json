@@ -1,0 +1,29 @@
+[
+    {
+        "roleName": "owner",
+        "permissions": [
+            "admin",
+            "projects"
+        ]
+    },
+    {
+        "roleName": "editor",
+        "permissions": [
+            "user",
+            "projects.read-only",
+            "people.*"
+        ]
+    },
+    {
+        "roleName": "viewer",
+        "permissions": [
+            "projects.read-only"
+        ]
+    },
+    {
+        "roleName": "user",
+        "permissions": [
+            "user"
+        ]
+    }
+]
