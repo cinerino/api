@@ -27,7 +27,7 @@ exports.roles = [
     },
     {
         roleName: RoleName.Editor,
-        permissions: [Permission.User, 'projects.read-only']
+        permissions: [Permission.User, 'projects.read-only', 'people.*']
     },
     {
         roleName: RoleName.Viewer,
