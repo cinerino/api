@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - プロジェクトユーザーロールの使用可能サービスの許可スコープに`user`を追加
+- 会員ルーターに`people.*`権限を追加
 
 ### Deprecated
 

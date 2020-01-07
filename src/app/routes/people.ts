@@ -22,7 +22,7 @@ const peopleRouter = Router();
  */
 peopleRouter.get(
     '',
-    permitScopes([Permission.User]),
+    permitScopes([Permission.User, 'people.*']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -58,7 +58,7 @@ peopleRouter.get(
  */
 peopleRouter.get(
     '/:id',
-    permitScopes([Permission.User]),
+    permitScopes([Permission.User, 'people.*']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -88,7 +88,7 @@ peopleRouter.get(
  */
 peopleRouter.delete(
     '/:id',
-    permitScopes([]),
+    permitScopes(['people.*']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -176,7 +176,7 @@ peopleRouter.delete(
 // tslint:disable-next-line:use-default-type-parameter
 peopleRouter.get<ParamsDictionary>(
     '/:id/ownershipInfos',
-    permitScopes([Permission.User]),
+    permitScopes([Permission.User, 'people.*']),
     rateLimit,
     ...[
         query('typeOfGood')
@@ -250,7 +250,7 @@ peopleRouter.get<ParamsDictionary>(
  */
 peopleRouter.get(
     '/:id/ownershipInfos/creditCards',
-    permitScopes([Permission.User]),
+    permitScopes([Permission.User, 'people.*']),
     rateLimit,
     async (req, res, next) => {
         try {
@@ -299,7 +299,7 @@ peopleRouter.get(
  */
 peopleRouter.delete(
     '/:id/ownershipInfos/creditCards/:cardSeq',
-    permitScopes([]),
+    permitScopes(['people.*']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -353,7 +353,7 @@ peopleRouter.delete(
  */
 peopleRouter.get(
     '/:id/profile',
-    permitScopes([Permission.User]),
+    permitScopes([Permission.User, 'people.*']),
     rateLimit,
     async (req, res, next) => {
         try {
@@ -396,7 +396,7 @@ peopleRouter.get(
  */
 peopleRouter.patch(
     '/:id/profile',
-    permitScopes([]),
+    permitScopes(['people.*']),
     rateLimit,
     validator,
     async (req, res, next) => {
