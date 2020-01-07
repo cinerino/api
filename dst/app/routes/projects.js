@@ -66,7 +66,7 @@ rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, 
 projectsRouter.get('/:id', (req, _, next) => {
     req.project = { typeOf: cinerino.factory.organizationType.Project, id: req.params.id };
     next();
-}, setMemberPermissions_1.default, permitScopes_1.default(['projects', 'projects.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+}, setMemberPermissions_1.default, permitScopes_1.default(['projects.*', 'projects.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);

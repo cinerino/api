@@ -3,7 +3,20 @@
         "roleName": "owner",
         "permissions": [
             "admin",
-            "projects"
+            "user",
+            "projects.*",
+            "accounts.*",
+            "actions.*",
+            "applications.*",
+            "authorizations.*",
+            "invoices.*",
+            "orders.*",
+            "paymentMethods.*",
+            "people.*",
+            "programMemberships.*",
+            "sellers.*",
+            "transactions.*",
+            "tasks.*"
         ]
     },
     {
@@ -11,7 +24,18 @@
         "permissions": [
             "user",
             "projects.read-only",
-            "people.*"
+            "accounts.*",
+            "actions.*",
+            "applications.*",
+            "authorizations.*",
+            "invoices.*",
+            "orders.*",
+            "paymentMethods.*",
+            "people.*",
+            "programMemberships.*",
+            "sellers.*",
+            "transactions.*",
+            "tasks.*"
         ]
     },
     {

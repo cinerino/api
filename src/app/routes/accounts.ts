@@ -32,7 +32,7 @@ const accountsRouter = Router();
  */
 accountsRouter.post(
     '',
-    permitScopes([]),
+    permitScopes(['accounts.*']),
     ...[
         body('accountType', 'invalid accountType')
             .not()
@@ -67,7 +67,7 @@ accountsRouter.post(
  */
 accountsRouter.put(
     '/:accountType/:accountNumber/close',
-    permitScopes([]),
+    permitScopes(['accounts.*']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -94,7 +94,7 @@ accountsRouter.put(
  */
 accountsRouter.get(
     '',
-    permitScopes([]),
+    permitScopes(['accounts.*']),
     rateLimit,
     ...[
         query('accountType', 'invalid accountType')
@@ -159,7 +159,7 @@ accountsRouter.get(
  */
 accountsRouter.get(
     '/actions/moneyTransfer',
-    permitScopes([]),
+    permitScopes(['accounts.*']),
     rateLimit,
     ...[
         query('accountType', 'invalid accountType')

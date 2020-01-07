@@ -233,7 +233,7 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
 /**
  * 取引検索
  */
-returnOrderTransactionsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
+returnOrderTransactionsRouter.get('', permitScopes_1.default(['transactions.*']), rateLimit_1.default, ...[
     express_validator_1.query('startFrom')
         .optional()
         .isISO8601()

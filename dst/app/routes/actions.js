@@ -25,7 +25,7 @@ const actionsRouter = express_1.Router();
 /**
  * アクション検索
  */
-actionsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
+actionsRouter.get('', permitScopes_1.default(['actions.*']), rateLimit_1.default, ...[
     express_validator_1.query('startFrom')
         .optional()
         .isISO8601()

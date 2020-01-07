@@ -20,7 +20,7 @@ const actionsRouter = Router();
  */
 actionsRouter.get(
     '',
-    permitScopes([]),
+    permitScopes(['actions.*']),
     rateLimit,
     ...[
         query('startFrom')

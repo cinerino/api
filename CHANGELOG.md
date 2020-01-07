@@ -14,7 +14,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - プロジェクトユーザーロールの使用可能サービスの許可スコープに`user`を追加
-- 会員ルーターに`people.*`権限を追加
+- 以下権限を追加
+    - `accounts.*`
+    - `actions.*`
+    - `applications.*`
+    - `authorizations.*`
+    - `invoices.*`
+    - `orders.*`
+    - `paymentMethods.*`
+    - `people.*`
+    - `programMemberships.*`
+    - `sellers.*`
+    - `transactions.*`
+    - `tasks.*`
 
 ### Deprecated
 

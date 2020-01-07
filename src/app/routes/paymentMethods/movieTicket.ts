@@ -13,7 +13,7 @@ const movieTicketPaymentMethodsRouter = Router();
 
 movieTicketPaymentMethodsRouter.get(
     '',
-    permitScopes([]),
+    permitScopes(['paymentMethods.*']),
     rateLimit,
     validator,
     async (req, res, next) => {

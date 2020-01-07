@@ -24,7 +24,7 @@ const tasksRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 tasksRouter.post<ParamsDictionary>(
     '/:name',
-    permitScopes([Permission.User]),
+    permitScopes([Permission.User, 'tasks.*']),
     rateLimit,
     ...[
         body('runsAt')
@@ -74,7 +74,7 @@ tasksRouter.post<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 tasksRouter.get<ParamsDictionary>(
     '/:name/:id',
-    permitScopes([]),
+    permitScopes(['tasks.*']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -96,7 +96,7 @@ tasksRouter.get<ParamsDictionary>(
  */
 tasksRouter.get(
     '',
-    permitScopes([]),
+    permitScopes(['tasks.*']),
     rateLimit,
     ...[
         query('runsFrom')

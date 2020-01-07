@@ -19,7 +19,7 @@ const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
 const movieTicketPaymentMethodsRouter = express_1.Router();
-movieTicketPaymentMethodsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+movieTicketPaymentMethodsRouter.get('', permitScopes_1.default(['paymentMethods.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const paymentMethodRepo = new cinerino.repository.PaymentMethod(mongoose.connection);
         const searchCoinditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 

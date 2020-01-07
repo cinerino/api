@@ -46,7 +46,7 @@ const isNotAdmin = (_, { req }) => !req.isAdmin;
 /**
  * 注文検索
  */
-ordersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 'orders', 'orders.read-only']), rateLimit_1.default, 
+ordersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 'orders.*', 'orders', 'orders.read-only']), rateLimit_1.default, 
 // 互換性維持のため
 (req, _, next) => {
     const now = moment();
@@ -190,7 +190,7 @@ ordersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 
 /**
  * 注文作成
  */
-ordersRouter.post('', permitScopes_1.default([iam_1.Permission.User]), rateLimit_1.default, ...[
+ordersRouter.post('', permitScopes_1.default([iam_1.Permission.User, 'orders.*']), rateLimit_1.default, ...[
     express_validator_1.body('orderNumber')
         .not()
         .isEmpty()
@@ -249,7 +249,7 @@ ordersRouter.post('', permitScopes_1.default([iam_1.Permission.User]), rateLimit
 /**
  * ストリーミングダウンロード
  */
-ordersRouter.get('/download', permitScopes_1.default([iam_1.Permission.User]), rateLimit_1.default, 
+ordersRouter.get('/download', permitScopes_1.default([iam_1.Permission.User, 'orders.*']), rateLimit_1.default, 
 // 互換性維持のため
 (req, _, next) => {
     const now = moment();
@@ -364,7 +364,7 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default([iam_1.Permis
 /**
  * 確認番号で注文照会
  */
-ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default([iam_1.Permission.User, 'customer', 'orders', 'orders.read-only']), rateLimit_1.default, ...[
+ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default([iam_1.Permission.User, 'customer', 'orders.*', 'orders', 'orders.read-only']), rateLimit_1.default, ...[
     express_validator_1.query('orderDateFrom')
         .optional()
         .isISO8601()
@@ -441,7 +441,7 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default([iam_1.Per
 /**
  * 注文取得
  */
-ordersRouter.get('/:orderNumber', permitScopes_1.default([iam_1.Permission.User]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+ordersRouter.get('/:orderNumber', permitScopes_1.default([iam_1.Permission.User, 'orders.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const order = yield orderRepo.findByOrderNumber({
@@ -456,7 +456,7 @@ ordersRouter.get('/:orderNumber', permitScopes_1.default([iam_1.Permission.User]
 /**
  * 注文配送
  */
-ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default([iam_1.Permission.User]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default([iam_1.Permission.User, 'orders.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
@@ -607,7 +607,7 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
 /**
  * 注文に対するアクション検索
  */
-ordersRouter.get('/:orderNumber/actions', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+ordersRouter.get('/:orderNumber/actions', permitScopes_1.default(['orders.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const actions = yield actionRepo.searchByOrderNumber({

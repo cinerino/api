@@ -78,7 +78,7 @@ projectsRouter.get(
         next();
     },
     setMemberPermissions,
-    permitScopes(['projects', 'projects.read-only']),
+    permitScopes(['projects.*', 'projects.read-only']),
     rateLimit,
     validator,
     async (req, res, next) => {
