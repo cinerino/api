@@ -12,7 +12,7 @@ export enum RoleName {
     Editor = 'editor',
     Viewer = 'viewer',
     User = 'user',
-    Custome = 'customer'
+    Customer = 'customer'
 }
 
 export interface IRole {
