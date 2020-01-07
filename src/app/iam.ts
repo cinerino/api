@@ -12,7 +12,7 @@ export enum RoleName {
     Editor = 'editor',
     Viewer = 'viewer',
     User = 'user',
-    Custome = 'customer'
+    Customer = 'customer'
 }
 
 export interface IRole {
@@ -30,7 +30,7 @@ export const roles: IRole[] = [
     },
     {
         roleName: RoleName.Editor,
-        permissions: [Permission.User, 'projects.read-only']
+        permissions: [Permission.User, 'projects.read-only', 'people.*']
     },
     {
         roleName: RoleName.Viewer,

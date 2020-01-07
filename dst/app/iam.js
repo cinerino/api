@@ -15,7 +15,7 @@ var RoleName;
     RoleName["Editor"] = "editor";
     RoleName["Viewer"] = "viewer";
     RoleName["User"] = "user";
-    RoleName["Custome"] = "customer";
+    RoleName["Customer"] = "customer";
 })(RoleName = exports.RoleName || (exports.RoleName = {}));
 /**
  * 役割
@@ -27,7 +27,7 @@ exports.roles = [
     },
     {
         roleName: RoleName.Editor,
-        permissions: [Permission.User, 'projects.read-only']
+        permissions: [Permission.User, 'projects.read-only', 'people.*']
     },
     {
         roleName: RoleName.Viewer,
