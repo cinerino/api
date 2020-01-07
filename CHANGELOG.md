@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Removed
 
 - 追加許可スコープ設定を削除
+- `CLIENTS_AS_ADMIN`設定を削除
 
 ### Fixed
 

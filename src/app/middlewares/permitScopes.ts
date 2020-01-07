@@ -13,9 +13,6 @@ const debug = createDebug('cinerino-api:middlewares');
 
 export const SCOPE_COGNITO_USER_ADMIN = 'aws.cognito.signin.user.admin';
 
-const CLIENTS_AS_ADMIN: string[] = (process.env.CLIENTS_AS_ADMIN !== undefined)
-    ? /* istanbul ignore next */ process.env.CLIENTS_AS_ADMIN.split(',')
-    : [];
 const CLIENTS_AS_CUSTOMER: string[] = (process.env.CLIENTS_AS_CUSTOMER !== undefined)
     ? /* istanbul ignore next */ process.env.CLIENTS_AS_CUSTOMER.split(',')
     : [];
@@ -51,14 +48,6 @@ export default (specifiedPermittedScopes: IScope[]) => {
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */
         if (ownedScopes.indexOf(SCOPE_COGNITO_USER_ADMIN) >= 0) {
-            // aws.cognito.signin.user.adminスコープのみでadminとして認定するクライアント
-            // tslint:disable-next-line:no-single-line-block-comment
-            /* istanbul ignore if */
-            if (CLIENTS_AS_ADMIN.indexOf(req.user.client_id) >= 0) {
-                ownedScopes.push(`${RESOURCE_SERVER_IDENTIFIER}/${Permission.Admin}`);
-                ownedScopes.push(`${RESOURCE_SERVER_IDENTIFIER}/${Permission.User}`);
-            }
-
             // aws.cognito.signin.user.adminスコープのみでcustomerとして認定するクライアント
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore if */
