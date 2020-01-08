@@ -49,5 +49,19 @@
         "permissions": [
             "user"
         ]
+    },
+    {
+        "roleName": "customer",
+        "permissions": [
+            "customer",
+            "creativeWorks.read-only",
+            "events.read-only",
+            "orders.read-only",
+            "organizations.read-only",
+            "reservations.findByToken",
+            "sellers.read-only",
+            "tokens",
+            "transactions"
+        ]
     }
 ]

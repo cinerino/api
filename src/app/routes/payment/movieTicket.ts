@@ -37,7 +37,7 @@ const movieTicketPaymentRouter = Router();
  */
 movieTicketPaymentRouter.post(
     '/actions/check',
-    permitScopes([Permission.User, 'customer', 'tokens']),
+    permitScopes([Permission.User, 'customer', 'transactions']),
     rateLimit,
     validator,
     async (req, res, next) => {

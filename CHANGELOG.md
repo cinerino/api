@@ -19,13 +19,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
     - `actions.*`
     - `applications.*`
     - `authorizations.*`
+    - `creativeWorks.read-only`
+    - `events.read-only`
     - `invoices.*`
     - `orders.*`
+    - `orders.read-only`
+    - `organizations.read-only`
     - `paymentMethods.*`
     - `people.*`
     - `programMemberships.*`
-    - `sellers.*`
+    - `programMemberships.*`
+    - `reservations.*`
+    - `reservations.findByToken`
+    - `sellers.read-only`
+    - `tokens`
     - `transactions.*`
+    - `transactions`
     - `tasks.*`
 
 ### Deprecated

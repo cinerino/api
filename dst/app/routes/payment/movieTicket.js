@@ -38,7 +38,7 @@ const movieTicketPaymentRouter = express_1.Router();
 /**
  * ムビチケ購入番号確認
  */
-movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default([iam_1.Permission.User, 'customer', 'tokens']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
