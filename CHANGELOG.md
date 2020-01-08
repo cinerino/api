@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - プロジェクトメンバーの簡易な権限管理を追加
 - プロジェクトメンバー検索を追加
 - IAMロール検索を追加
+- プロジェクト設定取得エンドポイントを追加
 
 ### Changed
 

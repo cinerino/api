@@ -1,6 +1,7 @@
 /**
  * プロジェクト詳細ルーター
  */
+import * as cinerino from '@cinerino/domain';
 import * as express from 'express';
 
 import healthRouter from '../health';
@@ -32,6 +33,17 @@ import tttsRouter from '../ttts';
 import userPoolsRouter from '../userPools';
 
 const projectDetailRouter = express.Router();
+
+projectDetailRouter.use((req, _, next) => {
+    // プロジェクト未指定は拒否
+    if (req.project === undefined || req.project === null || typeof req.project.id !== 'string') {
+        next(new cinerino.factory.errors.Forbidden('project not specified'));
+
+        return;
+    }
+
+    next();
+});
 
 projectDetailRouter.use('/health', healthRouter);
 projectDetailRouter.use('/stats', statsRouter);

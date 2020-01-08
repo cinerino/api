@@ -7,7 +7,6 @@ import * as mongoose from 'mongoose';
 
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
-import setMemberPermissions from '../middlewares/setMemberPermissions';
 import validator from '../middlewares/validator';
 
 const RESOURCE_SERVER_IDENTIFIER = <string>process.env.RESOURCE_SERVER_IDENTIFIER;
@@ -56,7 +55,6 @@ projectsRouter.get(
                 },
                 { settings: 0 }
             );
-            // const totalCount = await projectRepo.count(searchCoinditions);
 
             res.set('X-Total-Count', totalCount.toString());
             res.json(projects);
@@ -67,48 +65,43 @@ projectsRouter.get(
 );
 
 /**
- * IDでプロジェクト検索
+ * プロジェクト取得
  */
 projectsRouter.get(
     '/:id',
-    (req, _, next) => {
-        req.project = { typeOf: cinerino.factory.organizationType.Project, id: req.params.id };
-
-        next();
-    },
-    setMemberPermissions,
     permitScopes(['projects.*', 'projects.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
         try {
-            const memberRepo = new cinerino.repository.Member(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
-            // 権限を持つプロジェクト検索
-            const searchCoinditions = {
-                'project.id': req.params.id,
-                'member.id': req.user.sub
-            };
-            const projectMember = await memberRepo.memberModel.findOne(
-                searchCoinditions,
-                { project: 1 }
-            )
-                .setOptions({ maxTimeMS: 10000 })
-                .exec();
-            if (projectMember === null) {
-                throw new cinerino.factory.errors.NotFound('Project');
-            }
 
             const projection: any = (req.memberPermissions.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/projects.settings.read`) >= 0)
                 ? undefined
                 : { settings: 0 };
-            const project = await projectRepo.findById(
-                { id: req.params.id },
-                projection
-            );
+            const project = await projectRepo.findById({ id: req.project.id }, projection);
 
             res.json(project);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * プロジェクト設定取得
+ */
+projectsRouter.get(
+    '/:id/settings',
+    permitScopes(['projects.*', 'projects.settings.read']),
+    rateLimit,
+    validator,
+    async (req, res, next) => {
+        try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+
+            res.json(project.settings);
         } catch (error) {
             next(error);
         }

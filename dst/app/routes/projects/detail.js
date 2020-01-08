@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * プロジェクト詳細ルーター
  */
+const cinerino = require("@cinerino/domain");
 const express = require("express");
 const health_1 = require("../health");
 const stats_1 = require("../stats");
@@ -31,6 +32,14 @@ const transactions_1 = require("../transactions");
 const ttts_1 = require("../ttts");
 const userPools_1 = require("../userPools");
 const projectDetailRouter = express.Router();
+projectDetailRouter.use((req, _, next) => {
+    // プロジェクト未指定は拒否
+    if (req.project === undefined || req.project === null || typeof req.project.id !== 'string') {
+        next(new cinerino.factory.errors.Forbidden('project not specified'));
+        return;
+    }
+    next();
+});
 projectDetailRouter.use('/health', health_1.default);
 projectDetailRouter.use('/stats', stats_1.default);
 projectDetailRouter.use('/accounts', accounts_1.default);

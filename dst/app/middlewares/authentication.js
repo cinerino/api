@@ -57,40 +57,19 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                         url: user.iss
                     };
                 }
-                let project;
                 // プロジェクトアプリケーションの存在確認
                 const applicationRepo = new cinerino.repository.Application(mongoose.connection);
                 try {
                     const applications = yield applicationRepo.search({ id: { $eq: user.client_id } });
                     if (applications.length > 0) {
                         const application = applications[0];
-                        if (application.project !== undefined && application.project !== null) {
-                            project = { typeOf: application.project.typeOf, id: application.project.id };
-                        }
+                        req.application = application;
                     }
                 }
                 catch (error) {
                     // no op
                     next(error);
                     return;
-                }
-                // 環境変数設定が存在する場合
-                if (typeof process.env.PROJECT_ID === 'string') {
-                    if (project === undefined) {
-                        // 環境変数
-                        project = { typeOf: cinerino.factory.organizationType.Project, id: process.env.PROJECT_ID };
-                    }
-                    else {
-                        // アプリケーション設定と環境変数設定両方が存在する場合、プロジェクトが異なればforbidden
-                        if (project.id !== process.env.PROJECT_ID) {
-                            next(new cinerino.factory.errors.Forbidden(`client for ${project.id} forbidden`));
-                            return;
-                        }
-                    }
-                }
-                // プロジェクトが決定すればリクエストに設定
-                if (project !== undefined) {
-                    req.project = project;
                 }
                 req.user = user;
                 req.accessToken = token;

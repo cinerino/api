@@ -1,7 +1,6 @@
 /**
  * ルーター
  */
-import * as cinerino from '@cinerino/domain';
 import * as express from 'express';
 
 import healthRouter from './health';
@@ -10,7 +9,8 @@ import projectDetailRouter from './projects/detail';
 import statsRouter from './stats';
 
 import authentication from '../middlewares/authentication';
-import setMemberPermissions from '../middlewares/setMemberPermissions';
+import setPermissions from '../middlewares/setPermissions';
+import setProject from '../middlewares/setProject';
 
 const router = express.Router();
 
@@ -27,42 +27,14 @@ router.use('/stats', statsRouter);
 // 認証
 router.use(authentication);
 
-// プロジェクトルーター
-router.use('/projects', projectsRouter);
-
-// プロジェクト指定ルーティング配下については、すべてreq.projectを上書き
-router.use(
-    '/projects/:id',
-    (req, _, next) => {
-        // authenticationにてアプリケーションによってプロジェクト決定済であれば、比較
-        // 本番マルチテナントサービスを設置するまで保留
-        // if (req.project !== undefined && req.project !== null) {
-        //     if (req.project.id !== req.params.id) {
-        //         next(new cinerino.factory.errors.Forbidden(`client for ${req.project.id} forbidden`));
-
-        //         return;
-        //     }
-        // }
-
-        req.project = { typeOf: cinerino.factory.organizationType.Project, id: req.params.id };
-
-        next();
-    }
-);
-
-router.use((req, _, next) => {
-    // プロジェクト未指定は拒否
-    if (req.project === undefined || req.project === null || typeof req.project.id !== 'string') {
-        next(new cinerino.factory.errors.Forbidden('project not specified'));
-
-        return;
-    }
-
-    next();
-});
+// リクエストプロジェクト設定
+router.use(setProject);
 
 // プロジェクトメンバー権限を確認
-router.use(setMemberPermissions);
+router.use(setPermissions);
+
+// プロジェクトルーター
+router.use('/projects', projectsRouter);
 
 // 以下、プロジェクト指定済の状態でルーティング
 router.use('', projectDetailRouter);

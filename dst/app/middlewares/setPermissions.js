@@ -22,20 +22,24 @@ const debug = createDebug('cinerino-api:middlewares');
 const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
 exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const permissions = yield fixMemberPermissions(req)({
-            member: new cinerino.repository.Member(mongoose.connection)
-        });
-        debug('project member permissions fixed.', permissions);
-        // プロジェクトメンバーでない場合、`customer`ロールに設定
+        let memberPermissions = [];
         const customerPermissions = [];
-        if (permissions.length === 0) {
-            const role = roles.find((r) => r.roleName === iam_1.RoleName.Customer);
-            if (role !== undefined) {
-                customerPermissions.push(...role.permissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`));
+        // プロジェクトが決定していれば権限をセット
+        if (req.project !== undefined && req.project !== null && typeof req.project.id === 'string') {
+            memberPermissions = yield fixMemberPermissions(req)({
+                member: new cinerino.repository.Member(mongoose.connection)
+            });
+            debug('project member permissions fixed.', memberPermissions);
+            // プロジェクトメンバーでない場合、`customer`ロールに設定
+            if (memberPermissions.length === 0) {
+                const role = roles.find((r) => r.roleName === iam_1.RoleName.Customer);
+                if (role !== undefined) {
+                    customerPermissions.push(...role.permissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`));
+                }
             }
         }
         req.customerPermissions = customerPermissions;
-        req.memberPermissions = permissions;
+        req.memberPermissions = memberPermissions;
         req.isProjectMember = Array.isArray(req.memberPermissions) && req.memberPermissions.length > 0;
         next();
     }
@@ -49,19 +53,21 @@ exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* 
 function fixMemberPermissions(req) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
         let permissions = [];
-        const projectMembers = yield repos.member.search({
-            project: { id: { $eq: req.project.id } },
-            member: { id: { $eq: req.user.sub } }
-        });
-        projectMembers.forEach((projectMember) => {
-            projectMember.member.hasRole.forEach((memberRole) => {
-                const role = roles.find((r) => r.roleName === memberRole.roleName);
-                if (role !== undefined) {
-                    permissions.push(...role.permissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`));
-                }
+        if (req.project !== undefined && req.project !== null && typeof req.project.id === 'string') {
+            const projectMembers = yield repos.member.search({
+                project: { id: { $eq: req.project.id } },
+                member: { id: { $eq: req.user.sub } }
             });
-        });
-        permissions = [...new Set(permissions)];
+            projectMembers.forEach((projectMember) => {
+                projectMember.member.hasRole.forEach((memberRole) => {
+                    const role = roles.find((r) => r.roleName === memberRole.roleName);
+                    if (role !== undefined) {
+                        permissions.push(...role.permissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`));
+                    }
+                });
+            });
+            permissions = [...new Set(permissions)];
+        }
         return permissions;
     });
 }
