@@ -10,8 +10,6 @@ import rateLimit from '../middlewares/rateLimit';
 import setMemberPermissions from '../middlewares/setMemberPermissions';
 import validator from '../middlewares/validator';
 
-import { RoleName } from '../iam';
-
 const projectsRouter = Router();
 
 /**
@@ -34,8 +32,7 @@ projectsRouter.get(
 
             // 権限を持つプロジェクト検索
             const searchCoinditions = {
-                'member.id': req.user.sub,
-                'member.hasRole.roleName': { $in: [RoleName.Owner, RoleName.Editor, RoleName.Viewer] }
+                'member.id': req.user.sub
             };
             const totalCount = await memberRepo.memberModel.countDocuments(searchCoinditions)
                 .setOptions({ maxTimeMS: 10000 })
@@ -78,7 +75,7 @@ projectsRouter.get(
         next();
     },
     setMemberPermissions,
-    permitScopes(['projects.*', 'projects.read-only']),
+    permitScopes(['projects.*', 'projects.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -101,9 +98,10 @@ projectsRouter.get(
                 throw new cinerino.factory.errors.NotFound('Project');
             }
 
+            const projection: any = (req.memberPermissions.indexOf('projects.settings.read') >= 0) ? undefined : { settings: 0 };
             const project = await projectRepo.findById(
                 { id: req.params.id },
-                undefined
+                projection
             );
 
             res.json(project);

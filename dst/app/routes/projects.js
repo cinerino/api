@@ -19,7 +19,6 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const setMemberPermissions_1 = require("../middlewares/setMemberPermissions");
 const validator_1 = require("../middlewares/validator");
-const iam_1 = require("../iam");
 const projectsRouter = express_1.Router();
 /**
  * プロジェクト検索
@@ -36,8 +35,7 @@ rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, 
         const page = (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1;
         // 権限を持つプロジェクト検索
         const searchCoinditions = {
-            'member.id': req.user.sub,
-            'member.hasRole.roleName': { $in: [iam_1.RoleName.Owner, iam_1.RoleName.Editor, iam_1.RoleName.Viewer] }
+            'member.id': req.user.sub
         };
         const totalCount = yield memberRepo.memberModel.countDocuments(searchCoinditions)
             .setOptions({ maxTimeMS: 10000 })
@@ -66,7 +64,7 @@ rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, 
 projectsRouter.get('/:id', (req, _, next) => {
     req.project = { typeOf: cinerino.factory.organizationType.Project, id: req.params.id };
     next();
-}, setMemberPermissions_1.default, permitScopes_1.default(['projects.*', 'projects.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+}, setMemberPermissions_1.default, permitScopes_1.default(['projects.*', 'projects.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -81,7 +79,8 @@ projectsRouter.get('/:id', (req, _, next) => {
         if (projectMember === null) {
             throw new cinerino.factory.errors.NotFound('Project');
         }
-        const project = yield projectRepo.findById({ id: req.params.id }, undefined);
+        const projection = (req.memberPermissions.indexOf('projects.settings.read') >= 0) ? undefined : { settings: 0 };
+        const project = yield projectRepo.findById({ id: req.params.id }, projection);
         res.json(project);
     }
     catch (error) {

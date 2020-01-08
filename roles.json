@@ -4,7 +4,6 @@
         "permissions": [
             "admin",
             "user",
-            "projects.*",
             "accounts.*",
             "actions.*",
             "applications.*",
@@ -14,6 +13,8 @@
             "paymentMethods.*",
             "people.*",
             "programMemberships.*",
+            "projects.*",
+            "projects.settings.read",
             "sellers.*",
             "transactions.*",
             "tasks.*"
@@ -23,7 +24,6 @@
         "roleName": "editor",
         "permissions": [
             "user",
-            "projects.read-only",
             "accounts.*",
             "actions.*",
             "applications.*",
@@ -33,6 +33,8 @@
             "paymentMethods.*",
             "people.*",
             "programMemberships.*",
+            "projects.read",
+            "projects.settings.read",
             "sellers.*",
             "transactions.*",
             "tasks.*"
@@ -42,7 +44,6 @@
         "roleName": "viewer",
         "permissions": [
             "user",
-            "projects.read-only",
             "accounts.read",
             "actions.read",
             "applications.read",
@@ -52,6 +53,8 @@
             "paymentMethods.read",
             "people.read",
             "programMemberships.read",
+            "projects.read",
+            "projects.settings.read",
             "sellers.read",
             "transactions.read",
             "tasks.read"
@@ -60,7 +63,8 @@
     {
         "roleName": "user",
         "permissions": [
-            "user"
+            "user",
+            "projects.read"
         ]
     },
     {
