@@ -41,6 +41,7 @@
     {
         "roleName": "viewer",
         "permissions": [
+            "user",
             "projects.read-only"
         ]
     },
