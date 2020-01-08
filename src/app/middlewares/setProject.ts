@@ -4,9 +4,9 @@
 import * as cinerino from '@cinerino/domain';
 import * as express from 'express';
 
-const setProjectRouter = express.Router();
+const setProject = express.Router();
 
-setProjectRouter.use((req, _, next) => {
+setProject.use((req, _, next) => {
     let project: cinerino.factory.project.IProject | undefined;
 
     // アプリケーションからプロジェクトをセット
@@ -40,7 +40,7 @@ setProjectRouter.use((req, _, next) => {
 });
 
 // プロジェクト指定ルーティング配下については、すべてreq.projectを上書き
-setProjectRouter.use(
+setProject.use(
     '/projects/:id',
     (req, _, next) => {
         // authenticationにてアプリケーションによってプロジェクト決定済であれば、比較
@@ -59,4 +59,4 @@ setProjectRouter.use(
     }
 );
 
-export default setProjectRouter;
+export default setProject;

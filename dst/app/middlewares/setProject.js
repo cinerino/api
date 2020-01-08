@@ -5,8 +5,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express = require("express");
-const setProjectRouter = express.Router();
-setProjectRouter.use((req, _, next) => {
+const setProject = express.Router();
+setProject.use((req, _, next) => {
     let project;
     // アプリケーションからプロジェクトをセット
     if (req.application !== undefined && req.application !== null) {
@@ -35,7 +35,7 @@ setProjectRouter.use((req, _, next) => {
     next();
 });
 // プロジェクト指定ルーティング配下については、すべてreq.projectを上書き
-setProjectRouter.use('/projects/:id', (req, _, next) => {
+setProject.use('/projects/:id', (req, _, next) => {
     // authenticationにてアプリケーションによってプロジェクト決定済であれば、比較
     // 本番マルチテナントサービスを設置するまで保留
     // if (req.project !== undefined && req.project !== null) {
@@ -47,4 +47,4 @@ setProjectRouter.use('/projects/:id', (req, _, next) => {
     req.project = { typeOf: cinerino.factory.organizationType.Project, id: req.params.id };
     next();
 });
-exports.default = setProjectRouter;
+exports.default = setProject;
