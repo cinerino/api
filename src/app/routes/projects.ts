@@ -10,6 +10,8 @@ import rateLimit from '../middlewares/rateLimit';
 import setMemberPermissions from '../middlewares/setMemberPermissions';
 import validator from '../middlewares/validator';
 
+const RESOURCE_SERVER_IDENTIFIER = <string>process.env.RESOURCE_SERVER_IDENTIFIER;
+
 const projectsRouter = Router();
 
 /**
@@ -98,7 +100,9 @@ projectsRouter.get(
                 throw new cinerino.factory.errors.NotFound('Project');
             }
 
-            const projection: any = (req.memberPermissions.indexOf('projects.settings.read') >= 0) ? undefined : { settings: 0 };
+            const projection: any = (req.memberPermissions.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/projects.settings.read`) >= 0)
+                ? undefined
+                : { settings: 0 };
             const project = await projectRepo.findById(
                 { id: req.params.id },
                 projection

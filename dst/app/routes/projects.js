@@ -19,6 +19,7 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const setMemberPermissions_1 = require("../middlewares/setMemberPermissions");
 const validator_1 = require("../middlewares/validator");
+const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
 const projectsRouter = express_1.Router();
 /**
  * プロジェクト検索
@@ -79,7 +80,9 @@ projectsRouter.get('/:id', (req, _, next) => {
         if (projectMember === null) {
             throw new cinerino.factory.errors.NotFound('Project');
         }
-        const projection = (req.memberPermissions.indexOf('projects.settings.read') >= 0) ? undefined : { settings: 0 };
+        const projection = (req.memberPermissions.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/projects.settings.read`) >= 0)
+            ? undefined
+            : { settings: 0 };
         const project = yield projectRepo.findById({ id: req.params.id }, projection);
         res.json(project);
     }
