@@ -17,7 +17,7 @@ const authorizationsRouter = Router();
  */
 authorizationsRouter.get(
     '',
-    permitScopes(['authorizations.*']),
+    permitScopes(['authorizations.*', 'authorizations.read']),
     rateLimit,
     ...[
         query('validFrom')

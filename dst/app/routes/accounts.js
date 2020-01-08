@@ -82,7 +82,7 @@ accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(
 /**
  * 口座検索
  */
-accountsRouter.get('', permitScopes_1.default(['accounts.*']), rateLimit_1.default, ...[
+accountsRouter.get('', permitScopes_1.default(['accounts.*', 'accounts.read']), rateLimit_1.default, ...[
     express_validator_1.query('accountType', 'invalid accountType')
         .not()
         .isEmpty()
@@ -135,7 +135,7 @@ accountsRouter.get('', permitScopes_1.default(['accounts.*']), rateLimit_1.defau
 /**
  * 取引履歴検索
  */
-accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default(['accounts.*']), rateLimit_1.default, ...[
+accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default(['accounts.*', 'accounts.read']), rateLimit_1.default, ...[
     express_validator_1.query('accountType', 'invalid accountType')
         .not()
         .isEmpty()

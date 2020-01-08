@@ -94,7 +94,7 @@ accountsRouter.put(
  */
 accountsRouter.get(
     '',
-    permitScopes(['accounts.*']),
+    permitScopes(['accounts.*', 'accounts.read']),
     rateLimit,
     ...[
         query('accountType', 'invalid accountType')
@@ -159,7 +159,7 @@ accountsRouter.get(
  */
 accountsRouter.get(
     '/actions/moneyTransfer',
-    permitScopes(['accounts.*']),
+    permitScopes(['accounts.*', 'accounts.read']),
     rateLimit,
     ...[
         query('accountType', 'invalid accountType')

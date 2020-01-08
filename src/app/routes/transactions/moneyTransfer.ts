@@ -392,7 +392,7 @@ moneyTransferTransactionsRouter.put(
  */
 moneyTransferTransactionsRouter.get(
     '',
-    permitScopes(['transactions.*']),
+    permitScopes(['transactions.*', 'transactions.read']),
     rateLimit,
     ...[
         query('startFrom')
@@ -439,7 +439,7 @@ moneyTransferTransactionsRouter.get(
  */
 moneyTransferTransactionsRouter.get(
     '/:transactionId/actions',
-    permitScopes(['transactions.*']),
+    permitScopes(['transactions.*', 'transactions.read']),
     rateLimit,
     validator,
     async (req, res, next) => {

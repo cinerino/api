@@ -74,7 +74,7 @@ tasksRouter.post<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 tasksRouter.get<ParamsDictionary>(
     '/:name/:id',
-    permitScopes(['tasks.*']),
+    permitScopes(['tasks.*', 'tasks.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -96,7 +96,7 @@ tasksRouter.get<ParamsDictionary>(
  */
 tasksRouter.get(
     '',
-    permitScopes(['tasks.*']),
+    permitScopes(['tasks.*', 'tasks.read']),
     rateLimit,
     ...[
         query('runsFrom')

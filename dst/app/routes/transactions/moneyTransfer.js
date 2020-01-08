@@ -332,7 +332,7 @@ moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.def
 /**
  * 取引検索
  */
-moneyTransferTransactionsRouter.get('', permitScopes_1.default(['transactions.*']), rateLimit_1.default, ...[
+moneyTransferTransactionsRouter.get('', permitScopes_1.default(['transactions.*', 'transactions.read']), rateLimit_1.default, ...[
     express_validator_1.query('startFrom')
         .optional()
         .isISO8601()
@@ -367,7 +367,7 @@ moneyTransferTransactionsRouter.get('', permitScopes_1.default(['transactions.*'
 /**
  * 取引に対するアクション検索
  */
-moneyTransferTransactionsRouter.get('/:transactionId/actions', permitScopes_1.default(['transactions.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+moneyTransferTransactionsRouter.get('/:transactionId/actions', permitScopes_1.default(['transactions.*', 'transactions.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const actions = yield actionRepo.searchByPurpose({

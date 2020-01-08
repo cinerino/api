@@ -277,7 +277,7 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
  */
 returnOrderTransactionsRouter.get(
     '',
-    permitScopes(['transactions.*']),
+    permitScopes(['transactions.*', 'transactions.read']),
     rateLimit,
     ...[
         query('startFrom')

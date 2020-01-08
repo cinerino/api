@@ -49,7 +49,7 @@ const isNotAdmin: CustomValidator = (_, { req }) => !req.isAdmin;
  */
 ordersRouter.get(
     '',
-    permitScopes([Permission.User, 'customer', 'orders.*', 'orders', 'orders.read-only']),
+    permitScopes([Permission.User, 'customer', 'orders.*', 'orders.read', 'orders', 'orders.read-only']),
     rateLimit,
     // 互換性維持のため
     (req, _, next) => {
@@ -286,7 +286,7 @@ ordersRouter.post(
  */
 ordersRouter.get(
     '/download',
-    permitScopes([Permission.User, 'orders.*']),
+    permitScopes([Permission.User, 'orders.*', 'orders.read']),
     rateLimit,
     // 互換性維持のため
     (req, _, next) => {
@@ -519,7 +519,7 @@ ordersRouter.post(
  */
 ordersRouter.get(
     '/:orderNumber',
-    permitScopes([Permission.User, 'orders.*']),
+    permitScopes([Permission.User, 'orders.*', 'orders.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -723,7 +723,7 @@ ordersRouter.post<ParamsDictionary>(
  */
 ordersRouter.get(
     '/:orderNumber/actions',
-    permitScopes(['orders.*']),
+    permitScopes(['orders.*', 'orders.read']),
     rateLimit,
     validator,
     async (req, res, next) => {

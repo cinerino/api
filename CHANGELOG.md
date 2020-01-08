@@ -16,26 +16,37 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - プロジェクトユーザーロールの使用可能サービスの許可スコープに`user`を追加
 - 以下権限を追加
     - `accounts.*`
+    - `accounts.read`
     - `actions.*`
+    - `actions.read`
     - `applications.*`
+    - `applications.read`
     - `authorizations.*`
+    - `authorizations.read`
     - `creativeWorks.read-only`
     - `events.read-only`
     - `invoices.*`
+    - `invoices.read`
     - `orders.*`
+    - `orders.read`
     - `orders.read-only`
     - `organizations.read-only`
     - `paymentMethods.*`
+    - `paymentMethods.read`
     - `people.*`
+    - `people.read`
     - `programMemberships.*`
-    - `programMemberships.*`
+    - `programMemberships.read`
     - `reservations.*`
     - `reservations.findByToken`
     - `sellers.read-only`
+    - `sellers.read`
     - `tokens`
     - `transactions.*`
+    - `transactions.read`
     - `transactions`
     - `tasks.*`
+    - `tasks.read`
 - プロジェクトメンバーでないリクエストユーザーに`customer`ロールを与えるように調整
 
 ### Deprecated

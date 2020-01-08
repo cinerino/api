@@ -42,7 +42,19 @@
         "roleName": "viewer",
         "permissions": [
             "user",
-            "projects.read-only"
+            "projects.read-only",
+            "accounts.read",
+            "actions.read",
+            "applications.read",
+            "authorizations.read",
+            "invoices.read",
+            "orders.read",
+            "paymentMethods.read",
+            "people.read",
+            "programMemberships.read",
+            "sellers.read",
+            "transactions.read",
+            "tasks.read"
         ]
     },
     {

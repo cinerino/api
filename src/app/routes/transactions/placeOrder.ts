@@ -1183,7 +1183,7 @@ placeOrderTransactionsRouter.put(
  */
 placeOrderTransactionsRouter.get(
     '',
-    permitScopes(['transactions.*']),
+    permitScopes(['transactions.*', 'transactions.read']),
     rateLimit,
     ...[
         query('startFrom')
@@ -1230,7 +1230,7 @@ placeOrderTransactionsRouter.get(
  */
 placeOrderTransactionsRouter.get(
     '/:transactionId/actions',
-    permitScopes(['transactions.*']),
+    permitScopes(['transactions.*', 'transactions.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -1255,7 +1255,7 @@ placeOrderTransactionsRouter.get(
  */
 placeOrderTransactionsRouter.get(
     '/report',
-    permitScopes(['transactions.*']),
+    permitScopes(['transactions.*', 'transactions.read']),
     rateLimit,
     validator,
     async (req, res, next) => {

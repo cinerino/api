@@ -25,7 +25,7 @@ const peopleRouter = express_1.Router();
 /**
  * 会員検索
  */
-peopleRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'people.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'people.*', 'people.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -54,7 +54,7 @@ peopleRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'people.*'])
 /**
  * IDで検索
  */
-peopleRouter.get('/:id', permitScopes_1.default([iam_1.Permission.User, 'people.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.get('/:id', permitScopes_1.default([iam_1.Permission.User, 'people.*', 'people.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -145,7 +145,7 @@ peopleRouter.delete('/:id', permitScopes_1.default(['people.*']), rateLimit_1.de
  * 所有権検索
  */
 // tslint:disable-next-line:use-default-type-parameter
-peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default([iam_1.Permission.User, 'people.*']), rateLimit_1.default, ...[
+peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default([iam_1.Permission.User, 'people.*', 'people.read']), rateLimit_1.default, ...[
     express_validator_1.query('typeOfGood')
         .not()
         .isEmpty(),
@@ -197,7 +197,7 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default([iam_1.Permission
 /**
  * クレジットカード検索
  */
-peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default([iam_1.Permission.User, 'people.*']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default([iam_1.Permission.User, 'people.*', 'people.read']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -277,7 +277,7 @@ peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.d
 /**
  * プロフィール検索
  */
-peopleRouter.get('/:id/profile', permitScopes_1.default([iam_1.Permission.User, 'people.*']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.get('/:id/profile', permitScopes_1.default([iam_1.Permission.User, 'people.*', 'people.read']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });

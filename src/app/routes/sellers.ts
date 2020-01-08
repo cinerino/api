@@ -92,7 +92,7 @@ sellersRouter.post(
  */
 sellersRouter.get(
     '',
-    permitScopes([Permission.User, 'customer', 'sellers.*', 'sellers', 'sellers.read-only', 'pos']),
+    permitScopes([Permission.User, 'customer', 'sellers.*', 'sellers.read', 'sellers', 'sellers.read-only', 'pos']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -126,7 +126,7 @@ sellersRouter.get(
  */
 sellersRouter.get(
     '/:id',
-    permitScopes([Permission.User, 'customer', 'sellers.*', 'sellers', 'sellers.read-only']),
+    permitScopes([Permission.User, 'customer', 'sellers.*', 'sellers.read', 'sellers', 'sellers.read-only']),
     rateLimit,
     validator,
     async (req, res, next) => {

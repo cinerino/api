@@ -52,7 +52,7 @@ const applicationsRouter = Router();
  */
 applicationsRouter.get(
     '',
-    permitScopes(['applications.*', 'applications.read-only']),
+    permitScopes(['applications.*', 'applications.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -82,7 +82,7 @@ applicationsRouter.get(
  */
 applicationsRouter.get(
     '/:id',
-    permitScopes(['applications.*', 'applications.read-only']),
+    permitScopes(['applications.*', 'applications.read']),
     rateLimit,
     validator,
     async (req, res, next) => {

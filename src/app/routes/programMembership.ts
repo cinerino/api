@@ -18,7 +18,7 @@ const programMembershipsRouter = Router();
  */
 programMembershipsRouter.get(
     '',
-    permitScopes([Permission.User, 'customer', 'programMemberships.*', 'programMemberships', 'programMemberships.read-only']),
+    permitScopes([Permission.User, 'customer', 'programMemberships.*', 'programMemberships.read', 'programMemberships', 'programMemberships.read-only']),
     rateLimit,
     validator,
     async (req, res, next) => {
