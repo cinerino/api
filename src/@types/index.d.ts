@@ -23,10 +23,15 @@ declare global {
             user: IUser;
             accessToken: string;
             isAdmin: boolean;
+            isProjectMember: boolean;
             /**
              * プロジェクトメンバーの権限
              */
             memberPermissions: string[];
+            /**
+             * カスタマー権限
+             */
+            customerPermissions: string[];
         }
     }
 }

@@ -25,8 +25,7 @@ exports.default = (specifiedPermittedScopes) => {
         permittedScopes.push(iam_1.Permission.Admin);
         permittedScopes = [...new Set(permittedScopes)];
         debug('permittedScopes:', permittedScopes);
-        const isProjectMember = Array.isArray(req.memberPermissions) && req.memberPermissions.length > 0;
-        const ownedScopes = [...req.user.scopes, ...req.memberPermissions];
+        const ownedScopes = [...req.user.scopes, ...req.memberPermissions, ...req.customerPermissions];
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */
         if (ownedScopes.indexOf(exports.SCOPE_COGNITO_USER_ADMIN) >= 0) {
@@ -39,7 +38,7 @@ exports.default = (specifiedPermittedScopes) => {
         }
         debug('ownedScopes:', ownedScopes);
         // isAdminの条件は、プロジェクトメンバーかどうか
-        req.isAdmin = isProjectMember;
+        req.isAdmin = req.isProjectMember === true;
         // ドメインつきのカスタムスコープリストを許容するように変更
         const permittedScopesWithResourceServerIdentifier = [
             ...permittedScopes.map((permittedScope) => `${RESOURCE_SERVER_IDENTIFIER}/${permittedScope}`),

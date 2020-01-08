@@ -45,7 +45,11 @@ describe('permitScopes.default()', () => {
     it('スコープが十分であればエラーなしでnextが呼ばれるはず', async () => {
         const scopes = ['scope'];
         const params = {
-            req: { user: { scopes: scopes.map((scope) => `${process.env.RESOURCE_SERVER_IDENTIFIER}/${scope}`) }, memberPermissions: [] },
+            req: {
+                user: { scopes: scopes.map((scope) => `${process.env.RESOURCE_SERVER_IDENTIFIER}/${scope}`) },
+                memberPermissions: [],
+                customerPermissions: []
+            },
             res: {},
             next: () => undefined
         };
@@ -63,7 +67,11 @@ describe('permitScopes.default()', () => {
     it('スコープ不足であればエラーパラメーターと共にnextが呼ばれるはず', async () => {
         const scopes = ['scope'];
         const params = {
-            req: { user: { scopes: [] }, memberPermissions: [] },
+            req: {
+                user: { scopes: [] },
+                memberPermissions: [],
+                customerPermissions: []
+            },
             res: {},
             next: () => undefined
         };

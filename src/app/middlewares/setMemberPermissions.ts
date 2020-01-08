@@ -6,7 +6,7 @@ import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 import * as mongoose from 'mongoose';
 
-import { IRole } from '../iam';
+import { IRole, RoleName } from '../iam';
 
 // tslint:disable-next-line:no-require-imports no-var-requires
 const roles: IRole[] = require('../../../roles.json');
@@ -22,7 +22,18 @@ export default async (req: Request, _: Response, next: NextFunction) => {
         });
         debug('project member permissions fixed.', permissions);
 
+        // プロジェクトメンバーでない場合、`customer`ロールに設定
+        const customerPermissions: string[] = [];
+        if (permissions.length === 0) {
+            const role = roles.find((r) => r.roleName === RoleName.Customer);
+            if (role !== undefined) {
+                customerPermissions.push(...role.permissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`));
+            }
+        }
+
+        req.customerPermissions = customerPermissions;
         req.memberPermissions = permissions;
+        req.isProjectMember = Array.isArray(req.memberPermissions) && req.memberPermissions.length > 0;
 
         next();
     } catch (error) {

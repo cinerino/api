@@ -36,6 +36,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
     - `transactions.*`
     - `transactions`
     - `tasks.*`
+- プロジェクトメンバーでないリクエストユーザーに`customer`ロールを与えるように調整
 
 ### Deprecated
 

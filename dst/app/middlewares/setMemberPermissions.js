@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
 const mongoose = require("mongoose");
+const iam_1 = require("../iam");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const roles = require('../../../roles.json');
 const debug = createDebug('cinerino-api:middlewares');
@@ -25,7 +26,17 @@ exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* 
             member: new cinerino.repository.Member(mongoose.connection)
         });
         debug('project member permissions fixed.', permissions);
+        // プロジェクトメンバーでない場合、`customer`ロールに設定
+        const customerPermissions = [];
+        if (permissions.length === 0) {
+            const role = roles.find((r) => r.roleName === iam_1.RoleName.Customer);
+            if (role !== undefined) {
+                customerPermissions.push(...role.permissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`));
+            }
+        }
+        req.customerPermissions = customerPermissions;
         req.memberPermissions = permissions;
+        req.isProjectMember = Array.isArray(req.memberPermissions) && req.memberPermissions.length > 0;
         next();
     }
     catch (error) {
