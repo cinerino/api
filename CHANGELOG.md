@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v1.4.0 - 2020-01-09
+
+### Added
+
 - プロジェクトメンバーの簡易な権限管理を追加
 - プロジェクトメンバー検索を追加
 - IAMロール検索を追加
@@ -27,6 +41,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
     - `authorizations.read`
     - `creativeWorks.read`
     - `events.read-only`
+    - `iam.members.me.read`
     - `invoices.*`
     - `invoices.read`
     - `orders.*`
@@ -56,10 +71,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 追加許可スコープ設定を削除
 - `CLIENTS_AS_ADMIN`設定を削除
-
-### Fixed
-
-### Security
 
 ## v1.3.0 - 2020-01-01
 
