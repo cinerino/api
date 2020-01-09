@@ -20,7 +20,7 @@ const applicationsRouter = Router();
  */
 // applicationsRouter.post(
 //     '',
-//     permitScopes(['applications']),
+//     permitScopes(['applications.*']),
 //     rateLimit,
 //     ...[
 //         body('typeOf')
@@ -52,7 +52,7 @@ const applicationsRouter = Router();
  */
 applicationsRouter.get(
     '',
-    permitScopes(['applications', 'applications.read-only']),
+    permitScopes(['applications.*', 'applications.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -82,7 +82,7 @@ applicationsRouter.get(
  */
 applicationsRouter.get(
     '/:id',
-    permitScopes(['applications', 'applications.read-only']),
+    permitScopes(['applications.*', 'applications.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -106,7 +106,7 @@ applicationsRouter.get(
 // tslint:disable-next-line:use-default-type-parameter
 // applicationsRouter.put<ParamsDictionary>(
 //     '/:id',
-//     permitScopes(['applications']),
+//     permitScopes(['applications.*']),
 //     rateLimit,
 //     ...[
 //         body('typeOf')
@@ -138,7 +138,7 @@ applicationsRouter.get(
  */
 // applicationsRouter.delete(
 //     '/:id',
-//     permitScopes(['applications']),
+//     permitScopes(['applications.*']),
 //     rateLimit,
 //     validator,
 //     async (req, res, next) => {

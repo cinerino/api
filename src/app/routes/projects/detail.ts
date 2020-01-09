@@ -1,6 +1,7 @@
 /**
  * プロジェクト詳細ルーター
  */
+import * as cinerino from '@cinerino/domain';
 import * as express from 'express';
 
 import healthRouter from '../health';
@@ -14,6 +15,7 @@ import creativeWorksRouter from '../creativeWorks';
 import eventsRouter from '../events';
 import iamRouter from '../iam';
 import invoicesRouter from '../invoices';
+import membersRouter from '../members';
 import offersRouter from '../offers';
 import ordersRouter from '../orders';
 import organizationsRouter from '../organizations';
@@ -32,6 +34,17 @@ import userPoolsRouter from '../userPools';
 
 const projectDetailRouter = express.Router();
 
+projectDetailRouter.use((req, _, next) => {
+    // プロジェクト未指定は拒否
+    if (req.project === undefined || req.project === null || typeof req.project.id !== 'string') {
+        next(new cinerino.factory.errors.Forbidden('project not specified'));
+
+        return;
+    }
+
+    next();
+});
+
 projectDetailRouter.use('/health', healthRouter);
 projectDetailRouter.use('/stats', statsRouter);
 
@@ -43,6 +56,7 @@ projectDetailRouter.use('/creativeWorks', creativeWorksRouter);
 projectDetailRouter.use('/events', eventsRouter);
 projectDetailRouter.use('/iam', iamRouter);
 projectDetailRouter.use('/invoices', invoicesRouter);
+projectDetailRouter.use('/members', membersRouter);
 projectDetailRouter.use('/offers', offersRouter);
 projectDetailRouter.use('/orders', ordersRouter);
 projectDetailRouter.use('/organizations', organizationsRouter);

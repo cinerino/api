@@ -14,6 +14,8 @@ import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
+import { Permission } from '../../iam';
+
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -29,7 +31,7 @@ const screeningEventRouter = Router();
  */
 screeningEventRouter.get(
     '',
-    permitScopes(['customer', 'events', 'events.read-only']),
+    permitScopes([Permission.User, 'customer', 'events', 'events.read-only']),
     rateLimit,
     ...[
         query('inSessionFrom')
@@ -140,7 +142,7 @@ screeningEventRouter.get(
  */
 screeningEventRouter.get(
     '/:id',
-    permitScopes(['customer', 'events', 'events.read-only']),
+    permitScopes([Permission.User, 'customer', 'events', 'events.read-only']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -191,7 +193,7 @@ screeningEventRouter.get(
  */
 screeningEventRouter.get(
     '/:id/offers',
-    permitScopes(['customer', 'events', 'events.read-only']),
+    permitScopes([Permission.User, 'customer', 'events', 'events.read-only']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -220,7 +222,7 @@ screeningEventRouter.get(
 // tslint:disable-next-line:use-default-type-parameter
 screeningEventRouter.get<ParamsDictionary>(
     '/:id/offers/ticket',
-    permitScopes(['customer', 'events', 'events.read-only']),
+    permitScopes([Permission.User, 'customer', 'events', 'events.read-only']),
     rateLimit,
     ...[
         query('seller')

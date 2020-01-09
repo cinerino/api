@@ -15,6 +15,8 @@ import validator from '../../../../middlewares/validator';
 
 import * as redis from '../../../../../redis';
 
+import { Permission } from '../../../../iam';
+
 const accountsRouter = Router();
 
 /**
@@ -23,7 +25,7 @@ const accountsRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 accountsRouter.post<ParamsDictionary>(
     '/:accountType',
-    permitScopes(['customer']),
+    permitScopes([Permission.User, 'customer']),
     rateLimit,
     ...[
         body('name')
@@ -62,7 +64,7 @@ accountsRouter.post<ParamsDictionary>(
  */
 accountsRouter.put(
     '/:accountType/:accountNumber/close',
-    permitScopes(['customer']),
+    permitScopes([Permission.User, 'customer']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -94,7 +96,7 @@ accountsRouter.put(
  */
 accountsRouter.get(
     '/actions/moneyTransfer',
-    permitScopes(['customer']),
+    permitScopes([Permission.User, 'customer']),
     rateLimit,
     validator,
     async (req, res, next) => {

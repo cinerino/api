@@ -17,6 +17,8 @@ import validator from '../../middlewares/validator';
 
 import * as redis from '../../../redis';
 
+import { Permission } from '../../iam';
+
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -35,7 +37,7 @@ function escapeRegExp(params: string) {
 
 returnOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['transactions', 'pos']),
+    permitScopes([Permission.User, 'transactions', 'pos']),
     rateLimit,
     ...[
         body('expires')
@@ -147,7 +149,7 @@ returnOrderTransactionsRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 returnOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/agent',
-    permitScopes(['customer', 'transactions']),
+    permitScopes([Permission.User, 'customer', 'transactions']),
     ...[
         body('additionalProperty')
             .optional()
@@ -203,7 +205,7 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 returnOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/confirm',
-    permitScopes(['transactions', 'pos']),
+    permitScopes([Permission.User, 'transactions', 'pos']),
     rateLimit,
     ...[
         // Eメールカスタマイズのバリデーション
@@ -275,7 +277,7 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
  */
 returnOrderTransactionsRouter.get(
     '',
-    permitScopes([]),
+    permitScopes(['transactions.*', 'transactions.read']),
     rateLimit,
     ...[
         query('startFrom')

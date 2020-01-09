@@ -10,7 +10,16 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
+import iamMembersRouter from './iam/members';
+
+import { IRole } from '../iam';
+
+// tslint:disable-next-line:no-require-imports no-var-requires
+const roles: IRole[] = require('../../../roles.json');
+
 const iamRouter = express.Router();
+
+iamRouter.use('/members', iamMembersRouter);
 
 /**
  * IAMグループ検索
@@ -40,8 +49,8 @@ iamRouter.get(
     validator,
     async (_, res, next) => {
         try {
-            res.set('X-Total-Count', '0');
-            res.json([]);
+            res.set('X-Total-Count', roles.length.toString());
+            res.json(roles);
         } catch (error) {
             next(error);
         }

@@ -23,6 +23,7 @@ const redis = require("../../redis");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
+const iam_1 = require("../iam");
 const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.PECORINO_CLIENT_ID,
@@ -34,7 +35,7 @@ const accountsRouter = express_1.Router();
 /**
  * 管理者として口座開設
  */
-accountsRouter.post('', permitScopes_1.default([]), ...[
+accountsRouter.post('', permitScopes_1.default(['accounts.*']), ...[
     express_validator_1.body('accountType', 'invalid accountType')
         .not()
         .isEmpty(),
@@ -61,7 +62,7 @@ accountsRouter.post('', permitScopes_1.default([]), ...[
 /**
  * 管理者として口座解約
  */
-accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(['accounts.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield cinerino.service.account.close({
             project: req.project,
@@ -81,7 +82,7 @@ accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(
 /**
  * 口座検索
  */
-accountsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
+accountsRouter.get('', permitScopes_1.default(['accounts.*', 'accounts.read']), rateLimit_1.default, ...[
     express_validator_1.query('accountType', 'invalid accountType')
         .not()
         .isEmpty()
@@ -134,7 +135,7 @@ accountsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
 /**
  * 取引履歴検索
  */
-accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default([]), rateLimit_1.default, ...[
+accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default(['accounts.*', 'accounts.read']), rateLimit_1.default, ...[
     express_validator_1.query('accountType', 'invalid accountType')
         .not()
         .isEmpty()
@@ -210,7 +211,7 @@ const depositAccountRateLimiet = middlewares.rateLimit({
 /**
  * 管理者として口座に入金する
  */
-accountsRouter.post('/transactions/deposit', permitScopes_1.default([]), 
+accountsRouter.post('/transactions/deposit', permitScopes_1.default([iam_1.Permission.User]), 
 // 互換性維持のため
 (req, _, next) => {
     if (req.body.object === undefined || req.body.object === null) {

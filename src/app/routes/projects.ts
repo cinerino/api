@@ -9,6 +9,8 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
+const RESOURCE_SERVER_IDENTIFIER = <string>process.env.RESOURCE_SERVER_IDENTIFIER;
+
 const projectsRouter = Router();
 
 /**
@@ -17,7 +19,7 @@ const projectsRouter = Router();
  */
 projectsRouter.get(
     '',
-    permitScopes([]),
+    // permitScopes([]),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -29,10 +31,9 @@ projectsRouter.get(
             const limit = (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100;
             const page = (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1;
 
-            // ownerロールを持つプロジェクト検索
+            // 権限を持つプロジェクト検索
             const searchCoinditions = {
-                'member.id': req.user.sub,
-                'member.hasRole.roleName': 'owner'
+                'member.id': req.user.sub
             };
             const totalCount = await memberRepo.memberModel.countDocuments(searchCoinditions)
                 .setOptions({ maxTimeMS: 10000 })
@@ -54,7 +55,6 @@ projectsRouter.get(
                 },
                 { settings: 0 }
             );
-            // const totalCount = await projectRepo.count(searchCoinditions);
 
             res.set('X-Total-Count', totalCount.toString());
             res.json(projects);
@@ -65,40 +65,43 @@ projectsRouter.get(
 );
 
 /**
- * IDでプロジェクト検索
+ * プロジェクト取得
  */
 projectsRouter.get(
     '/:id',
-    permitScopes([]),
+    permitScopes(['projects.*', 'projects.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
         try {
-            const memberRepo = new cinerino.repository.Member(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
-            // ownerロールを持つプロジェクト検索
-            const searchCoinditions = {
-                'project.id': req.params.id,
-                'member.id': req.user.sub,
-                'member.hasRole.roleName': 'owner'
-            };
-            const projectMember = await memberRepo.memberModel.findOne(
-                searchCoinditions,
-                { project: 1 }
-            )
-                .setOptions({ maxTimeMS: 10000 })
-                .exec();
-            if (projectMember === null) {
-                throw new cinerino.factory.errors.NotFound('Project');
-            }
-
-            const project = await projectRepo.findById(
-                { id: req.params.id },
-                undefined
-            );
+            const projection: any = (req.memberPermissions.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/projects.settings.read`) >= 0)
+                ? undefined
+                : { settings: 0 };
+            const project = await projectRepo.findById({ id: req.project.id }, projection);
 
             res.json(project);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * プロジェクト設定取得
+ */
+projectsRouter.get(
+    '/:id/settings',
+    permitScopes(['projects.*', 'projects.settings.read']),
+    rateLimit,
+    validator,
+    async (req, res, next) => {
+        try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+
+            res.json(project.settings);
         } catch (error) {
             next(error);
         }

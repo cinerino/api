@@ -9,6 +9,8 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
+import { Permission } from '../iam';
+
 const organizationsRouter = Router();
 
 /**
@@ -16,7 +18,7 @@ const organizationsRouter = Router();
  */
 organizationsRouter.get(
     '/movieTheater',
-    permitScopes(['customer', 'organizations', 'organizations.read-only']),
+    permitScopes([Permission.User, 'customer', 'sellers.read']),
     rateLimit,
     validator,
     async (req, res, next) => {

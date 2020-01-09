@@ -10,6 +10,8 @@ import permitScopes from '../../../middlewares/permitScopes';
 import rateLimit from '../../../middlewares/rateLimit';
 import validator from '../../../middlewares/validator';
 
+import { Permission } from '../../../iam';
+
 const ordersRouter = Router();
 
 /**
@@ -17,7 +19,7 @@ const ordersRouter = Router();
  */
 ordersRouter.get(
     '',
-    permitScopes(['customer']),
+    permitScopes([Permission.User, 'customer']),
     rateLimit,
     ...[
         query('orderDateFrom')

@@ -15,6 +15,8 @@ import rateLimit from '../../middlewares/rateLimit';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
+import { Permission } from '../../iam';
+
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -35,7 +37,7 @@ const movieTicketPaymentRouter = Router();
  */
 movieTicketPaymentRouter.post(
     '/actions/check',
-    permitScopes(['customer', 'tokens']),
+    permitScopes([Permission.User, 'customer', 'transactions']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -79,7 +81,7 @@ movieTicketPaymentRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 movieTicketPaymentRouter.post<ParamsDictionary>(
     '/authorize',
-    permitScopes(['customer', 'transactions']),
+    permitScopes([Permission.User, 'customer', 'transactions']),
     rateLimit,
     ...[
         body('object')
@@ -177,7 +179,7 @@ movieTicketPaymentRouter.post<ParamsDictionary>(
  */
 movieTicketPaymentRouter.put(
     '/authorize/:actionId/void',
-    permitScopes(['customer', 'transactions']),
+    permitScopes([Permission.User, 'customer', 'transactions']),
     rateLimit,
     validator,
     async (req, res, next) => {

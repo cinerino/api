@@ -18,6 +18,60 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v1.4.0 - 2020-01-09
+
+### Added
+
+- プロジェクトメンバーの簡易な権限管理を追加
+- プロジェクトメンバー検索を追加
+- IAMロール検索を追加
+- プロジェクト設定取得エンドポイントを追加
+
+### Changed
+
+- プロジェクトユーザーロールの使用可能サービスの許可スコープに`user`を追加
+- 以下権限を追加
+    - `accounts.*`
+    - `accounts.read`
+    - `actions.*`
+    - `actions.read`
+    - `applications.*`
+    - `applications.read`
+    - `authorizations.*`
+    - `authorizations.read`
+    - `creativeWorks.read`
+    - `events.read-only`
+    - `iam.members.me.read`
+    - `invoices.*`
+    - `invoices.read`
+    - `orders.*`
+    - `orders.read`
+    - `orders.read-only`
+    - `organizations.read-only`
+    - `paymentMethods.*`
+    - `paymentMethods.read`
+    - `people.*`
+    - `people.read`
+    - `programMemberships.*`
+    - `programMemberships.read`
+    - `reservations.*`
+    - `reservations.findByToken`
+    - `sellers.read`
+    - `tokens`
+    - `transactions.*`
+    - `transactions.read`
+    - `transactions`
+    - `tasks.*`
+    - `tasks.read`
+- プロジェクトメンバーでないリクエストユーザーに`customer`ロールを与えるように調整
+
+### Deprecated
+
+### Removed
+
+- 追加許可スコープ設定を削除
+- `CLIENTS_AS_ADMIN`設定を削除
+
 ## v1.3.0 - 2020-01-01
 
 ### Added

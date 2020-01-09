@@ -13,6 +13,8 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
+import { Permission } from '../iam';
+
 const sellersRouter = Router();
 
 /**
@@ -20,7 +22,7 @@ const sellersRouter = Router();
  */
 sellersRouter.post(
     '',
-    permitScopes(['sellers']),
+    permitScopes(['sellers.*']),
     rateLimit,
     ...[
         body('typeOf')
@@ -90,7 +92,7 @@ sellersRouter.post(
  */
 sellersRouter.get(
     '',
-    permitScopes(['customer', 'sellers', 'sellers.read-only', 'pos']),
+    permitScopes([Permission.User, 'customer', 'sellers.*', 'sellers.read', 'pos']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -124,7 +126,7 @@ sellersRouter.get(
  */
 sellersRouter.get(
     '/:id',
-    permitScopes(['customer', 'sellers', 'sellers.read-only']),
+    permitScopes([Permission.User, 'customer', 'sellers.*', 'sellers.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -150,7 +152,7 @@ sellersRouter.get(
 // tslint:disable-next-line:use-default-type-parameter
 sellersRouter.put<ParamsDictionary>(
     '/:id',
-    permitScopes(['sellers']),
+    permitScopes(['sellers.*']),
     rateLimit,
     ...[
         body('typeOf')
@@ -220,7 +222,7 @@ sellersRouter.put<ParamsDictionary>(
  */
 sellersRouter.delete(
     '/:id',
-    permitScopes(['sellers']),
+    permitScopes(['sellers.*']),
     rateLimit,
     validator,
     async (req, res, next) => {

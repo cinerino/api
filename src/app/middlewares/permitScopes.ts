@@ -7,15 +7,12 @@ import { NextFunction, Request, Response } from 'express';
 
 import { } from '../../@types/index';
 
+import { Permission } from '../iam';
+
 const debug = createDebug('cinerino-api:middlewares');
 
-export const SCOPE_ADMIN = 'admin';
-export const SCOPE_CUSTOMER = 'customer';
 export const SCOPE_COGNITO_USER_ADMIN = 'aws.cognito.signin.user.admin';
 
-const CLIENTS_AS_ADMIN: string[] = (process.env.CLIENTS_AS_ADMIN !== undefined)
-    ? /* istanbul ignore next */ process.env.CLIENTS_AS_ADMIN.split(',')
-    : [];
 const CLIENTS_AS_CUSTOMER: string[] = (process.env.CLIENTS_AS_CUSTOMER !== undefined)
     ? /* istanbul ignore next */ process.env.CLIENTS_AS_CUSTOMER.split(',')
     : [];
@@ -37,43 +34,31 @@ export default (specifiedPermittedScopes: IScope[]) => {
             return;
         }
 
-        const ADMIN_ADDITIONAL_PERMITTED_SCOPES: string[] = (process.env.ADMIN_ADDITIONAL_PERMITTED_SCOPES !== undefined)
-            ? /* istanbul ignore next */ process.env.ADMIN_ADDITIONAL_PERMITTED_SCOPES.split(',')
-            : [];
-        const CUSTOMER_ADDITIONAL_PERMITTED_SCOPES: string[] = (process.env.CUSTOMER_ADDITIONAL_PERMITTED_SCOPES !== undefined)
-            ? /* istanbul ignore next */ process.env.CUSTOMER_ADDITIONAL_PERMITTED_SCOPES.split(',')
-            : [];
-
         let permittedScopes = [...specifiedPermittedScopes];
 
-        // SCOPE_ADMINは全アクセス許可
-        permittedScopes.push(SCOPE_ADMIN);
+        // Permission.Adminは全アクセス許可
+        permittedScopes.push(Permission.Admin);
 
         permittedScopes = [...new Set(permittedScopes)];
         debug('permittedScopes:', permittedScopes);
 
+        const ownedScopes: string[] = [...req.user.scopes, ...req.memberPermissions, ...req.customerPermissions];
+
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */
-        if (req.user.scopes.indexOf(SCOPE_COGNITO_USER_ADMIN) >= 0) {
-            // aws.cognito.signin.user.adminスコープのみでadminとして認定するクライアント
-            // tslint:disable-next-line:no-single-line-block-comment
-            /* istanbul ignore if */
-            if (CLIENTS_AS_ADMIN.indexOf(req.user.client_id) >= 0) {
-                req.user.scopes.push(`${RESOURCE_SERVER_IDENTIFIER}/${SCOPE_ADMIN}`);
-            }
-
+        if (ownedScopes.indexOf(SCOPE_COGNITO_USER_ADMIN) >= 0) {
             // aws.cognito.signin.user.adminスコープのみでcustomerとして認定するクライアント
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore if */
             if (CLIENTS_AS_CUSTOMER.indexOf(req.user.client_id) >= 0) {
-                req.user.scopes.push(`${RESOURCE_SERVER_IDENTIFIER}/${SCOPE_CUSTOMER}`);
+                ownedScopes.push(`${RESOURCE_SERVER_IDENTIFIER}/${Permission.Customer}`);
             }
         }
 
-        debug('req.user.scopes:', req.user.scopes);
-        req.isAdmin =
-            req.user.scopes.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/${SCOPE_ADMIN}`) >= 0
-            || ADMIN_ADDITIONAL_PERMITTED_SCOPES.some((scope) => req.user.scopes.indexOf(scope) >= 0);
+        debug('ownedScopes:', ownedScopes);
+
+        // isAdminの条件は、プロジェクトメンバーかどうか
+        req.isAdmin = req.isProjectMember === true;
 
         // ドメインつきのカスタムスコープリストを許容するように変更
         const permittedScopesWithResourceServerIdentifier = [
@@ -81,25 +66,17 @@ export default (specifiedPermittedScopes: IScope[]) => {
             ...permittedScopes.map((permittedScope) => `${RESOURCE_SERVER_IDENTIFIER}/auth/${permittedScope}`)
         ];
 
-        // 管理者の追加許可スコープをセット
-        permittedScopesWithResourceServerIdentifier.push(...ADMIN_ADDITIONAL_PERMITTED_SCOPES);
-
-        // 会員の場合、追加許可スコープをセット
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore if */
-        if (permittedScopes.indexOf(SCOPE_CUSTOMER) >= 0) {
-            permittedScopesWithResourceServerIdentifier.push(...CUSTOMER_ADDITIONAL_PERMITTED_SCOPES);
-        }
-
         // スコープチェック
         try {
             debug('checking scope requirements...', permittedScopesWithResourceServerIdentifier);
-            if (!isScopesPermitted(req.user.scopes, permittedScopesWithResourceServerIdentifier)) {
+            if (!isScopesPermitted(ownedScopes, permittedScopesWithResourceServerIdentifier)) {
                 next(new cinerino.factory.errors.Forbidden('scope requirements not satisfied'));
             } else {
                 next();
             }
         } catch (error) {
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore next */
             next(error);
         }
     };
@@ -109,10 +86,6 @@ export default (specifiedPermittedScopes: IScope[]) => {
  * 所有スコープが許可されたスコープかどうか
  */
 function isScopesPermitted(ownedScopes: string[], permittedScopes: string[]) {
-    if (!Array.isArray(ownedScopes)) {
-        throw new Error('ownedScopes should be array of string');
-    }
-
     const permittedOwnedScope = permittedScopes.find((permittedScope) => ownedScopes.indexOf(permittedScope) >= 0);
 
     return (permittedOwnedScope !== undefined);

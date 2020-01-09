@@ -28,7 +28,7 @@ const applicationsRouter = express_1.Router();
  */
 // applicationsRouter.post(
 //     '',
-//     permitScopes(['applications']),
+//     permitScopes(['applications.*']),
 //     rateLimit,
 //     ...[
 //         body('typeOf')
@@ -55,7 +55,7 @@ const applicationsRouter = express_1.Router();
 /**
  * アプリケーション検索
  */
-applicationsRouter.get('', permitScopes_1.default(['applications', 'applications.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+applicationsRouter.get('', permitScopes_1.default(['applications.*', 'applications.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const searchCoinditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
@@ -73,7 +73,7 @@ applicationsRouter.get('', permitScopes_1.default(['applications', 'applications
 /**
  * IDでアプリケーション検索
  */
-applicationsRouter.get('/:id', permitScopes_1.default(['applications', 'applications.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+applicationsRouter.get('/:id', permitScopes_1.default(['applications.*', 'applications.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const applicationRepo = new cinerino.repository.Application(mongoose.connection);
         const application = yield applicationRepo.findById({
@@ -91,7 +91,7 @@ applicationsRouter.get('/:id', permitScopes_1.default(['applications', 'applicat
 // tslint:disable-next-line:use-default-type-parameter
 // applicationsRouter.put<ParamsDictionary>(
 //     '/:id',
-//     permitScopes(['applications']),
+//     permitScopes(['applications.*']),
 //     rateLimit,
 //     ...[
 //         body('typeOf')
@@ -120,7 +120,7 @@ applicationsRouter.get('/:id', permitScopes_1.default(['applications', 'applicat
  */
 // applicationsRouter.delete(
 //     '/:id',
-//     permitScopes(['applications']),
+//     permitScopes(['applications.*']),
 //     rateLimit,
 //     validator,
 //     async (req, res, next) => {

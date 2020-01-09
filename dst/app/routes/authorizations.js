@@ -23,7 +23,7 @@ const authorizationsRouter = express_1.Router();
 /**
  * 承認検索
  */
-authorizationsRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
+authorizationsRouter.get('', permitScopes_1.default(['authorizations.*', 'authorizations.read']), rateLimit_1.default, ...[
     express_validator_1.query('validFrom')
         .optional()
         .isISO8601()

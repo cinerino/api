@@ -17,7 +17,7 @@ const invoicesRouter = Router();
  */
 invoicesRouter.get(
     '',
-    permitScopes([]),
+    permitScopes(['invoices.*', 'invoices.read']),
     rateLimit,
     ...[
         query('createdFrom')

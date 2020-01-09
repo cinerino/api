@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * プロジェクト詳細ルーター
  */
+const cinerino = require("@cinerino/domain");
 const express = require("express");
 const health_1 = require("../health");
 const stats_1 = require("../stats");
@@ -14,6 +15,7 @@ const creativeWorks_1 = require("../creativeWorks");
 const events_1 = require("../events");
 const iam_1 = require("../iam");
 const invoices_1 = require("../invoices");
+const members_1 = require("../members");
 const offers_1 = require("../offers");
 const orders_1 = require("../orders");
 const organizations_1 = require("../organizations");
@@ -30,6 +32,14 @@ const transactions_1 = require("../transactions");
 const ttts_1 = require("../ttts");
 const userPools_1 = require("../userPools");
 const projectDetailRouter = express.Router();
+projectDetailRouter.use((req, _, next) => {
+    // プロジェクト未指定は拒否
+    if (req.project === undefined || req.project === null || typeof req.project.id !== 'string') {
+        next(new cinerino.factory.errors.Forbidden('project not specified'));
+        return;
+    }
+    next();
+});
 projectDetailRouter.use('/health', health_1.default);
 projectDetailRouter.use('/stats', stats_1.default);
 projectDetailRouter.use('/accounts', accounts_1.default);
@@ -40,6 +50,7 @@ projectDetailRouter.use('/creativeWorks', creativeWorks_1.default);
 projectDetailRouter.use('/events', events_1.default);
 projectDetailRouter.use('/iam', iam_1.default);
 projectDetailRouter.use('/invoices', invoices_1.default);
+projectDetailRouter.use('/members', members_1.default);
 projectDetailRouter.use('/offers', offers_1.default);
 projectDetailRouter.use('/orders', orders_1.default);
 projectDetailRouter.use('/organizations', organizations_1.default);

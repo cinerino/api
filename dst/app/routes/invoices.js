@@ -23,7 +23,7 @@ const invoicesRouter = express_1.Router();
 /**
  * インボイス検索
  */
-invoicesRouter.get('', permitScopes_1.default([]), rateLimit_1.default, ...[
+invoicesRouter.get('', permitScopes_1.default(['invoices.*', 'invoices.read']), rateLimit_1.default, ...[
     express_validator_1.query('createdFrom')
         .optional()
         .isISO8601()
