@@ -8,6 +8,7 @@
             "actions.*",
             "applications.*",
             "authorizations.*",
+            "iam.members.me.read",
             "invoices.*",
             "orders.*",
             "paymentMethods.*",
@@ -28,6 +29,7 @@
             "actions.*",
             "applications.*",
             "authorizations.*",
+            "iam.members.me.read",
             "invoices.*",
             "orders.*",
             "paymentMethods.*",
@@ -48,6 +50,7 @@
             "actions.read",
             "applications.read",
             "authorizations.read",
+            "iam.members.me.read",
             "invoices.read",
             "orders.read",
             "paymentMethods.read",
@@ -64,6 +67,15 @@
         "roleName": "user",
         "permissions": [
             "user",
+            "iam.members.me.read",
+            "projects.read"
+        ]
+    },
+    {
+        "roleName": "chevre.admin",
+        "permissions": [
+            "chevre.*",
+            "iam.members.me.read",
             "projects.read"
         ]
     },
@@ -71,12 +83,11 @@
         "roleName": "customer",
         "permissions": [
             "customer",
-            "creativeWorks.read-only",
+            "creativeWorks.read",
             "events.read-only",
             "orders.read-only",
-            "organizations.read-only",
             "reservations.findByToken",
-            "sellers.read-only",
+            "sellers.read",
             "tokens",
             "transactions"
         ]

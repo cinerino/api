@@ -22,7 +22,7 @@ const sellersRouter = Router();
  */
 sellersRouter.post(
     '',
-    permitScopes(['sellers.*', 'sellers']),
+    permitScopes(['sellers.*']),
     rateLimit,
     ...[
         body('typeOf')
@@ -92,7 +92,7 @@ sellersRouter.post(
  */
 sellersRouter.get(
     '',
-    permitScopes([Permission.User, 'customer', 'sellers.*', 'sellers.read', 'sellers', 'sellers.read-only', 'pos']),
+    permitScopes([Permission.User, 'customer', 'sellers.*', 'sellers.read', 'pos']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -126,7 +126,7 @@ sellersRouter.get(
  */
 sellersRouter.get(
     '/:id',
-    permitScopes([Permission.User, 'customer', 'sellers.*', 'sellers.read', 'sellers', 'sellers.read-only']),
+    permitScopes([Permission.User, 'customer', 'sellers.*', 'sellers.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -152,7 +152,7 @@ sellersRouter.get(
 // tslint:disable-next-line:use-default-type-parameter
 sellersRouter.put<ParamsDictionary>(
     '/:id',
-    permitScopes(['sellers.*', 'sellers']),
+    permitScopes(['sellers.*']),
     rateLimit,
     ...[
         body('typeOf')
@@ -222,7 +222,7 @@ sellersRouter.put<ParamsDictionary>(
  */
 sellersRouter.delete(
     '/:id',
-    permitScopes(['sellers.*', 'sellers']),
+    permitScopes(['sellers.*']),
     rateLimit,
     validator,
     async (req, res, next) => {

@@ -19,7 +19,9 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
+const me_1 = require("./members/me");
 const iamMembersRouter = express.Router();
+iamMembersRouter.use('/me', me_1.default);
 /**
  * プロジェクトメンバー検索
  */

@@ -25,7 +25,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
     - `applications.read`
     - `authorizations.*`
     - `authorizations.read`
-    - `creativeWorks.read-only`
+    - `creativeWorks.read`
     - `events.read-only`
     - `invoices.*`
     - `invoices.read`
@@ -41,7 +41,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
     - `programMemberships.read`
     - `reservations.*`
     - `reservations.findByToken`
-    - `sellers.read-only`
     - `sellers.read`
     - `tokens`
     - `transactions.*`

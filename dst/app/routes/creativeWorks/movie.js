@@ -30,7 +30,7 @@ const movieRouter = express_1.Router();
 /**
  * 映画作品検索
  */
-movieRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'creativeWorks', 'creativeWorks.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+movieRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'creativeWorks.*', 'creativeWorks.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });

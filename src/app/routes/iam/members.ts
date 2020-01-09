@@ -10,7 +10,11 @@ import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
+import iamMeRouter from './members/me';
+
 const iamMembersRouter = express.Router();
+
+iamMembersRouter.use('/me', iamMeRouter);
 
 /**
  * プロジェクトメンバー検索

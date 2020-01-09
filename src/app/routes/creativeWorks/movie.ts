@@ -26,7 +26,7 @@ const movieRouter = Router();
  */
 movieRouter.get(
     '',
-    permitScopes([Permission.User, 'creativeWorks', 'creativeWorks.read-only']),
+    permitScopes([Permission.User, 'creativeWorks.*', 'creativeWorks.read']),
     rateLimit,
     validator,
     async (req, res, next) => {

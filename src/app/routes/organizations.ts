@@ -18,7 +18,7 @@ const organizationsRouter = Router();
  */
 organizationsRouter.get(
     '/movieTheater',
-    permitScopes([Permission.User, 'customer', 'organizations', 'organizations.read-only']),
+    permitScopes([Permission.User, 'customer', 'sellers.read']),
     rateLimit,
     validator,
     async (req, res, next) => {

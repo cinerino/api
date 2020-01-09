@@ -133,7 +133,7 @@ reservationsRouter.get(
  */
 reservationsRouter.post(
     '/eventReservation/screeningEvent/findByToken',
-    permitScopes([Permission.User, 'reservations.findByToken', 'tokens', 'tokens.read-only']),
+    permitScopes([Permission.User, 'reservations.findByToken']),
     rateLimit,
     ...[
         body('token')

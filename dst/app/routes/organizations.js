@@ -23,7 +23,7 @@ const organizationsRouter = express_1.Router();
 /**
  * @deprecated Use /sellers
  */
-organizationsRouter.get('/movieTheater', permitScopes_1.default([iam_1.Permission.User, 'customer', 'organizations', 'organizations.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+organizationsRouter.get('/movieTheater', permitScopes_1.default([iam_1.Permission.User, 'customer', 'sellers.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const searchCoinditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
             // tslint:disable-next-line:no-magic-numbers

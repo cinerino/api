@@ -115,7 +115,7 @@ reservationsRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'reser
 /**
  * トークンで予約照会
  */
-reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitScopes_1.default([iam_1.Permission.User, 'reservations.findByToken', 'tokens', 'tokens.read-only']), rateLimit_1.default, ...[
+reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitScopes_1.default([iam_1.Permission.User, 'reservations.findByToken']), rateLimit_1.default, ...[
     express_validator_1.body('token')
         .not()
         .isEmpty()
