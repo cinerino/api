@@ -31,7 +31,7 @@ const screeningEventRouter = Router();
  */
 screeningEventRouter.get(
     '',
-    permitScopes([Permission.User, 'customer', 'events', 'events.read-only']),
+    permitScopes([Permission.User, 'customer', 'events.*', 'events.read']),
     rateLimit,
     ...[
         query('inSessionFrom')
@@ -142,7 +142,7 @@ screeningEventRouter.get(
  */
 screeningEventRouter.get(
     '/:id',
-    permitScopes([Permission.User, 'customer', 'events', 'events.read-only']),
+    permitScopes([Permission.User, 'customer', 'events.*', 'events.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -193,7 +193,7 @@ screeningEventRouter.get(
  */
 screeningEventRouter.get(
     '/:id/offers',
-    permitScopes([Permission.User, 'customer', 'events', 'events.read-only']),
+    permitScopes([Permission.User, 'customer', 'events.*', 'events.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -222,7 +222,7 @@ screeningEventRouter.get(
 // tslint:disable-next-line:use-default-type-parameter
 screeningEventRouter.get<ParamsDictionary>(
     '/:id/offers/ticket',
-    permitScopes([Permission.User, 'customer', 'events', 'events.read-only']),
+    permitScopes([Permission.User, 'customer', 'events.*', 'events.read']),
     rateLimit,
     ...[
         query('seller')

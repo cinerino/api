@@ -88,7 +88,7 @@ actionsRouter.post(
  */
 actionsRouter.get(
     '/print/ticket',
-    permitScopes([Permission.User, 'customer', 'actions', 'actions.read-only']),
+    permitScopes([Permission.User, 'customer']),
     rateLimit,
     validator,
     async (req, res, next) => {
