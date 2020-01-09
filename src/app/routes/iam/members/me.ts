@@ -35,4 +35,57 @@ iamMeRouter.get(
     }
 );
 
+iamMeRouter.get(
+    '/profile',
+    permitScopes(['iam.members.me.read']),
+    rateLimit,
+    async (req, res, next) => {
+        try {
+            const memberRepo = new cinerino.repository.Member(mongoose.connection);
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined
+                || project.settings.cognito === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+
+            const members = await memberRepo.search({
+                member: { id: { $eq: req.user.sub } },
+                project: { id: { $eq: req.project.id } },
+                limit: 1
+            });
+            if (members.length === 0) {
+                throw new cinerino.factory.errors.NotFound('Member');
+            }
+
+            const member = members[0].member;
+
+            const personRepo = new cinerino.repository.Person({
+                userPoolId: project.settings.cognito.adminUserPool.id
+            });
+            const person = await personRepo.findById({
+                userId: member.id
+            });
+
+            if (person.memberOf === undefined) {
+                throw new cinerino.factory.errors.NotFound('Person.memberOf');
+            }
+
+            const username = person.memberOf.membershipNumber;
+            if (username === undefined) {
+                throw new cinerino.factory.errors.NotFound('Person.memberOf.membershipNumber');
+            }
+
+            const profile = await personRepo.getUserAttributes({
+                username: username
+            });
+
+            res.json(profile);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 export default iamMeRouter;
