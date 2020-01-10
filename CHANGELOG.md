@@ -18,6 +18,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v1.5.0 - 2020-01-10
+
+### Changed
+
+- 以下権限を追加
+    - `events.*`
+    - `events.read`
+    - `orders.read`
+    - `orders.findByConfirmationNumber`
+
 ## v1.4.0 - 2020-01-09
 
 ### Added

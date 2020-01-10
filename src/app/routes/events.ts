@@ -35,7 +35,7 @@ eventsRouter.use('/screeningEvent', screeningEventRouter);
  */
 eventsRouter.get(
     '',
-    permitScopes([Permission.User, 'customer', 'events', 'events.read-only']),
+    permitScopes([Permission.User, 'customer', 'events.*', 'events.read']),
     rateLimit,
     ...[
         query('inSessionFrom')
@@ -141,7 +141,7 @@ eventsRouter.get(
  */
 eventsRouter.get(
     '/:id',
-    permitScopes([Permission.User, 'customer', 'events', 'events.read-only']),
+    permitScopes([Permission.User, 'customer', 'events.*', 'events.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -191,7 +191,7 @@ eventsRouter.get(
  */
 eventsRouter.get(
     '/:id/offers',
-    permitScopes([Permission.User, 'customer', 'events', 'events.read-only']),
+    permitScopes([Permission.User, 'customer', 'events.*', 'events.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -220,7 +220,7 @@ eventsRouter.get(
 // tslint:disable-next-line:use-default-type-parameter
 eventsRouter.get<ParamsDictionary>(
     '/:id/offers/ticket',
-    permitScopes([Permission.User, 'customer', 'events', 'events.read-only']),
+    permitScopes([Permission.User, 'customer', 'events.*', 'events.read']),
     rateLimit,
     ...[
         query('seller')

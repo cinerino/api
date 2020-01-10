@@ -84,8 +84,8 @@
         "permissions": [
             "customer",
             "creativeWorks.read",
-            "events.read-only",
-            "orders.read-only",
+            "events.read",
+            "orders.findByConfirmationNumber",
             "reservations.findByToken",
             "sellers.read",
             "tokens",

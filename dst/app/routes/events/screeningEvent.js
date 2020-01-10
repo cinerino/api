@@ -32,7 +32,7 @@ const screeningEventRouter = express_1.Router();
 /**
  * イベント検索
  */
-screeningEventRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 'events', 'events.read-only']), rateLimit_1.default, ...[
+screeningEventRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 'events.*', 'events.read']), rateLimit_1.default, ...[
     express_validator_1.query('inSessionFrom')
         .optional()
         .isISO8601()
@@ -120,7 +120,7 @@ screeningEventRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'cus
 /**
  * IDでイベント検索
  */
-screeningEventRouter.get('/:id', permitScopes_1.default([iam_1.Permission.User, 'customer', 'events', 'events.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+screeningEventRouter.get('/:id', permitScopes_1.default([iam_1.Permission.User, 'customer', 'events.*', 'events.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
@@ -161,7 +161,7 @@ screeningEventRouter.get('/:id', permitScopes_1.default([iam_1.Permission.User, 
 /**
  * イベントに対するオファー検索
  */
-screeningEventRouter.get('/:id/offers', permitScopes_1.default([iam_1.Permission.User, 'customer', 'events', 'events.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+screeningEventRouter.get('/:id/offers', permitScopes_1.default([iam_1.Permission.User, 'customer', 'events.*', 'events.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -182,7 +182,7 @@ screeningEventRouter.get('/:id/offers', permitScopes_1.default([iam_1.Permission
  * イベントに対する券種オファー検索
  */
 // tslint:disable-next-line:use-default-type-parameter
-screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default([iam_1.Permission.User, 'customer', 'events', 'events.read-only']), rateLimit_1.default, ...[
+screeningEventRouter.get('/:id/offers/ticket', permitScopes_1.default([iam_1.Permission.User, 'customer', 'events.*', 'events.read']), rateLimit_1.default, ...[
     express_validator_1.query('seller')
         .not()
         .isEmpty()

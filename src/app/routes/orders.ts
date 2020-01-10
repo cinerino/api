@@ -49,7 +49,7 @@ const isNotAdmin: CustomValidator = (_, { req }) => !req.isAdmin;
  */
 ordersRouter.get(
     '',
-    permitScopes([Permission.User, 'customer', 'orders.*', 'orders.read', 'orders', 'orders.read-only']),
+    permitScopes([Permission.User, 'customer', 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
     rateLimit,
     // 互換性維持のため
     (req, _, next) => {
@@ -365,7 +365,7 @@ ordersRouter.get(
  */
 ordersRouter.post(
     '/findByOrderInquiryKey',
-    permitScopes([Permission.User, 'customer', 'orders', 'orders.read-only']),
+    permitScopes([Permission.User, 'customer', 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
     rateLimit,
     ...[
         body('theaterCode')
@@ -430,7 +430,7 @@ ordersRouter.post(
  */
 ordersRouter.post(
     '/findByConfirmationNumber',
-    permitScopes([Permission.User, 'customer', 'orders.*', 'orders', 'orders.read-only']),
+    permitScopes([Permission.User, 'customer', 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
     rateLimit,
     ...[
         query('orderDateFrom')
@@ -595,7 +595,7 @@ ordersRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 ordersRouter.post<ParamsDictionary>(
     '/:orderNumber/ownershipInfos/authorize',
-    permitScopes([Permission.User, 'customer', 'orders', 'orders.read-only']),
+    permitScopes([Permission.User, 'customer', 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
     rateLimit,
     ...[
         body('customer')

@@ -68,7 +68,7 @@ actionsRouter.post('/print/ticket', permitScopes_1.default([iam_1.Permission.Use
 /**
  * チケット印刷アクション検索
  */
-actionsRouter.get('/print/ticket', permitScopes_1.default([iam_1.Permission.User, 'customer', 'actions', 'actions.read-only']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+actionsRouter.get('/print/ticket', permitScopes_1.default([iam_1.Permission.User, 'customer']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actions = yield new cinerino.repository.Action(mongoose.connection).searchPrintTicket({
             agentId: req.user.sub,
