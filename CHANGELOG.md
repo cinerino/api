@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- アプリケーション追加エンドポイントを追加
+
 ### Changed
 
 - IAMロールリポジトリを追加
