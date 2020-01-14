@@ -3,7 +3,8 @@
  */
 import * as cinerino from '@cinerino/domain';
 import * as express from 'express';
-import { NO_CONTENT } from 'http-status';
+import { body } from 'express-validator';
+import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
 import permitScopes from '../../middlewares/permitScopes';
@@ -12,9 +13,135 @@ import validator from '../../middlewares/validator';
 
 import iamMeRouter from './members/me';
 
+const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
+    apiVersion: 'latest',
+    region: 'ap-northeast-1',
+    credentials: new cinerino.AWS.Credentials({
+        accessKeyId: <string>process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: <string>process.env.AWS_SECRET_ACCESS_KEY
+    })
+});
+
 const iamMembersRouter = express.Router();
 
 iamMembersRouter.use('/me', iamMeRouter);
+
+/**
+ * プロジェクトメンバー追加
+ */
+iamMembersRouter.post(
+    '',
+    permitScopes([]),
+    rateLimit,
+    ...[
+        body('member')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required'),
+        body('member.id')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isString(),
+        body('member.hasRole')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isArray(),
+        body('member.hasRole.*.roleName')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isString()
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            const memberRepo = new cinerino.repository.Member(mongoose.connection);
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined || project.settings.cognito === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
+            }
+
+            let member;
+
+            // ロールをひとつに限定
+            const role = {
+                typeOf: 'OrganizationRole',
+                roleName: (<any[]>req.body.member.hasRole).shift().roleName,
+                memberOf: { typeOf: project.typeOf, id: project.id }
+            };
+
+            switch (role.roleName) {
+                case 'customer':
+                    // カスタマーロールの場合
+                    const customerUserPoolId = project.settings.cognito.customerUserPool.id;
+
+                    // クライアント検索
+                    const userPoolClient =
+                        await new Promise<cinerino.AWS.CognitoIdentityServiceProvider.UserPoolClientType>((resolve, reject) => {
+                            cognitoIdentityServiceProvider.describeUserPoolClient(
+                                {
+                                    UserPoolId: customerUserPoolId,
+                                    ClientId: req.body.member.id
+                                },
+                                (err, data) => {
+                                    if (err instanceof Error) {
+                                        reject(err);
+                                    } else {
+                                        if (data.UserPoolClient === undefined) {
+                                            reject(new cinerino.factory.errors.NotFound('UserPoolClient'));
+                                        } else {
+                                            resolve(data.UserPoolClient);
+                                        }
+                                    }
+                                }
+                            );
+                        });
+
+                    member = {
+                        typeOf: cinerino.factory.creativeWorkType.WebApplication,
+                        id: userPoolClient.ClientId,
+                        hasRole: [role]
+                    };
+
+                    break;
+
+                default:
+                    // 管理者ロールの場合
+                    const adminUserPoolId = project.settings.cognito.adminUserPool.id;
+
+                    const personRepo = new cinerino.repository.Person({
+                        userPoolId: adminUserPoolId
+                    });
+                    const people = await personRepo.search({ id: req.body.member.id });
+                    if (people[0].memberOf === undefined) {
+                        throw new cinerino.factory.errors.NotFound('Administrator.memberOf');
+                    }
+
+                    member = {
+                        typeOf: people[0].typeOf,
+                        id: people[0].id,
+                        username: people[0].memberOf.membershipNumber,
+                        hasRole: [role]
+                    };
+            }
+
+            await memberRepo.memberModel.create({
+                project: { typeOf: project.typeOf, id: project.id },
+                typeOf: 'OrganizationRole',
+                member: member
+            });
+
+            res.status(CREATED)
+                .json(member);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 
 /**
  * プロジェクトメンバー検索
@@ -67,6 +194,38 @@ iamMembersRouter.get(
             }
 
             res.json(members[0].member);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * プロジェクトメンバー削除
+ */
+iamMembersRouter.delete(
+    '/:id',
+    permitScopes([]),
+    rateLimit,
+    validator,
+    async (req, res, next) => {
+        try {
+            const memberRepo = new cinerino.repository.Member(mongoose.connection);
+            const doc = await memberRepo.memberModel.findOneAndDelete({
+                'member.id': {
+                    $eq: req.params.id
+                },
+                'project.id': {
+                    $eq: req.project.id
+                }
+            })
+                .exec();
+            if (doc === null) {
+                throw new cinerino.factory.errors.NotFound('Member');
+            }
+
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }

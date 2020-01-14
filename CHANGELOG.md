@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - アプリケーション追加エンドポイントを追加
+- IAMメンバー追加エンドポイントを追加
+- IAMメンバー削除エンドポイントを追加
 
 ### Changed
 
