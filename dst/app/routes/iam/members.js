@@ -21,6 +21,7 @@ const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
 const me_1 = require("./members/me");
+const iam_1 = require("../../iam");
 const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
     apiVersion: 'latest',
     region: 'ap-northeast-1',
@@ -39,11 +40,21 @@ iamMembersRouter.post('', permitScopes_1.default([]), rateLimit_1.default, ...[
         .not()
         .isEmpty()
         .withMessage(() => 'required'),
+    express_validator_1.body('member.applicationCategory')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isIn(['customer', 'admin']),
     express_validator_1.body('member.id')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
         .isString(),
+    express_validator_1.body('member.typeOf')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isIn([cinerino.factory.personType.Person, cinerino.factory.creativeWorkType.WebApplication]),
     express_validator_1.body('member.hasRole')
         .not()
         .isEmpty()
@@ -54,7 +65,9 @@ iamMembersRouter.post('', permitScopes_1.default([]), rateLimit_1.default, ...[
         .isEmpty()
         .withMessage(() => 'required')
         .isString()
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+], validator_1.default, 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -69,51 +82,95 @@ iamMembersRouter.post('', permitScopes_1.default([]), rateLimit_1.default, ...[
             roleName: req.body.member.hasRole.shift().roleName,
             memberOf: { typeOf: project.typeOf, id: project.id }
         };
-        switch (role.roleName) {
+        const applicationCategory = req.body.member.applicationCategory;
+        let userPoolClient;
+        switch (applicationCategory) {
             case 'customer':
                 // カスタマーロールの場合
                 const customerUserPoolId = project.settings.cognito.customerUserPool.id;
                 // クライアント検索
-                const userPoolClient = yield new Promise((resolve, reject) => {
-                    cognitoIdentityServiceProvider.describeUserPoolClient({
-                        UserPoolId: customerUserPoolId,
-                        ClientId: req.body.member.id
-                    }, (err, data) => {
-                        if (err instanceof Error) {
-                            reject(err);
-                        }
-                        else {
-                            if (data.UserPoolClient === undefined) {
-                                reject(new cinerino.factory.errors.NotFound('UserPoolClient'));
+                userPoolClient =
+                    yield new Promise((resolve, reject) => {
+                        cognitoIdentityServiceProvider.describeUserPoolClient({
+                            UserPoolId: customerUserPoolId,
+                            ClientId: req.body.member.id
+                        }, (err, data) => {
+                            if (err instanceof Error) {
+                                reject(err);
                             }
                             else {
-                                resolve(data.UserPoolClient);
+                                if (data.UserPoolClient === undefined) {
+                                    reject(new cinerino.factory.errors.NotFound('UserPoolClient'));
+                                }
+                                else {
+                                    resolve(data.UserPoolClient);
+                                }
                             }
-                        }
+                        });
                     });
-                });
                 member = {
                     typeOf: cinerino.factory.creativeWorkType.WebApplication,
                     id: userPoolClient.ClientId,
-                    hasRole: [role]
+                    hasRole: [{
+                            typeOf: 'OrganizationRole',
+                            roleName: iam_1.RoleName.Customer,
+                            memberOf: { typeOf: project.typeOf, id: project.id }
+                        }]
                 };
                 break;
             default:
                 // 管理者ロールの場合
                 const adminUserPoolId = project.settings.cognito.adminUserPool.id;
-                const personRepo = new cinerino.repository.Person({
-                    userPoolId: adminUserPoolId
-                });
-                const people = yield personRepo.search({ id: req.body.member.id });
-                if (people[0].memberOf === undefined) {
-                    throw new cinerino.factory.errors.NotFound('Administrator.memberOf');
+                switch (req.body.member.typeOf) {
+                    case cinerino.factory.personType.Person:
+                        const personRepo = new cinerino.repository.Person({
+                            userPoolId: adminUserPoolId
+                        });
+                        const people = yield personRepo.search({ id: req.body.member.id });
+                        if (people[0].memberOf === undefined) {
+                            throw new cinerino.factory.errors.NotFound('Administrator.memberOf');
+                        }
+                        member = {
+                            typeOf: people[0].typeOf,
+                            id: people[0].id,
+                            username: people[0].memberOf.membershipNumber,
+                            hasRole: [role]
+                        };
+                        break;
+                    case cinerino.factory.creativeWorkType.WebApplication:
+                        // クライアント検索
+                        userPoolClient =
+                            yield new Promise((resolve, reject) => {
+                                cognitoIdentityServiceProvider.describeUserPoolClient({
+                                    UserPoolId: customerUserPoolId,
+                                    ClientId: req.body.member.id
+                                }, (err, data) => {
+                                    if (err instanceof Error) {
+                                        reject(err);
+                                    }
+                                    else {
+                                        if (data.UserPoolClient === undefined) {
+                                            reject(new cinerino.factory.errors.NotFound('UserPoolClient'));
+                                        }
+                                        else {
+                                            resolve(data.UserPoolClient);
+                                        }
+                                    }
+                                });
+                            });
+                        member = {
+                            typeOf: cinerino.factory.creativeWorkType.WebApplication,
+                            id: userPoolClient.ClientId,
+                            hasRole: [{
+                                    typeOf: 'OrganizationRole',
+                                    roleName: iam_1.RoleName.Customer,
+                                    memberOf: { typeOf: project.typeOf, id: project.id }
+                                }]
+                        };
+                        break;
+                    default:
+                        throw new cinerino.factory.errors.Argument('member.typeOf', 'member type not supported');
                 }
-                member = {
-                    typeOf: people[0].typeOf,
-                    id: people[0].id,
-                    username: people[0].memberOf.membershipNumber,
-                    hasRole: [role]
-                };
         }
         yield memberRepo.memberModel.create({
             project: { typeOf: project.typeOf, id: project.id },

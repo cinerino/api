@@ -14,7 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const mongoose = require("mongoose");
-const iam_1 = require("../iam");
+// import { RoleName } from '../iam';
 const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
 exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -34,13 +34,22 @@ exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* 
                 role: roleRepo
             });
             memberPermissions = memberPermissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`);
-            // プロジェクトメンバーでない場合、`customer`ロールに設定
             if (memberPermissions.length === 0) {
-                const customerRole = yield roleRepo.search({ roleName: { $eq: iam_1.RoleName.Customer } });
-                const role = customerRole.shift();
-                if (role !== undefined) {
-                    customerPermissions.push(...role.permissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`));
-                }
+                // プロジェクトメンバーが見つからない場合、アプリケーションクライアントとして権限検索
+                memberPermissions = yield cinerino.service.iam.searchPermissions({
+                    project: { id: req.project.id },
+                    member: { id: req.user.client_id }
+                })({
+                    member: memberRepo,
+                    role: roleRepo
+                });
+                memberPermissions = memberPermissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`);
+                // プロジェクトメンバーでない場合、`customer`ロールに設定
+                // const customerRole = await roleRepo.search({ roleName: { $eq: RoleName.Customer } });
+                // const role = customerRole.shift();
+                // if (role !== undefined) {
+                //     customerPermissions.push(...role.permissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`));
+                // }
             }
             isProjectMember = yield checkProjectMember({
                 project: { id: req.project.id },

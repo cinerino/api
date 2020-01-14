@@ -5,7 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import { NextFunction, Request, Response } from 'express';
 import * as mongoose from 'mongoose';
 
-import { RoleName } from '../iam';
+// import { RoleName } from '../iam';
 
 const RESOURCE_SERVER_IDENTIFIER = <string>process.env.RESOURCE_SERVER_IDENTIFIER;
 
@@ -30,13 +30,23 @@ export default async (req: Request, _: Response, next: NextFunction) => {
             });
             memberPermissions = memberPermissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`);
 
-            // プロジェクトメンバーでない場合、`customer`ロールに設定
             if (memberPermissions.length === 0) {
-                const customerRole = await roleRepo.search({ roleName: { $eq: RoleName.Customer } });
-                const role = customerRole.shift();
-                if (role !== undefined) {
-                    customerPermissions.push(...role.permissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`));
-                }
+                // プロジェクトメンバーが見つからない場合、アプリケーションクライアントとして権限検索
+                memberPermissions = await cinerino.service.iam.searchPermissions({
+                    project: { id: req.project.id },
+                    member: { id: req.user.client_id }
+                })({
+                    member: memberRepo,
+                    role: roleRepo
+                });
+                memberPermissions = memberPermissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`);
+
+                // プロジェクトメンバーでない場合、`customer`ロールに設定
+                // const customerRole = await roleRepo.search({ roleName: { $eq: RoleName.Customer } });
+                // const role = customerRole.shift();
+                // if (role !== undefined) {
+                //     customerPermissions.push(...role.permissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`));
+                // }
             }
 
             isProjectMember = await checkProjectMember({
