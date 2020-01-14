@@ -56,7 +56,7 @@ setProject.use(async (req, _, next) => {
 // プロジェクト指定ルーティング配下については、すべてreq.projectを上書き
 setProject.use(
     '/projects/:id',
-    (req, _, next) => {
+    async (req, _, next) => {
         // authenticationにてアプリケーションによってプロジェクト決定済であれば、比較
         // 本番マルチテナントサービスを設置するまで保留
         // if (req.project !== undefined && req.project !== null) {
@@ -66,6 +66,16 @@ setProject.use(
         //         return;
         //     }
         // }
+
+        // アプリケーションがプロジェクトに対して権限を持つかどうか確認
+        const memberRepo = new cinerino.repository.Member(mongoose.connection);
+        const applicationMemberCount = await memberRepo.count({
+            project: { id: { $eq: req.params.id } },
+            member: { id: { $eq: req.user.client_id } }
+        });
+        if (applicationMemberCount !== 1) {
+            next(new cinerino.factory.errors.Forbidden(`forbidden project`));
+        }
 
         req.project = { typeOf: cinerino.factory.organizationType.Project, id: req.params.id };
 
