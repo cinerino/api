@@ -111,6 +111,7 @@ iamMembersRouter.post('', permitScopes_1.default([]), rateLimit_1.default, ...[
                 member = {
                     typeOf: cinerino.factory.creativeWorkType.WebApplication,
                     id: userPoolClient.ClientId,
+                    name: userPoolClient.ClientName,
                     hasRole: [{
                             typeOf: 'OrganizationRole',
                             roleName: iam_1.RoleName.Customer,
@@ -161,6 +162,7 @@ iamMembersRouter.post('', permitScopes_1.default([]), rateLimit_1.default, ...[
                         member = {
                             typeOf: cinerino.factory.creativeWorkType.WebApplication,
                             id: userPoolClient.ClientId,
+                            name: userPoolClient.ClientName,
                             hasRole: [{
                                     typeOf: 'OrganizationRole',
                                     roleName: iam_1.RoleName.Customer,

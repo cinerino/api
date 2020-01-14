@@ -120,6 +120,7 @@ iamMembersRouter.post(
                     member = {
                         typeOf: cinerino.factory.creativeWorkType.WebApplication,
                         id: userPoolClient.ClientId,
+                        name: userPoolClient.ClientName,
                         hasRole: [{
                             typeOf: 'OrganizationRole',
                             roleName: RoleName.Customer,
@@ -178,6 +179,7 @@ iamMembersRouter.post(
                             member = {
                                 typeOf: cinerino.factory.creativeWorkType.WebApplication,
                                 id: userPoolClient.ClientId,
+                                name: userPoolClient.ClientName,
                                 hasRole: [{
                                     typeOf: 'OrganizationRole',
                                     roleName: RoleName.Customer,
