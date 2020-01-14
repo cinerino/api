@@ -5,6 +5,10 @@ import * as cinerino from '@cinerino/domain';
 import * as express from 'express';
 import * as mongoose from 'mongoose';
 
+const CLIENTS_MULTI_PROJECTS: string[] = (process.env.CLIENTS_MULTI_PROJECTS !== undefined)
+    ? /* istanbul ignore next */ process.env.CLIENTS_MULTI_PROJECTS.split(',')
+    : [];
+
 const setProject = express.Router();
 
 setProject.use(async (req, _, next) => {
@@ -68,13 +72,15 @@ setProject.use(
         // }
 
         // アプリケーションがプロジェクトに対して権限を持つかどうか確認
-        const memberRepo = new cinerino.repository.Member(mongoose.connection);
-        const applicationMemberCount = await memberRepo.count({
-            project: { id: { $eq: req.params.id } },
-            member: { id: { $eq: req.user.client_id } }
-        });
-        if (applicationMemberCount !== 1) {
-            next(new cinerino.factory.errors.Forbidden(`forbidden project`));
+        if (CLIENTS_MULTI_PROJECTS.indexOf(req.user.client_id) < 0) {
+            const memberRepo = new cinerino.repository.Member(mongoose.connection);
+            const applicationMemberCount = await memberRepo.count({
+                project: { id: { $eq: req.params.id } },
+                member: { id: { $eq: req.user.client_id } }
+            });
+            if (applicationMemberCount !== 1) {
+                next(new cinerino.factory.errors.Forbidden(`forbidden project`));
+            }
         }
 
         req.project = { typeOf: cinerino.factory.organizationType.Project, id: req.params.id };
