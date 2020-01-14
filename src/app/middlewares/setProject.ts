@@ -3,17 +3,31 @@
  */
 import * as cinerino from '@cinerino/domain';
 import * as express from 'express';
+import * as mongoose from 'mongoose';
 
 const setProject = express.Router();
 
-setProject.use((req, _, next) => {
+setProject.use(async (req, _, next) => {
     let project: cinerino.factory.project.IProject | undefined;
 
     // アプリケーションからプロジェクトをセット
-    if (req.application !== undefined && req.application !== null) {
-        if (req.application.project !== undefined && req.application.project !== null) {
-            project = { typeOf: req.application.project.typeOf, id: req.application.project.id };
-        }
+    // if (req.application !== undefined && req.application !== null) {
+    //     if (req.application.project !== undefined && req.application.project !== null) {
+    //         project = { typeOf: req.application.project.typeOf, id: req.application.project.id };
+    //     }
+    // }
+
+    // アプリケーションクライアントが権限を持つプロジェクトが1つのみであれば、プロジェクトセット
+    const memberRepo = new cinerino.repository.Member(mongoose.connection);
+    const applicationMemberCount = await memberRepo.count({
+        member: { id: { $eq: req.user.client_id } }
+    });
+
+    if (applicationMemberCount === 1) {
+        const applicationMember = await memberRepo.search({
+            member: { id: { $eq: req.user.client_id } }
+        });
+        project = { typeOf: applicationMember[0].project.typeOf, id: applicationMember[0].project.id };
     }
 
     // 環境変数設定が存在する場合
