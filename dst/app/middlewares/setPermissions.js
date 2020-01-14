@@ -10,29 +10,33 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * プロジェクトメンバー権限セットミドルウェア
+ * 権限セットミドルウェア
  */
 const cinerino = require("@cinerino/domain");
-const createDebug = require("debug");
 const mongoose = require("mongoose");
 const iam_1 = require("../iam");
-// tslint:disable-next-line:no-require-imports no-var-requires
-const roles = require('../../../roles.json');
-const debug = createDebug('cinerino-api:middlewares');
 const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
 exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let memberPermissions = [];
         const customerPermissions = [];
+        const memberRepo = new cinerino.repository.Member(mongoose.connection);
+        const roleRepo = new cinerino.repository.Role(mongoose.connection);
         // プロジェクトが決定していれば権限をセット
         if (req.project !== undefined && req.project !== null && typeof req.project.id === 'string') {
-            memberPermissions = yield fixMemberPermissions(req)({
-                member: new cinerino.repository.Member(mongoose.connection)
+            // プロジェクト決定済のリクエストに対してプロジェクトメンバー権限を決定する
+            memberPermissions = yield cinerino.service.iam.searchPermissions({
+                project: { id: req.project.id },
+                member: { id: req.user.sub }
+            })({
+                member: memberRepo,
+                role: roleRepo
             });
-            debug('project member permissions fixed.', memberPermissions);
+            memberPermissions = memberPermissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`);
             // プロジェクトメンバーでない場合、`customer`ロールに設定
             if (memberPermissions.length === 0) {
-                const role = roles.find((r) => r.roleName === iam_1.RoleName.Customer);
+                const customerRole = yield roleRepo.search({ roleName: { $eq: iam_1.RoleName.Customer } });
+                const role = customerRole.shift();
                 if (role !== undefined) {
                     customerPermissions.push(...role.permissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`));
                 }
@@ -47,27 +51,3 @@ exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* 
         next(error);
     }
 });
-/**
- * プロジェクト決定済のリクエストに対してプロジェクトメンバー権限を決定する
- */
-function fixMemberPermissions(req) {
-    return (repos) => __awaiter(this, void 0, void 0, function* () {
-        let permissions = [];
-        if (req.project !== undefined && req.project !== null && typeof req.project.id === 'string') {
-            const projectMembers = yield repos.member.search({
-                project: { id: { $eq: req.project.id } },
-                member: { id: { $eq: req.user.sub } }
-            });
-            projectMembers.forEach((projectMember) => {
-                projectMember.member.hasRole.forEach((memberRole) => {
-                    const role = roles.find((r) => r.roleName === memberRole.roleName);
-                    if (role !== undefined) {
-                        permissions.push(...role.permissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`));
-                    }
-                });
-            });
-            permissions = [...new Set(permissions)];
-        }
-        return permissions;
-    });
-}
