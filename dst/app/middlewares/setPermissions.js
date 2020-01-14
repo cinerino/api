@@ -18,6 +18,7 @@ const iam_1 = require("../iam");
 const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
 exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        let isProjectMember = false;
         let memberPermissions = [];
         const customerPermissions = [];
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
@@ -41,22 +42,23 @@ exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* 
                     customerPermissions.push(...role.permissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`));
                 }
             }
+            isProjectMember = yield checkProjectMember({
+                project: { id: req.project.id },
+                member: { id: req.user.sub }
+            })({
+                member: memberRepo
+            });
         }
         req.customerPermissions = customerPermissions;
         req.memberPermissions = memberPermissions;
-        req.isProjectMember = yield isProjectMember({
-            project: { id: req.project.id },
-            member: { id: req.user.sub }
-        })({
-            member: memberRepo
-        });
+        req.isProjectMember = isProjectMember;
         next();
     }
     catch (error) {
         next(error);
     }
 });
-function isProjectMember(params) {
+function checkProjectMember(params) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
         let isMember = false;
         const members = yield repos.member.search({

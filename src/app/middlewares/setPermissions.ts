@@ -11,6 +11,7 @@ const RESOURCE_SERVER_IDENTIFIER = <string>process.env.RESOURCE_SERVER_IDENTIFIE
 
 export default async (req: Request, _: Response, next: NextFunction) => {
     try {
+        let isProjectMember = false;
         let memberPermissions: string[] = [];
         const customerPermissions: string[] = [];
 
@@ -37,17 +38,18 @@ export default async (req: Request, _: Response, next: NextFunction) => {
                     customerPermissions.push(...role.permissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`));
                 }
             }
+
+            isProjectMember = await checkProjectMember({
+                project: { id: req.project.id },
+                member: { id: req.user.sub }
+            })({
+                member: memberRepo
+            });
         }
 
         req.customerPermissions = customerPermissions;
         req.memberPermissions = memberPermissions;
-
-        req.isProjectMember = await isProjectMember({
-            project: { id: req.project.id },
-            member: { id: req.user.sub }
-        })({
-            member: memberRepo
-        });
+        req.isProjectMember = isProjectMember;
 
         next();
     } catch (error) {
@@ -55,7 +57,7 @@ export default async (req: Request, _: Response, next: NextFunction) => {
     }
 };
 
-function isProjectMember(params: {
+function checkProjectMember(params: {
     project: { id: string };
     member: { id: string };
 }) {
