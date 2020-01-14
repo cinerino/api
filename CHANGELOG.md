@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - IAMロールリポジトリを追加
+- アプリケーションクライアントもIAMメンバーとして管理するように調整
 
 ### Deprecated
 

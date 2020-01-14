@@ -41,10 +41,42 @@ export default async (req: Request, _: Response, next: NextFunction) => {
 
         req.customerPermissions = customerPermissions;
         req.memberPermissions = memberPermissions;
-        req.isProjectMember = Array.isArray(req.memberPermissions) && req.memberPermissions.length > 0;
+
+        req.isProjectMember = await isProjectMember({
+            project: { id: req.project.id },
+            member: { id: req.user.sub }
+        })({
+            member: memberRepo
+        });
 
         next();
     } catch (error) {
         next(error);
     }
 };
+
+function isProjectMember(params: {
+    project: { id: string };
+    member: { id: string };
+}) {
+    return async (repos: {
+        member: cinerino.repository.Member;
+    }) => {
+        let isMember = false;
+
+        const members = await repos.member.search({
+            project: { id: { $eq: params.project.id } },
+            member: { id: { $eq: params.member.id } }
+        });
+        if (members.length > 0) {
+            const member = members[0];
+
+            // メンバータイプが`Person`かつロールを持っていればプロジェクトメンバー
+            isMember = member.member.typeOf === cinerino.factory.personType.Person
+                && Array.isArray(member.member.hasRole)
+                && member.member.hasRole.length > 0;
+        }
+
+        return isMember;
+    };
+}

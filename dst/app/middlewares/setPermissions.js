@@ -44,10 +44,32 @@ exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* 
         }
         req.customerPermissions = customerPermissions;
         req.memberPermissions = memberPermissions;
-        req.isProjectMember = Array.isArray(req.memberPermissions) && req.memberPermissions.length > 0;
+        req.isProjectMember = yield isProjectMember({
+            project: { id: req.project.id },
+            member: { id: req.user.sub }
+        })({
+            member: memberRepo
+        });
         next();
     }
     catch (error) {
         next(error);
     }
 });
+function isProjectMember(params) {
+    return (repos) => __awaiter(this, void 0, void 0, function* () {
+        let isMember = false;
+        const members = yield repos.member.search({
+            project: { id: { $eq: params.project.id } },
+            member: { id: { $eq: params.member.id } }
+        });
+        if (members.length > 0) {
+            const member = members[0];
+            // メンバータイプが`Person`かつロールを持っていればプロジェクトメンバー
+            isMember = member.member.typeOf === cinerino.factory.personType.Person
+                && Array.isArray(member.member.hasRole)
+                && member.member.hasRole.length > 0;
+        }
+        return isMember;
+    });
+}
