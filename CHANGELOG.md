@@ -21,6 +21,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- `CLIENTS_AS_CUSTOMER`設定を削除
+
 ### Fixed
 
 ### Security
