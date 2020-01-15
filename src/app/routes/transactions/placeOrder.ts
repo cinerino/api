@@ -22,6 +22,8 @@ import placeOrder4cinemasunshineRouter from './placeOrder4cinemasunshine';
 
 import * as redis from '../../../redis';
 
+import { connectMongo } from '../../../connectMongo';
+
 import { Permission } from '../../iam';
 
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
@@ -1259,8 +1261,13 @@ placeOrderTransactionsRouter.get(
     rateLimit,
     validator,
     async (req, res, next) => {
+        let connection: mongoose.Connection | undefined;
+
         try {
-            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+            // 長時間占有する可能性があるのでコネクションを独自に生成
+            connection = await connectMongo({ defaultConnection: false });
+
+            const transactionRepo = new cinerino.repository.Transaction(connection);
             const searchConditions: cinerino.factory.transaction.ISearchConditions<cinerino.factory.transactionType.PlaceOrder> = {
                 limit: undefined,
                 page: undefined,
@@ -1290,8 +1297,22 @@ placeOrderTransactionsRouter.get(
             })({ transaction: transactionRepo });
 
             res.type(`${req.query.format}; charset=utf-8`);
-            stream.pipe(res);
+            stream.pipe(res)
+                .on('error', async () => {
+                    if (connection !== undefined) {
+                        await connection.close();
+                    }
+                })
+                .on('finish', async () => {
+                    if (connection !== undefined) {
+                        await connection.close();
+                    }
+                });
         } catch (error) {
+            if (connection !== undefined) {
+                await connection.close();
+            }
+
             next(error);
         }
     }

@@ -26,6 +26,7 @@ const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4t
 const validator_1 = require("../../middlewares/validator");
 const placeOrder4cinemasunshine_1 = require("./placeOrder4cinemasunshine");
 const redis = require("../../../redis");
+const connectMongo_1 = require("../../../connectMongo");
 const iam_1 = require("../../iam");
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
@@ -1029,8 +1030,11 @@ placeOrderTransactionsRouter.get('/:transactionId/actions', permitScopes_1.defau
  * 取引レポート
  */
 placeOrderTransactionsRouter.get('/report', permitScopes_1.default(['transactions.*', 'transactions.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    let connection;
     try {
-        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+        // 長時間占有する可能性があるのでコネクションを独自に生成
+        connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
+        const transactionRepo = new cinerino.repository.Transaction(connection);
         const searchConditions = {
             limit: undefined,
             page: undefined,
@@ -1057,9 +1061,22 @@ placeOrderTransactionsRouter.get('/report', permitScopes_1.default(['transaction
             format: format
         })({ transaction: transactionRepo });
         res.type(`${req.query.format}; charset=utf-8`);
-        stream.pipe(res);
+        stream.pipe(res)
+            .on('error', () => __awaiter(void 0, void 0, void 0, function* () {
+            if (connection !== undefined) {
+                yield connection.close();
+            }
+        }))
+            .on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
+            if (connection !== undefined) {
+                yield connection.close();
+            }
+        }));
     }
     catch (error) {
+        if (connection !== undefined) {
+            yield connection.close();
+        }
         next(error);
     }
 }));
