@@ -159,7 +159,7 @@ iamMembersRouter.post(
                                 await new Promise<cinerino.AWS.CognitoIdentityServiceProvider.UserPoolClientType>((resolve, reject) => {
                                     cognitoIdentityServiceProvider.describeUserPoolClient(
                                         {
-                                            UserPoolId: customerUserPoolId,
+                                            UserPoolId: adminUserPoolId,
                                             ClientId: req.body.member.id
                                         },
                                         (err, data) => {

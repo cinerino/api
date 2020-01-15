@@ -143,7 +143,7 @@ iamMembersRouter.post('', permitScopes_1.default([]), rateLimit_1.default, ...[
                         userPoolClient =
                             yield new Promise((resolve, reject) => {
                                 cognitoIdentityServiceProvider.describeUserPoolClient({
-                                    UserPoolId: customerUserPoolId,
+                                    UserPoolId: adminUserPoolId,
                                     ClientId: req.body.member.id
                                 }, (err, data) => {
                                     if (err instanceof Error) {
