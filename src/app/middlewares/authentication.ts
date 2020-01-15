@@ -3,7 +3,6 @@
  * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
  */
 import * as cinerino from '@cinerino/domain';
-import * as mongoose from 'mongoose';
 
 import { cognitoAuth } from '@motionpicture/express-middleware';
 import { NextFunction, Request, Response } from 'express';
@@ -50,21 +49,6 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                         typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership,
                         url: user.iss
                     };
-                }
-
-                // プロジェクトアプリケーションの存在確認
-                const applicationRepo = new cinerino.repository.Application(mongoose.connection);
-                try {
-                    const applications = await applicationRepo.search({ id: { $eq: user.client_id } });
-                    if (applications.length > 0) {
-                        const application = applications[0];
-                        req.application = application;
-                    }
-                } catch (error) {
-                    // no op
-                    next(error);
-
-                    return;
                 }
 
                 req.user = user;

@@ -8,9 +8,6 @@ const createDebug = require("debug");
 const iam_1 = require("../iam");
 const debug = createDebug('cinerino-api:middlewares');
 exports.SCOPE_COGNITO_USER_ADMIN = 'aws.cognito.signin.user.admin';
-const CLIENTS_AS_CUSTOMER = (process.env.CLIENTS_AS_CUSTOMER !== undefined)
-    ? /* istanbul ignore next */ process.env.CLIENTS_AS_CUSTOMER.split(',')
-    : [];
 exports.default = (specifiedPermittedScopes) => {
     return (req, __, next) => {
         const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
@@ -25,17 +22,7 @@ exports.default = (specifiedPermittedScopes) => {
         permittedScopes.push(iam_1.Permission.Admin);
         permittedScopes = [...new Set(permittedScopes)];
         debug('permittedScopes:', permittedScopes);
-        const ownedScopes = [...req.user.scopes, ...req.memberPermissions, ...req.customerPermissions];
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore if */
-        if (ownedScopes.indexOf(exports.SCOPE_COGNITO_USER_ADMIN) >= 0) {
-            // aws.cognito.signin.user.adminスコープのみでcustomerとして認定するクライアント
-            // tslint:disable-next-line:no-single-line-block-comment
-            /* istanbul ignore if */
-            if (CLIENTS_AS_CUSTOMER.indexOf(req.user.client_id) >= 0) {
-                ownedScopes.push(`${RESOURCE_SERVER_IDENTIFIER}/${iam_1.Permission.Customer}`);
-            }
-        }
+        const ownedScopes = [...req.user.scopes, ...req.memberPermissions];
         debug('ownedScopes:', ownedScopes);
         // isAdminの条件は、プロジェクトメンバーかどうか
         req.isAdmin = req.isProjectMember === true;

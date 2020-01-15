@@ -61,7 +61,7 @@ actionsRouter.get(
  */
 actionsRouter.post(
     '/print/ticket',
-    permitScopes([Permission.User, 'customer', 'actions']),
+    permitScopes([Permission.User, 'customer', 'actions', 'actions.printTicket.*']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -88,7 +88,7 @@ actionsRouter.post(
  */
 actionsRouter.get(
     '/print/ticket',
-    permitScopes([Permission.User, 'customer']),
+    permitScopes([Permission.User, 'customer', 'actions.printTicket.*']),
     rateLimit,
     validator,
     async (req, res, next) => {

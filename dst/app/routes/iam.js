@@ -20,10 +20,10 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const members_1 = require("./iam/members");
-// tslint:disable-next-line:no-require-imports no-var-requires
-const roles = require('../../../roles.json');
+const roles_1 = require("./iam/roles");
 const iamRouter = express.Router();
 iamRouter.use('/members', members_1.default);
+iamRouter.use('/roles', roles_1.default);
 /**
  * IAMグループ検索
  */
@@ -31,18 +31,6 @@ iamRouter.get('/groups', permitScopes_1.default([]), rateLimit_1.default, valida
     try {
         res.set('X-Total-Count', '0');
         res.json([]);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * IAMロール検索
- */
-iamRouter.get('/roles', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (_, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        res.set('X-Total-Count', roles.length.toString());
-        res.json(roles);
     }
     catch (error) {
         next(error);

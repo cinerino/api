@@ -18,6 +18,31 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v1.6.0 - 2020-01-15
+
+### Added
+
+- アプリケーション追加エンドポイントを追加
+- IAMメンバー追加エンドポイントを追加
+- IAMメンバー削除エンドポイントを追加
+
+### Changed
+
+- IAMロールリポジトリを追加
+- アプリケーションクライアントもIAMメンバーとして管理するように調整
+- Mongoのcursorを使用するアクションに関して、DBコネクションを独自に生成するように変更
+- 以下権限を追加
+    - `actions.printTicket.*`
+    - `people.me.*`
+    - `iam.members.read`
+    - `iam.roles.read`
+    - `userPools.read`
+    - `userPools.clients.read`
+
+### Removed
+
+- `CLIENTS_AS_CUSTOMER`設定を削除
+
 ## v1.5.0 - 2020-01-10
 
 ### Changed

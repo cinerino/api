@@ -21,7 +21,7 @@ const userPoolsRouter = Router();
 
 userPoolsRouter.get(
     '/:userPoolId',
-    permitScopes([]),
+    permitScopes(['userPools.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -54,7 +54,7 @@ userPoolsRouter.get(
 
 userPoolsRouter.get(
     '/:userPoolId/clients',
-    permitScopes([]),
+    permitScopes(['userPools.clients.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -90,7 +90,7 @@ userPoolsRouter.get(
 
 userPoolsRouter.get(
     '/:userPoolId/clients/:clientId',
-    permitScopes([]),
+    permitScopes(['userPools.clients.read']),
     rateLimit,
     validator,
     async (req, res, next) => {

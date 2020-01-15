@@ -19,7 +19,7 @@ const ordersRouter = Router();
  */
 ordersRouter.get(
     '',
-    permitScopes([Permission.User, 'customer']),
+    permitScopes([Permission.User, 'customer', 'people.me.*']),
     rateLimit,
     ...[
         query('orderDateFrom')
