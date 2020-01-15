@@ -25,7 +25,7 @@ exports.default = (specifiedPermittedScopes) => {
         permittedScopes.push(iam_1.Permission.Admin);
         permittedScopes = [...new Set(permittedScopes)];
         debug('permittedScopes:', permittedScopes);
-        const ownedScopes = [...req.user.scopes, ...req.memberPermissions, ...req.customerPermissions];
+        const ownedScopes = [...req.user.scopes, ...req.memberPermissions];
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */
         if (ownedScopes.indexOf(exports.SCOPE_COGNITO_USER_ADMIN) >= 0) {

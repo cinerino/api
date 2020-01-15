@@ -18,7 +18,6 @@ declare global {
 
         // tslint:disable-next-line:interface-name
         export interface Request {
-            application: cinerino.factory.creativeWork.softwareApplication.webApplication.ICreativeWork;
             project: IRequestProject;
             agent: IRequestAgent;
             user: IUser;
@@ -29,10 +28,6 @@ declare global {
              * プロジェクトメンバーの権限
              */
             memberPermissions: string[];
-            /**
-             * カスタマー権限
-             */
-            customerPermissions: string[];
         }
     }
 }

@@ -14,7 +14,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
  */
 const cinerino = require("@cinerino/domain");
-const mongoose = require("mongoose");
 const express_middleware_1 = require("@motionpicture/express-middleware");
 // 許可発行者リスト
 const ISSUERS = process.env.TOKEN_ISSUERS.split(',');
@@ -56,20 +55,6 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                         typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership,
                         url: user.iss
                     };
-                }
-                // プロジェクトアプリケーションの存在確認
-                const applicationRepo = new cinerino.repository.Application(mongoose.connection);
-                try {
-                    const applications = yield applicationRepo.search({ id: { $eq: user.client_id } });
-                    if (applications.length > 0) {
-                        const application = applications[0];
-                        req.application = application;
-                    }
-                }
-                catch (error) {
-                    // no op
-                    next(error);
-                    return;
                 }
                 req.user = user;
                 req.accessToken = token;

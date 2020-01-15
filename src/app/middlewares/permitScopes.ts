@@ -42,7 +42,7 @@ export default (specifiedPermittedScopes: IScope[]) => {
         permittedScopes = [...new Set(permittedScopes)];
         debug('permittedScopes:', permittedScopes);
 
-        const ownedScopes: string[] = [...req.user.scopes, ...req.memberPermissions, ...req.customerPermissions];
+        const ownedScopes: string[] = [...req.user.scopes, ...req.memberPermissions];
 
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */

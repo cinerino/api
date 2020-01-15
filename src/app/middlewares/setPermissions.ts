@@ -11,7 +11,6 @@ export default async (req: Request, _: Response, next: NextFunction) => {
     try {
         let isProjectMember = false;
         let memberPermissions: string[] = [];
-        const customerPermissions: string[] = [];
 
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const roleRepo = new cinerino.repository.Role(mongoose.connection);
@@ -48,7 +47,6 @@ export default async (req: Request, _: Response, next: NextFunction) => {
             });
         }
 
-        req.customerPermissions = customerPermissions;
         req.memberPermissions = memberPermissions;
         req.isProjectMember = isProjectMember;
 

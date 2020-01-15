@@ -19,7 +19,6 @@ exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* 
     try {
         let isProjectMember = false;
         let memberPermissions = [];
-        const customerPermissions = [];
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const roleRepo = new cinerino.repository.Role(mongoose.connection);
         // プロジェクトが決定していれば権限をセット
@@ -51,7 +50,6 @@ exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* 
                 member: memberRepo
             });
         }
-        req.customerPermissions = customerPermissions;
         req.memberPermissions = memberPermissions;
         req.isProjectMember = isProjectMember;
         next();

@@ -47,8 +47,7 @@ describe('permitScopes.default()', () => {
         const params = {
             req: {
                 user: { scopes: scopes.map((scope) => `${process.env.RESOURCE_SERVER_IDENTIFIER}/${scope}`) },
-                memberPermissions: [],
-                customerPermissions: []
+                memberPermissions: []
             },
             res: {},
             next: () => undefined
@@ -69,8 +68,7 @@ describe('permitScopes.default()', () => {
         const params = {
             req: {
                 user: { scopes: [] },
-                memberPermissions: [],
-                customerPermissions: []
+                memberPermissions: []
             },
             res: {},
             next: () => undefined
