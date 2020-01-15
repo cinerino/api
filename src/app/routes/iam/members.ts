@@ -194,14 +194,14 @@ iamMembersRouter.post(
                     }
             }
 
-            await memberRepo.memberModel.create({
+            const doc = await memberRepo.memberModel.create({
                 project: { typeOf: project.typeOf, id: project.id },
                 typeOf: 'OrganizationRole',
                 member: member
             });
 
             res.status(CREATED)
-                .json(member);
+                .json(doc.toObject());
         } catch (error) {
             next(error);
         }

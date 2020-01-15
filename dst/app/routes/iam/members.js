@@ -174,13 +174,13 @@ iamMembersRouter.post('', permitScopes_1.default([]), rateLimit_1.default, ...[
                         throw new cinerino.factory.errors.Argument('member.typeOf', 'member type not supported');
                 }
         }
-        yield memberRepo.memberModel.create({
+        const doc = yield memberRepo.memberModel.create({
             project: { typeOf: project.typeOf, id: project.id },
             typeOf: 'OrganizationRole',
             member: member
         });
         res.status(http_status_1.CREATED)
-            .json(member);
+            .json(doc.toObject());
     }
     catch (error) {
         next(error);

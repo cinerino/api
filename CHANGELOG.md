@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - IAMロールリポジトリを追加
 - アプリケーションクライアントもIAMメンバーとして管理するように調整
 - Mongoのcursorを使用するアクションに関して、DBコネクションを独自に生成するように変更
+- 以下権限を追加
+    - `actions.printTicket.*`
 
 ### Deprecated
 
