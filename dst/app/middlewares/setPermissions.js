@@ -14,7 +14,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const mongoose = require("mongoose");
-// import { RoleName } from '../iam';
 const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
 exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -44,12 +43,6 @@ exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* 
                     role: roleRepo
                 });
                 memberPermissions = memberPermissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`);
-                // プロジェクトメンバーでない場合、`customer`ロールに設定
-                // const customerRole = await roleRepo.search({ roleName: { $eq: RoleName.Customer } });
-                // const role = customerRole.shift();
-                // if (role !== undefined) {
-                //     customerPermissions.push(...role.permissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`));
-                // }
             }
             isProjectMember = yield checkProjectMember({
                 project: { id: req.project.id },

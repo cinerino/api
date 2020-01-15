@@ -5,21 +5,10 @@ import * as cinerino from '@cinerino/domain';
 import * as express from 'express';
 import * as mongoose from 'mongoose';
 
-const CLIENTS_MULTI_PROJECTS: string[] = (process.env.CLIENTS_MULTI_PROJECTS !== undefined)
-    ? /* istanbul ignore next */ process.env.CLIENTS_MULTI_PROJECTS.split(',')
-    : [];
-
 const setProject = express.Router();
 
 setProject.use(async (req, _, next) => {
     let project: cinerino.factory.project.IProject | undefined;
-
-    // アプリケーションからプロジェクトをセット
-    // if (req.application !== undefined && req.application !== null) {
-    //     if (req.application.project !== undefined && req.application.project !== null) {
-    //         project = { typeOf: req.application.project.typeOf, id: req.application.project.id };
-    //     }
-    // }
 
     // アプリケーションクライアントが権限を持つプロジェクトが1つのみであれば、プロジェクトセット
     const memberRepo = new cinerino.repository.Member(mongoose.connection);
@@ -61,28 +50,6 @@ setProject.use(async (req, _, next) => {
 setProject.use(
     '/projects/:id',
     async (req, _, next) => {
-        // authenticationにてアプリケーションによってプロジェクト決定済であれば、比較
-        // 本番マルチテナントサービスを設置するまで保留
-        // if (req.project !== undefined && req.project !== null) {
-        //     if (req.project.id !== req.params.id) {
-        //         next(new cinerino.factory.errors.Forbidden(`client for ${req.project.id} forbidden`));
-
-        //         return;
-        //     }
-        // }
-
-        // アプリケーションがプロジェクトに対して権限を持つかどうか確認
-        if (CLIENTS_MULTI_PROJECTS.indexOf(req.user.client_id) < 0) {
-            const memberRepo = new cinerino.repository.Member(mongoose.connection);
-            const applicationMemberCount = await memberRepo.count({
-                project: { id: { $eq: req.params.id } },
-                member: { id: { $eq: req.user.client_id } }
-            });
-            if (applicationMemberCount !== 1) {
-                next(new cinerino.factory.errors.Forbidden(`forbidden project`));
-            }
-        }
-
         req.project = { typeOf: cinerino.factory.organizationType.Project, id: req.params.id };
 
         next();

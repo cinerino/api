@@ -5,8 +5,6 @@ import * as cinerino from '@cinerino/domain';
 import { NextFunction, Request, Response } from 'express';
 import * as mongoose from 'mongoose';
 
-// import { RoleName } from '../iam';
-
 const RESOURCE_SERVER_IDENTIFIER = <string>process.env.RESOURCE_SERVER_IDENTIFIER;
 
 export default async (req: Request, _: Response, next: NextFunction) => {
@@ -40,13 +38,6 @@ export default async (req: Request, _: Response, next: NextFunction) => {
                     role: roleRepo
                 });
                 memberPermissions = memberPermissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`);
-
-                // プロジェクトメンバーでない場合、`customer`ロールに設定
-                // const customerRole = await roleRepo.search({ roleName: { $eq: RoleName.Customer } });
-                // const role = customerRole.shift();
-                // if (role !== undefined) {
-                //     customerPermissions.push(...role.permissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`));
-                // }
             }
 
             isProjectMember = await checkProjectMember({
