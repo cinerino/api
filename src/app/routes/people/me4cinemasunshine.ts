@@ -24,7 +24,7 @@ const me4cinemasunshineRouter = Router();
  */
 me4cinemasunshineRouter.put(
     '/ownershipInfos/programMembership/register',
-    permitScopes([Permission.User, 'customer', 'people.ownershipInfos']),
+    permitScopes([Permission.User, 'customer', 'people.ownershipInfos', 'people.me.*']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -212,7 +212,7 @@ async function checkCard(req: Request, amount: number) {
  */
 me4cinemasunshineRouter.put(
     '/ownershipInfos/programMembership/:identifier/unRegister',
-    permitScopes([Permission.User, 'customer', 'people.ownershipInfos']),
+    permitScopes([Permission.User, 'customer', 'people.ownershipInfos', 'people.me.*']),
     rateLimit,
     validator,
     async (req, res, next) => {

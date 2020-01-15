@@ -25,7 +25,7 @@ const accountsRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 accountsRouter.post<ParamsDictionary>(
     '/:accountType',
-    permitScopes([Permission.User, 'customer']),
+    permitScopes([Permission.User, 'customer', 'people.me.*']),
     rateLimit,
     ...[
         body('name')
@@ -64,7 +64,7 @@ accountsRouter.post<ParamsDictionary>(
  */
 accountsRouter.put(
     '/:accountType/:accountNumber/close',
-    permitScopes([Permission.User, 'customer']),
+    permitScopes([Permission.User, 'customer', 'people.me.*']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -96,7 +96,7 @@ accountsRouter.put(
  */
 accountsRouter.get(
     '/actions/moneyTransfer',
-    permitScopes([Permission.User, 'customer']),
+    permitScopes([Permission.User, 'customer', 'people.me.*']),
     rateLimit,
     validator,
     async (req, res, next) => {

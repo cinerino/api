@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Mongoのcursorを使用するアクションに関して、DBコネクションを独自に生成するように変更
 - 以下権限を追加
     - `actions.printTicket.*`
+    - `people.me.*`
 
 ### Deprecated
 
