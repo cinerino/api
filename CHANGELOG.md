@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v1.6.0 - 2020-01-15
+
+### Added
+
 - アプリケーション追加エンドポイントを追加
 - IAMメンバー追加エンドポイントを追加
 - IAMメンバー削除エンドポイントを追加
@@ -25,15 +39,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
     - `userPools.read`
     - `userPools.clients.read`
 
-### Deprecated
-
 ### Removed
 
 - `CLIENTS_AS_CUSTOMER`設定を削除
-
-### Fixed
-
-### Security
 
 ## v1.5.0 - 2020-01-10
 
