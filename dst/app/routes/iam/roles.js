@@ -22,7 +22,7 @@ const iamRolesRouter = express.Router();
 /**
  * IAMロール検索
  */
-iamRolesRouter.get('', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+iamRolesRouter.get('', permitScopes_1.default(['iam.roles.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const searchCoinditions = Object.assign(Object.assign({}, req.query), { 
             // tslint:disable-next-line:no-magic-numbers

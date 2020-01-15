@@ -16,7 +16,7 @@ const iamRolesRouter = express.Router();
  */
 iamRolesRouter.get(
     '',
-    permitScopes([]),
+    permitScopes(['iam.roles.read']),
     rateLimit,
     validator,
     async (req, res, next) => {

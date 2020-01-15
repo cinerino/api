@@ -20,6 +20,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 以下権限を追加
     - `actions.printTicket.*`
     - `people.me.*`
+    - `iam.members.read`
+    - `iam.roles.read`
+    - `userPools.read`
+    - `userPools.clients.read`
 
 ### Deprecated
 

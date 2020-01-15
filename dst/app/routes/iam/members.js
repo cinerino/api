@@ -189,7 +189,7 @@ iamMembersRouter.post('', permitScopes_1.default([]), rateLimit_1.default, ...[
 /**
  * プロジェクトメンバー検索
  */
-iamMembersRouter.get('', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+iamMembersRouter.get('', permitScopes_1.default(['iam.members.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const searchCoinditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
@@ -207,7 +207,7 @@ iamMembersRouter.get('', permitScopes_1.default([]), rateLimit_1.default, valida
 /**
  * プロジェクトメンバー取得
  */
-iamMembersRouter.get('/:id', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+iamMembersRouter.get('/:id', permitScopes_1.default(['iam.members.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const members = yield memberRepo.search({

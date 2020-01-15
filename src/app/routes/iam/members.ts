@@ -213,7 +213,7 @@ iamMembersRouter.post(
  */
 iamMembersRouter.get(
     '',
-    permitScopes([]),
+    permitScopes(['iam.members.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -243,7 +243,7 @@ iamMembersRouter.get(
  */
 iamMembersRouter.get(
     '/:id',
-    permitScopes([]),
+    permitScopes(['iam.members.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
