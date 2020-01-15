@@ -258,7 +258,7 @@ iamMembersRouter.get(
                 throw new cinerino.factory.errors.NotFound('Member');
             }
 
-            res.json(members[0].member);
+            res.json(members[0]);
         } catch (error) {
             next(error);
         }
