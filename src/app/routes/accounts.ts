@@ -251,7 +251,7 @@ const depositAccountRateLimiet = middlewares.rateLimit({
  */
 accountsRouter.post(
     '/transactions/deposit',
-    permitScopes([Permission.User]),
+    permitScopes([Permission.User, 'accounts.transactions.deposit.write']),
     // 互換性維持のため
     (req, _, next) => {
         if (req.body.object === undefined || req.body.object === null) {

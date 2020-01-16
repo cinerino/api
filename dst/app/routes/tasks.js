@@ -27,7 +27,7 @@ const tasksRouter = express_1.Router();
  * タスク作成
  */
 // tslint:disable-next-line:use-default-type-parameter
-tasksRouter.post('/:name', permitScopes_1.default([iam_1.Permission.User, 'tasks.*']), rateLimit_1.default, ...[
+tasksRouter.post('/:name', permitScopes_1.default([iam_1.Permission.User, 'tasks.*', 'tasks.create']), rateLimit_1.default, ...[
     express_validator_1.body('runsAt')
         .not()
         .isEmpty()

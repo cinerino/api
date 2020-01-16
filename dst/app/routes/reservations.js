@@ -32,7 +32,7 @@ const reservationsRouter = express_1.Router();
 /**
  * 管理者として予約検索
  */
-reservationsRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'reservations.*']), rateLimit_1.default, (req, _, next) => {
+reservationsRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'reservations.*', 'reservations.read']), rateLimit_1.default, (req, _, next) => {
     const now = moment();
     if (typeof req.query.bookingThrough !== 'string') {
         req.query.bookingThrough = moment(now)
@@ -115,7 +115,7 @@ reservationsRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'reser
 /**
  * トークンで予約照会
  */
-reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitScopes_1.default([iam_1.Permission.User, 'reservations.findByToken']), rateLimit_1.default, ...[
+reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitScopes_1.default([iam_1.Permission.User, 'reservations.read', 'reservations.findByToken']), rateLimit_1.default, ...[
     express_validator_1.body('token')
         .not()
         .isEmpty()

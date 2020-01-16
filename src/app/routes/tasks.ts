@@ -24,7 +24,7 @@ const tasksRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 tasksRouter.post<ParamsDictionary>(
     '/:name',
-    permitScopes([Permission.User, 'tasks.*']),
+    permitScopes([Permission.User, 'tasks.*', 'tasks.create']),
     rateLimit,
     ...[
         body('runsAt')

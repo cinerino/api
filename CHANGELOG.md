@@ -10,6 +10,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 以下権限を追加
+    - `accounts.transactions.deposit.write`
+    - `actions.printTicket.*`
+    - `ownershipInfos.read`
+    - `ownershipInfos.actions.checkToken.read`
+    - `payment.any.write`
+    - `reservations.read`
+    - `tasks.create`
+
 ### Deprecated
 
 ### Removed

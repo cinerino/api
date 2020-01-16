@@ -31,7 +31,7 @@ const reservationsRouter = Router();
  */
 reservationsRouter.get(
     '',
-    permitScopes([Permission.User, 'reservations.*']),
+    permitScopes([Permission.User, 'reservations.*', 'reservations.read']),
     rateLimit,
     (req, _, next) => {
         const now = moment();
@@ -133,7 +133,7 @@ reservationsRouter.get(
  */
 reservationsRouter.post(
     '/eventReservation/screeningEvent/findByToken',
-    permitScopes([Permission.User, 'reservations.findByToken']),
+    permitScopes([Permission.User, 'reservations.read', 'reservations.findByToken']),
     rateLimit,
     ...[
         body('token')

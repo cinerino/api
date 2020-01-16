@@ -211,7 +211,7 @@ const depositAccountRateLimiet = middlewares.rateLimit({
 /**
  * 管理者として口座に入金する
  */
-accountsRouter.post('/transactions/deposit', permitScopes_1.default([iam_1.Permission.User]), 
+accountsRouter.post('/transactions/deposit', permitScopes_1.default([iam_1.Permission.User, 'accounts.transactions.deposit.write']), 
 // 互換性維持のため
 (req, _, next) => {
     if (req.body.object === undefined || req.body.object === null) {

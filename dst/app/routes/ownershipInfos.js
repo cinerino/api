@@ -26,7 +26,7 @@ const ownershipInfosRouter = express_1.Router();
 /**
  * 所有権検索
  */
-ownershipInfosRouter.get('', permitScopes_1.default([iam_1.Permission.User]), rateLimit_1.default, ...[
+ownershipInfosRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'ownershipInfos.read']), rateLimit_1.default, ...[
     express_validator_1.query('ownedFrom')
         .optional()
         .isISO8601()
@@ -92,7 +92,7 @@ ownershipInfosRouter.post('/tokens', permitScopes_1.default([iam_1.Permission.Us
  * 所有権に対するトークン検証アクションを検索する
  */
 // tslint:disable-next-line:use-default-type-parameter
-ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default([iam_1.Permission.User]), rateLimit_1.default, ...[
+ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default([iam_1.Permission.User, 'ownershipInfos.actions.checkToken.read']), rateLimit_1.default, ...[
     express_validator_1.query('startFrom')
         .optional()
         .isISO8601()
@@ -181,7 +181,7 @@ ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default([iam_
  * Cinemasunshine対応
  * @deprecated
  */
-ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.default([iam_1.Permission.User, 'customer']), rateLimit_1.default, ...[
+ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.default([iam_1.Permission.User, 'customer', 'ownershipInfos.read']), rateLimit_1.default, ...[
     express_validator_1.query('fromDate')
         .not()
         .isEmpty()

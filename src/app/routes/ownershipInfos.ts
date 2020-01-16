@@ -24,7 +24,7 @@ const ownershipInfosRouter = Router();
  */
 ownershipInfosRouter.get(
     '',
-    permitScopes([Permission.User]),
+    permitScopes([Permission.User, 'ownershipInfos.read']),
     rateLimit,
     ...[
         query('ownedFrom')
@@ -118,7 +118,7 @@ ownershipInfosRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 ownershipInfosRouter.get<ParamsDictionary>(
     '/:id/actions/checkToken',
-    permitScopes([Permission.User]),
+    permitScopes([Permission.User, 'ownershipInfos.actions.checkToken.read']),
     rateLimit,
     ...[
         query('startFrom')
@@ -222,7 +222,7 @@ ownershipInfosRouter.get<ParamsDictionary>(
  */
 ownershipInfosRouter.get(
     '/countByRegisterDateAndTheater',
-    permitScopes([Permission.User, 'customer']),
+    permitScopes([Permission.User, 'customer', 'ownershipInfos.read']),
     rateLimit,
     ...[
         query('fromDate')
