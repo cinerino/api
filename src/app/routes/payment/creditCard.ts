@@ -30,7 +30,7 @@ const creditCardPaymentRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 creditCardPaymentRouter.post<ParamsDictionary>(
     '/authorize',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes([Permission.User, 'transactions']),
     rateLimit,
     ...[
         body('object')
@@ -141,7 +141,7 @@ creditCardPaymentRouter.post<ParamsDictionary>(
  */
 creditCardPaymentRouter.put(
     '/authorize/:actionId/void',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes([Permission.User, 'transactions']),
     rateLimit,
     validator,
     async (req, res, next) => {

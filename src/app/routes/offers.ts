@@ -28,7 +28,7 @@ if (process.env.USE_MONEY_TRANSFER === '1') {
     // tslint:disable-next-line:use-default-type-parameter
     offersRouter.post<ParamsDictionary>(
         '/monetaryAmount/authorize',
-        permitScopes([Permission.User, 'customer', 'transactions']),
+        permitScopes([Permission.User, 'transactions']),
         rateLimit,
         ...[
             body('object')
@@ -125,7 +125,7 @@ if (process.env.USE_MONEY_TRANSFER === '1') {
 // tslint:disable-next-line:use-default-type-parameter
 offersRouter.put<ParamsDictionary>(
     '/monetaryAmount/authorize/:actionId/void',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes([Permission.User, 'transactions']),
     rateLimit,
     ...[
         body('purpose')

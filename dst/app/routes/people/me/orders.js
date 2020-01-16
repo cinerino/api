@@ -24,7 +24,7 @@ const ordersRouter = express_1.Router();
 /**
  * 注文検索
  */
-ordersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 'people.me.*']), rateLimit_1.default, ...[
+ordersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'people.me.*']), rateLimit_1.default, ...[
     express_validator_1.query('orderDateFrom')
         .not()
         .isEmpty()

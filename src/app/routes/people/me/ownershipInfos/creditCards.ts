@@ -19,7 +19,7 @@ const creditCardsRouter = Router();
  */
 creditCardsRouter.post(
     '',
-    permitScopes([Permission.User, 'customer', 'people.me.*']),
+    permitScopes([Permission.User, 'people.me.*']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -56,7 +56,7 @@ creditCardsRouter.post(
  */
 creditCardsRouter.get(
     '',
-    permitScopes([Permission.User, 'customer', 'people.me.*']),
+    permitScopes([Permission.User, 'people.me.*']),
     rateLimit,
     async (req, res, next) => {
         try {
@@ -88,7 +88,7 @@ creditCardsRouter.get(
  */
 creditCardsRouter.delete(
     '/:cardSeq',
-    permitScopes([Permission.User, 'customer', 'people.me.*']),
+    permitScopes([Permission.User, 'people.me.*']),
     rateLimit,
     validator,
     async (req, res, next) => {

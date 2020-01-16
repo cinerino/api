@@ -37,7 +37,7 @@ const movieTicketPaymentRouter = Router();
  */
 movieTicketPaymentRouter.post(
     '/actions/check',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes([Permission.User, 'transactions']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -81,7 +81,7 @@ movieTicketPaymentRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 movieTicketPaymentRouter.post<ParamsDictionary>(
     '/authorize',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes([Permission.User, 'transactions']),
     rateLimit,
     ...[
         body('object')
@@ -179,7 +179,7 @@ movieTicketPaymentRouter.post<ParamsDictionary>(
  */
 movieTicketPaymentRouter.put(
     '/authorize/:actionId/void',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes([Permission.User, 'transactions']),
     rateLimit,
     validator,
     async (req, res, next) => {

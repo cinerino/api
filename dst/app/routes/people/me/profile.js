@@ -23,7 +23,7 @@ const profileRouter = express_1.Router();
 /**
  * プロフィール検索
  */
-profileRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 'people.me.*']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+profileRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'people.me.*']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person({
             userPoolId: '' // アクセストークンに情報が含まれるので必要なし
@@ -38,7 +38,7 @@ profileRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer',
 /**
  * プロフィール更新
  */
-profileRouter.patch('', permitScopes_1.default([iam_1.Permission.User, 'customer', 'people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+profileRouter.patch('', permitScopes_1.default([iam_1.Permission.User, 'people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const personRepo = new cinerino.repository.Person({
             userPoolId: '' // アクセストークンに情報が含まれるので必要なし

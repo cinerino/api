@@ -47,7 +47,7 @@ const isNotAdmin = (_, { req }) => !req.isAdmin;
 /**
  * 注文検索
  */
-ordersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, 
+ordersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, 
 // 互換性維持のため
 (req, _, next) => {
     const now = moment();
@@ -328,7 +328,7 @@ ordersRouter.get('/download', permitScopes_1.default([iam_1.Permission.User, 'or
  * 確認番号と電話番号で注文照会
  * @deprecated 基本的にシネマサンシャイン互換性維持のためのエンドポイント
  */
-ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default([iam_1.Permission.User, 'customer', 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, ...[
+ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default([iam_1.Permission.User, 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, ...[
     express_validator_1.body('theaterCode')
         .not()
         .isEmpty()
@@ -381,7 +381,7 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default([iam_1.Permis
 /**
  * 確認番号で注文照会
  */
-ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default([iam_1.Permission.User, 'customer', 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, ...[
+ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default([iam_1.Permission.User, 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, ...[
     express_validator_1.query('orderDateFrom')
         .optional()
         .isISO8601()
@@ -516,7 +516,7 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default([iam_1.Permiss
  * 確認番号で注文アイテムに対してコードを発行する
  */
 // tslint:disable-next-line:use-default-type-parameter
-ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.default([iam_1.Permission.User, 'customer', 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, ...[
+ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.default([iam_1.Permission.User, 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, ...[
     express_validator_1.body('customer')
         .not()
         .isEmpty()

@@ -132,7 +132,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default([iam_1.Permi
  * 取引人プロフィール変更
  */
 // tslint:disable-next-line:use-default-type-parameter
-returnOrderTransactionsRouter.put('/:transactionId/agent', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), ...[
+returnOrderTransactionsRouter.put('/:transactionId/agent', permitScopes_1.default([iam_1.Permission.User, 'transactions']), ...[
     express_validator_1.body('additionalProperty')
         .optional()
         .isArray({ max: 10 }),

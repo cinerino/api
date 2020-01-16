@@ -52,7 +52,7 @@ actionsRouter.get('', permitScopes_1.default(['actions.*', 'actions.read']), rat
 /**
  * チケット印刷アクション追加
  */
-actionsRouter.post('/print/ticket', permitScopes_1.default([iam_1.Permission.User, 'customer', 'actions', 'actions.printTicket.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+actionsRouter.post('/print/ticket', permitScopes_1.default([iam_1.Permission.User, 'actions', 'actions.printTicket.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const ticket = {
             ticketToken: req.body.ticketToken
@@ -68,7 +68,7 @@ actionsRouter.post('/print/ticket', permitScopes_1.default([iam_1.Permission.Use
 /**
  * チケット印刷アクション検索
  */
-actionsRouter.get('/print/ticket', permitScopes_1.default([iam_1.Permission.User, 'customer', 'actions.printTicket.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+actionsRouter.get('/print/ticket', permitScopes_1.default([iam_1.Permission.User, 'actions.printTicket.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actions = yield new cinerino.repository.Action(mongoose.connection).searchPrintTicket({
             agentId: req.user.sub,

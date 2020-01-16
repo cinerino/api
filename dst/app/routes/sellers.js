@@ -83,7 +83,7 @@ sellersRouter.post('', permitScopes_1.default(['sellers.*']), rateLimit_1.defaul
 /**
  * 販売者検索
  */
-sellersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 'sellers.*', 'sellers.read', 'pos']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+sellersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'sellers.*', 'sellers.read', 'pos']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const searchCoinditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
             // tslint:disable-next-line:no-magic-numbers
@@ -103,7 +103,7 @@ sellersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer',
 /**
  * IDで販売者検索
  */
-sellersRouter.get('/:id', permitScopes_1.default([iam_1.Permission.User, 'customer', 'sellers.*', 'sellers.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+sellersRouter.get('/:id', permitScopes_1.default([iam_1.Permission.User, 'sellers.*', 'sellers.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const seller = yield sellerRepo.findById({

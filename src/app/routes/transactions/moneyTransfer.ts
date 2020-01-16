@@ -40,7 +40,7 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
 // tslint:disable-next-line:use-default-type-parameter
 moneyTransferTransactionsRouter.post<ParamsDictionary>(
     '/start',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes([Permission.User, 'transactions']),
     ...[
         body('expires', 'invalid expires')
             .not()
@@ -222,7 +222,7 @@ async function validateFromLocation(req: Request): Promise<cinerino.factory.tran
 // tslint:disable-next-line:use-default-type-parameter
 moneyTransferTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/agent',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes([Permission.User, 'transactions']),
     ...[
         body('additionalProperty')
             .optional()
@@ -277,7 +277,7 @@ moneyTransferTransactionsRouter.put<ParamsDictionary>(
 
 moneyTransferTransactionsRouter.put(
     '/:transactionId/confirm',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes([Permission.User, 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -342,7 +342,7 @@ moneyTransferTransactionsRouter.put(
  */
 moneyTransferTransactionsRouter.put(
     '/:transactionId/cancel',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes([Permission.User, 'transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({

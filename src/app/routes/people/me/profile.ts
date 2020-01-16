@@ -18,7 +18,7 @@ const profileRouter = Router();
  */
 profileRouter.get(
     '',
-    permitScopes([Permission.User, 'customer', 'people.me.*']),
+    permitScopes([Permission.User, 'people.me.*']),
     rateLimit,
     async (req, res, next) => {
         try {
@@ -38,7 +38,7 @@ profileRouter.get(
  */
 profileRouter.patch(
     '',
-    permitScopes([Permission.User, 'customer', 'people.me.*']),
+    permitScopes([Permission.User, 'people.me.*']),
     rateLimit,
     validator,
     async (req, res, next) => {

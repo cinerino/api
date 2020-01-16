@@ -23,7 +23,7 @@ const programMembershipsRouter = express_1.Router();
 /**
  * 会員プログラム検索
  */
-programMembershipsRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 'programMemberships.*', 'programMemberships.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+programMembershipsRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'programMemberships.*', 'programMemberships.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const programMembershipRepo = new cinerino.repository.ProgramMembership(mongoose.connection);
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 

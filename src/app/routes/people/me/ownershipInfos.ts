@@ -35,7 +35,7 @@ ownershipInfosRouter.use('/reservations', reservationsRouter);
  */
 ownershipInfosRouter.get(
     '',
-    permitScopes([Permission.User, 'customer', 'people.me.*']),
+    permitScopes([Permission.User, 'people.me.*']),
     rateLimit,
     ...[
         query('typeOfGood')
@@ -108,7 +108,7 @@ ownershipInfosRouter.get(
  */
 ownershipInfosRouter.post(
     '/:id/authorize',
-    permitScopes([Permission.User, 'customer', 'people.me.*']),
+    permitScopes([Permission.User, 'people.me.*']),
     rateLimit,
     validator,
     async (req, res, next) => {

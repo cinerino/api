@@ -3,7 +3,6 @@
  */
 export enum Permission {
     Admin = 'admin',
-    Customer = 'customer',
     User = 'user'
 }
 

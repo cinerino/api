@@ -19,6 +19,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
     - `reservations.read`
     - `tasks.create`
 - IAMメンバー作成時にロールを複数指定できるように拡張
+- 以下権限を削除
+    - `customer`
 
 ### Deprecated
 

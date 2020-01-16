@@ -32,7 +32,7 @@ const accountPaymentRouter = express_1.Router();
  * 口座確保
  */
 // tslint:disable-next-line:use-default-type-parameter
-accountPaymentRouter.post('/authorize', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), rateLimit_1.default, ...[
+accountPaymentRouter.post('/authorize', permitScopes_1.default([iam_1.Permission.User, 'transactions']), rateLimit_1.default, ...[
     express_validator_1.body('object')
         .not()
         .isEmpty(),
@@ -174,7 +174,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default([iam_1.Permission
 /**
  * 口座承認取消
  */
-accountPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+accountPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default([iam_1.Permission.User, 'transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id

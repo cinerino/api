@@ -37,7 +37,7 @@ ownershipInfosRouter.use('/reservations', reservations_1.default);
 /**
  * 所有権検索
  */
-ownershipInfosRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 'people.me.*']), rateLimit_1.default, ...[
+ownershipInfosRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'people.me.*']), rateLimit_1.default, ...[
     express_validator_1.query('typeOfGood')
         .not()
         .isEmpty(),
@@ -89,7 +89,7 @@ ownershipInfosRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'cus
 /**
  * 所有権に対して認可コードを発行する
  */
-ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default([iam_1.Permission.User, 'customer', 'people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default([iam_1.Permission.User, 'people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);

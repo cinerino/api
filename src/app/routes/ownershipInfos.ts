@@ -91,7 +91,7 @@ ownershipInfosRouter.get(
  */
 ownershipInfosRouter.post(
     '/tokens',
-    permitScopes([Permission.User, 'customer', 'tokens']),
+    permitScopes([Permission.User, 'tokens']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -222,7 +222,7 @@ ownershipInfosRouter.get<ParamsDictionary>(
  */
 ownershipInfosRouter.get(
     '/countByRegisterDateAndTheater',
-    permitScopes([Permission.User, 'customer', 'ownershipInfos.read']),
+    permitScopes([Permission.User, 'ownershipInfos.read']),
     rateLimit,
     ...[
         query('fromDate')

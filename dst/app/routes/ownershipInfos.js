@@ -73,7 +73,7 @@ ownershipInfosRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'own
 /**
  * コードから所有権に対するアクセストークンを発行する
  */
-ownershipInfosRouter.post('/tokens', permitScopes_1.default([iam_1.Permission.User, 'customer', 'tokens']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+ownershipInfosRouter.post('/tokens', permitScopes_1.default([iam_1.Permission.User, 'tokens']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const codeRepo = new cinerino.repository.Code(mongoose.connection);
         const token = yield cinerino.service.code.getToken({
@@ -181,7 +181,7 @@ ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default([iam_
  * Cinemasunshine対応
  * @deprecated
  */
-ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.default([iam_1.Permission.User, 'customer', 'ownershipInfos.read']), rateLimit_1.default, ...[
+ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.default([iam_1.Permission.User, 'ownershipInfos.read']), rateLimit_1.default, ...[
     express_validator_1.query('fromDate')
         .not()
         .isEmpty()
