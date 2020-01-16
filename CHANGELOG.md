@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
     - `payment.any.write`
     - `reservations.read`
     - `tasks.create`
+- IAMメンバー作成時にロールを複数指定できるように拡張
 
 ### Deprecated
 

@@ -76,12 +76,6 @@ iamMembersRouter.post('', permitScopes_1.default([]), rateLimit_1.default, ...[
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
         }
         let member;
-        // ロールをひとつに限定
-        const role = {
-            typeOf: 'OrganizationRole',
-            roleName: req.body.member.hasRole.shift().roleName,
-            memberOf: { typeOf: project.typeOf, id: project.id }
-        };
         const applicationCategory = req.body.member.applicationCategory;
         let userPoolClient;
         switch (applicationCategory) {
@@ -124,6 +118,14 @@ iamMembersRouter.post('', permitScopes_1.default([]), rateLimit_1.default, ...[
                 const adminUserPoolId = project.settings.cognito.adminUserPool.id;
                 switch (req.body.member.typeOf) {
                     case cinerino.factory.personType.Person:
+                        // ロールを作成
+                        const roles = req.body.member.hasRole.map((r) => {
+                            return {
+                                typeOf: 'OrganizationRole',
+                                roleName: r.roleName,
+                                memberOf: { typeOf: project.typeOf, id: project.id }
+                            };
+                        });
                         const personRepo = new cinerino.repository.Person({
                             userPoolId: adminUserPoolId
                         });
@@ -135,7 +137,7 @@ iamMembersRouter.post('', permitScopes_1.default([]), rateLimit_1.default, ...[
                             typeOf: people[0].typeOf,
                             id: people[0].id,
                             username: people[0].memberOf.membershipNumber,
-                            hasRole: [role]
+                            hasRole: roles
                         };
                         break;
                     case cinerino.factory.creativeWorkType.WebApplication:

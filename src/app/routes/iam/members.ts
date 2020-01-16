@@ -80,13 +80,6 @@ iamMembersRouter.post(
 
             let member;
 
-            // ロールをひとつに限定
-            const role = {
-                typeOf: 'OrganizationRole',
-                roleName: (<any[]>req.body.member.hasRole).shift().roleName,
-                memberOf: { typeOf: project.typeOf, id: project.id }
-            };
-
             const applicationCategory = req.body.member.applicationCategory;
             let userPoolClient: cinerino.AWS.CognitoIdentityServiceProvider.UserPoolClientType;
 
@@ -136,6 +129,15 @@ iamMembersRouter.post(
 
                     switch (req.body.member.typeOf) {
                         case cinerino.factory.personType.Person:
+                            // ロールを作成
+                            const roles = (<any[]>req.body.member.hasRole).map((r: any) => {
+                                return {
+                                    typeOf: 'OrganizationRole',
+                                    roleName: <string>r.roleName,
+                                    memberOf: { typeOf: project.typeOf, id: project.id }
+                                };
+                            });
+
                             const personRepo = new cinerino.repository.Person({
                                 userPoolId: adminUserPoolId
                             });
@@ -148,7 +150,7 @@ iamMembersRouter.post(
                                 typeOf: people[0].typeOf,
                                 id: people[0].id,
                                 username: people[0].memberOf.membershipNumber,
-                                hasRole: [role]
+                                hasRole: roles
                             };
 
                             break;
