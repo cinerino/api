@@ -400,7 +400,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatRe
  * @deprecated /payment
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/any', permitScopes_1.default([iam_1.Permission.User]), ...[
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/any', permitScopes_1.default([iam_1.Permission.User, 'payment.any.write']), ...[
     express_validator_1.body('typeOf')
         .not()
         .isEmpty()
@@ -460,7 +460,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
  * @deprecated /payment
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel', permitScopes_1.default([iam_1.Permission.User]), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel', permitScopes_1.default([iam_1.Permission.User, 'payment.any.write']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
         id: req.params.transactionId

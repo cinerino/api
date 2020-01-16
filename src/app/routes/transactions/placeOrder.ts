@@ -483,7 +483,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/any',
-    permitScopes([Permission.User]),
+    permitScopes([Permission.User, 'payment.any.write']),
     ...[
         body('typeOf')
             .not()
@@ -551,7 +551,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel',
-    permitScopes([Permission.User]),
+    permitScopes([Permission.User, 'payment.any.write']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
