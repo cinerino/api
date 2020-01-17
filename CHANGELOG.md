@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 以下権限を削除
     - `customer`
     - `user`
+- /people/meリソース検索条件にプロジェクトIDを追加
 
 ### Deprecated
 
