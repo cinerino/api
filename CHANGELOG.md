@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
     - `customer`
     - `user`
 - /people/meリソース検索条件にプロジェクトIDを追加
+- ユーザープロフィールを部分的に更新できるように調整
 
 ### Deprecated
 
