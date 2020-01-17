@@ -9,8 +9,6 @@ import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
-import { Permission } from '../../iam';
-
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -26,7 +24,7 @@ const movieRouter = Router();
  */
 movieRouter.get(
     '',
-    permitScopes([Permission.User, 'creativeWorks.*', 'creativeWorks.read']),
+    permitScopes(['creativeWorks.*', 'creativeWorks.read']),
     rateLimit,
     validator,
     async (req, res, next) => {

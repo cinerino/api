@@ -11,8 +11,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-import { Permission } from '../iam';
-
 const actionsRouter = Router();
 
 /**
@@ -61,7 +59,7 @@ actionsRouter.get(
  */
 actionsRouter.post(
     '/print/ticket',
-    permitScopes([Permission.User, 'actions', 'actions.printTicket.*']),
+    permitScopes(['actions', 'actions.printTicket.*']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -88,7 +86,7 @@ actionsRouter.post(
  */
 actionsRouter.get(
     '/print/ticket',
-    permitScopes([Permission.User, 'actions.printTicket.*']),
+    permitScopes(['actions.printTicket.*']),
     rateLimit,
     validator,
     async (req, res, next) => {

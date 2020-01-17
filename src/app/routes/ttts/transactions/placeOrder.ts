@@ -13,14 +13,12 @@ import validator from '../../../middlewares/validator';
 
 // import * as redis from '../../../../redis';
 
-import { Permission } from '../../../iam';
-
 /**
  * 座席仮予約
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/seatReservation',
-    permitScopes([Permission.User, 'transactions', 'pos']),
+    permitScopes(['transactions', 'pos']),
     validator,
     async (req, res, next) => {
         try {
@@ -64,7 +62,7 @@ placeOrderTransactionsRouter.post(
  */
 placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
-    permitScopes([Permission.User, 'transactions', 'pos']),
+    permitScopes(['transactions', 'pos']),
     validator,
     async (req, res, next) => {
         try {

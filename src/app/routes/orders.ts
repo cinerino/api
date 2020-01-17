@@ -15,8 +15,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-import { Permission } from '../iam';
-
 import * as redis from '../../redis';
 
 import { connectMongo } from '../../connectMongo';
@@ -51,7 +49,7 @@ const isNotAdmin: CustomValidator = (_, { req }) => !req.isAdmin;
  */
 ordersRouter.get(
     '',
-    permitScopes([Permission.User, 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
+    permitScopes(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
     rateLimit,
     // 互換性維持のため
     (req, _, next) => {
@@ -215,7 +213,7 @@ ordersRouter.get(
  */
 ordersRouter.post(
     '',
-    permitScopes([Permission.User, 'orders.*']),
+    permitScopes(['orders.*']),
     rateLimit,
     ...[
         body('orderNumber')
@@ -288,7 +286,7 @@ ordersRouter.post(
  */
 ordersRouter.get(
     '/download',
-    permitScopes([Permission.User, 'orders.*', 'orders.read']),
+    permitScopes(['orders.*', 'orders.read']),
     rateLimit,
     // 互換性維持のため
     (req, _, next) => {
@@ -386,7 +384,7 @@ ordersRouter.get(
  */
 ordersRouter.post(
     '/findByOrderInquiryKey',
-    permitScopes([Permission.User, 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
+    permitScopes(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
     rateLimit,
     ...[
         body('theaterCode')
@@ -451,7 +449,7 @@ ordersRouter.post(
  */
 ordersRouter.post(
     '/findByConfirmationNumber',
-    permitScopes([Permission.User, 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
+    permitScopes(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
     rateLimit,
     ...[
         query('orderDateFrom')
@@ -540,7 +538,7 @@ ordersRouter.post(
  */
 ordersRouter.get(
     '/:orderNumber',
-    permitScopes([Permission.User, 'orders.*', 'orders.read']),
+    permitScopes(['orders.*', 'orders.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -562,7 +560,7 @@ ordersRouter.get(
  */
 ordersRouter.post(
     '/:orderNumber/deliver',
-    permitScopes([Permission.User, 'orders.*']),
+    permitScopes(['orders.*']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -616,7 +614,7 @@ ordersRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 ordersRouter.post<ParamsDictionary>(
     '/:orderNumber/ownershipInfos/authorize',
-    permitScopes([Permission.User, 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
+    permitScopes(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
     rateLimit,
     ...[
         body('customer')

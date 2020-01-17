@@ -13,8 +13,6 @@ import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
-import { Permission } from '../../iam';
-
 const CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP = process.env.CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP === '1';
 
 const me4cinemasunshineRouter = Router();
@@ -24,7 +22,7 @@ const me4cinemasunshineRouter = Router();
  */
 me4cinemasunshineRouter.put(
     '/ownershipInfos/programMembership/register',
-    permitScopes([Permission.User, 'people.ownershipInfos', 'people.me.*']),
+    permitScopes(['people.ownershipInfos', 'people.me.*']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -212,7 +210,7 @@ async function checkCard(req: Request, amount: number) {
  */
 me4cinemasunshineRouter.put(
     '/ownershipInfos/programMembership/:identifier/unRegister',
-    permitScopes([Permission.User, 'people.ownershipInfos', 'people.me.*']),
+    permitScopes(['people.ownershipInfos', 'people.me.*']),
     rateLimit,
     validator,
     async (req, res, next) => {

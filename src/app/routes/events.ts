@@ -14,8 +14,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-import { Permission } from '../iam';
-
 import screeningEventRouter from './events/screeningEvent';
 
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
@@ -35,7 +33,7 @@ eventsRouter.use('/screeningEvent', screeningEventRouter);
  */
 eventsRouter.get(
     '',
-    permitScopes([Permission.User, 'events.*', 'events.read']),
+    permitScopes(['events.*', 'events.read']),
     rateLimit,
     ...[
         query('inSessionFrom')
@@ -141,7 +139,7 @@ eventsRouter.get(
  */
 eventsRouter.get(
     '/:id',
-    permitScopes([Permission.User, 'events.*', 'events.read']),
+    permitScopes(['events.*', 'events.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -191,7 +189,7 @@ eventsRouter.get(
  */
 eventsRouter.get(
     '/:id/offers',
-    permitScopes([Permission.User, 'events.*', 'events.read']),
+    permitScopes(['events.*', 'events.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -220,7 +218,7 @@ eventsRouter.get(
 // tslint:disable-next-line:use-default-type-parameter
 eventsRouter.get<ParamsDictionary>(
     '/:id/offers/ticket',
-    permitScopes([Permission.User, 'events.*', 'events.read']),
+    permitScopes(['events.*', 'events.read']),
     rateLimit,
     ...[
         query('seller')

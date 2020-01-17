@@ -20,13 +20,12 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const iam_1 = require("../iam");
 const TOKEN_EXPIRES_IN = 1800;
 const ownershipInfosRouter = express_1.Router();
 /**
  * 所有権検索
  */
-ownershipInfosRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'ownershipInfos.read']), rateLimit_1.default, ...[
+ownershipInfosRouter.get('', permitScopes_1.default(['ownershipInfos.read']), rateLimit_1.default, ...[
     express_validator_1.query('ownedFrom')
         .optional()
         .isISO8601()
@@ -73,7 +72,7 @@ ownershipInfosRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'own
 /**
  * コードから所有権に対するアクセストークンを発行する
  */
-ownershipInfosRouter.post('/tokens', permitScopes_1.default([iam_1.Permission.User, 'tokens']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+ownershipInfosRouter.post('/tokens', permitScopes_1.default(['tokens']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const codeRepo = new cinerino.repository.Code(mongoose.connection);
         const token = yield cinerino.service.code.getToken({
@@ -92,7 +91,7 @@ ownershipInfosRouter.post('/tokens', permitScopes_1.default([iam_1.Permission.Us
  * 所有権に対するトークン検証アクションを検索する
  */
 // tslint:disable-next-line:use-default-type-parameter
-ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default([iam_1.Permission.User, 'ownershipInfos.actions.checkToken.read']), rateLimit_1.default, ...[
+ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['ownershipInfos.actions.checkToken.read']), rateLimit_1.default, ...[
     express_validator_1.query('startFrom')
         .optional()
         .isISO8601()
@@ -181,7 +180,7 @@ ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default([iam_
  * Cinemasunshine対応
  * @deprecated
  */
-ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.default([iam_1.Permission.User, 'ownershipInfos.read']), rateLimit_1.default, ...[
+ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.default(['ownershipInfos.read']), rateLimit_1.default, ...[
     express_validator_1.query('fromDate')
         .not()
         .isEmpty()

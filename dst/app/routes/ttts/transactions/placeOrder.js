@@ -20,11 +20,10 @@ const placeOrderTransactionsRouter = express_1.Router();
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const validator_1 = require("../../../middlewares/validator");
 // import * as redis from '../../../../redis';
-const iam_1 = require("../../../iam");
 /**
  * 座席仮予約
  */
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default([iam_1.Permission.User, 'transactions', 'pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['transactions', 'pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (!Array.isArray(req.body.offers)) {
             req.body.offers = [];
@@ -57,7 +56,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
 /**
  * 座席仮予約削除
  */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default([iam_1.Permission.User, 'transactions', 'pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['transactions', 'pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield cinerino.service.offer.seatReservation4ttts.cancel({
             project: req.project,

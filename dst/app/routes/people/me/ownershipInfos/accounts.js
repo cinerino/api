@@ -21,13 +21,12 @@ const permitScopes_1 = require("../../../../middlewares/permitScopes");
 const rateLimit_1 = require("../../../../middlewares/rateLimit");
 const validator_1 = require("../../../../middlewares/validator");
 const redis = require("../../../../../redis");
-const iam_1 = require("../../../../iam");
 const accountsRouter = express_1.Router();
 /**
  * 口座開設
  */
 // tslint:disable-next-line:use-default-type-parameter
-accountsRouter.post('/:accountType', permitScopes_1.default([iam_1.Permission.User, 'people.me.*']), rateLimit_1.default, ...[
+accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), rateLimit_1.default, ...[
     express_validator_1.body('name')
         .not()
         .isEmpty()
@@ -58,7 +57,7 @@ accountsRouter.post('/:accountType', permitScopes_1.default([iam_1.Permission.Us
  * 口座解約
  * 口座の状態を変更するだけで、所有口座リストから削除はしない
  */
-accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default([iam_1.Permission.User, 'people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(['people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -83,7 +82,7 @@ accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(
 /**
  * 口座取引履歴検索
  */
-accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default([iam_1.Permission.User, 'people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default(['people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);

@@ -10,8 +10,6 @@ import permitScopes from '../../../../middlewares/permitScopes';
 import rateLimit from '../../../../middlewares/rateLimit';
 import validator from '../../../../middlewares/validator';
 
-import { Permission } from '../../../../iam';
-
 const creditCardsRouter = Router();
 
 /**
@@ -19,7 +17,7 @@ const creditCardsRouter = Router();
  */
 creditCardsRouter.post(
     '',
-    permitScopes([Permission.User, 'people.me.*']),
+    permitScopes(['people.me.*']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -56,7 +54,7 @@ creditCardsRouter.post(
  */
 creditCardsRouter.get(
     '',
-    permitScopes([Permission.User, 'people.me.*']),
+    permitScopes(['people.me.*']),
     rateLimit,
     async (req, res, next) => {
         try {
@@ -88,7 +86,7 @@ creditCardsRouter.get(
  */
 creditCardsRouter.delete(
     '/:cardSeq',
-    permitScopes([Permission.User, 'people.me.*']),
+    permitScopes(['people.me.*']),
     rateLimit,
     validator,
     async (req, res, next) => {

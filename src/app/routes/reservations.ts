@@ -11,8 +11,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-import { Permission } from '../iam';
-
 type IPayload =
     cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.chevre.reservationType>>;
 
@@ -31,7 +29,7 @@ const reservationsRouter = Router();
  */
 reservationsRouter.get(
     '',
-    permitScopes([Permission.User, 'reservations.*', 'reservations.read']),
+    permitScopes(['reservations.*', 'reservations.read']),
     rateLimit,
     (req, _, next) => {
         const now = moment();
@@ -133,7 +131,7 @@ reservationsRouter.get(
  */
 reservationsRouter.post(
     '/eventReservation/screeningEvent/findByToken',
-    permitScopes([Permission.User, 'reservations.read', 'reservations.findByToken']),
+    permitScopes(['reservations.read', 'reservations.findByToken']),
     rateLimit,
     ...[
         body('token')

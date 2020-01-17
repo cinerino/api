@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - IAMメンバー作成時にロールを複数指定できるように拡張
 - 以下権限を削除
     - `customer`
+    - `user`
 
 ### Deprecated
 

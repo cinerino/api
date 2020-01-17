@@ -22,7 +22,6 @@ const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
-const iam_1 = require("../../iam");
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -38,7 +37,7 @@ const movieTicketPaymentRouter = express_1.Router();
 /**
  * ムビチケ購入番号確認
  */
-movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default([iam_1.Permission.User, 'transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -75,7 +74,7 @@ movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default([iam_1.Pe
  * ムビチケ決済承認
  */
 // tslint:disable-next-line:use-default-type-parameter
-movieTicketPaymentRouter.post('/authorize', permitScopes_1.default([iam_1.Permission.User, 'transactions']), rateLimit_1.default, ...[
+movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['transactions']), rateLimit_1.default, ...[
     express_validator_1.body('object')
         .not()
         .isEmpty(),
@@ -157,7 +156,7 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default([iam_1.Permis
 /**
  * ムビチケ決済承認取消
  */
-movieTicketPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default([iam_1.Permission.User, 'transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+movieTicketPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id

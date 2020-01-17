@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var Permission;
 (function (Permission) {
     Permission["Admin"] = "admin";
-    Permission["User"] = "user";
 })(Permission = exports.Permission || (exports.Permission = {}));
 var RoleName;
 (function (RoleName) {
