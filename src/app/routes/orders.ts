@@ -209,6 +209,88 @@ ordersRouter.get(
 );
 
 /**
+ * 識別子で注文検索
+ */
+ordersRouter.get(
+    '/findByIdentifier',
+    permitScopes(['orders.*', 'orders.read', 'orders.findByIdentifier']),
+    rateLimit,
+    ...[
+        query('identifier.$all')
+            .optional()
+            .isArray(),
+        query('identifier.$in')
+            .optional()
+            .isArray(),
+        query('identifier.$all.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        query('identifier.$all.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        query('identifier.$in.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        query('identifier.$in.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        query('identifier.$all')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isArray({ min: 2, max: 10 })
+            .withMessage(() => 'must be specified at least 2')
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+
+            // 検索条件を限定
+            const orderDateThrough = moment()
+                .toDate();
+            const orderDateFrom = moment(orderDateThrough)
+                // tslint:disable-next-line:no-magic-numbers
+                .add(-93, 'days') // とりあえず直近3カ月をデフォルト動作に設定
+                .toDate();
+
+            const searchConditions: cinerino.factory.order.ISearchConditions = {
+                project: { ids: [req.project.id] },
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+                sort: { orderDate: cinerino.factory.sortType.Descending },
+                identifier: {
+                    $all: req.query.identifier.$all
+                },
+                orderDateFrom: orderDateFrom,
+                orderDateThrough: orderDateThrough
+            };
+
+            const totalCount = await orderRepo.count(searchConditions);
+            const orders = await orderRepo.search(searchConditions);
+
+            res.set('X-Total-Count', totalCount.toString());
+            res.json(orders);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
  * 注文作成
  */
 ordersRouter.post(

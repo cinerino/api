@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - IAMメンバー更新エンドポイントを追加
+- 識別子での注文検索を追加
 
 ### Changed
 
