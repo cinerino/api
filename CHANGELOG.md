@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- IAMメンバー更新エンドポイントを追加
+
 ### Changed
 
 - 以下権限を追加

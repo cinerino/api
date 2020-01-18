@@ -3,6 +3,8 @@
  */
 import * as cinerino from '@cinerino/domain';
 import * as express from 'express';
+// tslint:disable-next-line:no-implicit-dependencies
+import { ParamsDictionary } from 'express-serve-static-core';
 import { body } from 'express-validator';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
@@ -257,10 +259,71 @@ iamMembersRouter.get(
                 limit: 1
             });
             if (members.length === 0) {
-                throw new cinerino.factory.errors.NotFound('Member');
+                throw new cinerino.factory.errors.NotFound(memberRepo.memberModel.modelName);
             }
 
             res.json(members[0]);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * プロジェクトメンバーのロール更新
+ */
+// tslint:disable-next-line:use-default-type-parameter
+iamMembersRouter.put<ParamsDictionary>(
+    '/:id',
+    permitScopes([]),
+    rateLimit,
+    ...[
+        body('member')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required'),
+        body('member.hasRole')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isArray(),
+        body('member.hasRole.*.roleName')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isString()
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            const memberRepo = new cinerino.repository.Member(mongoose.connection);
+
+            // ロールを作成
+            const roles = (<any[]>req.body.member.hasRole).map((r: any) => {
+                return {
+                    typeOf: 'OrganizationRole',
+                    roleName: <string>r.roleName,
+                    memberOf: { typeOf: req.project.typeOf, id: req.project.id }
+                };
+            });
+
+            const doc = await memberRepo.memberModel.findOneAndUpdate(
+                {
+                    member: { id: { $eq: req.params.id } },
+                    project: { id: { $eq: req.project.id } }
+                },
+                {
+                    'member.hasRole': roles
+                }
+            )
+                .exec();
+
+            if (doc === null) {
+                throw new cinerino.factory.errors.NotFound(memberRepo.memberModel.modelName);
+            }
+
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }
@@ -288,7 +351,7 @@ iamMembersRouter.delete(
             })
                 .exec();
             if (doc === null) {
-                throw new cinerino.factory.errors.NotFound('Member');
+                throw new cinerino.factory.errors.NotFound(memberRepo.memberModel.modelName);
             }
 
             res.status(NO_CONTENT)
@@ -323,7 +386,7 @@ iamMembersRouter.get(
                 limit: 1
             });
             if (members.length === 0) {
-                throw new cinerino.factory.errors.NotFound('Member');
+                throw new cinerino.factory.errors.NotFound(memberRepo.memberModel.modelName);
             }
 
             const member = members[0].member;
@@ -380,7 +443,7 @@ iamMembersRouter.patch(
                 limit: 1
             });
             if (members.length === 0) {
-                throw new cinerino.factory.errors.NotFound('Member');
+                throw new cinerino.factory.errors.NotFound(memberRepo.memberModel.modelName);
             }
 
             const member = members[0].member;
