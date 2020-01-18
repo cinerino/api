@@ -257,8 +257,12 @@ iamMembersRouter.put('/:id', permitScopes_1.default([]), rateLimit_1.default, ..
             };
         });
         const doc = yield memberRepo.memberModel.findOneAndUpdate({
-            member: { id: { $eq: req.params.id } },
-            project: { id: { $eq: req.project.id } }
+            'member.id': {
+                $eq: req.params.id
+            },
+            'project.id': {
+                $eq: req.project.id
+            }
         }, {
             'member.hasRole': roles
         })

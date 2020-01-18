@@ -309,8 +309,12 @@ iamMembersRouter.put<ParamsDictionary>(
 
             const doc = await memberRepo.memberModel.findOneAndUpdate(
                 {
-                    member: { id: { $eq: req.params.id } },
-                    project: { id: { $eq: req.project.id } }
+                    'member.id': {
+                        $eq: req.params.id
+                    },
+                    'project.id': {
+                        $eq: req.project.id
+                    }
                 },
                 {
                     'member.hasRole': roles
