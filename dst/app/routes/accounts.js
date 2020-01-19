@@ -34,7 +34,7 @@ const accountsRouter = express_1.Router();
 /**
  * 管理者として口座開設
  */
-accountsRouter.post('', permitScopes_1.default(['accounts.*']), ...[
+accountsRouter.post('', permitScopes_1.default(['accounts.*', 'accounts.write']), ...[
     express_validator_1.body('accountType', 'invalid accountType')
         .not()
         .isEmpty(),
@@ -61,7 +61,7 @@ accountsRouter.post('', permitScopes_1.default(['accounts.*']), ...[
 /**
  * 管理者として口座解約
  */
-accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(['accounts.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(['accounts.*', 'accounts.write']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield cinerino.service.account.close({
             project: req.project,

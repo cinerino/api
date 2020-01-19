@@ -20,7 +20,7 @@ const sellersRouter = Router();
  */
 sellersRouter.post(
     '',
-    permitScopes(['sellers.*']),
+    permitScopes(['sellers.*', 'sellers.write']),
     rateLimit,
     ...[
         body('typeOf')
@@ -150,7 +150,7 @@ sellersRouter.get(
 // tslint:disable-next-line:use-default-type-parameter
 sellersRouter.put<ParamsDictionary>(
     '/:id',
-    permitScopes(['sellers.*']),
+    permitScopes(['sellers.*', 'sellers.write']),
     rateLimit,
     ...[
         body('typeOf')
@@ -220,7 +220,7 @@ sellersRouter.put<ParamsDictionary>(
  */
 sellersRouter.delete(
     '/:id',
-    permitScopes(['sellers.*']),
+    permitScopes(['sellers.*', 'sellers.write']),
     rateLimit,
     validator,
     async (req, res, next) => {

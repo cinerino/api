@@ -35,7 +35,7 @@ iamMembersRouter.use('/me', iamMeRouter);
  */
 iamMembersRouter.post(
     '',
-    permitScopes([]),
+    permitScopes(['iam.members.write']),
     rateLimit,
     ...[
         body('member')
@@ -275,7 +275,7 @@ iamMembersRouter.get(
 // tslint:disable-next-line:use-default-type-parameter
 iamMembersRouter.put<ParamsDictionary>(
     '/:id',
-    permitScopes([]),
+    permitScopes(['iam.members.write']),
     rateLimit,
     ...[
         body('member')
@@ -339,7 +339,7 @@ iamMembersRouter.put<ParamsDictionary>(
  */
 iamMembersRouter.delete(
     '/:id',
-    permitScopes([]),
+    permitScopes(['iam.members.write']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -371,7 +371,7 @@ iamMembersRouter.delete(
  */
 iamMembersRouter.get(
     '/:id/profile',
-    permitScopes([]),
+    permitScopes(['iam.members.profile.read']),
     rateLimit,
     async (req, res, next) => {
         try {
@@ -427,7 +427,7 @@ iamMembersRouter.get(
  */
 iamMembersRouter.patch(
     '/:id/profile',
-    permitScopes([]),
+    permitScopes(['iam.members.profile.write']),
     rateLimit,
     validator,
     async (req, res, next) => {

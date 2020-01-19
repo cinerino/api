@@ -295,7 +295,7 @@ ordersRouter.get(
  */
 ordersRouter.post(
     '',
-    permitScopes(['orders.*']),
+    permitScopes(['orders.*', 'orders.create']),
     rateLimit,
     ...[
         body('orderNumber')
@@ -642,7 +642,7 @@ ordersRouter.get(
  */
 ordersRouter.post(
     '/:orderNumber/deliver',
-    permitScopes(['orders.*']),
+    permitScopes(['orders.*', 'orders.deliver']),
     rateLimit,
     validator,
     async (req, res, next) => {

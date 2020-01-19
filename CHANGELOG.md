@@ -15,16 +15,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 以下権限を追加
     - `accounts.transactions.deposit.write`
+    - `accounts.write`
     - `actions.printTicket.*`
+    - `iam.members.write`
+    - `iam.members.profile.write`
+    - `iam.members.profile.read`
+    - `orders.create`
+    - `orders.deliver`
     - `ownershipInfos.read`
     - `ownershipInfos.actions.checkToken.read`
     - `payment.any.write`
+    - `people.creditCards.delete`
+    - `people.delete`
+    - `people.profile.update`
     - `reservations.read`
+    - `sellers.write`
     - `tasks.create`
+
 - IAMメンバー作成時にロールを複数指定できるように拡張
 - 以下権限を削除
     - `customer`
     - `user`
+
 - /people/meリソース検索条件にプロジェクトIDを追加
 - ユーザープロフィールを部分的に更新できるように調整
 

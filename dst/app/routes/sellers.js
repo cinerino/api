@@ -24,7 +24,7 @@ const sellersRouter = express_1.Router();
 /**
  * 販売者作成
  */
-sellersRouter.post('', permitScopes_1.default(['sellers.*']), rateLimit_1.default, ...[
+sellersRouter.post('', permitScopes_1.default(['sellers.*', 'sellers.write']), rateLimit_1.default, ...[
     express_validator_1.body('typeOf')
         .not()
         .isEmpty()
@@ -120,7 +120,7 @@ sellersRouter.get('/:id', permitScopes_1.default(['sellers.*', 'sellers.read']),
  * 販売者更新
  */
 // tslint:disable-next-line:use-default-type-parameter
-sellersRouter.put('/:id', permitScopes_1.default(['sellers.*']), rateLimit_1.default, ...[
+sellersRouter.put('/:id', permitScopes_1.default(['sellers.*', 'sellers.write']), rateLimit_1.default, ...[
     express_validator_1.body('typeOf')
         .not()
         .isEmpty()
@@ -178,7 +178,7 @@ sellersRouter.put('/:id', permitScopes_1.default(['sellers.*']), rateLimit_1.def
 /**
  * 販売者削除
  */
-sellersRouter.delete('/:id', permitScopes_1.default(['sellers.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+sellersRouter.delete('/:id', permitScopes_1.default(['sellers.*', 'sellers.write']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         yield sellerRepo.deleteById({

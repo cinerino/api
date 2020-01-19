@@ -261,7 +261,7 @@ ordersRouter.get('/findByIdentifier', permitScopes_1.default(['orders.*', 'order
 /**
  * 注文作成
  */
-ordersRouter.post('', permitScopes_1.default(['orders.*']), rateLimit_1.default, ...[
+ordersRouter.post('', permitScopes_1.default(['orders.*', 'orders.create']), rateLimit_1.default, ...[
     express_validator_1.body('orderNumber')
         .not()
         .isEmpty()
@@ -543,7 +543,7 @@ ordersRouter.get('/:orderNumber', permitScopes_1.default(['orders.*', 'orders.re
 /**
  * 注文配送
  */
-ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['orders.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['orders.*', 'orders.deliver']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);

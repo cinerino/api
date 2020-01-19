@@ -35,7 +35,7 @@ iamMembersRouter.use('/me', me_1.default);
 /**
  * プロジェクトメンバー追加
  */
-iamMembersRouter.post('', permitScopes_1.default([]), rateLimit_1.default, ...[
+iamMembersRouter.post('', permitScopes_1.default(['iam.members.write']), rateLimit_1.default, ...[
     express_validator_1.body('member')
         .not()
         .isEmpty()
@@ -230,7 +230,7 @@ iamMembersRouter.get('/:id', permitScopes_1.default(['iam.members.read']), rateL
  * プロジェクトメンバーのロール更新
  */
 // tslint:disable-next-line:use-default-type-parameter
-iamMembersRouter.put('/:id', permitScopes_1.default([]), rateLimit_1.default, ...[
+iamMembersRouter.put('/:id', permitScopes_1.default(['iam.members.write']), rateLimit_1.default, ...[
     express_validator_1.body('member')
         .not()
         .isEmpty()
@@ -280,7 +280,7 @@ iamMembersRouter.put('/:id', permitScopes_1.default([]), rateLimit_1.default, ..
 /**
  * プロジェクトメンバー削除
  */
-iamMembersRouter.delete('/:id', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+iamMembersRouter.delete('/:id', permitScopes_1.default(['iam.members.write']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const doc = yield memberRepo.memberModel.findOneAndDelete({
@@ -305,7 +305,7 @@ iamMembersRouter.delete('/:id', permitScopes_1.default([]), rateLimit_1.default,
 /**
  * プロジェクトメンバープロフィール取得
  */
-iamMembersRouter.get('/:id/profile', permitScopes_1.default([]), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+iamMembersRouter.get('/:id/profile', permitScopes_1.default(['iam.members.profile.read']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -348,7 +348,7 @@ iamMembersRouter.get('/:id/profile', permitScopes_1.default([]), rateLimit_1.def
 /**
  * プロジェクトメンバープロフィール更新
  */
-iamMembersRouter.patch('/:id/profile', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+iamMembersRouter.patch('/:id/profile', permitScopes_1.default(['iam.members.profile.write']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);

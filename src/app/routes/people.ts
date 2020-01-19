@@ -86,7 +86,7 @@ peopleRouter.get(
  */
 peopleRouter.delete(
     '/:id',
-    permitScopes(['people.*']),
+    permitScopes(['people.*', 'people.delete']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -297,7 +297,7 @@ peopleRouter.get(
  */
 peopleRouter.delete(
     '/:id/ownershipInfos/creditCards/:cardSeq',
-    permitScopes(['people.*']),
+    permitScopes(['people.*', 'people.creditCards.delete']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -394,7 +394,7 @@ peopleRouter.get(
  */
 peopleRouter.patch(
     '/:id/profile',
-    permitScopes(['people.*']),
+    permitScopes(['people.*', 'people.profile.update']),
     rateLimit,
     validator,
     async (req, res, next) => {
