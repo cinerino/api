@@ -14,8 +14,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-import screeningEventRouter from './events/screeningEvent';
-
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -26,8 +24,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 
 const eventsRouter = Router();
 
-eventsRouter.use('/screeningEvent', screeningEventRouter);
-
 /**
  * イベント検索
  */
@@ -35,6 +31,14 @@ eventsRouter.get(
     '',
     permitScopes(['events.*', 'events.read']),
     rateLimit,
+    // 互換性維持のため
+    (req, _, next) => {
+        if (typeof req.query.typeOf !== 'string') {
+            req.query.typeOf = cinerino.factory.chevre.eventType.ScreeningEvent;
+        }
+
+        next();
+    },
     ...[
         query('inSessionFrom')
             .optional()

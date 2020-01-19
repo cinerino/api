@@ -47,6 +47,7 @@ projectDetailRouter.use('/actions', actions_1.default);
 projectDetailRouter.use('/applications', applications_1.default);
 projectDetailRouter.use('/authorizations', authorizations_1.default);
 projectDetailRouter.use('/creativeWorks', creativeWorks_1.default);
+projectDetailRouter.use('/events/screeningEvent', events_1.default);
 projectDetailRouter.use('/events', events_1.default);
 projectDetailRouter.use('/iam', iam_1.default);
 projectDetailRouter.use('/invoices', invoices_1.default);

@@ -53,6 +53,7 @@ projectDetailRouter.use('/actions', actionsRouter);
 projectDetailRouter.use('/applications', applicationsRouter);
 projectDetailRouter.use('/authorizations', authorizationsRouter);
 projectDetailRouter.use('/creativeWorks', creativeWorksRouter);
+projectDetailRouter.use('/events/screeningEvent', eventsRouter);
 projectDetailRouter.use('/events', eventsRouter);
 projectDetailRouter.use('/iam', iamRouter);
 projectDetailRouter.use('/invoices', invoicesRouter);

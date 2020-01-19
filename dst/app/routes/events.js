@@ -20,7 +20,6 @@ const redis = require("../../redis");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const screeningEvent_1 = require("./events/screeningEvent");
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -29,11 +28,17 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 const eventsRouter = express_1.Router();
-eventsRouter.use('/screeningEvent', screeningEvent_1.default);
 /**
  * イベント検索
  */
-eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLimit_1.default, ...[
+eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLimit_1.default, 
+// 互換性維持のため
+(req, _, next) => {
+    if (typeof req.query.typeOf !== 'string') {
+        req.query.typeOf = cinerino.factory.chevre.eventType.ScreeningEvent;
+    }
+    next();
+}, ...[
     express_validator_1.query('inSessionFrom')
         .optional()
         .isISO8601()
