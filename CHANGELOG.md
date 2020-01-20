@@ -40,6 +40,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - /people/meリソース検索条件にプロジェクトIDを追加
 - ユーザープロフィールを部分的に更新できるように調整
 - 旧上映イベントルーターを汎用イベントルーターに統合
+- ストリーミング検索にタイムアウトを設定
 
 ### Deprecated
 

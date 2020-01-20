@@ -17,8 +17,6 @@ import validator from '../middlewares/validator';
 
 import * as redis from '../../redis';
 
-import { connectMongo } from '../../connectMongo';
-
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -418,13 +416,8 @@ ordersRouter.get(
     ],
     validator,
     async (req, res, next) => {
-        let connection: mongoose.Connection | undefined;
-
         try {
-            // 長時間占有する可能性があるのでコネクションを独自に生成
-            connection = await connectMongo({ defaultConnection: false });
-
-            const orderRepo = new cinerino.repository.Order(connection);
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
 
             const searchConditions: cinerino.factory.order.ISearchConditions = {
                 ...req.query,
@@ -439,21 +432,21 @@ ordersRouter.get(
             })({ order: orderRepo });
 
             res.type(`${req.query.format}; charset=utf-8`);
-            stream.pipe(res)
-                .on('error', async () => {
-                    if (connection !== undefined) {
-                        await connection.close();
-                    }
-                })
-                .on('finish', async () => {
-                    if (connection !== undefined) {
-                        await connection.close();
-                    }
-                });
+            stream.pipe(res);
+            // .on('error', async () => {
+            //     if (connection !== undefined) {
+            //         await connection.close();
+            //     }
+            // })
+            // .on('finish', async () => {
+            //     if (connection !== undefined) {
+            //         await connection.close();
+            //     }
+            // });
         } catch (error) {
-            if (connection !== undefined) {
-                await connection.close();
-            }
+            // if (connection !== undefined) {
+            //     await connection.close();
+            // }
 
             next(error);
         }

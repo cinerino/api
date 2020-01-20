@@ -23,7 +23,6 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const redis = require("../../redis");
-const connectMongo_1 = require("../../connectMongo");
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -363,11 +362,8 @@ ordersRouter.get('/download', permitScopes_1.default(['orders.*', 'orders.read']
         .isISO8601()
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    let connection;
     try {
-        // 長時間占有する可能性があるのでコネクションを独自に生成
-        connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
-        const orderRepo = new cinerino.repository.Order(connection);
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] } });
         const format = req.query.format;
         const stream = yield cinerino.service.report.order.stream({
@@ -375,22 +371,22 @@ ordersRouter.get('/download', permitScopes_1.default(['orders.*', 'orders.read']
             format: format
         })({ order: orderRepo });
         res.type(`${req.query.format}; charset=utf-8`);
-        stream.pipe(res)
-            .on('error', () => __awaiter(void 0, void 0, void 0, function* () {
-            if (connection !== undefined) {
-                yield connection.close();
-            }
-        }))
-            .on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
-            if (connection !== undefined) {
-                yield connection.close();
-            }
-        }));
+        stream.pipe(res);
+        // .on('error', async () => {
+        //     if (connection !== undefined) {
+        //         await connection.close();
+        //     }
+        // })
+        // .on('finish', async () => {
+        //     if (connection !== undefined) {
+        //         await connection.close();
+        //     }
+        // });
     }
     catch (error) {
-        if (connection !== undefined) {
-            yield connection.close();
-        }
+        // if (connection !== undefined) {
+        //     await connection.close();
+        // }
         next(error);
     }
 }));
