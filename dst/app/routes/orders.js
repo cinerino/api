@@ -133,7 +133,7 @@ ordersRouter.get('', permitScopes_1.default(['orders.*', 'orders.read']), rateLi
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
-        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         const totalCount = yield orderRepo.count(searchConditions);
@@ -196,7 +196,7 @@ ordersRouter.get('/findByIdentifier', permitScopes_1.default(['orders.*', 'order
             .add(-93, 'days') // とりあえず直近3カ月をデフォルト動作に設定
             .toDate();
         const searchConditions = {
-            project: { ids: [req.project.id] },
+            project: { id: { $eq: req.project.id } },
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
             page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
@@ -235,7 +235,7 @@ ordersRouter.post('', permitScopes_1.default(['orders.*', 'orders.create']), rat
         // 注文検索
         const orders = yield orderRepo.search({
             limit: 1,
-            project: { ids: [req.project.id] },
+            project: { id: { $eq: req.project.id } },
             orderNumbers: [orderNumber]
         });
         let order = orders.shift();
@@ -323,7 +323,7 @@ ordersRouter.get('/download', permitScopes_1.default([]), rateLimit_1.default,
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
-        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] } });
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } });
         const format = req.query.format;
         const stream = yield cinerino.service.report.order.stream({
             conditions: searchConditions,
@@ -456,7 +456,7 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['orders.*
         const orders = yield orderRepo.search({
             limit: 1,
             sort: { orderDate: cinerino.factory.sortType.Descending },
-            project: { ids: [req.project.id] },
+            project: { id: { $eq: req.project.id } },
             confirmationNumbers: [req.body.confirmationNumber],
             customer: {
                 email: (customer.email !== undefined)

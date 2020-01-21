@@ -37,7 +37,7 @@ ordersRouter.get(
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const searchConditions: cinerino.factory.order.ISearchConditions = {
                 ...req.query,
-                project: { ids: [req.project.id] },
+                project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,

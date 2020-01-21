@@ -39,7 +39,7 @@ ownershipInfosRouter.get('', permitScopes_1.default(['ownershipInfos.read']), ra
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const typeOfGood = (req.query.typeOfGood !== undefined && req.query.typeOfGood !== null) ? req.query.typeOfGood : {};
         let ownershipInfos;
-        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         const totalCount = yield ownershipInfoRepo.count(searchConditions);
