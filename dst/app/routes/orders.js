@@ -278,7 +278,7 @@ ordersRouter.post('', permitScopes_1.default(['orders.*', 'orders.create']), rat
 /**
  * ストリーミングダウンロード
  */
-ordersRouter.get('/download', permitScopes_1.default(['orders.*', 'orders.read']), rateLimit_1.default, 
+ordersRouter.get('/download', permitScopes_1.default([]), rateLimit_1.default, 
 // 互換性維持のため
 (req, _, next) => {
     const now = moment();

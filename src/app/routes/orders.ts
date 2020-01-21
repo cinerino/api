@@ -323,7 +323,7 @@ ordersRouter.post(
  */
 ordersRouter.get(
     '/download',
-    permitScopes(['orders.*', 'orders.read']),
+    permitScopes([]),
     rateLimit,
     // 互換性維持のため
     (req, _, next) => {
