@@ -41,6 +41,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - ユーザープロフィールを部分的に更新できるように調整
 - 旧上映イベントルーターを汎用イベントルーターに統合
 - ストリーミング検索にタイムアウトを設定
+- COA管理のイベントに対しても、座席オファーと券種オファーを検索できるように調整
 
 ### Deprecated
 

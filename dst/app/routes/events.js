@@ -199,12 +199,9 @@ eventsRouter.get('/:id/offers/ticket', permitScopes_1.default(['events.*', 'even
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-        const offers = yield cinerino.service.offer.searchEventTicketOffers({
-            project: req.project,
-            event: { id: req.params.id },
-            seller: req.query.seller,
-            store: req.query.store
-        })({
+        const offers = yield cinerino.service.offer.searchEventTicketOffers(Object.assign({ project: req.project, event: { id: req.params.id }, seller: req.query.seller, store: req.query.store }, (req.query.movieTicket !== undefined && req.query.movieTicket !== null)
+            ? { movieTicket: req.query.movieTicket }
+            : {}))({
             project: projectRepo,
             seller: sellerRepo,
             event: eventRepo

@@ -245,7 +245,10 @@ eventsRouter.get<ParamsDictionary>(
                 project: req.project,
                 event: { id: req.params.id },
                 seller: req.query.seller,
-                store: req.query.store
+                store: req.query.store,
+                ...(req.query.movieTicket !== undefined && req.query.movieTicket !== null)
+                    ? { movieTicket: req.query.movieTicket }
+                    : {}
             })({
                 project: projectRepo,
                 seller: sellerRepo,
