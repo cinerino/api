@@ -146,6 +146,77 @@ ordersRouter.get('', permitScopes_1.default(['orders.*', 'orders.read']), rateLi
     }
 }));
 /**
+ * 注文検索
+ */
+ordersRouter.get('/v2', permitScopes_1.default(['orders.*', 'orders.read']), rateLimit_1.default, ...[
+    express_validator_1.query('identifier.$all')
+        .optional()
+        .isArray(),
+    express_validator_1.query('identifier.$in')
+        .optional()
+        .isArray(),
+    express_validator_1.query('identifier.$all.*.name')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.query('identifier.$all.*.value')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.query('identifier.$in.*.name')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.query('identifier.$in.*.value')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.query('orderDateFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('orderDateThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('acceptedOffers.itemOffered.reservationFor.startFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('acceptedOffers.itemOffered.reservationFor.startThrough')
+        .optional()
+        .isISO8601()
+        .toDate()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
+        const orders = yield orderRepo.search(searchConditions);
+        res.json(orders);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
  * 識別子で注文検索
  */
 ordersRouter.get('/findByIdentifier', permitScopes_1.default(['orders.*', 'orders.read', 'orders.findByIdentifier']), rateLimit_1.default, ...[

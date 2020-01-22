@@ -164,6 +164,91 @@ ordersRouter.get(
 );
 
 /**
+ * 注文検索
+ */
+ordersRouter.get(
+    '/v2',
+    permitScopes(['orders.*', 'orders.read']),
+    rateLimit,
+    ...[
+        query('identifier.$all')
+            .optional()
+            .isArray(),
+        query('identifier.$in')
+            .optional()
+            .isArray(),
+        query('identifier.$all.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        query('identifier.$all.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        query('identifier.$in.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        query('identifier.$in.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        query('orderDateFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('orderDateThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('acceptedOffers.itemOffered.reservationFor.startFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('acceptedOffers.itemOffered.reservationFor.startThrough')
+            .optional()
+            .isISO8601()
+            .toDate()
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+
+            const searchConditions: cinerino.factory.order.ISearchConditions = {
+                ...req.query,
+                project: { id: { $eq: req.project.id } },
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
+            };
+
+            const orders = await orderRepo.search(searchConditions);
+
+            res.json(orders);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
  * 識別子で注文検索
  */
 ordersRouter.get(
