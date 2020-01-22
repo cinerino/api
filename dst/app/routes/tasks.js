@@ -111,8 +111,6 @@ tasksRouter.get('', permitScopes_1.default(['tasks.*', 'tasks.read']), rateLimit
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         const tasks = yield taskRepo.search(searchConditions);
-        const totalCount = yield taskRepo.count(searchConditions);
-        res.set('X-Total-Count', totalCount.toString());
         res.json(tasks);
     }
     catch (error) {

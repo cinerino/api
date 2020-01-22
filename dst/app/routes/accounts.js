@@ -124,7 +124,6 @@ accountsRouter.get('', permitScopes_1.default(['accounts.*', 'accounts.read']), 
             auth: pecorinoAuthClient
         });
         const searchResult = yield accountService.search(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }));
-        res.set('X-Total-Count', searchResult.totalCount.toString());
         res.json(searchResult.data);
     }
     catch (error) {
@@ -177,7 +176,6 @@ accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default(['accounts.*
             auth: pecorinoAuthClient
         });
         const searchResult = yield actionService.searchMoneyTransferActions(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }));
-        res.set('X-Total-Count', searchResult.totalCount.toString());
         res.json(searchResult.data);
     }
     catch (error) {

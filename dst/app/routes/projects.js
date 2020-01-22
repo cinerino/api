@@ -37,9 +37,6 @@ rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, 
         const searchCoinditions = {
             'member.id': req.user.sub
         };
-        const totalCount = yield memberRepo.memberModel.countDocuments(searchCoinditions)
-            .setOptions({ maxTimeMS: 10000 })
-            .exec();
         const projectMembers = yield memberRepo.memberModel.find(searchCoinditions, { project: 1 })
             .limit(limit)
             .skip(limit * (page - 1))
@@ -50,7 +47,6 @@ rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, 
             ids: projectMembers.map((m) => m.project.id),
             limit: limit
         }, { settings: 0 });
-        res.set('X-Total-Count', totalCount.toString());
         res.json(projects);
     }
     catch (error) {

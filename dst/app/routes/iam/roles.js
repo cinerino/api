@@ -29,8 +29,6 @@ iamRolesRouter.get('', permitScopes_1.default(['iam.roles.read']), rateLimit_1.d
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: { roleName: cinerino.factory.sortType.Ascending } });
         const roleRepo = new cinerino.repository.Role(mongoose.connection);
         const roles = yield roleRepo.search(searchCoinditions);
-        const totalCount = yield roleRepo.count(searchCoinditions);
-        res.set('X-Total-Count', totalCount.toString());
         res.json(roles);
     }
     catch (error) {

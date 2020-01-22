@@ -54,8 +54,6 @@ ordersRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_1.defaul
                 ids: [req.user.sub]
             } });
         const orders = yield orderRepo.search(searchConditions);
-        const totalCount = yield orderRepo.count(searchConditions);
-        res.set('X-Total-Count', totalCount.toString());
         res.json(orders);
     }
     catch (error) {

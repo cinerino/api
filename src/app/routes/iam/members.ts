@@ -232,9 +232,7 @@ iamMembersRouter.get(
 
             const memberRepo = new cinerino.repository.Member(mongoose.connection);
             const members = await memberRepo.search(searchCoinditions);
-            const totalCount = await memberRepo.count(searchCoinditions);
 
-            res.set('X-Total-Count', totalCount.toString());
             res.json(members);
         } catch (error) {
             next(error);

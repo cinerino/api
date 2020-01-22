@@ -1214,8 +1214,7 @@ placeOrderTransactionsRouter.get(
                 typeOf: cinerino.factory.transactionType.PlaceOrder
             };
             const transactions = await transactionRepo.search(searchConditions);
-            const totalCount = await transactionRepo.count(searchConditions);
-            res.set('X-Total-Count', totalCount.toString());
+
             res.json(transactions);
         } catch (error) {
             next(error);

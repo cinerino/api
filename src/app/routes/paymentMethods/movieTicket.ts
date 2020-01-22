@@ -27,8 +27,7 @@ movieTicketPaymentMethodsRouter.get(
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
             const paymentMethods = await paymentMethodRepo.searchMovieTickets(searchCoinditions);
-            const totalCount = await paymentMethodRepo.countMovieTickets(searchCoinditions);
-            res.set('X-Total-Count', totalCount.toString());
+
             res.json(paymentMethods);
         } catch (error) {
             next(error);

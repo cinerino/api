@@ -198,8 +198,6 @@ iamMembersRouter.get('', permitScopes_1.default(['iam.members.read']), rateLimit
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const members = yield memberRepo.search(searchCoinditions);
-        const totalCount = yield memberRepo.count(searchCoinditions);
-        res.set('X-Total-Count', totalCount.toString());
         res.json(members);
     }
     catch (error) {

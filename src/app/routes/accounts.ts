@@ -144,7 +144,7 @@ accountsRouter.get(
                 ...req.query,
                 project: { id: { $eq: req.project.id } }
             });
-            res.set('X-Total-Count', searchResult.totalCount.toString());
+
             res.json(searchResult.data);
         } catch (error) {
             next(error);
@@ -209,7 +209,7 @@ accountsRouter.get(
                 ...req.query,
                 project: { id: { $eq: req.project.id } }
             });
-            res.set('X-Total-Count', searchResult.totalCount.toString());
+
             res.json(searchResult.data);
         } catch (error) {
             next(error);

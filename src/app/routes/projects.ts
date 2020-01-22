@@ -35,9 +35,7 @@ projectsRouter.get(
             const searchCoinditions = {
                 'member.id': req.user.sub
             };
-            const totalCount = await memberRepo.memberModel.countDocuments(searchCoinditions)
-                .setOptions({ maxTimeMS: 10000 })
-                .exec();
+
             const projectMembers = await memberRepo.memberModel.find(
                 searchCoinditions,
                 { project: 1 }
@@ -56,7 +54,6 @@ projectsRouter.get(
                 { settings: 0 }
             );
 
-            res.set('X-Total-Count', totalCount.toString());
             res.json(projects);
         } catch (error) {
             next(error);

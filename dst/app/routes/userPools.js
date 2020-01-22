@@ -73,7 +73,6 @@ userPoolsRouter.get('/:userPoolId/clients', permitScopes_1.default(['userPools.c
                 }
             });
         });
-        res.set('X-Total-Count', clients.length.toString());
         res.json(clients);
     }
     catch (error) {

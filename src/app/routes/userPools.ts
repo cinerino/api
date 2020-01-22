@@ -79,7 +79,7 @@ userPoolsRouter.get(
                     }
                 );
             });
-            res.set('X-Total-Count', clients.length.toString());
+
             res.json(clients);
         } catch (error) {
             error = cinerino.errorHandler.handleAWSError(error);

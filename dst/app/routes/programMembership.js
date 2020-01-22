@@ -28,9 +28,7 @@ programMembershipsRouter.get('', permitScopes_1.default(['programMemberships.*',
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const totalCount = yield programMembershipRepo.count(searchConditions);
         const programMemberships = yield programMembershipRepo.search(searchConditions);
-        res.set('X-Total-Count', totalCount.toString());
         res.json(programMemberships);
     }
     catch (error) {

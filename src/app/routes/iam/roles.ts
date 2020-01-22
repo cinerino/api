@@ -31,9 +31,7 @@ iamRolesRouter.get(
 
             const roleRepo = new cinerino.repository.Role(mongoose.connection);
             const roles = await roleRepo.search(searchCoinditions);
-            const totalCount = await roleRepo.count(searchCoinditions);
 
-            res.set('X-Total-Count', totalCount.toString());
             res.json(roles);
         } catch (error) {
             next(error);

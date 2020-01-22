@@ -43,7 +43,7 @@ peopleRouter.get(
                 givenName: req.query.givenName,
                 familyName: req.query.familyName
             });
-            res.set('X-Total-Count', people.length.toString());
+
             res.json(people);
         } catch (error) {
             next(error);
@@ -205,8 +205,6 @@ peopleRouter.get<ParamsDictionary>(
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
-            const totalCount = await ownershipInfoRepo.count(searchConditions);
-
             const typeOfGood = <cinerino.factory.ownershipInfo.ITypeOfGoodSearchConditions<any>>req.query.typeOfGood;
             switch (typeOfGood.typeOf) {
                 case cinerino.factory.ownershipInfo.AccountGoodType.Account:
@@ -236,7 +234,6 @@ peopleRouter.get<ParamsDictionary>(
                 // throw new cinerino.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
             }
 
-            res.set('X-Total-Count', totalCount.toString());
             res.json(ownershipInfos);
         } catch (error) {
             next(error);

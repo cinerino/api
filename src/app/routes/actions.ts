@@ -43,10 +43,8 @@ actionsRouter.get(
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
 
-            const totalCount = await actionRepo.count(searchConditions);
             const actions = await actionRepo.search(searchConditions);
 
-            res.set('X-Total-Count', totalCount.toString());
             res.json(actions);
         } catch (error) {
             next(error);

@@ -31,10 +31,8 @@ programMembershipsRouter.get(
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
 
-            const totalCount = await programMembershipRepo.count(searchConditions);
             const programMemberships = await programMembershipRepo.search(searchConditions);
 
-            res.set('X-Total-Count', totalCount.toString());
             res.json(programMemberships);
         } catch (error) {
             next(error);

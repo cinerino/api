@@ -109,9 +109,7 @@ sellersRouter.get(
                 // 管理者以外にセキュアな情報を露出しないように
                 (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined
             );
-            const totalCount = await sellerRepo.count(searchCoinditions);
 
-            res.set('X-Total-Count', totalCount.toString());
             res.json(sellers);
         } catch (error) {
             next(error);
