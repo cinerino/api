@@ -29,6 +29,14 @@ ordersRouter.get(
             .not()
             .isEmpty()
             .isISO8601()
+            .toDate(),
+        query('orderDate.$gte')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('orderDate.$lte')
+            .optional()
+            .isISO8601()
             .toDate()
     ],
     validator,

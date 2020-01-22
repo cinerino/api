@@ -33,6 +33,14 @@ ordersRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_1.defaul
         .not()
         .isEmpty()
         .isISO8601()
+        .toDate(),
+    express_validator_1.query('orderDate.$gte')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('orderDate.$lte')
+        .optional()
+        .isISO8601()
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {

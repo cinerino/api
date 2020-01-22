@@ -44,6 +44,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - COA管理のイベントに対しても、座席オファーと券種オファーを検索できるように調整
 - 注文ストリーミング検索の権限をプロジェクト所有者のみに限定
 - mongooseのsettersとvirtualsを無効化
+- 注文検索条件拡張
+- 注文検索のX-Total-Count無効化対応
 
 ### Deprecated
 

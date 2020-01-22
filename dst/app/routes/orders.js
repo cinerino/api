@@ -47,20 +47,25 @@ const ordersRouter = express_1.Router();
  */
 ordersRouter.get('', permitScopes_1.default(['orders.*', 'orders.read']), rateLimit_1.default, 
 // 互換性維持のため
-(req, _, next) => {
-    const now = moment();
-    if (typeof req.query.orderDateThrough !== 'string') {
-        req.query.orderDateThrough = moment(now)
-            .toISOString();
-    }
-    if (typeof req.query.orderDateFrom !== 'string') {
-        req.query.orderDateFrom = moment(now)
-            // tslint:disable-next-line:no-magic-numbers
-            .add(-31, 'days') // とりあえず直近1カ月をデフォルト動作に設定
-            .toISOString();
-    }
-    next();
-}, ...[
+// (req, _, next) => {
+//     const now = moment();
+//     if (typeof req.query.orderDateThrough !== 'string') {
+//         req.query.orderDateThrough = moment(now)
+//             .toISOString();
+//     }
+//     if (typeof req.query.orderDateFrom !== 'string') {
+//         req.query.orderDateFrom = moment(now)
+//             // tslint:disable-next-line:no-magic-numbers
+//             .add(-31, 'days') // とりあえず直近1カ月をデフォルト動作に設定
+//             .toISOString();
+//     }
+//     next();
+// },
+...[
+    express_validator_1.query('disableTotalCount')
+        .optional()
+        .isBoolean()
+        .toBoolean(),
     express_validator_1.query('identifier.$all')
         .optional()
         .isArray(),
@@ -92,28 +97,38 @@ ordersRouter.get('', permitScopes_1.default(['orders.*', 'orders.read']), rateLi
         .isString()
         .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.query('orderDateFrom')
-        .not()
-        .isEmpty()
+        // .not()
+        // .isEmpty()
+        .optional()
         .isISO8601()
         .toDate(),
     express_validator_1.query('orderDateThrough')
-        .not()
-        .isEmpty()
+        // .not()
+        // .isEmpty()
+        .optional()
         .isISO8601()
-        .toDate()
-        .custom((value, { req }) => {
-        // 注文期間指定を限定
-        const orderDateThrough = moment(value);
-        if (req.query !== undefined) {
-            const orderDateThroughExpectedToBe = moment(req.query.orderDateFrom)
-                // tslint:disable-next-line:no-magic-numbers
-                .add(31, 'days');
-            if (orderDateThrough.isAfter(orderDateThroughExpectedToBe)) {
-                throw new Error('Order date range too large');
-            }
-        }
-        return true;
-    }),
+        .toDate(),
+    // .custom((value, { req }) => {
+    //     // 注文期間指定を限定
+    //     const orderDateThrough = moment(value);
+    //     if (req.query !== undefined) {
+    //         const orderDateThroughExpectedToBe = moment(req.query.orderDateFrom)
+    //             // tslint:disable-next-line:no-magic-numbers
+    //             .add(31, 'days');
+    //         if (orderDateThrough.isAfter(orderDateThroughExpectedToBe)) {
+    //             throw new Error('Order date range too large');
+    //         }
+    //     }
+    //     return true;
+    // }),
+    express_validator_1.query('orderDate.$gte')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('orderDate.$lte')
+        .optional()
+        .isISO8601()
+        .toDate(),
     express_validator_1.query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
         .optional()
         .isISO8601()
@@ -136,9 +151,12 @@ ordersRouter.get('', permitScopes_1.default(['orders.*', 'orders.read']), rateLi
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const totalCount = yield orderRepo.count(searchConditions);
         const orders = yield orderRepo.search(searchConditions);
-        res.set('X-Total-Count', totalCount.toString());
+        const disableTotalCount = req.query.disableTotalCount === true;
+        if (!disableTotalCount) {
+            const totalCount = yield orderRepo.count(searchConditions);
+            res.set('X-Total-Count', totalCount.toString());
+        }
         res.json(orders);
     }
     catch (error) {
@@ -304,6 +322,14 @@ ordersRouter.get('/download', permitScopes_1.default([]), rateLimit_1.default,
         .isEmpty()
         .isISO8601()
         .toDate(),
+    express_validator_1.query('orderDate.$gte')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('orderDate.$lte')
+        .optional()
+        .isISO8601()
+        .toDate(),
     express_validator_1.query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
         .optional()
         .isISO8601()
@@ -420,6 +446,14 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['orders.*
         .isISO8601()
         .toDate(),
     express_validator_1.body('orderDateThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.body('orderDate.$gte')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.body('orderDate.$lte')
         .optional()
         .isISO8601()
         .toDate(),
