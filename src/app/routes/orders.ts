@@ -222,7 +222,7 @@ ordersRouter.get(
                 .toDate();
 
             const searchConditions: cinerino.factory.order.ISearchConditions = {
-                project: <any>{ id: { $eq: req.project.id } },
+                project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
@@ -272,7 +272,7 @@ ordersRouter.post(
             // 注文検索
             const orders = await orderRepo.search({
                 limit: 1,
-                project: <any>{ id: { $eq: req.project.id } },
+                project: { id: { $eq: req.project.id } },
                 orderNumbers: [orderNumber]
             });
             let order = orders.shift();
@@ -538,7 +538,7 @@ ordersRouter.post(
             const orders = await orderRepo.search({
                 limit: 1,
                 sort: { orderDate: cinerino.factory.sortType.Descending },
-                project: <any>{ id: { $eq: req.project.id } },
+                project: { id: { $eq: req.project.id } },
                 confirmationNumbers: [<string>req.body.confirmationNumber],
                 customer: {
                     email: (customer.email !== undefined)

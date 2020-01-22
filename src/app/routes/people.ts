@@ -221,9 +221,9 @@ peopleRouter.get<ParamsDictionary>(
                     break;
 
                 case cinerino.factory.chevre.reservationType.EventReservation:
-                    ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations({
+                    ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(<any>{
                         ...searchConditions,
-                        project: req.project
+                        project: { typeOf: req.project.typeOf, id: req.project.id }
                     })({
                         ownershipInfo: ownershipInfoRepo,
                         project: projectRepo

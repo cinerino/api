@@ -48,6 +48,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- アプリケーションルーターを削除
+
 ### Fixed
 
 ### Security

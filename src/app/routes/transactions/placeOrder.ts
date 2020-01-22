@@ -1262,7 +1262,7 @@ placeOrderTransactionsRouter.get(
             const searchConditions: cinerino.factory.transaction.ISearchConditions<cinerino.factory.transactionType.PlaceOrder> = {
                 limit: undefined,
                 page: undefined,
-                project: <any>{ id: { $eq: req.project.id } },
+                project: { id: { $eq: req.project.id } },
                 typeOf: cinerino.factory.transactionType.PlaceOrder,
                 ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
                 statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,
