@@ -43,6 +43,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - ストリーミング検索にタイムアウトを設定
 - COA管理のイベントに対しても、座席オファーと券種オファーを検索できるように調整
 - 注文ストリーミング検索の権限をプロジェクト所有者のみに限定
+- mongooseのsettersとvirtualsを無効化
 
 ### Deprecated
 
