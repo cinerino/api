@@ -36,6 +36,7 @@ organizationsRouter.get(
                 (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined
             );
 
+            res.set('X-Total-Count', sellers.length.toString());
             res.json(sellers);
         } catch (error) {
             next(error);

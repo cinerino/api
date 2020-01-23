@@ -31,6 +31,7 @@ organizationsRouter.get('/movieTheater', permitScopes_1.default(['sellers.read']
         const sellers = yield sellerRepo.search(searchCoinditions, 
         // 管理者以外にセキュアな情報を露出しないように
         (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined);
+        res.set('X-Total-Count', sellers.length.toString());
         res.json(sellers);
     }
     catch (error) {
