@@ -296,9 +296,7 @@ ordersRouter.get('/findByIdentifier', permitScopes_1.default(['orders.*', 'order
             orderDateFrom: orderDateFrom,
             orderDateThrough: orderDateThrough
         };
-        const totalCount = yield orderRepo.count(searchConditions);
         const orders = yield orderRepo.search(searchConditions);
-        res.set('X-Total-Count', totalCount.toString());
         res.json(orders);
     }
     catch (error) {

@@ -337,10 +337,8 @@ ordersRouter.get(
                 orderDateThrough: orderDateThrough
             };
 
-            const totalCount = await orderRepo.count(searchConditions);
             const orders = await orderRepo.search(searchConditions);
 
-            res.set('X-Total-Count', totalCount.toString());
             res.json(orders);
         } catch (error) {
             next(error);
