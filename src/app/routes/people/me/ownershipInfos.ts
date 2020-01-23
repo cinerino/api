@@ -64,8 +64,6 @@ ownershipInfosRouter.get(
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
-            const totalCount = await ownershipInfoRepo.count(searchConditions);
-
             const typeOfGood = <cinerino.factory.ownershipInfo.ITypeOfGoodSearchConditions<any>>req.query.typeOfGood;
             switch (typeOfGood.typeOf) {
                 case cinerino.factory.ownershipInfo.AccountGoodType.Account:
@@ -94,7 +92,6 @@ ownershipInfosRouter.get(
                 // throw new cinerino.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
             }
 
-            res.set('X-Total-Count', totalCount.toString());
             res.json(ownershipInfos);
         } catch (error) {
             next(error);

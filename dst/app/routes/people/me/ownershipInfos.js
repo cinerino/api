@@ -56,7 +56,6 @@ ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, ownedBy: { id: req.user.sub } });
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const totalCount = yield ownershipInfoRepo.count(searchConditions);
         const typeOfGood = req.query.typeOfGood;
         switch (typeOfGood.typeOf) {
             case cinerino.factory.ownershipInfo.AccountGoodType.Account:
@@ -78,7 +77,6 @@ ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_
                 ownershipInfos = yield ownershipInfoRepo.search(searchConditions);
             // throw new cinerino.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
         }
-        res.set('X-Total-Count', totalCount.toString());
         res.json(ownershipInfos);
     }
     catch (error) {

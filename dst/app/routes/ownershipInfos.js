@@ -42,7 +42,6 @@ ownershipInfosRouter.get('', permitScopes_1.default(['ownershipInfos.read']), ra
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const totalCount = yield ownershipInfoRepo.count(searchConditions);
         switch (typeOfGood.typeOf) {
             // case cinerino.factory.ownershipInfo.AccountGoodType.Account:
             //     ownershipInfos = await cinerino.service.account.search({
@@ -62,7 +61,6 @@ ownershipInfosRouter.get('', permitScopes_1.default(['ownershipInfos.read']), ra
             default:
                 ownershipInfos = yield ownershipInfoRepo.search(searchConditions);
         }
-        res.set('X-Total-Count', totalCount.toString());
         res.json(ownershipInfos);
     }
     catch (error) {
@@ -152,7 +150,6 @@ ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['own
         // const totalCount = await actionRepo.actionModel.countDocuments(searchConditions)
         //     .setOptions({ maxTimeMS: 10000 })
         //     .exec();
-        const totalCount = yield actionRepo.count(searchConditions);
         const actions = yield actionRepo.search(searchConditions);
         // const actions = await actionRepo.actionModel.find(
         //     searchConditions,
@@ -169,7 +166,6 @@ ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['own
         //     // .setOptions({ maxTimeMS: 10000 })
         //     .exec()
         //     .then((docs) => docs.map((doc) => doc.toObject()));
-        res.set('X-Total-Count', totalCount.toString());
         res.json(actions);
     }
     catch (error) {

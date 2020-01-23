@@ -96,8 +96,7 @@ accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default(['people.me.
             ownershipInfo: ownershipInfoRepo,
             project: projectRepo
         });
-        res.set('X-Total-Count', actions.length.toString())
-            .json(actions);
+        res.json(actions);
     }
     catch (error) {
         next(error);

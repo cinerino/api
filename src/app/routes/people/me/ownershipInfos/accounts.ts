@@ -113,8 +113,7 @@ accountsRouter.get(
                 project: projectRepo
             });
 
-            res.set('X-Total-Count', actions.length.toString())
-                .json(actions);
+            res.json(actions);
         } catch (error) {
             next(error);
         }
