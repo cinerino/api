@@ -37,9 +37,7 @@ membersRouter.get(
             const members = await memberRepo.search(
                 searchCoinditions
             );
-            const totalCount = await memberRepo.count(searchCoinditions);
 
-            res.set('X-Total-Count', totalCount.toString());
             res.json(members);
         } catch (error) {
             next(error);

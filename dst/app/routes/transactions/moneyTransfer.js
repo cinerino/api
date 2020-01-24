@@ -24,7 +24,6 @@ const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
-const iam_1 = require("../../iam");
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -40,7 +39,7 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     state: ''
 });
 // tslint:disable-next-line:use-default-type-parameter
-moneyTransferTransactionsRouter.post('/start', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), ...[
+moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), ...[
     express_validator_1.body('expires', 'invalid expires')
         .not()
         .isEmpty()
@@ -195,7 +194,7 @@ function validateFromLocation(req) {
  * 取引人プロフィール変更
  */
 // tslint:disable-next-line:use-default-type-parameter
-moneyTransferTransactionsRouter.put('/:transactionId/agent', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), ...[
+moneyTransferTransactionsRouter.put('/:transactionId/agent', permitScopes_1.default(['transactions']), ...[
     express_validator_1.body('additionalProperty')
         .optional()
         .isArray({ max: 10 }),
@@ -237,7 +236,7 @@ moneyTransferTransactionsRouter.put('/:transactionId/agent', permitScopes_1.defa
         next(error);
     }
 }));
-moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.MoneyTransfer,
         id: req.params.transactionId
@@ -292,7 +291,7 @@ moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.de
 /**
  * 取引を明示的に中止
  */
-moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.MoneyTransfer,
         id: req.params.transactionId
@@ -352,12 +351,10 @@ moneyTransferTransactionsRouter.get('', permitScopes_1.default(['transactions.*'
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, typeOf: cinerino.factory.transactionType.MoneyTransfer });
         const transactions = yield transactionRepo.search(searchConditions);
-        const totalCount = yield transactionRepo.count(searchConditions);
-        res.set('X-Total-Count', totalCount.toString());
         res.json(transactions);
     }
     catch (error) {

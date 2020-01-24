@@ -35,7 +35,7 @@ iamMembersRouter.use('/me', me_1.default);
 /**
  * プロジェクトメンバー追加
  */
-iamMembersRouter.post('', permitScopes_1.default([]), rateLimit_1.default, ...[
+iamMembersRouter.post('', permitScopes_1.default(['iam.members.write']), rateLimit_1.default, ...[
     express_validator_1.body('member')
         .not()
         .isEmpty()
@@ -76,12 +76,6 @@ iamMembersRouter.post('', permitScopes_1.default([]), rateLimit_1.default, ...[
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
         }
         let member;
-        // ロールをひとつに限定
-        const role = {
-            typeOf: 'OrganizationRole',
-            roleName: req.body.member.hasRole.shift().roleName,
-            memberOf: { typeOf: project.typeOf, id: project.id }
-        };
         const applicationCategory = req.body.member.applicationCategory;
         let userPoolClient;
         switch (applicationCategory) {
@@ -124,6 +118,14 @@ iamMembersRouter.post('', permitScopes_1.default([]), rateLimit_1.default, ...[
                 const adminUserPoolId = project.settings.cognito.adminUserPool.id;
                 switch (req.body.member.typeOf) {
                     case cinerino.factory.personType.Person:
+                        // ロールを作成
+                        const roles = req.body.member.hasRole.map((r) => {
+                            return {
+                                typeOf: 'OrganizationRole',
+                                roleName: r.roleName,
+                                memberOf: { typeOf: project.typeOf, id: project.id }
+                            };
+                        });
                         const personRepo = new cinerino.repository.Person({
                             userPoolId: adminUserPoolId
                         });
@@ -135,7 +137,7 @@ iamMembersRouter.post('', permitScopes_1.default([]), rateLimit_1.default, ...[
                             typeOf: people[0].typeOf,
                             id: people[0].id,
                             username: people[0].memberOf.membershipNumber,
-                            hasRole: [role]
+                            hasRole: roles
                         };
                         break;
                     case cinerino.factory.creativeWorkType.WebApplication:
@@ -196,8 +198,6 @@ iamMembersRouter.get('', permitScopes_1.default(['iam.members.read']), rateLimit
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const members = yield memberRepo.search(searchCoinditions);
-        const totalCount = yield memberRepo.count(searchCoinditions);
-        res.set('X-Total-Count', totalCount.toString());
         res.json(members);
     }
     catch (error) {
@@ -216,7 +216,7 @@ iamMembersRouter.get('/:id', permitScopes_1.default(['iam.members.read']), rateL
             limit: 1
         });
         if (members.length === 0) {
-            throw new cinerino.factory.errors.NotFound('Member');
+            throw new cinerino.factory.errors.NotFound(memberRepo.memberModel.modelName);
         }
         res.json(members[0]);
     }
@@ -225,9 +225,60 @@ iamMembersRouter.get('/:id', permitScopes_1.default(['iam.members.read']), rateL
     }
 }));
 /**
+ * プロジェクトメンバーのロール更新
+ */
+// tslint:disable-next-line:use-default-type-parameter
+iamMembersRouter.put('/:id', permitScopes_1.default(['iam.members.write']), rateLimit_1.default, ...[
+    express_validator_1.body('member')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required'),
+    express_validator_1.body('member.hasRole')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isArray(),
+    express_validator_1.body('member.hasRole.*.roleName')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const memberRepo = new cinerino.repository.Member(mongoose.connection);
+        // ロールを作成
+        const roles = req.body.member.hasRole.map((r) => {
+            return {
+                typeOf: 'OrganizationRole',
+                roleName: r.roleName,
+                memberOf: { typeOf: req.project.typeOf, id: req.project.id }
+            };
+        });
+        const doc = yield memberRepo.memberModel.findOneAndUpdate({
+            'member.id': {
+                $eq: req.params.id
+            },
+            'project.id': {
+                $eq: req.project.id
+            }
+        }, {
+            'member.hasRole': roles
+        })
+            .exec();
+        if (doc === null) {
+            throw new cinerino.factory.errors.NotFound(memberRepo.memberModel.modelName);
+        }
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
  * プロジェクトメンバー削除
  */
-iamMembersRouter.delete('/:id', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+iamMembersRouter.delete('/:id', permitScopes_1.default(['iam.members.write']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const doc = yield memberRepo.memberModel.findOneAndDelete({
@@ -240,7 +291,7 @@ iamMembersRouter.delete('/:id', permitScopes_1.default([]), rateLimit_1.default,
         })
             .exec();
         if (doc === null) {
-            throw new cinerino.factory.errors.NotFound('Member');
+            throw new cinerino.factory.errors.NotFound(memberRepo.memberModel.modelName);
         }
         res.status(http_status_1.NO_CONTENT)
             .end();
@@ -252,7 +303,7 @@ iamMembersRouter.delete('/:id', permitScopes_1.default([]), rateLimit_1.default,
 /**
  * プロジェクトメンバープロフィール取得
  */
-iamMembersRouter.get('/:id/profile', permitScopes_1.default([]), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+iamMembersRouter.get('/:id/profile', permitScopes_1.default(['iam.members.profile.read']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -267,7 +318,7 @@ iamMembersRouter.get('/:id/profile', permitScopes_1.default([]), rateLimit_1.def
             limit: 1
         });
         if (members.length === 0) {
-            throw new cinerino.factory.errors.NotFound('Member');
+            throw new cinerino.factory.errors.NotFound(memberRepo.memberModel.modelName);
         }
         const member = members[0].member;
         const personRepo = new cinerino.repository.Person({
@@ -295,7 +346,7 @@ iamMembersRouter.get('/:id/profile', permitScopes_1.default([]), rateLimit_1.def
 /**
  * プロジェクトメンバープロフィール更新
  */
-iamMembersRouter.patch('/:id/profile', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+iamMembersRouter.patch('/:id/profile', permitScopes_1.default(['iam.members.profile.write']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -310,7 +361,7 @@ iamMembersRouter.patch('/:id/profile', permitScopes_1.default([]), rateLimit_1.d
             limit: 1
         });
         if (members.length === 0) {
-            throw new cinerino.factory.errors.NotFound('Member');
+            throw new cinerino.factory.errors.NotFound(memberRepo.memberModel.modelName);
         }
         const member = members[0].member;
         const personRepo = new cinerino.repository.Person({

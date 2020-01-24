@@ -19,12 +19,11 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const rateLimit_1 = require("../../../middlewares/rateLimit");
 const validator_1 = require("../../../middlewares/validator");
-const iam_1 = require("../../../iam");
 const ordersRouter = express_1.Router();
 /**
  * 注文検索
  */
-ordersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 'people.me.*']), rateLimit_1.default, ...[
+ordersRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_1.default, ...[
     express_validator_1.query('orderDateFrom')
         .not()
         .isEmpty()
@@ -34,11 +33,19 @@ ordersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 
         .not()
         .isEmpty()
         .isISO8601()
+        .toDate(),
+    express_validator_1.query('orderDate.$gte')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('orderDate.$lte')
+        .optional()
+        .isISO8601()
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
-        const searchConditions = Object.assign(Object.assign({}, req.query), { 
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, 
             // customer条件を強制的に絞る
@@ -47,8 +54,6 @@ ordersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 
                 ids: [req.user.sub]
             } });
         const orders = yield orderRepo.search(searchConditions);
-        const totalCount = yield orderRepo.count(searchConditions);
-        res.set('X-Total-Count', totalCount.toString());
         res.json(orders);
     }
     catch (error) {

@@ -29,7 +29,6 @@ iamRouter.use('/roles', roles_1.default);
  */
 iamRouter.get('/groups', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (_, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        res.set('X-Total-Count', '0');
         res.json([]);
     }
     catch (error) {
@@ -58,7 +57,6 @@ iamRouter.get('/users', permitScopes_1.default([]), rateLimit_1.default, validat
             givenName: req.query.givenName,
             familyName: req.query.familyName
         });
-        res.set('X-Total-Count', users.length.toString());
         res.json(users);
     }
     catch (error) {

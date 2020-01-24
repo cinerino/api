@@ -18,8 +18,6 @@ import permitScopes from '../../middlewares/permitScopes';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
-import { Permission } from '../../iam';
-
 const debug = createDebug('cinerino-api:router');
 
 export interface ICOATicket extends cinerino.COA.factory.master.ITicketResult {
@@ -97,7 +95,7 @@ const placeOrder4cinemasunshineRouter = Router();
  */
 placeOrder4cinemasunshineRouter.post(
     '/:transactionId/actions/authorize/seatReservation',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -140,7 +138,7 @@ placeOrder4cinemasunshineRouter.post(
  */
 placeOrder4cinemasunshineRouter.delete(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -178,7 +176,7 @@ placeOrder4cinemasunshineRouter.delete(
  */
 placeOrder4cinemasunshineRouter.patch(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -221,7 +219,7 @@ placeOrder4cinemasunshineRouter.patch(
  */
 placeOrder4cinemasunshineRouter.post(
     '/:transactionId/actions/authorize/offer/programMembership',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -253,7 +251,7 @@ placeOrder4cinemasunshineRouter.post(
  */
 placeOrder4cinemasunshineRouter.delete(
     '/:transactionId/actions/authorize/offer/programMembership/:actionId',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -285,7 +283,7 @@ placeOrder4cinemasunshineRouter.delete(
  */
 placeOrder4cinemasunshineRouter.post(
     '/:transactionId/actions/authorize/mvtk',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -350,7 +348,7 @@ placeOrder4cinemasunshineRouter.post(
  */
 placeOrder4cinemasunshineRouter.delete(
     '/:transactionId/actions/authorize/mvtk/:actionId',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -389,7 +387,7 @@ placeOrder4cinemasunshineRouter.delete(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrder4cinemasunshineRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/award/pecorino',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     ...[
         body('amount')
             .not()
@@ -468,7 +466,7 @@ placeOrder4cinemasunshineRouter.post<ParamsDictionary>(
  */
 placeOrder4cinemasunshineRouter.delete(
     '/:transactionId/actions/authorize/award/pecorino/:actionId',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({

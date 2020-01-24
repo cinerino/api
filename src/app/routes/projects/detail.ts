@@ -9,7 +9,6 @@ import statsRouter from '../stats';
 
 import accountsRouter from '../accounts';
 import actionsRouter from '../actions';
-import applicationsRouter from '../applications';
 import authorizationsRouter from '../authorizations';
 import creativeWorksRouter from '../creativeWorks';
 import eventsRouter from '../events';
@@ -50,9 +49,9 @@ projectDetailRouter.use('/stats', statsRouter);
 
 projectDetailRouter.use('/accounts', accountsRouter);
 projectDetailRouter.use('/actions', actionsRouter);
-projectDetailRouter.use('/applications', applicationsRouter);
 projectDetailRouter.use('/authorizations', authorizationsRouter);
 projectDetailRouter.use('/creativeWorks', creativeWorksRouter);
+projectDetailRouter.use('/events/screeningEvent', eventsRouter);
 projectDetailRouter.use('/events', eventsRouter);
 projectDetailRouter.use('/iam', iamRouter);
 projectDetailRouter.use('/invoices', invoicesRouter);

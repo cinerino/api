@@ -13,8 +13,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-import { Permission } from '../iam';
-
 const TOKEN_EXPIRES_IN = 1800;
 
 const ownershipInfosRouter = Router();
@@ -24,7 +22,7 @@ const ownershipInfosRouter = Router();
  */
 ownershipInfosRouter.get(
     '',
-    permitScopes([Permission.User]),
+    permitScopes(['ownershipInfos.read']),
     rateLimit,
     ...[
         query('ownedFrom')
@@ -47,13 +45,11 @@ ownershipInfosRouter.get(
 
             const searchConditions: cinerino.factory.ownershipInfo.ISearchConditions<any> = {
                 ...req.query,
-                project: { ids: [req.project.id] },
+                project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
-
-            const totalCount = await ownershipInfoRepo.count(searchConditions);
 
             switch (typeOfGood.typeOf) {
                 // case cinerino.factory.ownershipInfo.AccountGoodType.Account:
@@ -78,7 +74,6 @@ ownershipInfosRouter.get(
                     ownershipInfos = await ownershipInfoRepo.search(searchConditions);
             }
 
-            res.set('X-Total-Count', totalCount.toString());
             res.json(ownershipInfos);
         } catch (error) {
             next(error);
@@ -91,7 +86,7 @@ ownershipInfosRouter.get(
  */
 ownershipInfosRouter.post(
     '/tokens',
-    permitScopes([Permission.User, 'customer', 'tokens']),
+    permitScopes(['tokens']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -118,7 +113,7 @@ ownershipInfosRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 ownershipInfosRouter.get<ParamsDictionary>(
     '/:id/actions/checkToken',
-    permitScopes([Permission.User]),
+    permitScopes(['ownershipInfos.actions.checkToken.read']),
     rateLimit,
     ...[
         query('startFrom')
@@ -188,8 +183,6 @@ ownershipInfosRouter.get<ParamsDictionary>(
             //     .setOptions({ maxTimeMS: 10000 })
             //     .exec();
 
-            const totalCount = await actionRepo.count(searchConditions);
-
             const actions = await actionRepo.search(searchConditions);
 
             // const actions = await actionRepo.actionModel.find(
@@ -208,7 +201,6 @@ ownershipInfosRouter.get<ParamsDictionary>(
             //     .exec()
             //     .then((docs) => docs.map((doc) => doc.toObject()));
 
-            res.set('X-Total-Count', totalCount.toString());
             res.json(actions);
         } catch (error) {
             next(error);
@@ -222,7 +214,7 @@ ownershipInfosRouter.get<ParamsDictionary>(
  */
 ownershipInfosRouter.get(
     '/countByRegisterDateAndTheater',
-    permitScopes([Permission.User, 'customer']),
+    permitScopes(['ownershipInfos.read']),
     rateLimit,
     ...[
         query('fromDate')

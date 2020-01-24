@@ -11,8 +11,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-import { Permission } from '../iam';
-
 const actionsRouter = Router();
 
 /**
@@ -39,16 +37,14 @@ actionsRouter.get(
 
             const searchConditions: cinerino.factory.action.ISearchConditions<any> = {
                 ...req.query,
-                project: { ids: [req.project.id] },
+                project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
 
-            const totalCount = await actionRepo.count(searchConditions);
             const actions = await actionRepo.search(searchConditions);
 
-            res.set('X-Total-Count', totalCount.toString());
             res.json(actions);
         } catch (error) {
             next(error);
@@ -61,7 +57,7 @@ actionsRouter.get(
  */
 actionsRouter.post(
     '/print/ticket',
-    permitScopes([Permission.User, 'customer', 'actions', 'actions.printTicket.*']),
+    permitScopes(['actions.*', 'actions.printTicket.*']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -88,7 +84,7 @@ actionsRouter.post(
  */
 actionsRouter.get(
     '/print/ticket',
-    permitScopes([Permission.User, 'customer', 'actions.printTicket.*']),
+    permitScopes(['actions.*', 'actions.printTicket.*']),
     rateLimit,
     validator,
     async (req, res, next) => {

@@ -17,8 +17,6 @@ import validator from '../../middlewares/validator';
 
 import * as redis from '../../../redis';
 
-import { Permission } from '../../iam';
-
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -37,7 +35,7 @@ function escapeRegExp(params: string) {
 
 returnOrderTransactionsRouter.post(
     '/start',
-    permitScopes([Permission.User, 'transactions', 'pos']),
+    permitScopes(['transactions', 'pos']),
     rateLimit,
     ...[
         body('expires')
@@ -149,7 +147,7 @@ returnOrderTransactionsRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 returnOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/agent',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     ...[
         body('additionalProperty')
             .optional()
@@ -205,7 +203,7 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 returnOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/confirm',
-    permitScopes([Permission.User, 'transactions', 'pos']),
+    permitScopes(['transactions', 'pos']),
     rateLimit,
     ...[
         // Eメールカスタマイズのバリデーション
@@ -303,15 +301,14 @@ returnOrderTransactionsRouter.get(
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             const searchConditions: cinerino.factory.transaction.ISearchConditions<cinerino.factory.transactionType.ReturnOrder> = {
                 ...req.query,
-                project: { ids: [req.project.id] },
+                project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
                 typeOf: cinerino.factory.transactionType.ReturnOrder
             };
             const transactions = await transactionRepo.search(searchConditions);
-            const totalCount = await transactionRepo.count(searchConditions);
-            res.set('X-Total-Count', totalCount.toString());
+
             res.json(transactions);
         } catch (error) {
             next(error);

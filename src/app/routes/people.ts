@@ -13,8 +13,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-import { Permission } from '../iam';
-
 const peopleRouter = Router();
 
 /**
@@ -22,7 +20,7 @@ const peopleRouter = Router();
  */
 peopleRouter.get(
     '',
-    permitScopes([Permission.User, 'people.*', 'people.read']),
+    permitScopes(['people.*', 'people.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -45,7 +43,7 @@ peopleRouter.get(
                 givenName: req.query.givenName,
                 familyName: req.query.familyName
             });
-            res.set('X-Total-Count', people.length.toString());
+
             res.json(people);
         } catch (error) {
             next(error);
@@ -58,7 +56,7 @@ peopleRouter.get(
  */
 peopleRouter.get(
     '/:id',
-    permitScopes([Permission.User, 'people.*', 'people.read']),
+    permitScopes(['people.*', 'people.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -88,7 +86,7 @@ peopleRouter.get(
  */
 peopleRouter.delete(
     '/:id',
-    permitScopes(['people.*']),
+    permitScopes(['people.*', 'people.delete']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -176,7 +174,7 @@ peopleRouter.delete(
 // tslint:disable-next-line:use-default-type-parameter
 peopleRouter.get<ParamsDictionary>(
     '/:id/ownershipInfos',
-    permitScopes([Permission.User, 'people.*', 'people.read']),
+    permitScopes(['people.*', 'people.read']),
     rateLimit,
     ...[
         query('typeOfGood')
@@ -198,6 +196,7 @@ peopleRouter.get<ParamsDictionary>(
                 cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGoodWithDetail<typeof typeOfGood.typeOf>>[];
             const searchConditions: cinerino.factory.ownershipInfo.ISearchConditions<typeof typeOfGood.typeOf> = {
                 ...req.query,
+                project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
@@ -205,8 +204,6 @@ peopleRouter.get<ParamsDictionary>(
             };
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
-            const totalCount = await ownershipInfoRepo.count(searchConditions);
 
             const typeOfGood = <cinerino.factory.ownershipInfo.ITypeOfGoodSearchConditions<any>>req.query.typeOfGood;
             switch (typeOfGood.typeOf) {
@@ -222,9 +219,9 @@ peopleRouter.get<ParamsDictionary>(
                     break;
 
                 case cinerino.factory.chevre.reservationType.EventReservation:
-                    ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations({
+                    ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(<any>{
                         ...searchConditions,
-                        project: req.project
+                        project: { typeOf: req.project.typeOf, id: req.project.id }
                     })({
                         ownershipInfo: ownershipInfoRepo,
                         project: projectRepo
@@ -237,7 +234,6 @@ peopleRouter.get<ParamsDictionary>(
                 // throw new cinerino.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
             }
 
-            res.set('X-Total-Count', totalCount.toString());
             res.json(ownershipInfos);
         } catch (error) {
             next(error);
@@ -250,7 +246,7 @@ peopleRouter.get<ParamsDictionary>(
  */
 peopleRouter.get(
     '/:id/ownershipInfos/creditCards',
-    permitScopes([Permission.User, 'people.*', 'people.read']),
+    permitScopes(['people.*', 'people.read']),
     rateLimit,
     async (req, res, next) => {
         try {
@@ -299,7 +295,7 @@ peopleRouter.get(
  */
 peopleRouter.delete(
     '/:id/ownershipInfos/creditCards/:cardSeq',
-    permitScopes(['people.*']),
+    permitScopes(['people.*', 'people.creditCards.delete']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -353,7 +349,7 @@ peopleRouter.delete(
  */
 peopleRouter.get(
     '/:id/profile',
-    permitScopes([Permission.User, 'people.*', 'people.read']),
+    permitScopes(['people.*', 'people.read']),
     rateLimit,
     async (req, res, next) => {
         try {
@@ -396,7 +392,7 @@ peopleRouter.get(
  */
 peopleRouter.patch(
     '/:id/profile',
-    permitScopes(['people.*']),
+    permitScopes(['people.*', 'people.profile.update']),
     rateLimit,
     validator,
     async (req, res, next) => {

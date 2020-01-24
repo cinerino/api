@@ -13,8 +13,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-import { Permission } from '../iam';
-
 const sellersRouter = Router();
 
 /**
@@ -22,7 +20,7 @@ const sellersRouter = Router();
  */
 sellersRouter.post(
     '',
-    permitScopes(['sellers.*']),
+    permitScopes(['sellers.*', 'sellers.write']),
     rateLimit,
     ...[
         body('typeOf')
@@ -92,14 +90,14 @@ sellersRouter.post(
  */
 sellersRouter.get(
     '',
-    permitScopes([Permission.User, 'customer', 'sellers.*', 'sellers.read', 'pos']),
+    permitScopes(['sellers.*', 'sellers.read', 'pos']),
     rateLimit,
     validator,
     async (req, res, next) => {
         try {
             const searchCoinditions: cinerino.factory.seller.ISearchConditions = {
                 ...req.query,
-                project: { ids: [req.project.id] },
+                project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
@@ -111,9 +109,8 @@ sellersRouter.get(
                 // 管理者以外にセキュアな情報を露出しないように
                 (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined
             );
-            const totalCount = await sellerRepo.count(searchCoinditions);
 
-            res.set('X-Total-Count', totalCount.toString());
+            res.set('X-Total-Count', sellers.length.toString());
             res.json(sellers);
         } catch (error) {
             next(error);
@@ -126,7 +123,7 @@ sellersRouter.get(
  */
 sellersRouter.get(
     '/:id',
-    permitScopes([Permission.User, 'customer', 'sellers.*', 'sellers.read']),
+    permitScopes(['sellers.*', 'sellers.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -152,7 +149,7 @@ sellersRouter.get(
 // tslint:disable-next-line:use-default-type-parameter
 sellersRouter.put<ParamsDictionary>(
     '/:id',
-    permitScopes(['sellers.*']),
+    permitScopes(['sellers.*', 'sellers.write']),
     rateLimit,
     ...[
         body('typeOf')
@@ -222,7 +219,7 @@ sellersRouter.put<ParamsDictionary>(
  */
 sellersRouter.delete(
     '/:id',
-    permitScopes(['sellers.*']),
+    permitScopes(['sellers.*', 'sellers.write']),
     rateLimit,
     validator,
     async (req, res, next) => {

@@ -20,13 +20,12 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const iam_1 = require("../iam");
 const TOKEN_EXPIRES_IN = 1800;
 const ownershipInfosRouter = express_1.Router();
 /**
  * 所有権検索
  */
-ownershipInfosRouter.get('', permitScopes_1.default([iam_1.Permission.User]), rateLimit_1.default, ...[
+ownershipInfosRouter.get('', permitScopes_1.default(['ownershipInfos.read']), rateLimit_1.default, ...[
     express_validator_1.query('ownedFrom')
         .optional()
         .isISO8601()
@@ -40,10 +39,9 @@ ownershipInfosRouter.get('', permitScopes_1.default([iam_1.Permission.User]), ra
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const typeOfGood = (req.query.typeOfGood !== undefined && req.query.typeOfGood !== null) ? req.query.typeOfGood : {};
         let ownershipInfos;
-        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const totalCount = yield ownershipInfoRepo.count(searchConditions);
         switch (typeOfGood.typeOf) {
             // case cinerino.factory.ownershipInfo.AccountGoodType.Account:
             //     ownershipInfos = await cinerino.service.account.search({
@@ -63,7 +61,6 @@ ownershipInfosRouter.get('', permitScopes_1.default([iam_1.Permission.User]), ra
             default:
                 ownershipInfos = yield ownershipInfoRepo.search(searchConditions);
         }
-        res.set('X-Total-Count', totalCount.toString());
         res.json(ownershipInfos);
     }
     catch (error) {
@@ -73,7 +70,7 @@ ownershipInfosRouter.get('', permitScopes_1.default([iam_1.Permission.User]), ra
 /**
  * コードから所有権に対するアクセストークンを発行する
  */
-ownershipInfosRouter.post('/tokens', permitScopes_1.default([iam_1.Permission.User, 'customer', 'tokens']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+ownershipInfosRouter.post('/tokens', permitScopes_1.default(['tokens']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const codeRepo = new cinerino.repository.Code(mongoose.connection);
         const token = yield cinerino.service.code.getToken({
@@ -92,7 +89,7 @@ ownershipInfosRouter.post('/tokens', permitScopes_1.default([iam_1.Permission.Us
  * 所有権に対するトークン検証アクションを検索する
  */
 // tslint:disable-next-line:use-default-type-parameter
-ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default([iam_1.Permission.User]), rateLimit_1.default, ...[
+ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['ownershipInfos.actions.checkToken.read']), rateLimit_1.default, ...[
     express_validator_1.query('startFrom')
         .optional()
         .isISO8601()
@@ -153,7 +150,6 @@ ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default([iam_
         // const totalCount = await actionRepo.actionModel.countDocuments(searchConditions)
         //     .setOptions({ maxTimeMS: 10000 })
         //     .exec();
-        const totalCount = yield actionRepo.count(searchConditions);
         const actions = yield actionRepo.search(searchConditions);
         // const actions = await actionRepo.actionModel.find(
         //     searchConditions,
@@ -170,7 +166,6 @@ ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default([iam_
         //     // .setOptions({ maxTimeMS: 10000 })
         //     .exec()
         //     .then((docs) => docs.map((doc) => doc.toObject()));
-        res.set('X-Total-Count', totalCount.toString());
         res.json(actions);
     }
     catch (error) {
@@ -181,7 +176,7 @@ ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default([iam_
  * Cinemasunshine対応
  * @deprecated
  */
-ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.default([iam_1.Permission.User, 'customer']), rateLimit_1.default, ...[
+ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.default(['ownershipInfos.read']), rateLimit_1.default, ...[
     express_validator_1.query('fromDate')
         .not()
         .isEmpty()

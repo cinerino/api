@@ -21,13 +21,12 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const iam_1 = require("../iam");
 const tasksRouter = express_1.Router();
 /**
  * タスク作成
  */
 // tslint:disable-next-line:use-default-type-parameter
-tasksRouter.post('/:name', permitScopes_1.default([iam_1.Permission.User, 'tasks.*']), rateLimit_1.default, ...[
+tasksRouter.post('/:name', permitScopes_1.default(['tasks.*', 'tasks.create']), rateLimit_1.default, ...[
     express_validator_1.body('runsAt')
         .not()
         .isEmpty()
@@ -108,12 +107,10 @@ tasksRouter.get('', permitScopes_1.default(['tasks.*', 'tasks.read']), rateLimit
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
-        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         const tasks = yield taskRepo.search(searchConditions);
-        const totalCount = yield taskRepo.count(searchConditions);
-        res.set('X-Total-Count', totalCount.toString());
         res.json(tasks);
     }
     catch (error) {

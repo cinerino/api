@@ -20,12 +20,11 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const iam_1 = require("../iam");
 const peopleRouter = express_1.Router();
 /**
  * 会員検索
  */
-peopleRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'people.*', 'people.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.get('', permitScopes_1.default(['people.*', 'people.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -44,7 +43,6 @@ peopleRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'people.*', 
             givenName: req.query.givenName,
             familyName: req.query.familyName
         });
-        res.set('X-Total-Count', people.length.toString());
         res.json(people);
     }
     catch (error) {
@@ -54,7 +52,7 @@ peopleRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'people.*', 
 /**
  * IDで検索
  */
-peopleRouter.get('/:id', permitScopes_1.default([iam_1.Permission.User, 'people.*', 'people.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.get('/:id', permitScopes_1.default(['people.*', 'people.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -77,7 +75,7 @@ peopleRouter.get('/:id', permitScopes_1.default([iam_1.Permission.User, 'people.
 /**
  * IDで削除
  */
-peopleRouter.delete('/:id', permitScopes_1.default(['people.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.delete('/:id', permitScopes_1.default(['people.*', 'people.delete']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -145,7 +143,7 @@ peopleRouter.delete('/:id', permitScopes_1.default(['people.*']), rateLimit_1.de
  * 所有権検索
  */
 // tslint:disable-next-line:use-default-type-parameter
-peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default([iam_1.Permission.User, 'people.*', 'people.read']), rateLimit_1.default, ...[
+peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['people.*', 'people.read']), rateLimit_1.default, ...[
     express_validator_1.query('typeOfGood')
         .not()
         .isEmpty(),
@@ -160,12 +158,11 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default([iam_1.Permission
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let ownershipInfos;
-        const searchConditions = Object.assign(Object.assign({}, req.query), { 
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, ownedBy: { id: req.params.id } });
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const totalCount = yield ownershipInfoRepo.count(searchConditions);
         const typeOfGood = req.query.typeOfGood;
         switch (typeOfGood.typeOf) {
             case cinerino.factory.ownershipInfo.AccountGoodType.Account:
@@ -178,7 +175,7 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default([iam_1.Permission
                 });
                 break;
             case cinerino.factory.chevre.reservationType.EventReservation:
-                ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(Object.assign(Object.assign({}, searchConditions), { project: req.project }))({
+                ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(Object.assign(Object.assign({}, searchConditions), { project: { typeOf: req.project.typeOf, id: req.project.id } }))({
                     ownershipInfo: ownershipInfoRepo,
                     project: projectRepo
                 });
@@ -187,7 +184,6 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default([iam_1.Permission
                 ownershipInfos = yield ownershipInfoRepo.search(searchConditions);
             // throw new cinerino.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
         }
-        res.set('X-Total-Count', totalCount.toString());
         res.json(ownershipInfos);
     }
     catch (error) {
@@ -197,7 +193,7 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default([iam_1.Permission
 /**
  * クレジットカード検索
  */
-peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default([iam_1.Permission.User, 'people.*', 'people.read']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['people.*', 'people.read']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -235,7 +231,7 @@ peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default([iam_
 /**
  * 会員クレジットカード削除
  */
-peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.default(['people.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.default(['people.*', 'people.creditCards.delete']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -277,7 +273,7 @@ peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.d
 /**
  * プロフィール検索
  */
-peopleRouter.get('/:id/profile', permitScopes_1.default([iam_1.Permission.User, 'people.*', 'people.read']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.get('/:id/profile', permitScopes_1.default(['people.*', 'people.read']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -310,7 +306,7 @@ peopleRouter.get('/:id/profile', permitScopes_1.default([iam_1.Permission.User, 
 /**
  * プロフィール更新
  */
-peopleRouter.patch('/:id/profile', permitScopes_1.default(['people.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.patch('/:id/profile', permitScopes_1.default(['people.*', 'people.profile.update']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });

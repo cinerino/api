@@ -22,9 +22,8 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const iam_1 = require("../iam");
-const redis = require("../../redis");
 const connectMongo_1 = require("../../connectMongo");
+const redis = require("../../redis");
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -43,26 +42,15 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 const ordersRouter = express_1.Router();
-const isNotAdmin = (_, { req }) => !req.isAdmin;
+// const isNotAdmin: CustomValidator = (_, { req }) => !req.isAdmin;
 /**
  * 注文検索
  */
-ordersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, 
-// 互換性維持のため
-(req, _, next) => {
-    const now = moment();
-    if (typeof req.query.orderDateThrough !== 'string') {
-        req.query.orderDateThrough = moment(now)
-            .toISOString();
-    }
-    if (typeof req.query.orderDateFrom !== 'string') {
-        req.query.orderDateFrom = moment(now)
-            // tslint:disable-next-line:no-magic-numbers
-            .add(-31, 'days') // とりあえず直近1カ月をデフォルト動作に設定
-            .toISOString();
-    }
-    next();
-}, ...[
+ordersRouter.get('', permitScopes_1.default(['orders.*', 'orders.read']), rateLimit_1.default, ...[
+    express_validator_1.query('disableTotalCount')
+        .optional()
+        .isBoolean()
+        .toBoolean(),
     express_validator_1.query('identifier.$all')
         .optional()
         .isArray(),
@@ -94,28 +82,34 @@ ordersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 
         .isString()
         .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.query('orderDateFrom')
-        .not()
-        .isEmpty()
+        .optional()
         .isISO8601()
         .toDate(),
     express_validator_1.query('orderDateThrough')
-        .not()
-        .isEmpty()
+        .optional()
         .isISO8601()
-        .toDate()
-        .custom((value, { req }) => {
-        // 注文期間指定を限定
-        const orderDateThrough = moment(value);
-        if (req.query !== undefined) {
-            const orderDateThroughExpectedToBe = moment(req.query.orderDateFrom)
-                // tslint:disable-next-line:no-magic-numbers
-                .add(31, 'days');
-            if (orderDateThrough.isAfter(orderDateThroughExpectedToBe)) {
-                throw new Error('Order date range too large');
-            }
-        }
-        return true;
-    }),
+        .toDate(),
+    // .custom((value, { req }) => {
+    //     // 注文期間指定を限定
+    //     const orderDateThrough = moment(value);
+    //     if (req.query !== undefined) {
+    //         const orderDateThroughExpectedToBe = moment(req.query.orderDateFrom)
+    //             // tslint:disable-next-line:no-magic-numbers
+    //             .add(31, 'days');
+    //         if (orderDateThrough.isAfter(orderDateThroughExpectedToBe)) {
+    //             throw new Error('Order date range too large');
+    //         }
+    //     }
+    //     return true;
+    // }),
+    express_validator_1.query('orderDate.$gte')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('orderDate.$lte')
+        .optional()
+        .isISO8601()
+        .toDate(),
     express_validator_1.query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
         .optional()
         .isISO8601()
@@ -132,11 +126,54 @@ ordersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 
         .optional()
         .isISO8601()
         .toDate()
-], 
-// 管理者でなければバリデーション追加
-...[
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
+        const orders = yield orderRepo.search(searchConditions);
+        res.json(orders);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 識別子で注文検索
+ */
+ordersRouter.get('/findByIdentifier', permitScopes_1.default(['orders.*', 'orders.read', 'orders.findByIdentifier']), rateLimit_1.default, ...[
     express_validator_1.query('identifier.$all')
-        .if(isNotAdmin)
+        .optional()
+        .isArray(),
+    express_validator_1.query('identifier.$in')
+        .optional()
+        .isArray(),
+    express_validator_1.query('identifier.$all.*.name')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.query('identifier.$all.*.value')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.query('identifier.$in.*.name')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.query('identifier.$in.*.value')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.query('identifier.$all')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
@@ -145,43 +182,26 @@ ordersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
-        let searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
+        // 検索条件を限定
+        const orderDateThrough = moment()
+            .toDate();
+        const orderDateFrom = moment(orderDateThrough)
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        // 管理者でない場合、検索条件を限定
-        if (!req.isAdmin) {
-            // const orderDateThrough = (req.query.orderDateThrough instanceof Date)
-            //     ? req.query.orderDateThrough
-            //     : moment()
-            //         .toDate();
-            // const orderDateFrom = (req.query.orderDateFrom instanceof Date)
-            //     ? req.query.orderDateFrom
-            //     : moment(orderDateThrough)
-            //         // tslint:disable-next-line:no-magic-numbers
-            //         .add(-3, 'months') // とりあえず直近3カ月をデフォルト動作に設定
-            //         .toDate();
-            const orderDateThrough = moment()
-                .toDate();
-            const orderDateFrom = moment(orderDateThrough)
-                // tslint:disable-next-line:no-magic-numbers
-                .add(-3, 'months') // とりあえず直近3カ月をデフォルト動作に設定
-                .toDate();
-            searchConditions = {
-                project: { ids: [req.project.id] },
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-                sort: { orderDate: cinerino.factory.sortType.Descending },
-                identifier: {
-                    $all: req.query.identifier.$all
-                },
-                orderDateFrom: orderDateFrom,
-                orderDateThrough: orderDateThrough
-            };
-        }
-        const totalCount = yield orderRepo.count(searchConditions);
+            .add(-93, 'days') // とりあえず直近3カ月をデフォルト動作に設定
+            .toDate();
+        const searchConditions = {
+            project: { id: { $eq: req.project.id } },
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+            page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+            sort: { orderDate: cinerino.factory.sortType.Descending },
+            identifier: {
+                $all: req.query.identifier.$all
+            },
+            orderDateFrom: orderDateFrom,
+            orderDateThrough: orderDateThrough
+        };
         const orders = yield orderRepo.search(searchConditions);
-        res.set('X-Total-Count', totalCount.toString());
         res.json(orders);
     }
     catch (error) {
@@ -191,7 +211,7 @@ ordersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 
 /**
  * 注文作成
  */
-ordersRouter.post('', permitScopes_1.default([iam_1.Permission.User, 'orders.*']), rateLimit_1.default, ...[
+ordersRouter.post('', permitScopes_1.default(['orders.*', 'orders.create']), rateLimit_1.default, ...[
     express_validator_1.body('orderNumber')
         .not()
         .isEmpty()
@@ -207,7 +227,7 @@ ordersRouter.post('', permitScopes_1.default([iam_1.Permission.User, 'orders.*']
         // 注文検索
         const orders = yield orderRepo.search({
             limit: 1,
-            project: { ids: [req.project.id] },
+            project: { id: { $eq: req.project.id } },
             orderNumbers: [orderNumber]
         });
         let order = orders.shift();
@@ -250,22 +270,7 @@ ordersRouter.post('', permitScopes_1.default([iam_1.Permission.User, 'orders.*']
 /**
  * ストリーミングダウンロード
  */
-ordersRouter.get('/download', permitScopes_1.default([iam_1.Permission.User, 'orders.*', 'orders.read']), rateLimit_1.default, 
-// 互換性維持のため
-(req, _, next) => {
-    const now = moment();
-    if (typeof req.query.orderDateThrough !== 'string') {
-        req.query.orderDateThrough = moment(now)
-            .toISOString();
-    }
-    if (typeof req.query.orderDateFrom !== 'string') {
-        req.query.orderDateFrom = moment(now)
-            // tslint:disable-next-line:no-magic-numbers
-            .add(-31, 'days') // とりあえず直近1カ月をデフォルト動作に設定
-            .toISOString();
-    }
-    next();
-}, ...[
+ordersRouter.get('/download', permitScopes_1.default([]), rateLimit_1.default, ...[
     express_validator_1.query('orderDateFrom')
         .not()
         .isEmpty()
@@ -274,6 +279,14 @@ ordersRouter.get('/download', permitScopes_1.default([iam_1.Permission.User, 'or
     express_validator_1.query('orderDateThrough')
         .not()
         .isEmpty()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('orderDate.$gte')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('orderDate.$lte')
+        .optional()
         .isISO8601()
         .toDate(),
     express_validator_1.query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
@@ -295,10 +308,12 @@ ordersRouter.get('/download', permitScopes_1.default([iam_1.Permission.User, 'or
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     let connection;
     try {
-        // 長時間占有する可能性があるのでコネクションを独自に生成
-        connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
+        connection = yield connectMongo_1.connectMongo({
+            defaultConnection: false,
+            disableCheck: true
+        });
         const orderRepo = new cinerino.repository.Order(connection);
-        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] } });
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } });
         const format = req.query.format;
         const stream = yield cinerino.service.report.order.stream({
             conditions: searchConditions,
@@ -328,7 +343,7 @@ ordersRouter.get('/download', permitScopes_1.default([iam_1.Permission.User, 'or
  * 確認番号と電話番号で注文照会
  * @deprecated 基本的にシネマサンシャイン互換性維持のためのエンドポイント
  */
-ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default([iam_1.Permission.User, 'customer', 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, ...[
+ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, ...[
     express_validator_1.body('theaterCode')
         .not()
         .isEmpty()
@@ -381,7 +396,7 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default([iam_1.Permis
 /**
  * 確認番号で注文照会
  */
-ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default([iam_1.Permission.User, 'customer', 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, ...[
+ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, ...[
     express_validator_1.query('orderDateFrom')
         .optional()
         .isISO8601()
@@ -395,6 +410,14 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default([iam_1.Per
         .isISO8601()
         .toDate(),
     express_validator_1.body('orderDateThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.body('orderDate.$gte')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.body('orderDate.$lte')
         .optional()
         .isISO8601()
         .toDate(),
@@ -431,7 +454,7 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default([iam_1.Per
         const orders = yield orderRepo.search({
             limit: 1,
             sort: { orderDate: cinerino.factory.sortType.Descending },
-            project: { ids: [req.project.id] },
+            project: { id: { $eq: req.project.id } },
             confirmationNumbers: [req.body.confirmationNumber],
             customer: {
                 email: (customer.email !== undefined)
@@ -458,7 +481,7 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default([iam_1.Per
 /**
  * 注文取得
  */
-ordersRouter.get('/:orderNumber', permitScopes_1.default([iam_1.Permission.User, 'orders.*', 'orders.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+ordersRouter.get('/:orderNumber', permitScopes_1.default(['orders.*', 'orders.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const order = yield orderRepo.findByOrderNumber({
@@ -473,7 +496,7 @@ ordersRouter.get('/:orderNumber', permitScopes_1.default([iam_1.Permission.User,
 /**
  * 注文配送
  */
-ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default([iam_1.Permission.User, 'orders.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['orders.*', 'orders.deliver']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
@@ -516,7 +539,7 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default([iam_1.Permiss
  * 確認番号で注文アイテムに対してコードを発行する
  */
 // tslint:disable-next-line:use-default-type-parameter
-ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.default([iam_1.Permission.User, 'customer', 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, ...[
+ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.default(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, ...[
     express_validator_1.body('customer')
         .not()
         .isEmpty()

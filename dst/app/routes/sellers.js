@@ -20,12 +20,11 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const iam_1 = require("../iam");
 const sellersRouter = express_1.Router();
 /**
  * 販売者作成
  */
-sellersRouter.post('', permitScopes_1.default(['sellers.*']), rateLimit_1.default, ...[
+sellersRouter.post('', permitScopes_1.default(['sellers.*', 'sellers.write']), rateLimit_1.default, ...[
     express_validator_1.body('typeOf')
         .not()
         .isEmpty()
@@ -83,17 +82,16 @@ sellersRouter.post('', permitScopes_1.default(['sellers.*']), rateLimit_1.defaul
 /**
  * 販売者検索
  */
-sellersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 'sellers.*', 'sellers.read', 'pos']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+sellersRouter.get('', permitScopes_1.default(['sellers.*', 'sellers.read', 'pos']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const searchCoinditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
+        const searchCoinditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const sellers = yield sellerRepo.search(searchCoinditions, 
         // 管理者以外にセキュアな情報を露出しないように
         (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined);
-        const totalCount = yield sellerRepo.count(searchCoinditions);
-        res.set('X-Total-Count', totalCount.toString());
+        res.set('X-Total-Count', sellers.length.toString());
         res.json(sellers);
     }
     catch (error) {
@@ -103,7 +101,7 @@ sellersRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer',
 /**
  * IDで販売者検索
  */
-sellersRouter.get('/:id', permitScopes_1.default([iam_1.Permission.User, 'customer', 'sellers.*', 'sellers.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+sellersRouter.get('/:id', permitScopes_1.default(['sellers.*', 'sellers.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const seller = yield sellerRepo.findById({
@@ -121,7 +119,7 @@ sellersRouter.get('/:id', permitScopes_1.default([iam_1.Permission.User, 'custom
  * 販売者更新
  */
 // tslint:disable-next-line:use-default-type-parameter
-sellersRouter.put('/:id', permitScopes_1.default(['sellers.*']), rateLimit_1.default, ...[
+sellersRouter.put('/:id', permitScopes_1.default(['sellers.*', 'sellers.write']), rateLimit_1.default, ...[
     express_validator_1.body('typeOf')
         .not()
         .isEmpty()
@@ -179,7 +177,7 @@ sellersRouter.put('/:id', permitScopes_1.default(['sellers.*']), rateLimit_1.def
 /**
  * 販売者削除
  */
-sellersRouter.delete('/:id', permitScopes_1.default(['sellers.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+sellersRouter.delete('/:id', permitScopes_1.default(['sellers.*', 'sellers.write']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         yield sellerRepo.deleteById({

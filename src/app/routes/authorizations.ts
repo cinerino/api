@@ -36,16 +36,14 @@ authorizationsRouter.get(
 
             const searchConditions: cinerino.factory.authorization.ISearchConditions = {
                 ...req.query,
-                project: { ids: [req.project.id] },
+                project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
 
-            const totalCount = await authorizationRepo.count(searchConditions);
             const authorizations = await authorizationRepo.search(searchConditions);
 
-            res.set('X-Total-Count', totalCount.toString());
             res.json(authorizations);
         } catch (error) {
             next(error);

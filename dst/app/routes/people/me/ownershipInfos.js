@@ -22,7 +22,6 @@ const validator_1 = require("../../../middlewares/validator");
 const accounts_1 = require("./ownershipInfos/accounts");
 const creditCards_1 = require("./ownershipInfos/creditCards");
 const reservations_1 = require("./ownershipInfos/reservations");
-const iam_1 = require("../../../iam");
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -37,7 +36,7 @@ ownershipInfosRouter.use('/reservations', reservations_1.default);
 /**
  * 所有権検索
  */
-ownershipInfosRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 'people.me.*']), rateLimit_1.default, ...[
+ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_1.default, ...[
     express_validator_1.query('typeOfGood')
         .not()
         .isEmpty(),
@@ -52,12 +51,11 @@ ownershipInfosRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'cus
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let ownershipInfos;
-        const searchConditions = Object.assign(Object.assign({}, req.query), { 
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, ownedBy: { id: req.user.sub } });
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const totalCount = yield ownershipInfoRepo.count(searchConditions);
         const typeOfGood = req.query.typeOfGood;
         switch (typeOfGood.typeOf) {
             case cinerino.factory.ownershipInfo.AccountGoodType.Account:
@@ -70,7 +68,7 @@ ownershipInfosRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'cus
                 });
                 break;
             case cinerino.factory.chevre.reservationType.EventReservation:
-                ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(Object.assign(Object.assign({}, searchConditions), { project: req.project }))({
+                ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(Object.assign(Object.assign({}, searchConditions), { project: { typeOf: req.project.typeOf, id: req.project.id } }))({
                     ownershipInfo: ownershipInfoRepo,
                     project: projectRepo
                 });
@@ -79,7 +77,6 @@ ownershipInfosRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'cus
                 ownershipInfos = yield ownershipInfoRepo.search(searchConditions);
             // throw new cinerino.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
         }
-        res.set('X-Total-Count', totalCount.toString());
         res.json(ownershipInfos);
     }
     catch (error) {
@@ -89,7 +86,7 @@ ownershipInfosRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'cus
 /**
  * 所有権に対して認可コードを発行する
  */
-ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default([iam_1.Permission.User, 'customer', 'people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);

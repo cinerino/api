@@ -14,8 +14,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-import { Permission } from '../iam';
-
 const tasksRouter = Router();
 
 /**
@@ -24,7 +22,7 @@ const tasksRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 tasksRouter.post<ParamsDictionary>(
     '/:name',
-    permitScopes([Permission.User, 'tasks.*']),
+    permitScopes(['tasks.*', 'tasks.create']),
     rateLimit,
     ...[
         body('runsAt')
@@ -126,14 +124,13 @@ tasksRouter.get(
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const searchConditions: cinerino.factory.task.ISearchConditions<cinerino.factory.taskName> = {
                 ...req.query,
-                project: { ids: [req.project.id] },
+                project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
             const tasks = await taskRepo.search(searchConditions);
-            const totalCount = await taskRepo.count(searchConditions);
-            res.set('X-Total-Count', totalCount.toString());
+
             res.json(tasks);
         } catch (error) {
             next(error);

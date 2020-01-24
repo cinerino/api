@@ -28,7 +28,6 @@ iamRouter.get(
     validator,
     async (_, res, next) => {
         try {
-            res.set('X-Total-Count', '0');
             res.json([]);
         } catch (error) {
             next(error);
@@ -65,7 +64,6 @@ iamRouter.get(
                 familyName: req.query.familyName
             });
 
-            res.set('X-Total-Count', users.length.toString());
             res.json(users);
         } catch (error) {
             next(error);

@@ -22,7 +22,6 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../middlewares/validator");
-const iam_1 = require("../iam");
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -30,7 +29,7 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
 const offersRouter = express_1.Router();
 if (process.env.USE_MONEY_TRANSFER === '1') {
     // tslint:disable-next-line:use-default-type-parameter
-    offersRouter.post('/monetaryAmount/authorize', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), rateLimit_1.default, ...[
+    offersRouter.post('/monetaryAmount/authorize', permitScopes_1.default(['transactions']), rateLimit_1.default, ...[
         express_validator_1.body('object')
             .not()
             .isEmpty(),
@@ -117,7 +116,7 @@ if (process.env.USE_MONEY_TRANSFER === '1') {
     }));
 }
 // tslint:disable-next-line:use-default-type-parameter
-offersRouter.put('/monetaryAmount/authorize/:actionId/void', permitScopes_1.default([iam_1.Permission.User, 'customer', 'transactions']), rateLimit_1.default, ...[
+offersRouter.put('/monetaryAmount/authorize/:actionId/void', permitScopes_1.default(['transactions']), rateLimit_1.default, ...[
     express_validator_1.body('purpose')
         .not()
         .isEmpty()

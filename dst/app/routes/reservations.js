@@ -20,7 +20,6 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const iam_1 = require("../iam");
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -32,7 +31,7 @@ const reservationsRouter = express_1.Router();
 /**
  * 管理者として予約検索
  */
-reservationsRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'reservations.*']), rateLimit_1.default, (req, _, next) => {
+reservationsRouter.get('', permitScopes_1.default(['reservations.*', 'reservations.read']), rateLimit_1.default, (req, _, next) => {
     const now = moment();
     if (typeof req.query.bookingThrough !== 'string') {
         req.query.bookingThrough = moment(now)
@@ -105,7 +104,7 @@ reservationsRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'reser
             auth: chevreAuthClient
         });
         const searchResult = yield reservationService.search(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, typeOf: cinerino.factory.chevre.reservationType.EventReservation }));
-        res.set('X-Total-Count', searchResult.totalCount.toString());
+        // res.set('X-Total-Count', searchResult.totalCount.toString());
         res.json(searchResult.data);
     }
     catch (error) {
@@ -115,7 +114,7 @@ reservationsRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'reser
 /**
  * トークンで予約照会
  */
-reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitScopes_1.default([iam_1.Permission.User, 'reservations.findByToken']), rateLimit_1.default, ...[
+reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitScopes_1.default(['reservations.read', 'reservations.findByToken']), rateLimit_1.default, ...[
     express_validator_1.body('token')
         .not()
         .isEmpty()

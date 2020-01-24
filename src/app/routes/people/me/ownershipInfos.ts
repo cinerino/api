@@ -14,8 +14,6 @@ import accountsRouter from './ownershipInfos/accounts';
 import creditCardsRouter from './ownershipInfos/creditCards';
 import reservationsRouter from './ownershipInfos/reservations';
 
-import { Permission } from '../../../iam';
-
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -35,7 +33,7 @@ ownershipInfosRouter.use('/reservations', reservationsRouter);
  */
 ownershipInfosRouter.get(
     '',
-    permitScopes([Permission.User, 'customer', 'people.me.*']),
+    permitScopes(['people.me.*']),
     rateLimit,
     ...[
         query('typeOfGood')
@@ -57,6 +55,7 @@ ownershipInfosRouter.get(
                 cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGoodWithDetail<typeof typeOfGood.typeOf>>[];
             const searchConditions: cinerino.factory.ownershipInfo.ISearchConditions<typeof typeOfGood.typeOf> = {
                 ...req.query,
+                project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
@@ -64,8 +63,6 @@ ownershipInfosRouter.get(
             };
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
-            const totalCount = await ownershipInfoRepo.count(searchConditions);
 
             const typeOfGood = <cinerino.factory.ownershipInfo.ITypeOfGoodSearchConditions<any>>req.query.typeOfGood;
             switch (typeOfGood.typeOf) {
@@ -81,9 +78,9 @@ ownershipInfosRouter.get(
                     break;
 
                 case cinerino.factory.chevre.reservationType.EventReservation:
-                    ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations({
+                    ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(<any>{
                         ...searchConditions,
-                        project: req.project
+                        project: { typeOf: req.project.typeOf, id: req.project.id }
                     })({
                         ownershipInfo: ownershipInfoRepo,
                         project: projectRepo
@@ -95,7 +92,6 @@ ownershipInfosRouter.get(
                 // throw new cinerino.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
             }
 
-            res.set('X-Total-Count', totalCount.toString());
             res.json(ownershipInfos);
         } catch (error) {
             next(error);
@@ -108,7 +104,7 @@ ownershipInfosRouter.get(
  */
 ownershipInfosRouter.post(
     '/:id/authorize',
-    permitScopes([Permission.User, 'customer', 'people.me.*']),
+    permitScopes(['people.me.*']),
     rateLimit,
     validator,
     async (req, res, next) => {

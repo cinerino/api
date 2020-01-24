@@ -2,9 +2,7 @@
  * 権限
  */
 export enum Permission {
-    Admin = 'admin',
-    Customer = 'customer',
-    User = 'user'
+    Admin = 'admin'
 }
 
 export enum RoleName {

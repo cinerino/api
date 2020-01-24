@@ -9,8 +9,6 @@ import permitScopes from '../../../middlewares/permitScopes';
 import rateLimit from '../../../middlewares/rateLimit';
 import validator from '../../../middlewares/validator';
 
-import { Permission } from '../../../iam';
-
 const profileRouter = Router();
 
 /**
@@ -18,7 +16,7 @@ const profileRouter = Router();
  */
 profileRouter.get(
     '',
-    permitScopes([Permission.User, 'customer', 'people.me.*']),
+    permitScopes(['people.me.*']),
     rateLimit,
     async (req, res, next) => {
         try {
@@ -38,7 +36,7 @@ profileRouter.get(
  */
 profileRouter.patch(
     '',
-    permitScopes([Permission.User, 'customer', 'people.me.*']),
+    permitScopes(['people.me.*']),
     rateLimit,
     validator,
     async (req, res, next) => {

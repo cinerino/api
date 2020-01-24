@@ -22,7 +22,6 @@ const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
-const iam_1 = require("../../iam");
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -32,7 +31,7 @@ const anyPaymentRouter = express_1.Router();
  * 汎用決済承認
  */
 // tslint:disable-next-line:use-default-type-parameter
-anyPaymentRouter.post('/authorize', permitScopes_1.default([iam_1.Permission.User, 'pos']), rateLimit_1.default, ...[
+anyPaymentRouter.post('/authorize', permitScopes_1.default(['pos', 'payment.any.write']), rateLimit_1.default, ...[
     express_validator_1.body('object')
         .not()
         .isEmpty(),
@@ -95,7 +94,7 @@ anyPaymentRouter.post('/authorize', permitScopes_1.default([iam_1.Permission.Use
 /**
  * 汎用決済承認取消
  */
-anyPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default([iam_1.Permission.User]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+anyPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['payment.any.write']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id

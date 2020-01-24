@@ -5,7 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
-import { body, CustomValidator, query } from 'express-validator';
+import { body, query } from 'express-validator';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
@@ -15,11 +15,8 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-import { Permission } from '../iam';
-
-import * as redis from '../../redis';
-
 import { connectMongo } from '../../connectMongo';
+import * as redis from '../../redis';
 
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
@@ -44,34 +41,20 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 });
 const ordersRouter = Router();
 
-const isNotAdmin: CustomValidator = (_, { req }) => !req.isAdmin;
+// const isNotAdmin: CustomValidator = (_, { req }) => !req.isAdmin;
 
 /**
  * 注文検索
  */
 ordersRouter.get(
     '',
-    permitScopes([Permission.User, 'customer', 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
+    permitScopes(['orders.*', 'orders.read']),
     rateLimit,
-    // 互換性維持のため
-    (req, _, next) => {
-        const now = moment();
-
-        if (typeof req.query.orderDateThrough !== 'string') {
-            req.query.orderDateThrough = moment(now)
-                .toISOString();
-        }
-
-        if (typeof req.query.orderDateFrom !== 'string') {
-            req.query.orderDateFrom = moment(now)
-                // tslint:disable-next-line:no-magic-numbers
-                .add(-31, 'days') // とりあえず直近1カ月をデフォルト動作に設定
-                .toISOString();
-        }
-
-        next();
-    },
     ...[
+        query('disableTotalCount')
+            .optional()
+            .isBoolean()
+            .toBoolean(),
         query('identifier.$all')
             .optional()
             .isArray(),
@@ -103,29 +86,35 @@ ordersRouter.get(
             .isString()
             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         query('orderDateFrom')
-            .not()
-            .isEmpty()
+            .optional()
             .isISO8601()
             .toDate(),
         query('orderDateThrough')
-            .not()
-            .isEmpty()
+            .optional()
             .isISO8601()
-            .toDate()
-            .custom((value, { req }) => {
-                // 注文期間指定を限定
-                const orderDateThrough = moment(value);
-                if (req.query !== undefined) {
-                    const orderDateThroughExpectedToBe = moment(req.query.orderDateFrom)
-                        // tslint:disable-next-line:no-magic-numbers
-                        .add(31, 'days');
-                    if (orderDateThrough.isAfter(orderDateThroughExpectedToBe)) {
-                        throw new Error('Order date range too large');
-                    }
-                }
+            .toDate(),
+        // .custom((value, { req }) => {
+        //     // 注文期間指定を限定
+        //     const orderDateThrough = moment(value);
+        //     if (req.query !== undefined) {
+        //         const orderDateThroughExpectedToBe = moment(req.query.orderDateFrom)
+        //             // tslint:disable-next-line:no-magic-numbers
+        //             .add(31, 'days');
+        //         if (orderDateThrough.isAfter(orderDateThroughExpectedToBe)) {
+        //             throw new Error('Order date range too large');
+        //         }
+        //     }
 
-                return true;
-            }),
+        //     return true;
+        // }),
+        query('orderDate.$gte')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('orderDate.$lte')
+            .optional()
+            .isISO8601()
+            .toDate(),
         query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
             .optional()
             .isISO8601()
@@ -143,10 +132,67 @@ ordersRouter.get(
             .isISO8601()
             .toDate()
     ],
-    // 管理者でなければバリデーション追加
+    validator,
+    async (req, res, next) => {
+        try {
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+
+            const searchConditions: cinerino.factory.order.ISearchConditions = {
+                ...req.query,
+                project: { id: { $eq: req.project.id } },
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
+            };
+
+            const orders = await orderRepo.search(searchConditions);
+
+            res.json(orders);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 識別子で注文検索
+ */
+ordersRouter.get(
+    '/findByIdentifier',
+    permitScopes(['orders.*', 'orders.read', 'orders.findByIdentifier']),
+    rateLimit,
     ...[
         query('identifier.$all')
-            .if(isNotAdmin)
+            .optional()
+            .isArray(),
+        query('identifier.$in')
+            .optional()
+            .isArray(),
+        query('identifier.$all.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        query('identifier.$all.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        query('identifier.$in.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        query('identifier.$in.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        query('identifier.$all')
             .not()
             .isEmpty()
             .withMessage(() => 'required')
@@ -158,51 +204,29 @@ ordersRouter.get(
         try {
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
 
-            let searchConditions: cinerino.factory.order.ISearchConditions = {
-                ...req.query,
-                project: { ids: [req.project.id] },
+            // 検索条件を限定
+            const orderDateThrough = moment()
+                .toDate();
+            const orderDateFrom = moment(orderDateThrough)
+                // tslint:disable-next-line:no-magic-numbers
+                .add(-93, 'days') // とりあえず直近3カ月をデフォルト動作に設定
+                .toDate();
+
+            const searchConditions: cinerino.factory.order.ISearchConditions = {
+                project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+                sort: { orderDate: cinerino.factory.sortType.Descending },
+                identifier: {
+                    $all: req.query.identifier.$all
+                },
+                orderDateFrom: orderDateFrom,
+                orderDateThrough: orderDateThrough
             };
 
-            // 管理者でない場合、検索条件を限定
-            if (!req.isAdmin) {
-                // const orderDateThrough = (req.query.orderDateThrough instanceof Date)
-                //     ? req.query.orderDateThrough
-                //     : moment()
-                //         .toDate();
-                // const orderDateFrom = (req.query.orderDateFrom instanceof Date)
-                //     ? req.query.orderDateFrom
-                //     : moment(orderDateThrough)
-                //         // tslint:disable-next-line:no-magic-numbers
-                //         .add(-3, 'months') // とりあえず直近3カ月をデフォルト動作に設定
-                //         .toDate();
-                const orderDateThrough = moment()
-                    .toDate();
-                const orderDateFrom = moment(orderDateThrough)
-                    // tslint:disable-next-line:no-magic-numbers
-                    .add(-3, 'months') // とりあえず直近3カ月をデフォルト動作に設定
-                    .toDate();
-
-                searchConditions = {
-                    project: { ids: [req.project.id] },
-                    // tslint:disable-next-line:no-magic-numbers
-                    limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                    page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-                    sort: { orderDate: cinerino.factory.sortType.Descending },
-                    identifier: {
-                        $all: req.query.identifier.$all
-                    },
-                    orderDateFrom: orderDateFrom,
-                    orderDateThrough: orderDateThrough
-                };
-            }
-
-            const totalCount = await orderRepo.count(searchConditions);
             const orders = await orderRepo.search(searchConditions);
 
-            res.set('X-Total-Count', totalCount.toString());
             res.json(orders);
         } catch (error) {
             next(error);
@@ -215,7 +239,7 @@ ordersRouter.get(
  */
 ordersRouter.post(
     '',
-    permitScopes([Permission.User, 'orders.*']),
+    permitScopes(['orders.*', 'orders.create']),
     rateLimit,
     ...[
         body('orderNumber')
@@ -237,7 +261,7 @@ ordersRouter.post(
             // 注文検索
             const orders = await orderRepo.search({
                 limit: 1,
-                project: { ids: [req.project.id] },
+                project: { id: { $eq: req.project.id } },
                 orderNumbers: [orderNumber]
             });
             let order = orders.shift();
@@ -288,26 +312,8 @@ ordersRouter.post(
  */
 ordersRouter.get(
     '/download',
-    permitScopes([Permission.User, 'orders.*', 'orders.read']),
+    permitScopes([]),
     rateLimit,
-    // 互換性維持のため
-    (req, _, next) => {
-        const now = moment();
-
-        if (typeof req.query.orderDateThrough !== 'string') {
-            req.query.orderDateThrough = moment(now)
-                .toISOString();
-        }
-
-        if (typeof req.query.orderDateFrom !== 'string') {
-            req.query.orderDateFrom = moment(now)
-                // tslint:disable-next-line:no-magic-numbers
-                .add(-31, 'days') // とりあえず直近1カ月をデフォルト動作に設定
-                .toISOString();
-        }
-
-        next();
-    },
     ...[
         query('orderDateFrom')
             .not()
@@ -317,6 +323,14 @@ ordersRouter.get(
         query('orderDateThrough')
             .not()
             .isEmpty()
+            .isISO8601()
+            .toDate(),
+        query('orderDate.$gte')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('orderDate.$lte')
+            .optional()
             .isISO8601()
             .toDate(),
         query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
@@ -341,14 +355,15 @@ ordersRouter.get(
         let connection: mongoose.Connection | undefined;
 
         try {
-            // 長時間占有する可能性があるのでコネクションを独自に生成
-            connection = await connectMongo({ defaultConnection: false });
-
+            connection = await connectMongo({
+                defaultConnection: false,
+                disableCheck: true
+            });
             const orderRepo = new cinerino.repository.Order(connection);
 
             const searchConditions: cinerino.factory.order.ISearchConditions = {
                 ...req.query,
-                project: { ids: [req.project.id] }
+                project: { id: { $eq: req.project.id } }
             };
 
             const format = req.query.format;
@@ -386,7 +401,7 @@ ordersRouter.get(
  */
 ordersRouter.post(
     '/findByOrderInquiryKey',
-    permitScopes([Permission.User, 'customer', 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
+    permitScopes(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
     rateLimit,
     ...[
         body('theaterCode')
@@ -451,7 +466,7 @@ ordersRouter.post(
  */
 ordersRouter.post(
     '/findByConfirmationNumber',
-    permitScopes([Permission.User, 'customer', 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
+    permitScopes(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
     rateLimit,
     ...[
         query('orderDateFrom')
@@ -467,6 +482,14 @@ ordersRouter.post(
             .isISO8601()
             .toDate(),
         body('orderDateThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        body('orderDate.$gte')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        body('orderDate.$lte')
             .optional()
             .isISO8601()
             .toDate(),
@@ -508,7 +531,7 @@ ordersRouter.post(
             const orders = await orderRepo.search({
                 limit: 1,
                 sort: { orderDate: cinerino.factory.sortType.Descending },
-                project: { ids: [req.project.id] },
+                project: { id: { $eq: req.project.id } },
                 confirmationNumbers: [<string>req.body.confirmationNumber],
                 customer: {
                     email: (customer.email !== undefined)
@@ -540,7 +563,7 @@ ordersRouter.post(
  */
 ordersRouter.get(
     '/:orderNumber',
-    permitScopes([Permission.User, 'orders.*', 'orders.read']),
+    permitScopes(['orders.*', 'orders.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -562,7 +585,7 @@ ordersRouter.get(
  */
 ordersRouter.post(
     '/:orderNumber/deliver',
-    permitScopes([Permission.User, 'orders.*']),
+    permitScopes(['orders.*', 'orders.deliver']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -616,7 +639,7 @@ ordersRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 ordersRouter.post<ParamsDictionary>(
     '/:orderNumber/ownershipInfos/authorize',
-    permitScopes([Permission.User, 'customer', 'orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
+    permitScopes(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
     rateLimit,
     ...[
         body('customer')

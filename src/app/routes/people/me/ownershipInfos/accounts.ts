@@ -15,8 +15,6 @@ import validator from '../../../../middlewares/validator';
 
 import * as redis from '../../../../../redis';
 
-import { Permission } from '../../../../iam';
-
 const accountsRouter = Router();
 
 /**
@@ -25,7 +23,7 @@ const accountsRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 accountsRouter.post<ParamsDictionary>(
     '/:accountType',
-    permitScopes([Permission.User, 'customer', 'people.me.*']),
+    permitScopes(['people.me.*']),
     rateLimit,
     ...[
         body('name')
@@ -64,7 +62,7 @@ accountsRouter.post<ParamsDictionary>(
  */
 accountsRouter.put(
     '/:accountType/:accountNumber/close',
-    permitScopes([Permission.User, 'customer', 'people.me.*']),
+    permitScopes(['people.me.*']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -96,7 +94,7 @@ accountsRouter.put(
  */
 accountsRouter.get(
     '/actions/moneyTransfer',
-    permitScopes([Permission.User, 'customer', 'people.me.*']),
+    permitScopes(['people.me.*']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -115,8 +113,7 @@ accountsRouter.get(
                 project: projectRepo
             });
 
-            res.set('X-Total-Count', actions.length.toString())
-                .json(actions);
+            res.json(actions);
         } catch (error) {
             next(error);
         }

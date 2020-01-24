@@ -18,20 +18,17 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const iam_1 = require("../iam");
 const programMembershipsRouter = express_1.Router();
 /**
  * 会員プログラム検索
  */
-programMembershipsRouter.get('', permitScopes_1.default([iam_1.Permission.User, 'customer', 'programMemberships.*', 'programMemberships.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+programMembershipsRouter.get('', permitScopes_1.default(['programMemberships.*', 'programMemberships.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const programMembershipRepo = new cinerino.repository.ProgramMembership(mongoose.connection);
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const totalCount = yield programMembershipRepo.count(searchConditions);
         const programMemberships = yield programMembershipRepo.search(searchConditions);
-        res.set('X-Total-Count', totalCount.toString());
         res.json(programMemberships);
     }
     catch (error) {

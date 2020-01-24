@@ -9,7 +9,6 @@ import { Router } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { body, query } from 'express-validator';
 import { CREATED, NO_CONTENT } from 'http-status';
-import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import lockTransaction from '../../middlewares/lockTransaction';
@@ -20,11 +19,8 @@ import validator from '../../middlewares/validator';
 
 import placeOrder4cinemasunshineRouter from './placeOrder4cinemasunshine';
 
-import * as redis from '../../../redis';
-
 import { connectMongo } from '../../../connectMongo';
-
-import { Permission } from '../../iam';
+import * as redis from '../../../redis';
 
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
@@ -53,7 +49,7 @@ placeOrderTransactionsRouter.use(placeOrder4cinemasunshineRouter);
 
 placeOrderTransactionsRouter.post(
     '/start',
-    permitScopes([Permission.User, 'customer', 'transactions', 'pos']),
+    permitScopes(['transactions', 'pos']),
     // Cinemasunshine互換性維持のため
     (req, _, next) => {
         if (typeof req.body.sellerId === 'string') {
@@ -221,7 +217,7 @@ placeOrderTransactionsRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/customerContact',
-    permitScopes([Permission.User, 'customer', 'transactions', 'pos']),
+    permitScopes(['transactions', 'pos']),
     ...[
         body('additionalProperty')
             .optional()
@@ -307,7 +303,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/agent',
-    permitScopes([Permission.User, 'customer', 'transactions', 'pos']),
+    permitScopes(['transactions', 'pos']),
     ...[
         body('additionalProperty')
             .optional()
@@ -366,7 +362,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/offer/seatReservation',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     ...[
         body('object.acceptedOffer.additionalProperty')
             .optional()
@@ -441,7 +437,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/actions/authorize/offer/seatReservation/:actionId/cancel',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -483,7 +479,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/any',
-    permitScopes([Permission.User]),
+    permitScopes(['payment.any.write']),
     ...[
         body('typeOf')
             .not()
@@ -551,7 +547,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel',
-    permitScopes([Permission.User]),
+    permitScopes(['payment.any.write']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -590,7 +586,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/creditCard',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     ...[
         body('typeOf')
             .not()
@@ -700,7 +696,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/creditCard/:actionId/cancel',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -743,7 +739,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/movieTicket',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     ...[
         body('typeOf')
             .not()
@@ -838,7 +834,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/actions/authorize/paymentMethod/movieTicket/:actionId/cancel',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -876,7 +872,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/award/accounts/point',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     ...[
         body('amount')
             .not()
@@ -929,7 +925,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/actions/authorize/award/accounts/point/:actionId/cancel',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     (__1, __2, next) => {
         next();
     },
@@ -969,7 +965,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/confirm',
-    permitScopes([Permission.User, 'customer', 'transactions', 'pos']),
+    permitScopes(['transactions', 'pos']),
     ...[
         // Eメールカスタマイズのバリデーション
         body([
@@ -1135,7 +1131,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
  */
 placeOrderTransactionsRouter.put(
     '/:transactionId/cancel',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -1211,15 +1207,14 @@ placeOrderTransactionsRouter.get(
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             const searchConditions: cinerino.factory.transaction.ISearchConditions<cinerino.factory.transactionType.PlaceOrder> = {
                 ...req.query,
-                project: { ids: [req.project.id] },
+                project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
                 typeOf: cinerino.factory.transactionType.PlaceOrder
             };
             const transactions = await transactionRepo.search(searchConditions);
-            const totalCount = await transactionRepo.count(searchConditions);
-            res.set('X-Total-Count', totalCount.toString());
+
             res.json(transactions);
         } catch (error) {
             next(error);
@@ -1257,36 +1252,44 @@ placeOrderTransactionsRouter.get(
  */
 placeOrderTransactionsRouter.get(
     '/report',
-    permitScopes(['transactions.*', 'transactions.read']),
+    permitScopes([]),
     rateLimit,
+    ...[
+        query('startFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('startThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('endFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('endThrough')
+            .optional()
+            .isISO8601()
+            .toDate()
+    ],
     validator,
     async (req, res, next) => {
         let connection: mongoose.Connection | undefined;
 
         try {
-            // 長時間占有する可能性があるのでコネクションを独自に生成
-            connection = await connectMongo({ defaultConnection: false });
-
+            connection = await connectMongo({
+                defaultConnection: false,
+                disableCheck: true
+            });
             const transactionRepo = new cinerino.repository.Transaction(connection);
+
             const searchConditions: cinerino.factory.transaction.ISearchConditions<cinerino.factory.transactionType.PlaceOrder> = {
+                ...req.query,
+                project: { id: { $eq: req.project.id } },
+                // tslint:disable-next-line:no-magic-numbers
                 limit: undefined,
                 page: undefined,
-                project: { ids: [req.project.id] },
-                typeOf: cinerino.factory.transactionType.PlaceOrder,
-                ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
-                statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,
-                startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom)
-                    .toDate() : undefined,
-                startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough)
-                    .toDate() : undefined,
-                endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom)
-                    .toDate() : undefined,
-                endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough)
-                    .toDate() : undefined,
-                agent: req.query.agent,
-                seller: req.query.seller,
-                object: req.query.object,
-                result: req.query.result
+                typeOf: cinerino.factory.transactionType.PlaceOrder
             };
 
             const format = req.query.format;

@@ -10,8 +10,6 @@ import permitScopes from '../../../middlewares/permitScopes';
 import rateLimit from '../../../middlewares/rateLimit';
 import validator from '../../../middlewares/validator';
 
-import { Permission } from '../../../iam';
-
 const ordersRouter = Router();
 
 /**
@@ -19,7 +17,7 @@ const ordersRouter = Router();
  */
 ordersRouter.get(
     '',
-    permitScopes([Permission.User, 'customer', 'people.me.*']),
+    permitScopes(['people.me.*']),
     rateLimit,
     ...[
         query('orderDateFrom')
@@ -31,6 +29,14 @@ ordersRouter.get(
             .not()
             .isEmpty()
             .isISO8601()
+            .toDate(),
+        query('orderDate.$gte')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('orderDate.$lte')
+            .optional()
+            .isISO8601()
             .toDate()
     ],
     validator,
@@ -39,6 +45,7 @@ ordersRouter.get(
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const searchConditions: cinerino.factory.order.ISearchConditions = {
                 ...req.query,
+                project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
@@ -49,8 +56,7 @@ ordersRouter.get(
                 }
             };
             const orders = await orderRepo.search(searchConditions);
-            const totalCount = await orderRepo.count(searchConditions);
-            res.set('X-Total-Count', totalCount.toString());
+
             res.json(orders);
         } catch (error) {
             next(error);

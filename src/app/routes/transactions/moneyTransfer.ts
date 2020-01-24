@@ -19,8 +19,6 @@ import validator from '../../middlewares/validator';
 
 import * as redis from '../../../redis';
 
-import { Permission } from '../../iam';
-
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -40,7 +38,7 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
 // tslint:disable-next-line:use-default-type-parameter
 moneyTransferTransactionsRouter.post<ParamsDictionary>(
     '/start',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     ...[
         body('expires', 'invalid expires')
             .not()
@@ -222,7 +220,7 @@ async function validateFromLocation(req: Request): Promise<cinerino.factory.tran
 // tslint:disable-next-line:use-default-type-parameter
 moneyTransferTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/agent',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     ...[
         body('additionalProperty')
             .optional()
@@ -277,7 +275,7 @@ moneyTransferTransactionsRouter.put<ParamsDictionary>(
 
 moneyTransferTransactionsRouter.put(
     '/:transactionId/confirm',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -342,7 +340,7 @@ moneyTransferTransactionsRouter.put(
  */
 moneyTransferTransactionsRouter.put(
     '/:transactionId/cancel',
-    permitScopes([Permission.User, 'customer', 'transactions']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -418,15 +416,14 @@ moneyTransferTransactionsRouter.get(
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             const searchConditions: any = {
                 ...req.query,
-                project: { ids: [req.project.id] },
+                project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
                 typeOf: cinerino.factory.transactionType.MoneyTransfer
             };
             const transactions = await transactionRepo.search(searchConditions);
-            const totalCount = await transactionRepo.count(searchConditions);
-            res.set('X-Total-Count', totalCount.toString());
+
             res.json(transactions);
         } catch (error) {
             next(error);

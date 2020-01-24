@@ -18,6 +18,54 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v1.7.0 - 2020-01-24
+
+### Added
+
+- IAMメンバー更新エンドポイントを追加
+- 識別子での注文検索を追加
+
+### Changed
+
+- 以下権限を追加
+    - `accounts.transactions.deposit.write`
+    - `accounts.write`
+    - `actions.printTicket.*`
+    - `iam.members.write`
+    - `iam.members.profile.write`
+    - `iam.members.profile.read`
+    - `orders.create`
+    - `orders.deliver`
+    - `ownershipInfos.read`
+    - `ownershipInfos.actions.checkToken.read`
+    - `payment.any.write`
+    - `people.creditCards.delete`
+    - `people.delete`
+    - `people.profile.update`
+    - `reservations.read`
+    - `sellers.write`
+    - `tasks.create`
+
+- IAMメンバー作成時にロールを複数指定できるように拡張
+- 以下権限を削除
+    - `customer`
+    - `user`
+
+- /people/meリソース検索条件にプロジェクトIDを追加
+- ユーザープロフィールを部分的に更新できるように調整
+- 旧上映イベントルーターを汎用イベントルーターに統合
+- ストリーミング検索にタイムアウトを設定
+- COA管理のイベントに対しても、座席オファーと券種オファーを検索できるように調整
+- 注文ストリーミング検索の権限をプロジェクト所有者のみに限定
+- mongooseのsettersとvirtualsを無効化
+- 注文検索条件拡張
+- 各リソース検索からX-Total-Countを削除
+- 各リソースの正規表現検索についてcase insensitivityを無効化
+
+### Removed
+
+- アプリケーションルーターを削除
+
 ## v1.6.1 - 2020-01-15
 
 ### Fixed

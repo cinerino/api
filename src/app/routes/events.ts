@@ -14,10 +14,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-import { Permission } from '../iam';
-
-import screeningEventRouter from './events/screeningEvent';
-
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -28,15 +24,21 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 
 const eventsRouter = Router();
 
-eventsRouter.use('/screeningEvent', screeningEventRouter);
-
 /**
  * イベント検索
  */
 eventsRouter.get(
     '',
-    permitScopes([Permission.User, 'customer', 'events.*', 'events.read']),
+    permitScopes(['events.*', 'events.read']),
     rateLimit,
+    // 互換性維持のため
+    (req, _, next) => {
+        if (typeof req.query.typeOf !== 'string') {
+            req.query.typeOf = cinerino.factory.chevre.eventType.ScreeningEvent;
+        }
+
+        next();
+    },
     ...[
         query('inSessionFrom')
             .optional()
@@ -141,7 +143,7 @@ eventsRouter.get(
  */
 eventsRouter.get(
     '/:id',
-    permitScopes([Permission.User, 'customer', 'events.*', 'events.read']),
+    permitScopes(['events.*', 'events.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -191,7 +193,7 @@ eventsRouter.get(
  */
 eventsRouter.get(
     '/:id/offers',
-    permitScopes([Permission.User, 'customer', 'events.*', 'events.read']),
+    permitScopes(['events.*', 'events.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -220,7 +222,7 @@ eventsRouter.get(
 // tslint:disable-next-line:use-default-type-parameter
 eventsRouter.get<ParamsDictionary>(
     '/:id/offers/ticket',
-    permitScopes([Permission.User, 'customer', 'events.*', 'events.read']),
+    permitScopes(['events.*', 'events.read']),
     rateLimit,
     ...[
         query('seller')
@@ -243,7 +245,10 @@ eventsRouter.get<ParamsDictionary>(
                 project: req.project,
                 event: { id: req.params.id },
                 seller: req.query.seller,
-                store: req.query.store
+                store: req.query.store,
+                ...(req.query.movieTicket !== undefined && req.query.movieTicket !== null)
+                    ? { movieTicket: req.query.movieTicket }
+                    : {}
             })({
                 project: projectRepo,
                 seller: sellerRepo,

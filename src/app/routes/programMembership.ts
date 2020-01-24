@@ -9,8 +9,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-import { Permission } from '../iam';
-
 const programMembershipsRouter = Router();
 
 /**
@@ -18,7 +16,7 @@ const programMembershipsRouter = Router();
  */
 programMembershipsRouter.get(
     '',
-    permitScopes([Permission.User, 'customer', 'programMemberships.*', 'programMemberships.read']),
+    permitScopes(['programMemberships.*', 'programMemberships.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -33,10 +31,8 @@ programMembershipsRouter.get(
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
 
-            const totalCount = await programMembershipRepo.count(searchConditions);
             const programMemberships = await programMembershipRepo.search(searchConditions);
 
-            res.set('X-Total-Count', totalCount.toString());
             res.json(programMemberships);
         } catch (error) {
             next(error);
