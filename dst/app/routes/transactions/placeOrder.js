@@ -17,7 +17,6 @@ const createDebug = require("debug");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
-const moment = require("moment");
 const mongoose = require("mongoose");
 const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
@@ -25,6 +24,7 @@ const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
 const placeOrder4cinemasunshine_1 = require("./placeOrder4cinemasunshine");
+const connectMongo_1 = require("../../../connectMongo");
 const redis = require("../../../redis");
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
@@ -1025,51 +1025,56 @@ placeOrderTransactionsRouter.get('/:transactionId/actions', permitScopes_1.defau
 /**
  * 取引レポート
  */
-placeOrderTransactionsRouter.get('/report', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.get('/report', permitScopes_1.default([]), rateLimit_1.default, ...[
+    express_validator_1.query('startFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('startThrough')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('endFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('endThrough')
+        .optional()
+        .isISO8601()
+        .toDate()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    let connection;
     try {
-        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        const searchConditions = {
-            limit: undefined,
-            page: undefined,
-            project: { id: { $eq: req.project.id } },
-            typeOf: cinerino.factory.transactionType.PlaceOrder,
-            ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
-            statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,
-            startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom)
-                .toDate() : undefined,
-            startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough)
-                .toDate() : undefined,
-            endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom)
-                .toDate() : undefined,
-            endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough)
-                .toDate() : undefined,
-            agent: req.query.agent,
-            seller: req.query.seller,
-            object: req.query.object,
-            result: req.query.result
-        };
+        connection = yield connectMongo_1.connectMongo({
+            defaultConnection: false,
+            disableCheck: true
+        });
+        const transactionRepo = new cinerino.repository.Transaction(connection);
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
+            // tslint:disable-next-line:no-magic-numbers
+            limit: undefined, page: undefined, typeOf: cinerino.factory.transactionType.PlaceOrder });
         const format = req.query.format;
         const stream = yield cinerino.service.report.transaction.stream({
             conditions: searchConditions,
             format: format
         })({ transaction: transactionRepo });
         res.type(`${req.query.format}; charset=utf-8`);
-        stream.pipe(res);
-        // .on('error', async () => {
-        //     if (connection !== undefined) {
-        //         await connection.close();
-        //     }
-        // })
-        // .on('finish', async () => {
-        //     if (connection !== undefined) {
-        //         await connection.close();
-        //     }
-        // });
+        stream.pipe(res)
+            .on('error', () => __awaiter(void 0, void 0, void 0, function* () {
+            if (connection !== undefined) {
+                yield connection.close();
+            }
+        }))
+            .on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
+            if (connection !== undefined) {
+                yield connection.close();
+            }
+        }));
     }
     catch (error) {
-        // if (connection !== undefined) {
-        //     await connection.close();
-        // }
+        if (connection !== undefined) {
+            yield connection.close();
+        }
         next(error);
     }
 }));

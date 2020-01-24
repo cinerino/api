@@ -50,24 +50,6 @@ ordersRouter.get(
     '',
     permitScopes(['orders.*', 'orders.read']),
     rateLimit,
-    // 互換性維持のため
-    // (req, _, next) => {
-    //     const now = moment();
-
-    //     if (typeof req.query.orderDateThrough !== 'string') {
-    //         req.query.orderDateThrough = moment(now)
-    //             .toISOString();
-    //     }
-
-    //     if (typeof req.query.orderDateFrom !== 'string') {
-    //         req.query.orderDateFrom = moment(now)
-    //             // tslint:disable-next-line:no-magic-numbers
-    //             .add(-31, 'days') // とりあえず直近1カ月をデフォルト動作に設定
-    //             .toISOString();
-    //     }
-
-    //     next();
-    // },
     ...[
         query('disableTotalCount')
             .optional()
@@ -104,14 +86,10 @@ ordersRouter.get(
             .isString()
             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         query('orderDateFrom')
-            // .not()
-            // .isEmpty()
             .optional()
             .isISO8601()
             .toDate(),
         query('orderDateThrough')
-            // .not()
-            // .isEmpty()
             .optional()
             .isISO8601()
             .toDate(),
@@ -134,97 +112,6 @@ ordersRouter.get(
             .isISO8601()
             .toDate(),
         query('orderDate.$lte')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('acceptedOffers.itemOffered.reservationFor.startFrom')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('acceptedOffers.itemOffered.reservationFor.startThrough')
-            .optional()
-            .isISO8601()
-            .toDate()
-    ],
-    validator,
-    async (req, res, next) => {
-        try {
-            const orderRepo = new cinerino.repository.Order(mongoose.connection);
-
-            const searchConditions: cinerino.factory.order.ISearchConditions = {
-                ...req.query,
-                project: { id: { $eq: req.project.id } },
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
-            };
-
-            const orders = await orderRepo.search(searchConditions);
-
-            // const disableTotalCount = req.query.disableTotalCount === true;
-            // if (!disableTotalCount) {
-            //     const totalCount = await orderRepo.count(searchConditions);
-            //     res.set('X-Total-Count', totalCount.toString());
-            // }
-
-            res.json(orders);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
- * 注文検索v2
- */
-ordersRouter.get(
-    '/v2',
-    permitScopes(['orders.*', 'orders.read']),
-    rateLimit,
-    ...[
-        query('identifier.$all')
-            .optional()
-            .isArray(),
-        query('identifier.$in')
-            .optional()
-            .isArray(),
-        query('identifier.$all.*.name')
-            .optional()
-            .not()
-            .isEmpty()
-            .isString()
-            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        query('identifier.$all.*.value')
-            .optional()
-            .not()
-            .isEmpty()
-            .isString()
-            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        query('identifier.$in.*.name')
-            .optional()
-            .not()
-            .isEmpty()
-            .isString()
-            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        query('identifier.$in.*.value')
-            .optional()
-            .not()
-            .isEmpty()
-            .isString()
-            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        query('orderDateFrom')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('orderDateThrough')
             .optional()
             .isISO8601()
             .toDate(),
@@ -427,24 +314,6 @@ ordersRouter.get(
     '/download',
     permitScopes([]),
     rateLimit,
-    // 互換性維持のため
-    (req, _, next) => {
-        const now = moment();
-
-        if (typeof req.query.orderDateThrough !== 'string') {
-            req.query.orderDateThrough = moment(now)
-                .toISOString();
-        }
-
-        if (typeof req.query.orderDateFrom !== 'string') {
-            req.query.orderDateFrom = moment(now)
-                // tslint:disable-next-line:no-magic-numbers
-                .add(-31, 'days') // とりあえず直近1カ月をデフォルト動作に設定
-                .toISOString();
-        }
-
-        next();
-    },
     ...[
         query('orderDateFrom')
             .not()

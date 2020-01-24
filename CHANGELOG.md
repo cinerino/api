@@ -45,8 +45,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文ストリーミング検索の権限をプロジェクト所有者のみに限定
 - mongooseのsettersとvirtualsを無効化
 - 注文検索条件拡張
-- 注文検索のX-Total-Count無効化対応
-- 各リソースの正規表現検索についてcase  insensitivityを無効化
+- 各リソース検索からX-Total-Countを削除
+- 各リソースの正規表現検索についてcase insensitivityを無効化
 
 ### Deprecated
 

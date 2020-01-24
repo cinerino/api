@@ -46,23 +46,7 @@ const ordersRouter = express_1.Router();
 /**
  * 注文検索
  */
-ordersRouter.get('', permitScopes_1.default(['orders.*', 'orders.read']), rateLimit_1.default, 
-// 互換性維持のため
-// (req, _, next) => {
-//     const now = moment();
-//     if (typeof req.query.orderDateThrough !== 'string') {
-//         req.query.orderDateThrough = moment(now)
-//             .toISOString();
-//     }
-//     if (typeof req.query.orderDateFrom !== 'string') {
-//         req.query.orderDateFrom = moment(now)
-//             // tslint:disable-next-line:no-magic-numbers
-//             .add(-31, 'days') // とりあえず直近1カ月をデフォルト動作に設定
-//             .toISOString();
-//     }
-//     next();
-// },
-...[
+ordersRouter.get('', permitScopes_1.default(['orders.*', 'orders.read']), rateLimit_1.default, ...[
     express_validator_1.query('disableTotalCount')
         .optional()
         .isBoolean()
@@ -98,14 +82,10 @@ ordersRouter.get('', permitScopes_1.default(['orders.*', 'orders.read']), rateLi
         .isString()
         .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.query('orderDateFrom')
-        // .not()
-        // .isEmpty()
         .optional()
         .isISO8601()
         .toDate(),
     express_validator_1.query('orderDateThrough')
-        // .not()
-        // .isEmpty()
         .optional()
         .isISO8601()
         .toDate(),
@@ -127,82 +107,6 @@ ordersRouter.get('', permitScopes_1.default(['orders.*', 'orders.read']), rateLi
         .isISO8601()
         .toDate(),
     express_validator_1.query('orderDate.$lte')
-        .optional()
-        .isISO8601()
-        .toDate(),
-    express_validator_1.query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
-        .optional()
-        .isISO8601()
-        .toDate(),
-    express_validator_1.query('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
-        .optional()
-        .isISO8601()
-        .toDate(),
-    express_validator_1.query('acceptedOffers.itemOffered.reservationFor.startFrom')
-        .optional()
-        .isISO8601()
-        .toDate(),
-    express_validator_1.query('acceptedOffers.itemOffered.reservationFor.startThrough')
-        .optional()
-        .isISO8601()
-        .toDate()
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const orderRepo = new cinerino.repository.Order(mongoose.connection);
-        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
-            // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const orders = yield orderRepo.search(searchConditions);
-        // const disableTotalCount = req.query.disableTotalCount === true;
-        // if (!disableTotalCount) {
-        //     const totalCount = await orderRepo.count(searchConditions);
-        //     res.set('X-Total-Count', totalCount.toString());
-        // }
-        res.json(orders);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * 注文検索v2
- */
-ordersRouter.get('/v2', permitScopes_1.default(['orders.*', 'orders.read']), rateLimit_1.default, ...[
-    express_validator_1.query('identifier.$all')
-        .optional()
-        .isArray(),
-    express_validator_1.query('identifier.$in')
-        .optional()
-        .isArray(),
-    express_validator_1.query('identifier.$all.*.name')
-        .optional()
-        .not()
-        .isEmpty()
-        .isString()
-        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.query('identifier.$all.*.value')
-        .optional()
-        .not()
-        .isEmpty()
-        .isString()
-        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.query('identifier.$in.*.name')
-        .optional()
-        .not()
-        .isEmpty()
-        .isString()
-        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.query('identifier.$in.*.value')
-        .optional()
-        .not()
-        .isEmpty()
-        .isString()
-        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.query('orderDateFrom')
-        .optional()
-        .isISO8601()
-        .toDate(),
-    express_validator_1.query('orderDateThrough')
         .optional()
         .isISO8601()
         .toDate(),
@@ -366,22 +270,7 @@ ordersRouter.post('', permitScopes_1.default(['orders.*', 'orders.create']), rat
 /**
  * ストリーミングダウンロード
  */
-ordersRouter.get('/download', permitScopes_1.default([]), rateLimit_1.default, 
-// 互換性維持のため
-(req, _, next) => {
-    const now = moment();
-    if (typeof req.query.orderDateThrough !== 'string') {
-        req.query.orderDateThrough = moment(now)
-            .toISOString();
-    }
-    if (typeof req.query.orderDateFrom !== 'string') {
-        req.query.orderDateFrom = moment(now)
-            // tslint:disable-next-line:no-magic-numbers
-            .add(-31, 'days') // とりあえず直近1カ月をデフォルト動作に設定
-            .toISOString();
-    }
-    next();
-}, ...[
+ordersRouter.get('/download', permitScopes_1.default([]), rateLimit_1.default, ...[
     express_validator_1.query('orderDateFrom')
         .not()
         .isEmpty()

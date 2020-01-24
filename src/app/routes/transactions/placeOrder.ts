@@ -9,7 +9,6 @@ import { Router } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { body, query } from 'express-validator';
 import { CREATED, NO_CONTENT } from 'http-status';
-import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import lockTransaction from '../../middlewares/lockTransaction';
@@ -20,6 +19,7 @@ import validator from '../../middlewares/validator';
 
 import placeOrder4cinemasunshineRouter from './placeOrder4cinemasunshine';
 
+import { connectMongo } from '../../../connectMongo';
 import * as redis from '../../../redis';
 
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
@@ -1254,29 +1254,42 @@ placeOrderTransactionsRouter.get(
     '/report',
     permitScopes([]),
     rateLimit,
+    ...[
+        query('startFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('startThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('endFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('endThrough')
+            .optional()
+            .isISO8601()
+            .toDate()
+    ],
     validator,
     async (req, res, next) => {
+        let connection: mongoose.Connection | undefined;
+
         try {
-            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+            connection = await connectMongo({
+                defaultConnection: false,
+                disableCheck: true
+            });
+            const transactionRepo = new cinerino.repository.Transaction(connection);
+
             const searchConditions: cinerino.factory.transaction.ISearchConditions<cinerino.factory.transactionType.PlaceOrder> = {
+                ...req.query,
+                project: { id: { $eq: req.project.id } },
+                // tslint:disable-next-line:no-magic-numbers
                 limit: undefined,
                 page: undefined,
-                project: { id: { $eq: req.project.id } },
-                typeOf: cinerino.factory.transactionType.PlaceOrder,
-                ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
-                statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,
-                startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom)
-                    .toDate() : undefined,
-                startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough)
-                    .toDate() : undefined,
-                endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom)
-                    .toDate() : undefined,
-                endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough)
-                    .toDate() : undefined,
-                agent: req.query.agent,
-                seller: req.query.seller,
-                object: req.query.object,
-                result: req.query.result
+                typeOf: cinerino.factory.transactionType.PlaceOrder
             };
 
             const format = req.query.format;
@@ -1287,21 +1300,21 @@ placeOrderTransactionsRouter.get(
             })({ transaction: transactionRepo });
 
             res.type(`${req.query.format}; charset=utf-8`);
-            stream.pipe(res);
-            // .on('error', async () => {
-            //     if (connection !== undefined) {
-            //         await connection.close();
-            //     }
-            // })
-            // .on('finish', async () => {
-            //     if (connection !== undefined) {
-            //         await connection.close();
-            //     }
-            // });
+            stream.pipe(res)
+                .on('error', async () => {
+                    if (connection !== undefined) {
+                        await connection.close();
+                    }
+                })
+                .on('finish', async () => {
+                    if (connection !== undefined) {
+                        await connection.close();
+                    }
+                });
         } catch (error) {
-            // if (connection !== undefined) {
-            //     await connection.close();
-            // }
+            if (connection !== undefined) {
+                await connection.close();
+            }
 
             next(error);
         }
