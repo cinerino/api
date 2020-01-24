@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v1.7.0 - 2020-01-24
+
+### Added
+
 - IAMメンバー更新エンドポイントを追加
 - 識別子での注文検索を追加
 
@@ -48,15 +62,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 各リソース検索からX-Total-Countを削除
 - 各リソースの正規表現検索についてcase insensitivityを無効化
 
-### Deprecated
-
 ### Removed
 
 - アプリケーションルーターを削除
-
-### Fixed
-
-### Security
 
 ## v1.6.1 - 2020-01-15
 
