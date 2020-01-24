@@ -104,7 +104,7 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.*', 'reservatio
             auth: chevreAuthClient
         });
         const searchResult = yield reservationService.search(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, typeOf: cinerino.factory.chevre.reservationType.EventReservation }));
-        res.set('X-Total-Count', searchResult.totalCount.toString());
+        // res.set('X-Total-Count', searchResult.totalCount.toString());
         res.json(searchResult.data);
     }
     catch (error) {

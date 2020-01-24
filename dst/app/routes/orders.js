@@ -153,11 +153,11 @@ ordersRouter.get('', permitScopes_1.default(['orders.*', 'orders.read']), rateLi
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         const orders = yield orderRepo.search(searchConditions);
-        const disableTotalCount = req.query.disableTotalCount === true;
-        if (!disableTotalCount) {
-            const totalCount = yield orderRepo.count(searchConditions);
-            res.set('X-Total-Count', totalCount.toString());
-        }
+        // const disableTotalCount = req.query.disableTotalCount === true;
+        // if (!disableTotalCount) {
+        //     const totalCount = await orderRepo.count(searchConditions);
+        //     res.set('X-Total-Count', totalCount.toString());
+        // }
         res.json(orders);
     }
     catch (error) {

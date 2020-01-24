@@ -169,11 +169,11 @@ ordersRouter.get(
 
             const orders = await orderRepo.search(searchConditions);
 
-            const disableTotalCount = req.query.disableTotalCount === true;
-            if (!disableTotalCount) {
-                const totalCount = await orderRepo.count(searchConditions);
-                res.set('X-Total-Count', totalCount.toString());
-            }
+            // const disableTotalCount = req.query.disableTotalCount === true;
+            // if (!disableTotalCount) {
+            //     const totalCount = await orderRepo.count(searchConditions);
+            //     res.set('X-Total-Count', totalCount.toString());
+            // }
 
             res.json(orders);
         } catch (error) {
