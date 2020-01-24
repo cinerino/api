@@ -22,6 +22,7 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
+const connectMongo_1 = require("../../connectMongo");
 const redis = require("../../redis");
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
@@ -347,8 +348,13 @@ ordersRouter.get('/download', permitScopes_1.default([]), rateLimit_1.default,
         .isISO8601()
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    let connection;
     try {
-        const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        connection = yield connectMongo_1.connectMongo({
+            defaultConnection: false,
+            disableCheck: true
+        });
+        const orderRepo = new cinerino.repository.Order(connection);
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } });
         const format = req.query.format;
         const stream = yield cinerino.service.report.order.stream({
@@ -356,22 +362,22 @@ ordersRouter.get('/download', permitScopes_1.default([]), rateLimit_1.default,
             format: format
         })({ order: orderRepo });
         res.type(`${req.query.format}; charset=utf-8`);
-        stream.pipe(res);
-        // .on('error', async () => {
-        //     if (connection !== undefined) {
-        //         await connection.close();
-        //     }
-        // })
-        // .on('finish', async () => {
-        //     if (connection !== undefined) {
-        //         await connection.close();
-        //     }
-        // });
+        stream.pipe(res)
+            .on('error', () => __awaiter(void 0, void 0, void 0, function* () {
+            if (connection !== undefined) {
+                yield connection.close();
+            }
+        }))
+            .on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
+            if (connection !== undefined) {
+                yield connection.close();
+            }
+        }));
     }
     catch (error) {
-        // if (connection !== undefined) {
-        //     await connection.close();
-        // }
+        if (connection !== undefined) {
+            yield connection.close();
+        }
         next(error);
     }
 }));
