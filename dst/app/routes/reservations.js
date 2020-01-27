@@ -112,6 +112,32 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.*', 'reservatio
     }
 }));
 /**
+ * ストリーミングダウンロード
+ */
+reservationsRouter.get('/download', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        if (project.settings.chevre === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+        }
+        // クエリをそのままChevre検索へパス
+        const reservationService = new cinerino.chevre.service.Reservation({
+            endpoint: project.settings.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const stream = yield reservationService.download(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] } }));
+        res.type(`${req.query.format}; charset=utf-8`);
+        stream.pipe(res);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
  * トークンで予約照会
  */
 reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitScopes_1.default(['reservations.read', 'reservations.findByToken']), rateLimit_1.default, ...[

@@ -127,6 +127,43 @@ reservationsRouter.get(
 );
 
 /**
+ * ストリーミングダウンロード
+ */
+reservationsRouter.get(
+    '/download',
+    permitScopes([]),
+    rateLimit,
+    validator,
+    async (req, res, next) => {
+        try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+            if (project.settings.chevre === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+            }
+
+            // クエリをそのままChevre検索へパス
+            const reservationService = new cinerino.chevre.service.Reservation({
+                endpoint: project.settings.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const stream = <NodeJS.ReadableStream>await reservationService.download({
+                ...req.query,
+                project: { ids: [req.project.id] }
+            });
+
+            res.type(`${req.query.format}; charset=utf-8`);
+            stream.pipe(res);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
  * トークンで予約照会
  */
 reservationsRouter.post(
