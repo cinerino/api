@@ -56,4 +56,16 @@ healthRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         next(error);
     }
 }));
+// healthRouter.get(
+//     '/closeMongo',
+//     async (req, res, next) => {
+//         try {
+//             await mongoose.connection.close();
+//             res.status(OK)
+//                 .send('healthy!');
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 exports.default = healthRouter;
