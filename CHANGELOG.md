@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文検索条件拡張
 - 注文CSVレポート拡張
 - String型のseatingTypeに対応
+- 座席タイプチャージを予約の価格要素に追加
 
 ### Deprecated
 
