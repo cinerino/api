@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文CSVレポート拡張
 - String型のseatingTypeに対応
 - 座席タイプチャージを予約の価格要素に追加
+- 座席順が異なっていてもCOA座席予約の券種を変更できるように調整
 
 ### Deprecated
 
