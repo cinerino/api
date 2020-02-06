@@ -126,7 +126,7 @@ reservationsRouter.get('/download', permitScopes_1.default([]), rateLimit_1.defa
         }
         // クエリをそのままChevre検索へパス
         const reservationService = new cinerino.chevre.service.Reservation({
-            endpoint: project.settings.chevre.endpoint,
+            endpoint: process.env.CHEVRE_STREAMING_API_ENDPOINT,
             auth: chevreAuthClient
         });
         const stream = yield reservationService.download(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] } }));

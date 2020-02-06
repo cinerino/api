@@ -147,7 +147,7 @@ reservationsRouter.get(
 
             // クエリをそのままChevre検索へパス
             const reservationService = new cinerino.chevre.service.Reservation({
-                endpoint: project.settings.chevre.endpoint,
+                endpoint: <string>process.env.CHEVRE_STREAMING_API_ENDPOINT,
                 auth: chevreAuthClient
             });
             const stream = <NodeJS.ReadableStream>await reservationService.download({
