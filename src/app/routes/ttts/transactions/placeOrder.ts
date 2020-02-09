@@ -13,6 +13,14 @@ import validator from '../../../middlewares/validator';
 
 // import * as redis from '../../../../redis';
 
+const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials({
+    domain: <string>process.env.MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.MVTK_RESERVE_CLIENT_ID,
+    clientSecret: <string>process.env.MVTK_RESERVE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+
 /**
  * 座席仮予約
  */
@@ -42,12 +50,17 @@ placeOrderTransactionsRouter.post(
                         };
                     })
                 }
-            })(
-                new cinerino.repository.Action(mongoose.connection),
-                // new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()),
-                new cinerino.repository.Transaction(mongoose.connection),
-                new cinerino.repository.Project(mongoose.connection)
-            );
+            })({
+                action: new cinerino.repository.Action(mongoose.connection),
+                movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
+                    endpoint: '',
+                    auth: mvtkReserveAuthClient
+                }),
+                project: new cinerino.repository.Project(mongoose.connection),
+                seller: new cinerino.repository.Seller(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection),
+                event: new cinerino.repository.Event(mongoose.connection)
+            });
 
             res.status(CREATED)
                 .json(action);

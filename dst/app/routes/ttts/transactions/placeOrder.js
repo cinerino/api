@@ -20,6 +20,13 @@ const placeOrderTransactionsRouter = express_1.Router();
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const validator_1 = require("../../../middlewares/validator");
 // import * as redis from '../../../../redis';
+const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials({
+    domain: process.env.MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.MVTK_RESERVE_CLIENT_ID,
+    clientSecret: process.env.MVTK_RESERVE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 /**
  * 座席仮予約
  */
@@ -43,9 +50,17 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
                     };
                 })
             }
-        })(new cinerino.repository.Action(mongoose.connection), 
-        // new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()),
-        new cinerino.repository.Transaction(mongoose.connection), new cinerino.repository.Project(mongoose.connection));
+        })({
+            action: new cinerino.repository.Action(mongoose.connection),
+            movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
+                endpoint: '',
+                auth: mvtkReserveAuthClient
+            }),
+            project: new cinerino.repository.Project(mongoose.connection),
+            seller: new cinerino.repository.Seller(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection),
+            event: new cinerino.repository.Event(mongoose.connection)
+        });
         res.status(http_status_1.CREATED)
             .json(action);
     }
