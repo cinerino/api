@@ -13,6 +13,14 @@ import validator from '../../../middlewares/validator';
 
 // import * as redis from '../../../../redis';
 
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+
 const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials({
     domain: <string>process.env.MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.MVTK_RESERVE_CLIENT_ID,
@@ -30,30 +38,74 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+
             if (!Array.isArray(req.body.offers)) {
                 req.body.offers = [];
             }
 
-            const performanceId: string = req.body.performance_id;
+            const eventId: string = req.body.performance_id;
+            const offers: {
+                /**
+                 * チケットコード(オファーIDではない)
+                 */
+                ticket_type: string;
+                /**
+                 * 予約メモ
+                 */
+                watcher_name: string;
+            }[] = req.body.offers;
+
+            // チケットオファー検索
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined
+                || project.settings.chevre === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+            const eventService = new cinerino.chevre.service.Event({
+                endpoint: project.settings.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const ticketOffers = await eventService.searchTicketOffers({ id: eventId });
+
+            // Cinerino本家のacceptedOfferへ変換
+            const acceptedOffer: cinerino.factory.action.authorize.offer.seatReservation.IAcceptedOfferWithoutDetail4chevre[]
+                = offers.map((offer) => {
+                    const ticketOffer = ticketOffers.find((t) => t.identifier === offer.ticket_type);
+                    if (ticketOffer === undefined) {
+                        throw new cinerino.factory.errors.NotFound('Offer', `Offer ${offer.ticket_type} not found`);
+                    }
+
+                    return {
+                        id: ticketOffer.id, // オファーID
+                        itemOffered: {
+                            serviceOutput: {
+                                typeOf: cinerino.factory.chevre.reservationType.EventReservation,
+                                additionalTicketText: offer.watcher_name // 予約メモ
+                            }
+                        },
+                        additionalProperty: []
+                    };
+                });
 
             const action = await cinerino.service.offer.seatReservation4ttts.create({
                 project: req.project,
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId },
                 object: {
-                    event: { id: performanceId },
-                    acceptedOffer: [],
-                    acceptedOffers: (<any[]>req.body.offers).map((offer) => {
-                        return {
-                            ticket_type: offer.ticket_type,
-                            watcher_name: offer.watcher_name
-                        };
-                    })
+                    event: { id: eventId },
+                    acceptedOffer: acceptedOffer
+                    // acceptedOffers: offers.map((offer) => {
+                    //     return {
+                    //         ticket_type: offer.ticket_type,
+                    //         watcher_name: offer.watcher_name
+                    //     };
+                    // })
                 }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                    endpoint: '',
+                    endpoint: '', // ムビチケ使用しないのでこれで問題ない
                     auth: mvtkReserveAuthClient
                 }),
                 project: new cinerino.repository.Project(mongoose.connection),
@@ -72,6 +124,7 @@ placeOrderTransactionsRouter.post(
 
 /**
  * 座席仮予約削除
+ * @deprecated Use /transactions/PlaceOrder/:transactionId/actions/authorize/offer/seatReservation/:actionId/cancel
  */
 placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
@@ -79,17 +132,16 @@ placeOrderTransactionsRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await cinerino.service.offer.seatReservation4ttts.cancel({
+            await cinerino.service.offer.seatReservation.cancel({
                 project: req.project,
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId },
                 id: req.params.actionId
-            })(
-                new cinerino.repository.Transaction(mongoose.connection),
-                new cinerino.repository.Action(mongoose.connection),
-                // new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()),
-                new cinerino.repository.Project(mongoose.connection)
-            );
+            })({
+                action: new cinerino.repository.Action(mongoose.connection),
+                project: new cinerino.repository.Project(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
+            });
 
             res.status(NO_CONTENT)
                 .end();
