@@ -88,7 +88,8 @@ placeOrderTransactionsRouter.post(
                     };
                 });
 
-            const action = await cinerino.service.offer.seatReservation4ttts.create({
+            const action = await cinerino.service.offer.seatReservation.create({
+                autoSeatSelection: true,
                 project: req.project,
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId },

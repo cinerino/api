@@ -73,7 +73,8 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
                 additionalProperty: []
             };
         });
-        const action = yield cinerino.service.offer.seatReservation4ttts.create({
+        const action = yield cinerino.service.offer.seatReservation.create({
+            autoSeatSelection: true,
             project: req.project,
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId },
