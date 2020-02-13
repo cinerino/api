@@ -19,7 +19,6 @@ const mongoose = require("mongoose");
 const placeOrderTransactionsRouter = express_1.Router();
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const validator_1 = require("../../../middlewares/validator");
-// import * as redis from '../../../../redis';
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -81,12 +80,6 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             object: {
                 event: { id: eventId },
                 acceptedOffer: acceptedOffer
-                // acceptedOffers: offers.map((offer) => {
-                //     return {
-                //         ticket_type: offer.ticket_type,
-                //         watcher_name: offer.watcher_name
-                //     };
-                // })
             }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
