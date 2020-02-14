@@ -125,7 +125,15 @@ ordersRouter.get('', permitScopes_1.default(['orders.*', 'orders.read']), rateLi
     express_validator_1.query('acceptedOffers.itemOffered.reservationFor.startThrough')
         .optional()
         .isISO8601()
-        .toDate()
+        .toDate(),
+    express_validator_1.query('price.$gte')
+        .optional()
+        .isInt()
+        .toInt(),
+    express_validator_1.query('price.$lte')
+        .optional()
+        .isInt()
+        .toInt()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const orderRepo = new cinerino.repository.Order(mongoose.connection);

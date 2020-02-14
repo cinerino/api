@@ -130,7 +130,15 @@ ordersRouter.get(
         query('acceptedOffers.itemOffered.reservationFor.startThrough')
             .optional()
             .isISO8601()
-            .toDate()
+            .toDate(),
+        query('price.$gte')
+            .optional()
+            .isInt()
+            .toInt(),
+        query('price.$lte')
+            .optional()
+            .isInt()
+            .toInt()
     ],
     validator,
     async (req, res, next) => {
