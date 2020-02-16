@@ -3,7 +3,7 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
-import { CREATED, NO_CONTENT } from 'http-status';
+import { CREATED } from 'http-status';
 import * as mongoose from 'mongoose';
 
 const placeOrderTransactionsRouter = Router();
@@ -27,6 +27,17 @@ const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials
     state: ''
 });
 
+export interface IAcceptedOffer4ttts {
+    /**
+     * チケットコード(オファーIDではない)
+     */
+    ticket_type: string;
+    /**
+     * 予約メモ
+     */
+    watcher_name: string;
+}
+
 /**
  * 座席仮予約
  */
@@ -43,16 +54,7 @@ placeOrderTransactionsRouter.post(
             }
 
             const eventId: string = req.body.performance_id;
-            const offers: {
-                /**
-                 * チケットコード(オファーIDではない)
-                 */
-                ticket_type: string;
-                /**
-                 * 予約メモ
-                 */
-                watcher_name: string;
-            }[] = req.body.offers;
+            const offers: IAcceptedOffer4ttts[] = req.body.offers;
 
             // チケットオファー検索
             const project = await projectRepo.findById({ id: req.project.id });
@@ -109,35 +111,6 @@ placeOrderTransactionsRouter.post(
 
             res.status(CREATED)
                 .json(action);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
- * 座席仮予約削除
- * @deprecated Use /transactions/PlaceOrder/:transactionId/actions/authorize/offer/seatReservation/:actionId/cancel
- */
-placeOrderTransactionsRouter.delete(
-    '/:transactionId/actions/authorize/seatReservation/:actionId',
-    permitScopes(['transactions', 'pos']),
-    validator,
-    async (req, res, next) => {
-        try {
-            await cinerino.service.offer.seatReservation.cancel({
-                project: req.project,
-                agent: { id: req.user.sub },
-                transaction: { id: req.params.transactionId },
-                id: req.params.actionId
-            })({
-                action: new cinerino.repository.Action(mongoose.connection),
-                project: new cinerino.repository.Project(mongoose.connection),
-                transaction: new cinerino.repository.Transaction(mongoose.connection)
-            });
-
-            res.status(NO_CONTENT)
-                .end();
         } catch (error) {
             next(error);
         }

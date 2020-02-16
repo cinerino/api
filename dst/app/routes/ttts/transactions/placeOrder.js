@@ -99,27 +99,4 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
         next(error);
     }
 }));
-/**
- * 座席仮予約削除
- * @deprecated Use /transactions/PlaceOrder/:transactionId/actions/authorize/offer/seatReservation/:actionId/cancel
- */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['transactions', 'pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        yield cinerino.service.offer.seatReservation.cancel({
-            project: req.project,
-            agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId },
-            id: req.params.actionId
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection)
-        });
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
 exports.default = placeOrderTransactionsRouter;
