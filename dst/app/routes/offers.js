@@ -83,7 +83,7 @@ if (process.env.USE_MONEY_TRANSFER === '1') {
                 project: req.project,
                 object: {
                     project: req.project,
-                    typeOf: 'Offer',
+                    typeOf: cinerino.factory.chevre.offerType.Offer,
                     itemOffered: {
                         typeOf: 'MonetaryAmount',
                         value: Number(req.body.object.itemOffered.value),
