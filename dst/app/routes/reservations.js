@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
-const moment = require("moment");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
@@ -31,61 +30,21 @@ const reservationsRouter = express_1.Router();
 /**
  * 管理者として予約検索
  */
-reservationsRouter.get('', permitScopes_1.default(['reservations.*', 'reservations.read']), rateLimit_1.default, (req, _, next) => {
-    const now = moment();
-    if (typeof req.query.bookingThrough !== 'string') {
-        req.query.bookingThrough = moment(now)
-            .toISOString();
-    }
-    if (typeof req.query.bookingFrom !== 'string') {
-        req.query.bookingFrom = moment(now)
-            // tslint:disable-next-line:no-magic-numbers
-            .add(-31, 'days') // とりあえず直近1カ月をデフォルト動作に設定
-            .toISOString();
-    }
-    if (typeof req.query.modifiedThrough !== 'string') {
-        req.query.modifiedThrough = moment(now)
-            .toISOString();
-    }
-    if (typeof req.query.modifiedFrom !== 'string') {
-        req.query.modifiedFrom = moment(now)
-            // tslint:disable-next-line:no-magic-numbers
-            .add(-6, 'months') // とりあえず直近6カ月をデフォルト動作に設定
-            .toISOString();
-    }
-    next();
-}, ...[
+reservationsRouter.get('', permitScopes_1.default(['reservations.*', 'reservations.read']), rateLimit_1.default, ...[
     express_validator_1.query('bookingFrom')
-        .not()
-        .isEmpty()
+        .optional()
         .isISO8601()
         .toDate(),
     express_validator_1.query('bookingThrough')
-        .not()
-        .isEmpty()
+        .optional()
         .isISO8601()
-        .toDate()
-        .custom((value, { req }) => {
-        // 期間指定を限定
-        const bookingThrough = moment(value);
-        if (req.query !== undefined) {
-            const bookingThroughExpectedToBe = moment(req.query.bookingFrom)
-                // tslint:disable-next-line:no-magic-numbers
-                .add(31, 'days');
-            if (bookingThrough.isAfter(bookingThroughExpectedToBe)) {
-                throw new Error('Booking time range too large');
-            }
-        }
-        return true;
-    }),
+        .toDate(),
     express_validator_1.query('modifiedFrom')
-        .not()
-        .isEmpty()
+        .optional()
         .isISO8601()
         .toDate(),
     express_validator_1.query('modifiedThrough')
-        .not()
-        .isEmpty()
+        .optional()
         .isISO8601()
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {

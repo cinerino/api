@@ -89,19 +89,6 @@ ordersRouter.get('', permitScopes_1.default(['orders.*', 'orders.read']), rateLi
         .optional()
         .isISO8601()
         .toDate(),
-    // .custom((value, { req }) => {
-    //     // 注文期間指定を限定
-    //     const orderDateThrough = moment(value);
-    //     if (req.query !== undefined) {
-    //         const orderDateThroughExpectedToBe = moment(req.query.orderDateFrom)
-    //             // tslint:disable-next-line:no-magic-numbers
-    //             .add(31, 'days');
-    //         if (orderDateThrough.isAfter(orderDateThroughExpectedToBe)) {
-    //             throw new Error('Order date range too large');
-    //         }
-    //     }
-    //     return true;
-    // }),
     express_validator_1.query('orderDate.$gte')
         .optional()
         .isISO8601()
@@ -279,14 +266,46 @@ ordersRouter.post('', permitScopes_1.default(['orders.*', 'orders.create']), rat
  * ストリーミングダウンロード
  */
 ordersRouter.get('/download', permitScopes_1.default([]), rateLimit_1.default, ...[
-    express_validator_1.query('orderDateFrom')
+    express_validator_1.query('disableTotalCount')
+        .optional()
+        .isBoolean()
+        .toBoolean(),
+    express_validator_1.query('identifier.$all')
+        .optional()
+        .isArray(),
+    express_validator_1.query('identifier.$in')
+        .optional()
+        .isArray(),
+    express_validator_1.query('identifier.$all.*.name')
+        .optional()
         .not()
         .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.query('identifier.$all.*.value')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.query('identifier.$in.*.name')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.query('identifier.$in.*.value')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.query('orderDateFrom')
+        .optional()
         .isISO8601()
         .toDate(),
     express_validator_1.query('orderDateThrough')
-        .not()
-        .isEmpty()
+        .optional()
         .isISO8601()
         .toDate(),
     express_validator_1.query('orderDate.$gte')
@@ -312,7 +331,15 @@ ordersRouter.get('/download', permitScopes_1.default([]), rateLimit_1.default, .
     express_validator_1.query('acceptedOffers.itemOffered.reservationFor.startThrough')
         .optional()
         .isISO8601()
-        .toDate()
+        .toDate(),
+    express_validator_1.query('price.$gte')
+        .optional()
+        .isInt()
+        .toInt(),
+    express_validator_1.query('price.$lte')
+        .optional()
+        .isInt()
+        .toInt()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     let connection;
     try {
