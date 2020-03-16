@@ -233,6 +233,9 @@ iamMembersRouter.put('/:id', permitScopes_1.default(['iam.members.write']), rate
         .not()
         .isEmpty()
         .withMessage(() => 'required'),
+    express_validator_1.body('member.name')
+        .optional()
+        .isString(),
     express_validator_1.body('member.hasRole')
         .not()
         .isEmpty()
@@ -244,6 +247,7 @@ iamMembersRouter.put('/:id', permitScopes_1.default(['iam.members.write']), rate
         .withMessage(() => 'required')
         .isString()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         // ロールを作成
@@ -254,6 +258,7 @@ iamMembersRouter.put('/:id', permitScopes_1.default(['iam.members.write']), rate
                 memberOf: { typeOf: req.project.typeOf, id: req.project.id }
             };
         });
+        const name = (_a = req.body.member) === null || _a === void 0 ? void 0 : _a.name;
         const doc = yield memberRepo.memberModel.findOneAndUpdate({
             'member.id': {
                 $eq: req.params.id
@@ -261,9 +266,7 @@ iamMembersRouter.put('/:id', permitScopes_1.default(['iam.members.write']), rate
             'project.id': {
                 $eq: req.project.id
             }
-        }, {
-            'member.hasRole': roles
-        })
+        }, Object.assign({ 'member.hasRole': roles }, (typeof name === 'string') ? { 'member.name': name } : undefined))
             .exec();
         if (doc === null) {
             throw new cinerino.factory.errors.NotFound(memberRepo.memberModel.modelName);
