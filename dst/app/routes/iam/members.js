@@ -225,7 +225,7 @@ iamMembersRouter.get('/:id', permitScopes_1.default(['iam.members.read']), rateL
     }
 }));
 /**
- * プロジェクトメンバーのロール更新
+ * プロジェクトメンバー更新
  */
 // tslint:disable-next-line:use-default-type-parameter
 iamMembersRouter.put('/:id', permitScopes_1.default(['iam.members.write']), rateLimit_1.default, ...[
