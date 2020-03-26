@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - COAリクエストにタイムアウト設定
 - タスク実行中止時の通知メッセージ調整
 - 予約承認時のエラーハンドリングを調整
+- COAイベントインポート時にxmlを参照しないように調整
 
 ### Deprecated
 
