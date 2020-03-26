@@ -4,218 +4,172 @@
 import * as cinerino from '@cinerino/domain';
 import * as middlewares from '@motionpicture/express-middleware';
 import { Router } from 'express';
-import { body, query } from 'express-validator';
-import { CREATED, NO_CONTENT } from 'http-status';
+import { body } from 'express-validator';
+import { NO_CONTENT } from 'http-status';
 import * as ioredis from 'ioredis';
 import * as mongoose from 'mongoose';
 
-import * as redis from '../../redis';
+// import * as redis from '../../redis';
 
 import permitScopes from '../middlewares/permitScopes';
-import rateLimit from '../middlewares/rateLimit';
+// import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
-    domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.PECORINO_CLIENT_ID,
-    clientSecret: <string>process.env.PECORINO_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
+// const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
+//     domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
+//     clientId: <string>process.env.PECORINO_CLIENT_ID,
+//     clientSecret: <string>process.env.PECORINO_CLIENT_SECRET,
+//     scopes: [],
+//     state: ''
+// });
 
 const accountsRouter = Router();
 
 /**
  * 管理者として口座開設
  */
-accountsRouter.post(
-    '',
-    permitScopes(['accounts.*', 'accounts.write']),
-    ...[
-        body('accountType', 'invalid accountType')
-            .not()
-            .isEmpty(),
-        body('name', 'invalid name')
-            .not()
-            .isEmpty()
-    ],
-    rateLimit,
-    validator,
-    async (req, res, next) => {
-        try {
-            const account = await cinerino.service.account.openWithoutOwnershipInfo({
-                project: req.project,
-                accountType: req.body.accountType,
-                name: req.body.name
-            })({
-                accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
-                project: new cinerino.repository.Project(mongoose.connection)
-            });
+// accountsRouter.post(
+//     '',
+//     permitScopes(['accounts.*', 'accounts.write']),
+//     ...[
+//         body('accountType', 'invalid accountType')
+//             .not()
+//             .isEmpty(),
+//         body('name', 'invalid name')
+//             .not()
+//             .isEmpty()
+//     ],
+//     rateLimit,
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             const account = await cinerino.service.account.openWithoutOwnershipInfo({
+//                 project: req.project,
+//                 accountType: req.body.accountType,
+//                 name: req.body.name
+//             })({
+//                 accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
+//                 project: new cinerino.repository.Project(mongoose.connection)
+//             });
 
-            res.status(CREATED)
-                .json(account);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
+//             res.status(CREATED)
+//                 .json(account);
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 
 /**
  * 管理者として口座解約
  */
-accountsRouter.put(
-    '/:accountType/:accountNumber/close',
-    permitScopes(['accounts.*', 'accounts.write']),
-    rateLimit,
-    validator,
-    async (req, res, next) => {
-        try {
-            await cinerino.service.account.close({
-                project: req.project,
-                accountType: <cinerino.factory.accountType>req.params.accountType,
-                accountNumber: req.params.accountNumber
-            })({
-                ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
-                project: new cinerino.repository.Project(mongoose.connection)
-            });
+// accountsRouter.put(
+//     '/:accountType/:accountNumber/close',
+//     permitScopes(['accounts.*', 'accounts.write']),
+//     rateLimit,
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             await cinerino.service.account.close({
+//                 project: req.project,
+//                 accountType: <cinerino.factory.accountType>req.params.accountType,
+//                 accountNumber: req.params.accountNumber
+//             })({
+//                 ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
+//                 project: new cinerino.repository.Project(mongoose.connection)
+//             });
 
-            res.status(NO_CONTENT)
-                .end();
-        } catch (error) {
-            next(error);
-        }
-    }
-);
+//             res.status(NO_CONTENT)
+//                 .end();
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 
 /**
  * 口座検索
  */
-accountsRouter.get(
-    '',
-    permitScopes(['accounts.*', 'accounts.read']),
-    rateLimit,
-    ...[
-        query('accountType', 'invalid accountType')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-        // query('bookingFrom')
-        //     .not()
-        //     .isEmpty()
-        //     .isISO8601()
-        //     .toDate(),
-        // query('bookingThrough')
-        //     .not()
-        //     .isEmpty()
-        //     .isISO8601()
-        //     .toDate()
-        //     .custom((value, { req }) => {
-        //         // 期間指定を限定
-        //         const bookingThrough = moment(value);
-        //         if (req.query !== undefined) {
-        //             const bookingThroughExpectedToBe = moment(req.query.bookingFrom)
-        //                 .add(1, 'months');
-        //             if (bookingThrough.isAfter(bookingThroughExpectedToBe)) {
-        //                 throw new Error('Booking time range too large');
-        //             }
-        //         }
+// accountsRouter.get(
+//     '',
+//     permitScopes(['accounts.*', 'accounts.read']),
+//     rateLimit,
+//     ...[
+//         query('accountType', 'invalid accountType')
+//             .not()
+//             .isEmpty()
+//             .withMessage(() => 'required')
+//     ],
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             const projectRepo = new cinerino.repository.Project(mongoose.connection);
+//             const project = await projectRepo.findById({ id: req.project.id });
+//             if (project.settings === undefined) {
+//                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+//             }
+//             if (project.settings.pecorino === undefined) {
+//                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+//             }
 
-        //         return true;
-        //     })
-    ],
-    validator,
-    async (req, res, next) => {
-        try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-            }
-            if (project.settings.pecorino === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-            }
+//             // クエリをそのままPecorino検索へパス
+//             const accountService = new cinerino.pecorinoapi.service.Account({
+//                 endpoint: project.settings.pecorino.endpoint,
+//                 auth: pecorinoAuthClient
+//             });
+//             const searchResult = await accountService.search({
+//                 ...req.query,
+//                 project: { id: { $eq: req.project.id } }
+//             });
 
-            // クエリをそのままPecorino検索へパス
-            const accountService = new cinerino.pecorinoapi.service.Account({
-                endpoint: project.settings.pecorino.endpoint,
-                auth: pecorinoAuthClient
-            });
-            const searchResult = await accountService.search({
-                ...req.query,
-                project: { id: { $eq: req.project.id } }
-            });
-
-            res.json(searchResult.data);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
+//             res.json(searchResult.data);
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 
 /**
  * 取引履歴検索
  */
-accountsRouter.get(
-    '/actions/moneyTransfer',
-    permitScopes(['accounts.*', 'accounts.read']),
-    rateLimit,
-    ...[
-        query('accountType', 'invalid accountType')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-        // query('bookingFrom')
-        //     .not()
-        //     .isEmpty()
-        //     .isISO8601()
-        //     .toDate(),
-        // query('bookingThrough')
-        //     .not()
-        //     .isEmpty()
-        //     .isISO8601()
-        //     .toDate()
-        //     .custom((value, { req }) => {
-        //         // 期間指定を限定
-        //         const bookingThrough = moment(value);
-        //         if (req.query !== undefined) {
-        //             const bookingThroughExpectedToBe = moment(req.query.bookingFrom)
-        //                 .add(1, 'months');
-        //             if (bookingThrough.isAfter(bookingThroughExpectedToBe)) {
-        //                 throw new Error('Booking time range too large');
-        //             }
-        //         }
+// accountsRouter.get(
+//     '/actions/moneyTransfer',
+//     permitScopes(['accounts.*', 'accounts.read']),
+//     rateLimit,
+//     ...[
+//         query('accountType', 'invalid accountType')
+//             .not()
+//             .isEmpty()
+//             .withMessage(() => 'required')
+//     ],
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             const projectRepo = new cinerino.repository.Project(mongoose.connection);
+//             const project = await projectRepo.findById({ id: req.project.id });
+//             if (project.settings === undefined) {
+//                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+//             }
+//             if (project.settings.pecorino === undefined) {
+//                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+//             }
 
-        //         return true;
-        //     })
-    ],
-    validator,
-    async (req, res, next) => {
-        try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-            }
-            if (project.settings.pecorino === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-            }
+//             // クエリをそのままPecorino検索へパス
+//             const actionService = new cinerino.pecorinoapi.service.Action({
+//                 endpoint: project.settings.pecorino.endpoint,
+//                 auth: pecorinoAuthClient
+//             });
+//             const searchResult = await actionService.searchMoneyTransferActions({
+//                 ...req.query,
+//                 project: { id: { $eq: req.project.id } }
+//             });
 
-            // クエリをそのままPecorino検索へパス
-            const actionService = new cinerino.pecorinoapi.service.Action({
-                endpoint: project.settings.pecorino.endpoint,
-                auth: pecorinoAuthClient
-            });
-            const searchResult = await actionService.searchMoneyTransferActions({
-                ...req.query,
-                project: { id: { $eq: req.project.id } }
-            });
-
-            res.json(searchResult.data);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
+//             res.json(searchResult.data);
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 
 // tslint:disable-next-line:no-magic-numbers
 const UNIT_IN_SECONDS = 1;
