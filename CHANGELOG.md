@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - タスク実行中止時の通知メッセージ調整
 - 予約承認時のエラーハンドリングを調整
 - COAイベントインポート時にxmlを参照しないように調整
+- MongoDBコネクション監視調整
 
 ### Deprecated
 
