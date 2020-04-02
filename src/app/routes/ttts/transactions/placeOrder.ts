@@ -77,7 +77,7 @@ placeOrderTransactionsRouter.post(
                     }
 
                     return {
-                        id: ticketOffer.id, // オファーID
+                        id: <string>ticketOffer.id, // オファーID
                         itemOffered: {
                             serviceOutput: {
                                 typeOf: cinerino.factory.chevre.reservationType.EventReservation,
