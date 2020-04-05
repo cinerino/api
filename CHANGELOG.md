@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 予約ダウンロードを追加
 - 場所サービスを追加
+- 注文レポート作成タスクを実験的に追加
 
 ### Changed
 

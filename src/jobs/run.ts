@@ -18,6 +18,7 @@ import cancelPointAward from './continuous/cancelPointAward/run';
 import cancelReservation from './continuous/cancelReservation/run';
 import cancelSeatReservation from './continuous/cancelSeatReservation/run';
 import confirmReservation from './continuous/confirmReservation/run';
+import createOrderReport from './continuous/createOrderReport/run';
 import deleteMember from './continuous/deleteMember/run';
 import givePointAward from './continuous/givePointAward/run';
 import importScreeningEvents from './continuous/importScreeningEvents/run';
@@ -67,6 +68,7 @@ export default async () => {
     await cancelReservation({ project: project });
     await cancelSeatReservation({ project: project });
     await confirmReservation({ project: project });
+    await createOrderReport({ project: project });
     await deleteMember({ project: project });
     await givePointAward({ project: project });
     await importScreeningEvents({ project: project });
