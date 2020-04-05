@@ -18,7 +18,7 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     let connection;
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 0;
-    const INTERVAL_MILLISECONDS = 200;
+    const INTERVAL_MILLISECONDS = 10000;
     setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
             return;
