@@ -15,7 +15,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const connectMongo_1 = require("../../../connectMongo");
 exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
-    let connection;
+    // 長時間処理の可能性があるので、disableCheck: true
+    const connection = yield connectMongo_1.connectMongo({
+        defaultConnection: false,
+        disableCheck: true
+    });
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 0;
     const INTERVAL_MILLISECONDS = 10000;
@@ -25,25 +29,12 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
         }
         count += 1;
         try {
-            // 長時間処理の可能性があるので、都度コネクション生成
-            connection = yield connectMongo_1.connectMongo({
-                defaultConnection: false,
-                disableCheck: true
-            });
             yield cinerino.service.task.executeByName({
                 project: params.project,
                 name: 'createOrderReport'
             })({
                 connection: connection
             });
-        }
-        catch (error) {
-            console.error(error);
-        }
-        try {
-            if (connection !== undefined) {
-                yield connection.close();
-            }
         }
         catch (error) {
             console.error(error);
