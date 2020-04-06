@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 予約承認時のエラーハンドリングを調整
 - COAイベントインポート時にxmlを参照しないように調整
 - MongoDBコネクション監視調整
+- 返品取引開始時に返品ポリシー確認を追加
 
 ### Deprecated
 
