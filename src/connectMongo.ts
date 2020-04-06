@@ -17,15 +17,16 @@ const MONGO_PING_TIMEOUT_MS = (typeof process.env.MONGO_PING_TIMEOUT_MS === 'str
 
 const connectOptions: mongoose.ConnectionOptions = {
     autoIndex: AUTO_INDEX,
-    autoReconnect: true,
+    // autoReconnect: true,
     keepAlive: true,
     connectTimeoutMS: 30000,
-    socketTimeoutMS: 0,
-    reconnectTries: 30,
-    reconnectInterval: 1000,
+    socketTimeoutMS: 45000,
+    // reconnectTries: 30,
+    // reconnectInterval: 1000,
     useCreateIndex: true,
     useFindAndModify: false,
-    useNewUrlParser: true
+    useNewUrlParser: true,
+    useUnifiedTopology: true
 };
 
 export async function connectMongo(params: {

@@ -26,15 +26,16 @@ const MONGO_PING_INTERVAL_MS = (typeof process.env.MONGO_PING_INTERVAL_MS === 's
 const MONGO_PING_TIMEOUT_MS = (typeof process.env.MONGO_PING_TIMEOUT_MS === 'string') ? Number(process.env.MONGO_PING_TIMEOUT_MS) : 10000;
 const connectOptions = {
     autoIndex: AUTO_INDEX,
-    autoReconnect: true,
+    // autoReconnect: true,
     keepAlive: true,
     connectTimeoutMS: 30000,
-    socketTimeoutMS: 0,
-    reconnectTries: 30,
-    reconnectInterval: 1000,
+    socketTimeoutMS: 45000,
+    // reconnectTries: 30,
+    // reconnectInterval: 1000,
     useCreateIndex: true,
     useFindAndModify: false,
-    useNewUrlParser: true
+    useNewUrlParser: true,
+    useUnifiedTopology: true
 };
 function connectMongo(params) {
     return __awaiter(this, void 0, void 0, function* () {
