@@ -261,4 +261,38 @@ eventsRouter.get<ParamsDictionary>(
     }
 );
 
+/**
+ * イベントに対する座席検索
+ */
+eventsRouter.get(
+    '/:id/seats',
+    permitScopes(['events.*', 'events.read']),
+    rateLimit,
+    validator,
+    async (req, res, next) => {
+        try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings?.chevre === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
+            }
+
+            const eventService = new cinerino.chevre.service.Event({
+                endpoint: project.settings.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+
+            const seats = await eventService.searchSeats({
+                ...req.query,
+                id: req.params.id
+            });
+
+            res.json(seats.data);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 export default eventsRouter;

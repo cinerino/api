@@ -212,4 +212,26 @@ eventsRouter.get('/:id/offers/ticket', permitScopes_1.default(['events.*', 'even
         next(error);
     }
 }));
+/**
+ * イベントに対する座席検索
+ */
+eventsRouter.get('/:id/seats', permitScopes_1.default(['events.*', 'events.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (((_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
+        }
+        const eventService = new cinerino.chevre.service.Event({
+            endpoint: project.settings.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const seats = yield eventService.searchSeats(Object.assign(Object.assign({}, req.query), { id: req.params.id }));
+        res.json(seats.data);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 exports.default = eventsRouter;
