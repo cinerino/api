@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文レポート作成タスクを実験的に追加
 - 販売者に返品ポリシー属性を追加
 - イベントの座席オファーのページング検索機能を追加
+- プロジェクト作成を追加
 
 ### Changed
 

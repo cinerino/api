@@ -14,12 +14,197 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+const express_validator_1 = require("express-validator");
+const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
+const iam_1 = require("../iam");
 const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
 const projectsRouter = express_1.Router();
+/**
+ * プロジェクト作成
+ * 同時に作成者はプロジェクトオーナーになります
+ */
+projectsRouter.post('', 
+// permitScopes([]),
+rateLimit_1.default, ...[
+    express_validator_1.body('typeOf')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString(),
+    express_validator_1.body('name')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString(),
+    express_validator_1.body('id')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString(),
+    express_validator_1.body('logo')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isURL(),
+    express_validator_1.body('parentOrganization.typeOf')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString(),
+    express_validator_1.body('parentOrganization.name.ja')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString(),
+    express_validator_1.body('parentOrganization.name.en')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString(),
+    express_validator_1.body('settings.chevre.endpoint')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString(),
+    express_validator_1.body('settings.cognito.adminUserPool.id')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString(),
+    express_validator_1.body('settings.cognito.customerUserPool.id')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString(),
+    express_validator_1.body('settings.gmo.endpoint')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString(),
+    express_validator_1.body('settings.gmo.siteId')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString(),
+    express_validator_1.body('settings.gmo.sitePass')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString(),
+    // body('settings.mvtkReserve.companyCode')
+    //     .not()
+    //     .isEmpty()
+    //     .withMessage(() => 'required')
+    //     .isString(),
+    express_validator_1.body('settings.mvtkReserve.endpoint')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString(),
+    express_validator_1.body('settings.pecorino.endpoint')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString(),
+    express_validator_1.body('settings.sendgridApiKey')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString(),
+    express_validator_1.body('settings.transactionWebhookUrl')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    try {
+        const memberRepo = new cinerino.repository.Member(mongoose.connection);
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        let project = createFromBody(req.body);
+        let member;
+        const adminUserPoolId = (_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.cognito) === null || _b === void 0 ? void 0 : _b.adminUserPool.id;
+        const personRepo = new cinerino.repository.Person({
+            userPoolId: adminUserPoolId
+        });
+        const people = yield personRepo.search({ id: req.user.sub });
+        if (people[0].memberOf === undefined) {
+            throw new cinerino.factory.errors.NotFound('Administrator.memberOf');
+        }
+        member = {
+            typeOf: people[0].typeOf,
+            id: people[0].id,
+            username: people[0].memberOf.membershipNumber,
+            hasRole: [{
+                    typeOf: 'OrganizationRole',
+                    roleName: iam_1.RoleName.Owner,
+                    memberOf: { typeOf: project.typeOf, id: project.id }
+                }]
+        };
+        // プロジェクト作成
+        project = yield projectRepo.projectModel.create(Object.assign(Object.assign({}, project), { _id: project.id }))
+            .then((doc) => doc.toObject());
+        // 権限作成
+        yield memberRepo.memberModel.create({
+            project: { typeOf: project.typeOf, id: project.id },
+            typeOf: 'OrganizationRole',
+            member: member
+        });
+        res.status(http_status_1.CREATED)
+            .json(project);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+function createFromBody(params) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
+    return Object.assign({ id: params.id, typeOf: params.typeOf, logo: params.logo, name: params.name, parentOrganization: params.parentOrganization, settings: {
+            chevre: {
+                endpoint: (_b = (_a = params.settings) === null || _a === void 0 ? void 0 : _a.chevre) === null || _b === void 0 ? void 0 : _b.endpoint
+            },
+            cognito: {
+                adminUserPool: {
+                    id: (_e = (_d = (_c = params.settings) === null || _c === void 0 ? void 0 : _c.cognito) === null || _d === void 0 ? void 0 : _d.adminUserPool) === null || _e === void 0 ? void 0 : _e.id
+                },
+                customerUserPool: {
+                    id: (_h = (_g = (_f = params.settings) === null || _f === void 0 ? void 0 : _f.cognito) === null || _g === void 0 ? void 0 : _g.customerUserPool) === null || _h === void 0 ? void 0 : _h.id
+                }
+            },
+            gmo: {
+                endpoint: (_k = (_j = params.settings) === null || _j === void 0 ? void 0 : _j.gmo) === null || _k === void 0 ? void 0 : _k.endpoint,
+                siteId: (_m = (_l = params.settings) === null || _l === void 0 ? void 0 : _l.gmo) === null || _m === void 0 ? void 0 : _m.siteId,
+                sitePass: (_p = (_o = params.settings) === null || _o === void 0 ? void 0 : _o.gmo) === null || _p === void 0 ? void 0 : _p.sitePass
+            },
+            mvtkReserve: {
+                companyCode: (typeof ((_r = (_q = params.settings) === null || _q === void 0 ? void 0 : _q.mvtkReserve) === null || _r === void 0 ? void 0 : _r.companyCode) === 'string')
+                    ? (_t = (_s = params.settings) === null || _s === void 0 ? void 0 : _s.mvtkReserve) === null || _t === void 0 ? void 0 : _t.companyCode : '',
+                endpoint: (_v = (_u = params.settings) === null || _u === void 0 ? void 0 : _u.mvtkReserve) === null || _v === void 0 ? void 0 : _v.endpoint
+            },
+            pecorino: {
+                endpoint: (_x = (_w = params.settings) === null || _w === void 0 ? void 0 : _w.pecorino) === null || _x === void 0 ? void 0 : _x.endpoint
+            },
+            onOrderStatusChanged: {},
+            codeExpiresInSeconds: 600,
+            importEventsIntervalInMinutes: 10,
+            importEventsInWeeks: 17,
+            importEventsStopped: true,
+            sendgridApiKey: (_y = params.settings) === null || _y === void 0 ? void 0 : _y.sendgridApiKey,
+            transactionWebhookUrl: (_z = params.settings) === null || _z === void 0 ? void 0 : _z.transactionWebhookUrl,
+            useEventRepo: false,
+            useInMemoryOfferRepo: false,
+            useRedisEventItemAvailabilityRepo: false,
+            useReservationNumberAsConfirmationNumber: false,
+            useUsernameAsGMOMemberId: false,
+            validateMovieTicket: true
+        } }, {
+        subscription: { identifier: 'Free' }
+    });
+}
 /**
  * プロジェクト検索
  * 閲覧権限を持つプロジェクトを検索
