@@ -255,6 +255,21 @@ projectsRouter.get('/:id', permitScopes_1.default(['projects.*', 'projects.read'
     }
 }));
 /**
+ * プロジェクト更新
+ */
+projectsRouter.patch('/:id', permitScopes_1.default(['projects.*', 'projects.write']), rateLimit_1.default, ...[], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        yield projectRepo.projectModel.findOneAndUpdate({ _id: req.project.id }, Object.assign(Object.assign({ updatedAt: new Date() }, (typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined), (typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined))
+            .exec();
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
  * プロジェクト設定取得
  */
 projectsRouter.get('/:id/settings', permitScopes_1.default(['projects.*', 'projects.settings.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {

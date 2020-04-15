@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 販売者に返品ポリシー属性を追加
 - イベントの座席オファーのページング検索機能を追加
 - プロジェクト作成を追加
+- プロジェクト更新を追加
 
 ### Changed
 

@@ -4,7 +4,7 @@
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { CREATED } from 'http-status';
+import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
 import permitScopes from '../middlewares/permitScopes';
@@ -287,6 +287,37 @@ projectsRouter.get(
             const project = await projectRepo.findById({ id: req.project.id }, projection);
 
             res.json(project);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * プロジェクト更新
+ */
+projectsRouter.patch(
+    '/:id',
+    permitScopes(['projects.*', 'projects.write']),
+    rateLimit,
+    ...[],
+    validator,
+    async (req, res, next) => {
+        try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+
+            await projectRepo.projectModel.findOneAndUpdate(
+                { _id: req.project.id },
+                {
+                    updatedAt: new Date(),
+                    ...(typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined,
+                    ...(typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined
+                }
+            )
+                .exec();
+
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }
