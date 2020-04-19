@@ -258,9 +258,16 @@ projectsRouter.get('/:id', permitScopes_1.default(['projects.*', 'projects.read'
  * プロジェクト更新
  */
 projectsRouter.patch('/:id', permitScopes_1.default(['projects.*', 'projects.write']), rateLimit_1.default, ...[], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c, _d, _e, _f, _g, _h;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        yield projectRepo.projectModel.findOneAndUpdate({ _id: req.project.id }, Object.assign(Object.assign({ updatedAt: new Date() }, (typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined), (typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined))
+        yield projectRepo.projectModel.findOneAndUpdate({ _id: req.project.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ updatedAt: new Date() }, (typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined), (typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined), (typeof ((_c = req.body.settings) === null || _c === void 0 ? void 0 : _c.codeExpiresInSeconds) === 'number')
+            ? { 'settings.codeExpiresInSeconds': (_d = req.body.settings) === null || _d === void 0 ? void 0 : _d.codeExpiresInSeconds }
+            : undefined), (typeof ((_e = req.body.settings) === null || _e === void 0 ? void 0 : _e.transactionWebhookUrl) === 'string')
+            ? { 'settings.transactionWebhookUrl': (_f = req.body.settings) === null || _f === void 0 ? void 0 : _f.transactionWebhookUrl }
+            : undefined), (typeof ((_g = req.body.settings) === null || _g === void 0 ? void 0 : _g.useEventRepo) === 'boolean')
+            ? { 'settings.useEventRepo': (_h = req.body.settings) === null || _h === void 0 ? void 0 : _h.useEventRepo }
+            : undefined))
             .exec();
         res.status(http_status_1.NO_CONTENT)
             .end();

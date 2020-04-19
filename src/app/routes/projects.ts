@@ -311,7 +311,16 @@ projectsRouter.patch(
                 {
                     updatedAt: new Date(),
                     ...(typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined,
-                    ...(typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined
+                    ...(typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined,
+                    ...(typeof req.body.settings?.codeExpiresInSeconds === 'number')
+                        ? { 'settings.codeExpiresInSeconds': req.body.settings?.codeExpiresInSeconds }
+                        : undefined,
+                    ...(typeof req.body.settings?.transactionWebhookUrl === 'string')
+                        ? { 'settings.transactionWebhookUrl': req.body.settings?.transactionWebhookUrl }
+                        : undefined,
+                    ...(typeof req.body.settings?.useEventRepo === 'boolean')
+                        ? { 'settings.useEventRepo': req.body.settings?.useEventRepo }
+                        : undefined
                 }
             )
                 .exec();
