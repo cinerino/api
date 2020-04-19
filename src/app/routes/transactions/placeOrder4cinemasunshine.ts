@@ -112,6 +112,7 @@ placeOrder4cinemasunshineRouter.post(
     async (req, res, next) => {
         try {
             const action = await cinerino.service.offer.seatReservation4coa.create({
+                project: req.project,
                 object: {
                     event: { id: <string>req.body.eventIdentifier },
                     acceptedOffer: req.body.offers
@@ -121,6 +122,7 @@ placeOrder4cinemasunshineRouter.post(
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 event: new cinerino.repository.Event(mongoose.connection),
+                project: new cinerino.repository.Project(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection),
                 offer: (coaTickets !== undefined) ? new cinerino.repository.Offer(coaTickets) : undefined
             });
@@ -193,6 +195,7 @@ placeOrder4cinemasunshineRouter.patch(
     async (req, res, next) => {
         try {
             const action = await cinerino.service.offer.seatReservation4coa.changeOffers({
+                project: req.project,
                 object: {
                     event: { id: req.body.eventIdentifier },
                     acceptedOffer: req.body.offers
@@ -203,6 +206,7 @@ placeOrder4cinemasunshineRouter.patch(
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 event: new cinerino.repository.Event(mongoose.connection),
+                project: new cinerino.repository.Project(mongoose.connection),
                 offer: (coaTickets !== undefined) ? new cinerino.repository.Offer(coaTickets) : undefined,
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
