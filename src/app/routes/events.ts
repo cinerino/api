@@ -89,36 +89,33 @@ eventsRouter.get(
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
             const project = await projectRepo.findById({ id: req.project.id });
-            const useRedisEventItemAvailabilityRepo =
-                project.settings !== undefined && project.settings.useRedisEventItemAvailabilityRepo === true;
+            const useRedisEventItemAvailabilityRepo = project.settings?.useRedisEventItemAvailabilityRepo === true;
 
-            let events: cinerino.factory.chevre.event.screeningEvent.IEvent[];
-            let totalCount: number;
+            let searchEventsResult: {
+                data: cinerino.factory.chevre.event.screeningEvent.IEvent[];
+                totalCount: number;
+            };
+
+            const searchConditions: cinerino.chevre.factory.event.screeningEvent.ISearchConditions = {
+                ...req.query,
+                project: { ids: [req.project.id] },
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined,
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined
+            };
 
             // Cinemasunshine対応
             if (useRedisEventItemAvailabilityRepo) {
-                const searchConditions: cinerino.chevre.factory.event.screeningEvent.ISearchConditions = {
-                    ...req.query,
-                    // tslint:disable-next-line:no-magic-numbers
-                    limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined,
-                    page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined
-                };
-
-                events = await cinerino.service.offer.searchEvents4cinemasunshine(searchConditions)({
+                searchEventsResult = await cinerino.service.offer.searchEvents4cinemasunshine({
+                    project: req.project,
+                    conditions: searchConditions
+                })({
                     attendeeCapacity: attendeeCapacityRepo,
-                    event: eventRepo
+                    event: eventRepo,
+                    project: projectRepo
                 });
-                totalCount = await eventRepo.count(searchConditions);
             } else {
-                const searchConditions: cinerino.chevre.factory.event.screeningEvent.ISearchConditions = {
-                    ...req.query,
-                    project: { ids: [req.project.id] },
-                    // tslint:disable-next-line:no-magic-numbers
-                    limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                    page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
-                };
-
-                const searchEventsResult = await cinerino.service.offer.searchEvents({
+                searchEventsResult = await cinerino.service.offer.searchEvents({
                     project: req.project,
                     conditions: searchConditions
                 })({
@@ -126,12 +123,10 @@ eventsRouter.get(
                     project: projectRepo,
                     event: eventRepo
                 });
-                events = searchEventsResult.data;
-                totalCount = searchEventsResult.totalCount;
             }
 
-            res.set('X-Total-Count', totalCount.toString())
-                .json(events);
+            res.set('X-Total-Count', searchEventsResult.totalCount.toString())
+                .json(searchEventsResult.data);
         } catch (error) {
             next(error);
         }
@@ -155,21 +150,24 @@ eventsRouter.get(
             let event: cinerino.factory.chevre.event.screeningEvent.IEvent;
 
             const project = await projectRepo.findById({ id: req.project.id });
-            const useEventRepo = project.settings !== undefined && project.settings.useEventRepo === true;
-            const useRedisEventItemAvailabilityRepo =
-                project.settings !== undefined && project.settings.useRedisEventItemAvailabilityRepo === true;
+            const useEventRepo = project.settings?.useEventRepo === true;
+            const useRedisEventItemAvailabilityRepo = project.settings?.useRedisEventItemAvailabilityRepo === true;
 
             // Cinemasunshine対応
             if (useRedisEventItemAvailabilityRepo) {
-                event = await cinerino.service.offer.findEventById4cinemasunshine(req.params.id)({
+                event = await cinerino.service.offer.findEventById4cinemasunshine({
+                    id: req.params.id,
+                    project: req.project
+                })({
                     attendeeCapacity: attendeeCapacityRepo,
-                    event: new cinerino.repository.Event(mongoose.connection)
+                    event: new cinerino.repository.Event(mongoose.connection),
+                    project: projectRepo
                 });
             } else {
                 if (useEventRepo) {
                     event = await eventRepo.findById({ id: req.params.id });
                 } else {
-                    if (project.settings === undefined || project.settings.chevre === undefined) {
+                    if (project.settings?.chevre === undefined) {
                         throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
                     }
 

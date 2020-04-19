@@ -80,30 +80,30 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
         .isISO8601()
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        const useRedisEventItemAvailabilityRepo = project.settings !== undefined && project.settings.useRedisEventItemAvailabilityRepo === true;
-        let events;
-        let totalCount;
+        const useRedisEventItemAvailabilityRepo = ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.useRedisEventItemAvailabilityRepo) === true;
+        let searchEventsResult;
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined });
         // Cinemasunshine対応
         if (useRedisEventItemAvailabilityRepo) {
-            const searchConditions = Object.assign(Object.assign({}, req.query), { 
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined });
-            events = yield cinerino.service.offer.searchEvents4cinemasunshine(searchConditions)({
+            searchEventsResult = yield cinerino.service.offer.searchEvents4cinemasunshine({
+                project: req.project,
+                conditions: searchConditions
+            })({
                 attendeeCapacity: attendeeCapacityRepo,
-                event: eventRepo
+                event: eventRepo,
+                project: projectRepo
             });
-            totalCount = yield eventRepo.count(searchConditions);
         }
         else {
-            const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-            const searchEventsResult = yield cinerino.service.offer.searchEvents({
+            searchEventsResult = yield cinerino.service.offer.searchEvents({
                 project: req.project,
                 conditions: searchConditions
             })({
@@ -111,11 +111,9 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
                 project: projectRepo,
                 event: eventRepo
             });
-            events = searchEventsResult.data;
-            totalCount = searchEventsResult.totalCount;
         }
-        res.set('X-Total-Count', totalCount.toString())
-            .json(events);
+        res.set('X-Total-Count', searchEventsResult.totalCount.toString())
+            .json(searchEventsResult.data);
     }
     catch (error) {
         next(error);
@@ -125,19 +123,24 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
  * IDでイベント検索
  */
 eventsRouter.get('/:id', permitScopes_1.default(['events.*', 'events.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b, _c, _d;
     try {
         const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         let event;
         const project = yield projectRepo.findById({ id: req.project.id });
-        const useEventRepo = project.settings !== undefined && project.settings.useEventRepo === true;
-        const useRedisEventItemAvailabilityRepo = project.settings !== undefined && project.settings.useRedisEventItemAvailabilityRepo === true;
+        const useEventRepo = ((_b = project.settings) === null || _b === void 0 ? void 0 : _b.useEventRepo) === true;
+        const useRedisEventItemAvailabilityRepo = ((_c = project.settings) === null || _c === void 0 ? void 0 : _c.useRedisEventItemAvailabilityRepo) === true;
         // Cinemasunshine対応
         if (useRedisEventItemAvailabilityRepo) {
-            event = yield cinerino.service.offer.findEventById4cinemasunshine(req.params.id)({
+            event = yield cinerino.service.offer.findEventById4cinemasunshine({
+                id: req.params.id,
+                project: req.project
+            })({
                 attendeeCapacity: attendeeCapacityRepo,
-                event: new cinerino.repository.Event(mongoose.connection)
+                event: new cinerino.repository.Event(mongoose.connection),
+                project: projectRepo
             });
         }
         else {
@@ -145,7 +148,7 @@ eventsRouter.get('/:id', permitScopes_1.default(['events.*', 'events.read']), ra
                 event = yield eventRepo.findById({ id: req.params.id });
             }
             else {
-                if (project.settings === undefined || project.settings.chevre === undefined) {
+                if (((_d = project.settings) === null || _d === void 0 ? void 0 : _d.chevre) === undefined) {
                     throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
                 }
                 const eventService = new cinerino.chevre.service.Event({
@@ -216,11 +219,11 @@ eventsRouter.get('/:id/offers/ticket', permitScopes_1.default(['events.*', 'even
  * イベントに対する座席検索
  */
 eventsRouter.get('/:id/seats', permitScopes_1.default(['events.*', 'events.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _e;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        if (((_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === undefined) {
+        if (((_e = project.settings) === null || _e === void 0 ? void 0 : _e.chevre) === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
         }
         const eventService = new cinerino.chevre.service.Event({
