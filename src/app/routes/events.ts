@@ -120,8 +120,7 @@ eventsRouter.get(
                     conditions: searchConditions
                 })({
                     attendeeCapacity: attendeeCapacityRepo,
-                    project: projectRepo,
-                    event: eventRepo
+                    project: projectRepo
                 });
             }
 
@@ -196,15 +195,13 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const eventRepo = new cinerino.repository.Event(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
             const offers = await cinerino.service.offer.searchEventOffers({
                 project: req.project,
                 event: { id: req.params.id }
             })({
-                project: projectRepo,
-                event: eventRepo
+                project: projectRepo
             });
 
             res.json(offers);
@@ -235,7 +232,6 @@ eventsRouter.get<ParamsDictionary>(
     validator,
     async (req, res, next) => {
         try {
-            const eventRepo = new cinerino.repository.Event(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
 
@@ -249,8 +245,7 @@ eventsRouter.get<ParamsDictionary>(
                     : {}
             })({
                 project: projectRepo,
-                seller: sellerRepo,
-                event: eventRepo
+                seller: sellerRepo
             });
             res.json(offers);
         } catch (error) {

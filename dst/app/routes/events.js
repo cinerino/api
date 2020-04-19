@@ -108,8 +108,7 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
                 conditions: searchConditions
             })({
                 attendeeCapacity: attendeeCapacityRepo,
-                project: projectRepo,
-                event: eventRepo
+                project: projectRepo
             });
         }
         res.set('X-Total-Count', searchEventsResult.totalCount.toString())
@@ -169,14 +168,12 @@ eventsRouter.get('/:id', permitScopes_1.default(['events.*', 'events.read']), ra
  */
 eventsRouter.get('/:id/offers', permitScopes_1.default(['events.*', 'events.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const eventRepo = new cinerino.repository.Event(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const offers = yield cinerino.service.offer.searchEventOffers({
             project: req.project,
             event: { id: req.params.id }
         })({
-            project: projectRepo,
-            event: eventRepo
+            project: projectRepo
         });
         res.json(offers);
     }
@@ -199,15 +196,13 @@ eventsRouter.get('/:id/offers/ticket', permitScopes_1.default(['events.*', 'even
         .withMessage(() => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const eventRepo = new cinerino.repository.Event(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const offers = yield cinerino.service.offer.searchEventTicketOffers(Object.assign({ project: req.project, event: { id: req.params.id }, seller: req.query.seller, store: req.query.store }, (req.query.movieTicket !== undefined && req.query.movieTicket !== null)
             ? { movieTicket: req.query.movieTicket }
             : {}))({
             project: projectRepo,
-            seller: sellerRepo,
-            event: eventRepo
+            seller: sellerRepo
         });
         res.json(offers);
     }
