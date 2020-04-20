@@ -209,7 +209,6 @@ function createFromBody(params: any): cinerino.factory.project.IProject {
             sendgridApiKey: params.settings?.sendgridApiKey,
             transactionWebhookUrl: params.settings?.transactionWebhookUrl,
             useInMemoryOfferRepo: false,
-            useRedisEventItemAvailabilityRepo: false,
             useReservationNumberAsConfirmationNumber: false,
             useUsernameAsGMOMemberId: false,
             validateMovieTicket: true

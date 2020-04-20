@@ -196,7 +196,6 @@ function createFromBody(params) {
             sendgridApiKey: (_y = params.settings) === null || _y === void 0 ? void 0 : _y.sendgridApiKey,
             transactionWebhookUrl: (_z = params.settings) === null || _z === void 0 ? void 0 : _z.transactionWebhookUrl,
             useInMemoryOfferRepo: false,
-            useRedisEventItemAvailabilityRepo: false,
             useReservationNumberAsConfirmationNumber: false,
             useUsernameAsGMOMemberId: false,
             validateMovieTicket: true
