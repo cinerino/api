@@ -8,8 +8,6 @@ import { ParamsDictionary } from 'express-serve-static-core';
 import { query } from 'express-validator';
 import * as mongoose from 'mongoose';
 
-import * as redis from '../../redis';
-
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
@@ -84,7 +82,6 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
             const eventRepo = new cinerino.repository.Event(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
@@ -110,7 +107,6 @@ eventsRouter.get(
                     project: req.project,
                     conditions: searchConditions
                 })({
-                    attendeeCapacity: attendeeCapacityRepo,
                     event: eventRepo,
                     project: projectRepo
                 });
@@ -119,7 +115,6 @@ eventsRouter.get(
                     project: req.project,
                     conditions: searchConditions
                 })({
-                    attendeeCapacity: attendeeCapacityRepo,
                     project: projectRepo
                 });
             }
@@ -142,7 +137,6 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
             const eventRepo = new cinerino.repository.Event(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
@@ -158,7 +152,6 @@ eventsRouter.get(
                     id: req.params.id,
                     project: req.project
                 })({
-                    attendeeCapacity: attendeeCapacityRepo,
                     event: new cinerino.repository.Event(mongoose.connection),
                     project: projectRepo
                 });

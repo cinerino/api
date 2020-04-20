@@ -16,7 +16,6 @@ const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const mongoose = require("mongoose");
-const redis = require("../../redis");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
@@ -82,7 +81,6 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -97,7 +95,6 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
                 project: req.project,
                 conditions: searchConditions
             })({
-                attendeeCapacity: attendeeCapacityRepo,
                 event: eventRepo,
                 project: projectRepo
             });
@@ -107,7 +104,6 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
                 project: req.project,
                 conditions: searchConditions
             })({
-                attendeeCapacity: attendeeCapacityRepo,
                 project: projectRepo
             });
         }
@@ -124,7 +120,6 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
 eventsRouter.get('/:id', permitScopes_1.default(['events.*', 'events.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _b, _c, _d;
     try {
-        const attendeeCapacityRepo = new cinerino.repository.event.AttendeeCapacityRepo(redis.getClient());
         const eventRepo = new cinerino.repository.Event(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         let event;
@@ -137,7 +132,6 @@ eventsRouter.get('/:id', permitScopes_1.default(['events.*', 'events.read']), ra
                 id: req.params.id,
                 project: req.project
             })({
-                attendeeCapacity: attendeeCapacityRepo,
                 event: new cinerino.repository.Event(mongoose.connection),
                 project: projectRepo
             });
