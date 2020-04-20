@@ -89,8 +89,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             }),
             project: new cinerino.repository.Project(mongoose.connection),
             seller: new cinerino.repository.Seller(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
-            event: new cinerino.repository.Event(mongoose.connection)
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED)
             .json(action);

@@ -81,7 +81,6 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        const eventRepo = new cinerino.repository.Event(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
         const useRedisEventItemAvailabilityRepo = ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.useRedisEventItemAvailabilityRepo) === true;
@@ -95,7 +94,6 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
                 project: req.project,
                 conditions: searchConditions
             })({
-                event: eventRepo,
                 project: projectRepo
             });
         }
@@ -132,7 +130,6 @@ eventsRouter.get('/:id', permitScopes_1.default(['events.*', 'events.read']), ra
                 id: req.params.id,
                 project: req.project
             })({
-                event: new cinerino.repository.Event(mongoose.connection),
                 project: projectRepo
             });
         }

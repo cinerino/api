@@ -82,7 +82,6 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const eventRepo = new cinerino.repository.Event(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
             const project = await projectRepo.findById({ id: req.project.id });
@@ -107,7 +106,6 @@ eventsRouter.get(
                     project: req.project,
                     conditions: searchConditions
                 })({
-                    event: eventRepo,
                     project: projectRepo
                 });
             } else {
@@ -152,7 +150,6 @@ eventsRouter.get(
                     id: req.params.id,
                     project: req.project
                 })({
-                    event: new cinerino.repository.Event(mongoose.connection),
                     project: projectRepo
                 });
             } else {

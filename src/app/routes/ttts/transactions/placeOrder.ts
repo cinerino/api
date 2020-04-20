@@ -105,8 +105,7 @@ placeOrderTransactionsRouter.post(
                 }),
                 project: new cinerino.repository.Project(mongoose.connection),
                 seller: new cinerino.repository.Seller(mongoose.connection),
-                transaction: new cinerino.repository.Transaction(mongoose.connection),
-                event: new cinerino.repository.Event(mongoose.connection)
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
             res.status(CREATED)

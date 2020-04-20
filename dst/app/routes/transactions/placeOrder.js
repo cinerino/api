@@ -350,8 +350,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
             }),
             project: projectRepo,
             seller: new cinerino.repository.Seller(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
-            event: new cinerino.repository.Event(mongoose.connection)
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED)
             .json(action);
@@ -680,8 +679,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
                 endpoint: project.settings.mvtkReserve.endpoint,
                 auth: mvtkReserveAuthClient
-            }),
-            event: new cinerino.repository.Event(mongoose.connection)
+            })
         });
         res.status(http_status_1.CREATED)
             .json(action);

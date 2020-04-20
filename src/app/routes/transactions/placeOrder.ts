@@ -419,8 +419,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
                 }),
                 project: projectRepo,
                 seller: new cinerino.repository.Seller(mongoose.connection),
-                transaction: new cinerino.repository.Transaction(mongoose.connection),
-                event: new cinerino.repository.Event(mongoose.connection)
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
             res.status(CREATED)
@@ -816,8 +815,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
                 movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
                     endpoint: project.settings.mvtkReserve.endpoint,
                     auth: mvtkReserveAuthClient
-                }),
-                event: new cinerino.repository.Event(mongoose.connection)
+                })
             });
             res.status(CREATED)
                 .json(action);
