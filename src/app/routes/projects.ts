@@ -208,7 +208,6 @@ function createFromBody(params: any): cinerino.factory.project.IProject {
             importEventsStopped: true,
             sendgridApiKey: params.settings?.sendgridApiKey,
             transactionWebhookUrl: params.settings?.transactionWebhookUrl,
-            useEventRepo: false,
             useInMemoryOfferRepo: false,
             useRedisEventItemAvailabilityRepo: false,
             useReservationNumberAsConfirmationNumber: false,
@@ -317,9 +316,6 @@ projectsRouter.patch(
                         : undefined,
                     ...(typeof req.body.settings?.transactionWebhookUrl === 'string')
                         ? { 'settings.transactionWebhookUrl': req.body.settings?.transactionWebhookUrl }
-                        : undefined,
-                    ...(typeof req.body.settings?.useEventRepo === 'boolean')
-                        ? { 'settings.useEventRepo': req.body.settings?.useEventRepo }
                         : undefined
                 }
             )
