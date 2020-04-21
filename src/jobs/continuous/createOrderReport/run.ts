@@ -1,5 +1,5 @@
 /**
- * 上映イベント在庫仕入れ
+ * 注文レポート作成
  */
 import * as cinerino from '@cinerino/domain';
 
@@ -8,12 +8,16 @@ import { connectMongo } from '../../../connectMongo';
 export default async (params: {
     project?: cinerino.factory.project.IProject;
 }) => {
-    const connection = await connectMongo({ defaultConnection: false });
+    // 長時間処理の可能性があるので、disableCheck: true
+    const connection = await connectMongo({
+        defaultConnection: false,
+        disableCheck: true
+    });
 
     let count = 0;
 
-    const MAX_NUBMER_OF_PARALLEL_TASKS = 1;
-    const INTERVAL_MILLISECONDS = 1000;
+    const MAX_NUBMER_OF_PARALLEL_TASKS = 0;
+    const INTERVAL_MILLISECONDS = 10000;
 
     setInterval(
         async () => {
@@ -26,7 +30,7 @@ export default async (params: {
             try {
                 await cinerino.service.task.executeByName({
                     project: params.project,
-                    name: cinerino.factory.taskName.ImportScreeningEvents
+                    name: <any>'createOrderReport'
                 })({
                     connection: connection
                 });

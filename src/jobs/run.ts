@@ -18,9 +18,9 @@ import cancelPointAward from './continuous/cancelPointAward/run';
 import cancelReservation from './continuous/cancelReservation/run';
 import cancelSeatReservation from './continuous/cancelSeatReservation/run';
 import confirmReservation from './continuous/confirmReservation/run';
+import createOrderReport from './continuous/createOrderReport/run';
 import deleteMember from './continuous/deleteMember/run';
 import givePointAward from './continuous/givePointAward/run';
-import importScreeningEvents from './continuous/importScreeningEvents/run';
 import moneyTransfer from './continuous/moneyTransfer/run';
 import orderProgramMembership from './continuous/orderProgramMembership/run';
 import payAccount from './continuous/payAccount/run';
@@ -37,18 +37,11 @@ import sendEmailMessage from './continuous/sendEmailMessage/run';
 import sendOrder from './continuous/sendOrder/run';
 import triggerWebhook from './continuous/triggerWebhook/run';
 import unRegisterProgramMembership from './continuous/unRegisterProgramMembership/run';
-import updateEventAttendeeCapacity from './continuous/updateEventAttendeeCapacity/run';
 import voidMoneyTransfer from './continuous/voidMoneyTransfer/run';
-
-import createImportScreeningEventsTask from './triggered/createImportScreeningEventsTask/run';
-import createUpdateEventAttendeeCapacityTask from './triggered/createUpdateEventAttendeeCapacityTask/run';
 
 const project: factory.project.IProject | undefined = (typeof process.env.PROJECT_ID === 'string')
     ? { typeOf: factory.organizationType.Project, id: process.env.PROJECT_ID }
     : undefined;
-const importEventsProjects = (typeof process.env.IMPORT_EVENTS_PROJECTS === 'string')
-    ? process.env.IMPORT_EVENTS_PROJECTS.split(',')
-    : [];
 
 // tslint:disable-next-line:cyclomatic-complexity
 export default async () => {
@@ -67,9 +60,9 @@ export default async () => {
     await cancelReservation({ project: project });
     await cancelSeatReservation({ project: project });
     await confirmReservation({ project: project });
+    await createOrderReport({ project: project });
     await deleteMember({ project: project });
     await givePointAward({ project: project });
-    await importScreeningEvents({ project: project });
     await moneyTransfer({ project: project });
     await orderProgramMembership({ project: project });
     await payAccount({ project: project });
@@ -86,11 +79,5 @@ export default async () => {
     await sendOrder({ project: project });
     await triggerWebhook({ project: project });
     await unRegisterProgramMembership({ project: project });
-    await updateEventAttendeeCapacity({ project: project });
     await voidMoneyTransfer({ project: project });
-
-    await Promise.all(importEventsProjects.map(async (projectId) => {
-        await createImportScreeningEventsTask({ project: { typeOf: factory.organizationType.Project, id: projectId } });
-        await createUpdateEventAttendeeCapacityTask({ project: { typeOf: factory.organizationType.Project, id: projectId } });
-    }));
 };

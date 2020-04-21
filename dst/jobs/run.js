@@ -26,9 +26,9 @@ const run_10 = require("./continuous/cancelPointAward/run");
 const run_11 = require("./continuous/cancelReservation/run");
 const run_12 = require("./continuous/cancelSeatReservation/run");
 const run_13 = require("./continuous/confirmReservation/run");
-const run_14 = require("./continuous/deleteMember/run");
-const run_15 = require("./continuous/givePointAward/run");
-const run_16 = require("./continuous/importScreeningEvents/run");
+const run_14 = require("./continuous/createOrderReport/run");
+const run_15 = require("./continuous/deleteMember/run");
+const run_16 = require("./continuous/givePointAward/run");
 const run_17 = require("./continuous/moneyTransfer/run");
 const run_18 = require("./continuous/orderProgramMembership/run");
 const run_19 = require("./continuous/payAccount/run");
@@ -45,16 +45,10 @@ const run_29 = require("./continuous/sendEmailMessage/run");
 const run_30 = require("./continuous/sendOrder/run");
 const run_31 = require("./continuous/triggerWebhook/run");
 const run_32 = require("./continuous/unRegisterProgramMembership/run");
-const run_33 = require("./continuous/updateEventAttendeeCapacity/run");
-const run_34 = require("./continuous/voidMoneyTransfer/run");
-const run_35 = require("./triggered/createImportScreeningEventsTask/run");
-const run_36 = require("./triggered/createUpdateEventAttendeeCapacityTask/run");
+const run_33 = require("./continuous/voidMoneyTransfer/run");
 const project = (typeof process.env.PROJECT_ID === 'string')
     ? { typeOf: domain_1.factory.organizationType.Project, id: process.env.PROJECT_ID }
     : undefined;
-const importEventsProjects = (typeof process.env.IMPORT_EVENTS_PROJECTS === 'string')
-    ? process.env.IMPORT_EVENTS_PROJECTS.split(',')
-    : [];
 // tslint:disable-next-line:cyclomatic-complexity
 exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_1.default({ project: project });
@@ -90,9 +84,4 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_31.default({ project: project });
     yield run_32.default({ project: project });
     yield run_33.default({ project: project });
-    yield run_34.default({ project: project });
-    yield Promise.all(importEventsProjects.map((projectId) => __awaiter(void 0, void 0, void 0, function* () {
-        yield run_35.default({ project: { typeOf: domain_1.factory.organizationType.Project, id: projectId } });
-        yield run_36.default({ project: { typeOf: domain_1.factory.organizationType.Project, id: projectId } });
-    })));
 });

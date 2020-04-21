@@ -19,55 +19,80 @@ const mongoose = require("mongoose");
 const placeOrderTransactionsRouter = express_1.Router();
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const validator_1 = require("../../../middlewares/validator");
-// import * as redis from '../../../../redis';
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials({
+    domain: process.env.MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.MVTK_RESERVE_CLIENT_ID,
+    clientSecret: process.env.MVTK_RESERVE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 /**
  * 座席仮予約
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['transactions', 'pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         if (!Array.isArray(req.body.offers)) {
             req.body.offers = [];
         }
-        const performanceId = req.body.performance_id;
-        const action = yield cinerino.service.offer.seatReservation4ttts.create({
+        const eventId = req.body.performance_id;
+        const offers = req.body.offers;
+        // チケットオファー検索
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (project.settings === undefined
+            || project.settings.chevre === undefined) {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        }
+        const eventService = new cinerino.chevre.service.Event({
+            endpoint: project.settings.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const ticketOffers = yield eventService.searchTicketOffers({ id: eventId });
+        // Cinerino本家のacceptedOfferへ変換
+        const acceptedOffer = offers.map((offer) => {
+            const ticketOffer = ticketOffers.find((t) => t.identifier === offer.ticket_type);
+            if (ticketOffer === undefined) {
+                throw new cinerino.factory.errors.NotFound('Offer', `Offer ${offer.ticket_type} not found`);
+            }
+            return {
+                id: ticketOffer.id,
+                itemOffered: {
+                    serviceOutput: {
+                        typeOf: cinerino.factory.chevre.reservationType.EventReservation,
+                        additionalTicketText: offer.watcher_name // 予約メモ
+                    }
+                },
+                additionalProperty: []
+            };
+        });
+        const action = yield cinerino.service.offer.seatReservation.create({
+            autoSeatSelection: true,
             project: req.project,
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId },
             object: {
-                event: { id: performanceId },
-                acceptedOffer: [],
-                acceptedOffers: req.body.offers.map((offer) => {
-                    return {
-                        ticket_type: offer.ticket_type,
-                        watcher_name: offer.watcher_name
-                    };
-                })
+                event: { id: eventId },
+                acceptedOffer: acceptedOffer
             }
-        })(new cinerino.repository.Action(mongoose.connection), 
-        // new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()),
-        new cinerino.repository.Transaction(mongoose.connection), new cinerino.repository.Project(mongoose.connection));
+        })({
+            action: new cinerino.repository.Action(mongoose.connection),
+            movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
+                endpoint: '',
+                auth: mvtkReserveAuthClient
+            }),
+            project: new cinerino.repository.Project(mongoose.connection),
+            seller: new cinerino.repository.Seller(mongoose.connection),
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
+        });
         res.status(http_status_1.CREATED)
             .json(action);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * 座席仮予約削除
- */
-placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['transactions', 'pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        yield cinerino.service.offer.seatReservation4ttts.cancel({
-            project: req.project,
-            agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId },
-            id: req.params.actionId
-        })(new cinerino.repository.Transaction(mongoose.connection), new cinerino.repository.Action(mongoose.connection), 
-        // new cinerino.repository.rateLimit.TicketTypeCategory(redis.getClient()),
-        new cinerino.repository.Project(mongoose.connection));
-        res.status(http_status_1.NO_CONTENT)
-            .end();
     }
     catch (error) {
         next(error);

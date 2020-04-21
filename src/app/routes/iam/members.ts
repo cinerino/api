@@ -268,7 +268,7 @@ iamMembersRouter.get(
 );
 
 /**
- * プロジェクトメンバーのロール更新
+ * プロジェクトメンバー更新
  */
 // tslint:disable-next-line:use-default-type-parameter
 iamMembersRouter.put<ParamsDictionary>(
@@ -280,6 +280,9 @@ iamMembersRouter.put<ParamsDictionary>(
             .not()
             .isEmpty()
             .withMessage(() => 'required'),
+        body('member.name')
+            .optional()
+            .isString(),
         body('member.hasRole')
             .not()
             .isEmpty()
@@ -305,6 +308,8 @@ iamMembersRouter.put<ParamsDictionary>(
                 };
             });
 
+            const name: string | undefined = req.body.member?.name;
+
             const doc = await memberRepo.memberModel.findOneAndUpdate(
                 {
                     'member.id': {
@@ -315,7 +320,8 @@ iamMembersRouter.put<ParamsDictionary>(
                     }
                 },
                 {
-                    'member.hasRole': roles
+                    'member.hasRole': roles,
+                    ...(typeof name === 'string') ? { 'member.name': name } : undefined
                 }
             )
                 .exec();

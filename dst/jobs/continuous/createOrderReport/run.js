@@ -10,15 +10,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 上映イベント在庫仕入れ
+ * 注文レポート作成
  */
 const cinerino = require("@cinerino/domain");
 const connectMongo_1 = require("../../../connectMongo");
 exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
-    const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
+    // 長時間処理の可能性があるので、disableCheck: true
+    const connection = yield connectMongo_1.connectMongo({
+        defaultConnection: false,
+        disableCheck: true
+    });
     let count = 0;
-    const MAX_NUBMER_OF_PARALLEL_TASKS = 1;
-    const INTERVAL_MILLISECONDS = 1000;
+    const MAX_NUBMER_OF_PARALLEL_TASKS = 0;
+    const INTERVAL_MILLISECONDS = 10000;
     setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
             return;
@@ -27,7 +31,7 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             yield cinerino.service.task.executeByName({
                 project: params.project,
-                name: cinerino.factory.taskName.ImportScreeningEvents
+                name: 'createOrderReport'
             })({
                 connection: connection
             });

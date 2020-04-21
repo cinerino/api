@@ -93,20 +93,6 @@ ordersRouter.get(
             .optional()
             .isISO8601()
             .toDate(),
-        // .custom((value, { req }) => {
-        //     // 注文期間指定を限定
-        //     const orderDateThrough = moment(value);
-        //     if (req.query !== undefined) {
-        //         const orderDateThroughExpectedToBe = moment(req.query.orderDateFrom)
-        //             // tslint:disable-next-line:no-magic-numbers
-        //             .add(31, 'days');
-        //         if (orderDateThrough.isAfter(orderDateThroughExpectedToBe)) {
-        //             throw new Error('Order date range too large');
-        //         }
-        //     }
-
-        //     return true;
-        // }),
         query('orderDate.$gte')
             .optional()
             .isISO8601()
@@ -130,7 +116,15 @@ ordersRouter.get(
         query('acceptedOffers.itemOffered.reservationFor.startThrough')
             .optional()
             .isISO8601()
-            .toDate()
+            .toDate(),
+        query('price.$gte')
+            .optional()
+            .isInt()
+            .toInt(),
+        query('price.$lte')
+            .optional()
+            .isInt()
+            .toInt()
     ],
     validator,
     async (req, res, next) => {
@@ -315,14 +309,46 @@ ordersRouter.get(
     permitScopes([]),
     rateLimit,
     ...[
-        query('orderDateFrom')
+        query('disableTotalCount')
+            .optional()
+            .isBoolean()
+            .toBoolean(),
+        query('identifier.$all')
+            .optional()
+            .isArray(),
+        query('identifier.$in')
+            .optional()
+            .isArray(),
+        query('identifier.$all.*.name')
+            .optional()
             .not()
             .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        query('identifier.$all.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        query('identifier.$in.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        query('identifier.$in.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        query('orderDateFrom')
+            .optional()
             .isISO8601()
             .toDate(),
         query('orderDateThrough')
-            .not()
-            .isEmpty()
+            .optional()
             .isISO8601()
             .toDate(),
         query('orderDate.$gte')
@@ -348,7 +374,15 @@ ordersRouter.get(
         query('acceptedOffers.itemOffered.reservationFor.startThrough')
             .optional()
             .isISO8601()
-            .toDate()
+            .toDate(),
+        query('price.$gte')
+            .optional()
+            .isInt()
+            .toInt(),
+        query('price.$lte')
+            .optional()
+            .isInt()
+            .toInt()
     ],
     validator,
     async (req, res, next) => {

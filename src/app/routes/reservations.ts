@@ -4,7 +4,6 @@
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import { body, query } from 'express-validator';
-import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import permitScopes from '../middlewares/permitScopes';
@@ -31,68 +30,21 @@ reservationsRouter.get(
     '',
     permitScopes(['reservations.*', 'reservations.read']),
     rateLimit,
-    (req, _, next) => {
-        const now = moment();
-
-        if (typeof req.query.bookingThrough !== 'string') {
-            req.query.bookingThrough = moment(now)
-                .toISOString();
-        }
-
-        if (typeof req.query.bookingFrom !== 'string') {
-            req.query.bookingFrom = moment(now)
-                // tslint:disable-next-line:no-magic-numbers
-                .add(-31, 'days') // とりあえず直近1カ月をデフォルト動作に設定
-                .toISOString();
-        }
-
-        if (typeof req.query.modifiedThrough !== 'string') {
-            req.query.modifiedThrough = moment(now)
-                .toISOString();
-        }
-
-        if (typeof req.query.modifiedFrom !== 'string') {
-            req.query.modifiedFrom = moment(now)
-                // tslint:disable-next-line:no-magic-numbers
-                .add(-6, 'months') // とりあえず直近6カ月をデフォルト動作に設定
-                .toISOString();
-        }
-
-        next();
-    },
     ...[
         query('bookingFrom')
-            .not()
-            .isEmpty()
+            .optional()
             .isISO8601()
             .toDate(),
         query('bookingThrough')
-            .not()
-            .isEmpty()
+            .optional()
             .isISO8601()
-            .toDate()
-            .custom((value, { req }) => {
-                // 期間指定を限定
-                const bookingThrough = moment(value);
-                if (req.query !== undefined) {
-                    const bookingThroughExpectedToBe = moment(req.query.bookingFrom)
-                        // tslint:disable-next-line:no-magic-numbers
-                        .add(31, 'days');
-                    if (bookingThrough.isAfter(bookingThroughExpectedToBe)) {
-                        throw new Error('Booking time range too large');
-                    }
-                }
-
-                return true;
-            }),
+            .toDate(),
         query('modifiedFrom')
-            .not()
-            .isEmpty()
+            .optional()
             .isISO8601()
             .toDate(),
         query('modifiedThrough')
-            .not()
-            .isEmpty()
+            .optional()
             .isISO8601()
             .toDate()
     ],
@@ -120,6 +72,43 @@ reservationsRouter.get(
             });
             // res.set('X-Total-Count', searchResult.totalCount.toString());
             res.json(searchResult.data);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * ストリーミングダウンロード
+ */
+reservationsRouter.get(
+    '/download',
+    permitScopes([]),
+    rateLimit,
+    validator,
+    async (req, res, next) => {
+        try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+            }
+            if (project.settings.chevre === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+            }
+
+            // クエリをそのままChevre検索へパス
+            const reservationService = new cinerino.chevre.service.Reservation({
+                endpoint: <string>process.env.CHEVRE_STREAMING_API_ENDPOINT,
+                auth: chevreAuthClient
+            });
+            const stream = <NodeJS.ReadableStream>await reservationService.download({
+                ...req.query,
+                project: { ids: [req.project.id] }
+            });
+
+            res.type(`${req.query.format}; charset=utf-8`);
+            stream.pipe(res);
         } catch (error) {
             next(error);
         }

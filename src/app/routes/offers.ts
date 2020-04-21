@@ -85,7 +85,8 @@ if (process.env.USE_MONEY_TRANSFER === '1') {
                 const action = await cinerino.service.offer.monetaryAmount.authorize({
                     project: req.project,
                     object: {
-                        typeOf: 'Offer',
+                        project: req.project,
+                        typeOf: cinerino.factory.chevre.offerType.Offer,
                         itemOffered: {
                             typeOf: 'MonetaryAmount',
                             value: Number(req.body.object.itemOffered.value),
