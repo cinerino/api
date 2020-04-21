@@ -42,6 +42,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 場所(オンラインとストア)インターフェースを削除
 - プロジェクトのイベントリポジトリ使用設定を廃止
+- イベントインポートタスクを削除
+- イベントキャパシティ更新タスクを削除
 
 ### Fixed
 

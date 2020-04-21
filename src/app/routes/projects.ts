@@ -203,9 +203,6 @@ function createFromBody(params: any): cinerino.factory.project.IProject {
             onOrderStatusChanged: {
             },
             codeExpiresInSeconds: 600,
-            importEventsIntervalInMinutes: 10,
-            importEventsInWeeks: 17,
-            importEventsStopped: true,
             sendgridApiKey: params.settings?.sendgridApiKey,
             transactionWebhookUrl: params.settings?.transactionWebhookUrl,
             useInMemoryOfferRepo: false,
