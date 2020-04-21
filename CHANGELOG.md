@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v2.0.0 - 2020-04-21
+
+### Added
+
 - 予約ダウンロードを追加
 - 場所サービスを追加
 - 注文レポート作成タスクを実験的に追加
@@ -36,8 +50,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - MongoDBコネクション監視調整
 - 返品取引開始時に返品ポリシー確認を追加
 
-### Deprecated
-
 ### Removed
 
 - 場所(オンラインとストア)インターフェースを削除
@@ -48,8 +60,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 - COAのXMLスケジュール抽出を、screener.timeが配列でない場合に対応
-
-### Security
 
 ## v1.7.0 - 2020-01-24
 
