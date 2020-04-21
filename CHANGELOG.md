@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- イベント検索の不要なコードを削除
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.0.1 - 2020-04-21
+
+### Changed
+
+- イベント検索の不要なコードを削除
 
 ## v2.0.0 - 2020-04-21
 
