@@ -79,11 +79,8 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
         .isISO8601()
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        const useRedisEventItemAvailabilityRepo = ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.useRedisEventItemAvailabilityRepo) === true;
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined });
@@ -93,33 +90,6 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
         })({
             project: projectRepo
         });
-        // Cinemasunshine対応
-        if (useRedisEventItemAvailabilityRepo) {
-            // searchEventsResult.data = searchEventsResult.data.map((e) => {
-            //     // シネマサンシャインではavailability属性を利用しているため、残席数から空席率情報を追加
-            //     const offers = (e.offers !== undefined)
-            //         ? {
-            //             ...e.offers,
-            //             availability: 100
-            //         }
-            //         : undefined;
-            //     if (offers !== undefined
-            //         && typeof e.remainingAttendeeCapacity === 'number'
-            //         && typeof e.maximumAttendeeCapacity === 'number') {
-            //         // tslint:disable-next-line:no-magic-numbers
-            //         offers.availability = Math.floor(Number(e.remainingAttendeeCapacity) / Number(e.maximumAttendeeCapacity) * 100);
-            //     }
-            //     return {
-            //         ...e,
-            //         ...(offers !== undefined)
-            //             ? {
-            //                 offer: offers, // 本来不要だが、互換性維持のため
-            //                 offers: offers
-            //             }
-            //             : undefined
-            //     };
-            // });
-        }
         if (typeof searchEventsResult.totalCount === 'number') {
             res.set('X-Total-Count', searchEventsResult.totalCount.toString());
         }
@@ -133,13 +103,12 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
  * IDでイベント検索
  */
 eventsRouter.get('/:id', permitScopes_1.default(['events.*', 'events.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c;
+    var _a;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         let event;
         const project = yield projectRepo.findById({ id: req.project.id });
-        const useRedisEventItemAvailabilityRepo = ((_b = project.settings) === null || _b === void 0 ? void 0 : _b.useRedisEventItemAvailabilityRepo) === true;
-        if (((_c = project.settings) === null || _c === void 0 ? void 0 : _c.chevre) === undefined) {
+        if (((_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
         }
         const eventService = new cinerino.chevre.service.Event({
@@ -147,32 +116,6 @@ eventsRouter.get('/:id', permitScopes_1.default(['events.*', 'events.read']), ra
             auth: chevreAuthClient
         });
         event = yield eventService.findById({ id: req.params.id });
-        // Cinemasunshine対応
-        if (useRedisEventItemAvailabilityRepo) {
-            // シネマサンシャインではavailability属性を利用しているため、残席数から空席率情報を追加
-            // const offers = (event.offers !== undefined)
-            //     ? {
-            //         ...event.offers,
-            //         availability: 100
-            //     }
-            //     : undefined;
-            // if (offers !== undefined
-            //     && typeof event.remainingAttendeeCapacity === 'number'
-            //     && typeof event.maximumAttendeeCapacity === 'number') {
-            //     offers.availability =
-            //         // tslint:disable-next-line:no-magic-numbers
-            //         Math.floor(Number(event.remainingAttendeeCapacity) / Number(event.maximumAttendeeCapacity) * 100);
-            // }
-            // event = {
-            //     ...event,
-            //     ...(offers !== undefined)
-            //         ? {
-            //             offer: offers, // 本来不要だが、互換性維持のため
-            //             offers: offers
-            //         }
-            //         : undefined
-            // };
-        }
         res.json(event);
     }
     catch (error) {
@@ -230,11 +173,11 @@ eventsRouter.get('/:id/offers/ticket', permitScopes_1.default(['events.*', 'even
  * イベントに対する座席検索
  */
 eventsRouter.get('/:id/seats', permitScopes_1.default(['events.*', 'events.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d;
+    var _b;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        if (((_d = project.settings) === null || _d === void 0 ? void 0 : _d.chevre) === undefined) {
+        if (((_b = project.settings) === null || _b === void 0 ? void 0 : _b.chevre) === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
         }
         const eventService = new cinerino.chevre.service.Event({

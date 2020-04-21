@@ -84,9 +84,6 @@ eventsRouter.get(
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
-            const project = await projectRepo.findById({ id: req.project.id });
-            const useRedisEventItemAvailabilityRepo = (<any>project).settings?.useRedisEventItemAvailabilityRepo === true;
-
             const searchConditions: cinerino.chevre.factory.event.screeningEvent.ISearchConditions = {
                 ...req.query,
                 project: { ids: [req.project.id] },
@@ -101,36 +98,6 @@ eventsRouter.get(
             })({
                 project: projectRepo
             });
-
-            // Cinemasunshine対応
-            if (useRedisEventItemAvailabilityRepo) {
-                // searchEventsResult.data = searchEventsResult.data.map((e) => {
-                //     // シネマサンシャインではavailability属性を利用しているため、残席数から空席率情報を追加
-                //     const offers = (e.offers !== undefined)
-                //         ? {
-                //             ...e.offers,
-                //             availability: 100
-                //         }
-                //         : undefined;
-
-                //     if (offers !== undefined
-                //         && typeof e.remainingAttendeeCapacity === 'number'
-                //         && typeof e.maximumAttendeeCapacity === 'number') {
-                //         // tslint:disable-next-line:no-magic-numbers
-                //         offers.availability = Math.floor(Number(e.remainingAttendeeCapacity) / Number(e.maximumAttendeeCapacity) * 100);
-                //     }
-
-                //     return {
-                //         ...e,
-                //         ...(offers !== undefined)
-                //             ? {
-                //                 offer: offers, // 本来不要だが、互換性維持のため
-                //                 offers: offers
-                //             }
-                //             : undefined
-                //     };
-                // });
-            }
 
             if (typeof searchEventsResult.totalCount === 'number') {
                 res.set('X-Total-Count', searchEventsResult.totalCount.toString());
@@ -158,7 +125,6 @@ eventsRouter.get(
             let event: cinerino.factory.chevre.event.screeningEvent.IEvent;
 
             const project = await projectRepo.findById({ id: req.project.id });
-            const useRedisEventItemAvailabilityRepo = (<any>project).settings?.useRedisEventItemAvailabilityRepo === true;
 
             if (project.settings?.chevre === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
@@ -169,35 +135,6 @@ eventsRouter.get(
                 auth: chevreAuthClient
             });
             event = await eventService.findById({ id: req.params.id });
-
-            // Cinemasunshine対応
-            if (useRedisEventItemAvailabilityRepo) {
-                // シネマサンシャインではavailability属性を利用しているため、残席数から空席率情報を追加
-                // const offers = (event.offers !== undefined)
-                //     ? {
-                //         ...event.offers,
-                //         availability: 100
-                //     }
-                //     : undefined;
-
-                // if (offers !== undefined
-                //     && typeof event.remainingAttendeeCapacity === 'number'
-                //     && typeof event.maximumAttendeeCapacity === 'number') {
-                //     offers.availability =
-                //         // tslint:disable-next-line:no-magic-numbers
-                //         Math.floor(Number(event.remainingAttendeeCapacity) / Number(event.maximumAttendeeCapacity) * 100);
-                // }
-
-                // event = {
-                //     ...event,
-                //     ...(offers !== undefined)
-                //         ? {
-                //             offer: offers, // 本来不要だが、互換性維持のため
-                //             offers: offers
-                //         }
-                //         : undefined
-                // };
-            }
 
             res.json(event);
         } catch (error) {
