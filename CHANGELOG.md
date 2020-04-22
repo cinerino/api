@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.0.2 - 2020-04-22
+
+### Changed
+
+- IAMサービス調整
+
 ## v2.0.1 - 2020-04-21
 
 ### Changed

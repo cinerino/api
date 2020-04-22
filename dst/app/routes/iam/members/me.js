@@ -30,7 +30,7 @@ iamMeRouter.get('', permitScopes_1.default(['iam.members.me.read']), rateLimit_1
         if (members.length === 0) {
             throw new cinerino.factory.errors.NotFound('Member');
         }
-        res.json(members[0].member);
+        res.json(members[0]);
     }
     catch (error) {
         next(error);
