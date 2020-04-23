@@ -155,8 +155,8 @@ ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.defaul
         ];
         andConditions.push({
             ownedFrom: {
-                $lte: new Date(fromDate),
-                $gte: new Date(toDate)
+                $gte: new Date(fromDate),
+                $lte: new Date(toDate)
             }
         });
         if (Array.isArray(theaterIds)) {
