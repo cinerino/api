@@ -61,7 +61,12 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
                             potentialActions: {
                                 registerProgramMembership: [
                                     {
-                                        object: { typeOf: programMembership.typeOf, id: programMembership.id },
+                                        object: {
+                                            typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership,
+                                            membershipFor: {
+                                                id: programMembership.id
+                                            }
+                                        },
                                         potentialActions: {
                                             orderProgramMembership: {
                                                 potentialActions: {

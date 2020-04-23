@@ -62,7 +62,12 @@ me4cinemasunshineRouter.put(
                                 potentialActions: {
                                     registerProgramMembership: [
                                         {
-                                            object: { typeOf: programMembership.typeOf, id: <string>programMembership.id },
+                                            object: {
+                                                typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership,
+                                                membershipFor: {
+                                                    id: <string>programMembership.id
+                                                }
+                                            },
                                             potentialActions: {
                                                 orderProgramMembership: {
                                                     potentialActions: {
