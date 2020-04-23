@@ -83,11 +83,6 @@ if (USE_IN_MEMORY_OFFER_REPO) {
     );
 }
 
-/**
- * ポイントインセンティブ名
- */
-const POINT_AWARD = 'PecorinoPayment';
-
 const placeOrder4cinemasunshineRouter = Router();
 
 /**
@@ -428,14 +423,7 @@ placeOrder4cinemasunshineRouter.post<ParamsDictionary>(
                 ownedFrom: now,
                 ownedThrough: now
             });
-            const pecorinoPaymentAward = programMemberships.reduce(
-                (a, b) => {
-                    return [...a, ...(Array.isArray(b.typeOfGood.award) ? b.typeOfGood.award : [])];
-                },
-                []
-            )
-                .find((a) => a === POINT_AWARD);
-            if (pecorinoPaymentAward === undefined) {
+            if (programMemberships.length === 0) {
                 throw new cinerino.factory.errors.Forbidden('Membership program requirements not satisfied');
             }
 
