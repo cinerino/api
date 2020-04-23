@@ -31,7 +31,6 @@
 | `MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN`   | true     |                | Mvtk credentials                       |
 | `MVTK_RESERVE_CLIENT_ID`                 | true     |                | Mvtk credentials                       |
 | `MVTK_RESERVE_CLIENT_SECRET`             | true     |                | Mvtk credentials                       |
-| `NODE_ENV`                               | true     |                | Environment name                       |
 | `PECORINO_AUTHORIZE_SERVER_DOMAIN`       | true     |                | Pecorino authorize server domain       |
 | `PECORINO_CLIENT_ID`                     | true     |                | Pecorino client id                     |
 | `PECORINO_CLIENT_SECRET`                 | true     |                | Pecorino client secret                 |

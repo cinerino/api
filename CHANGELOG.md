@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 会員登録数カウントサービスの期間条件について、作品日時ではなく所有期間を参照するように変更
+
 ### Deprecated
 
 ### Removed
