@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.1.1 - 2020-04-23
+
+### Changed
+
+- 会員登録数カウントサービスの期間条件について、作品日時ではなく所有期間を参照するように変更
+
 ## v2.1.0 - 2020-04-22
 
 ### Changed
