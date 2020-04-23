@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@cinerino/domain": "^2.1.0",
+    "@cinerino/domain": "^2.1.1",
     "@motionpicture/express-middleware": "^0.1.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
