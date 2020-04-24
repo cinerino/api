@@ -47,7 +47,6 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                 let programMembership;
                 if (user.username !== undefined) {
                     programMembership = {
-                        award: [],
                         membershipNumber: user.username,
                         name: 'Default Program Membership',
                         programName: 'Default Program Membership',

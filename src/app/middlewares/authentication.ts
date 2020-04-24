@@ -40,8 +40,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
 
                 let programMembership: cinerino.factory.programMembership.IProgramMembership | undefined;
                 if (user.username !== undefined) {
-                    programMembership = {
-                        award: [],
+                    programMembership = <any>{
                         membershipNumber: user.username,
                         name: 'Default Program Membership',
                         programName: 'Default Program Membership',
