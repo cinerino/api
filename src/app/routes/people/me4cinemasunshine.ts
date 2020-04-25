@@ -45,11 +45,11 @@ me4cinemasunshineRouter.put(
                 if (offer === undefined) {
                     throw new cinerino.factory.errors.NotFound('Offer');
                 }
-                if (offer.price === undefined) {
+                if (typeof offer.priceSpecification?.price !== 'number') {
                     throw new cinerino.factory.errors.NotFound('Offer Price undefined');
                 }
 
-                await checkCard(req, offer.price);
+                await checkCard(req, offer.priceSpecification?.price);
             }
 
             const task = await cinerino.service.programMembership.createRegisterTask({
