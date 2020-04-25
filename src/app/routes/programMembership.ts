@@ -31,7 +31,22 @@ programMembershipsRouter.get(
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
 
-            const programMemberships = await programMembershipRepo.search(searchConditions);
+            let programMemberships = await programMembershipRepo.search(searchConditions);
+
+            // api使用側への互換性維持のため、price属性を補完
+            programMemberships = programMemberships.map((p) => {
+                const offers = p.offers?.map((o) => {
+                    return {
+                        ...o,
+                        price: o.priceSpecification?.price
+                    };
+                });
+
+                return {
+                    ...p,
+                    ...(Array.isArray(offers)) ? { offers } : undefined
+                };
+            });
 
             res.json(programMemberships);
         } catch (error) {
