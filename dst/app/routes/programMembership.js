@@ -28,7 +28,16 @@ programMembershipsRouter.get('', permitScopes_1.default(['programMemberships.*',
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const programMemberships = yield programMembershipRepo.search(searchConditions);
+        let programMemberships = yield programMembershipRepo.search(searchConditions);
+        // api使用側への互換性維持のため、price属性を補完
+        programMemberships = programMemberships.map((p) => {
+            var _a;
+            const offers = (_a = p.offers) === null || _a === void 0 ? void 0 : _a.map((o) => {
+                var _a;
+                return Object.assign(Object.assign({}, o), { price: (_a = o.priceSpecification) === null || _a === void 0 ? void 0 : _a.price });
+            });
+            return Object.assign(Object.assign({}, p), (Array.isArray(offers)) ? { offers } : undefined);
+        });
         res.json(programMemberships);
     }
     catch (error) {
