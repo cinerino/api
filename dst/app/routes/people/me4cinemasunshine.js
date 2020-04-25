@@ -28,6 +28,7 @@ const me4cinemasunshineRouter = express_1.Router();
  * 会員プログラム登録
  */
 me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.default(['people.ownershipInfos', 'people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     try {
         const programMembershipRepo = new cinerino.repository.ProgramMembership(mongoose.connection);
         const programMemberships = yield programMembershipRepo.search({
@@ -46,10 +47,10 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
             if (offer === undefined) {
                 throw new cinerino.factory.errors.NotFound('Offer');
             }
-            if (offer.price === undefined) {
+            if (typeof ((_a = offer.priceSpecification) === null || _a === void 0 ? void 0 : _a.price) !== 'number') {
                 throw new cinerino.factory.errors.NotFound('Offer Price undefined');
             }
-            yield checkCard(req, offer.price);
+            yield checkCard(req, (_b = offer.priceSpecification) === null || _b === void 0 ? void 0 : _b.price);
         }
         const task = yield cinerino.service.programMembership.createRegisterTask({
             agent: req.agent,
