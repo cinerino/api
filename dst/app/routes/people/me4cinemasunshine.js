@@ -39,25 +39,17 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
-        const programMembershipRepo = new cinerino.repository.ProgramMembership(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
         if (typeof ((_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === null || _b === void 0 ? void 0 : _b.endpoint) !== 'string') {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
         }
-        const programMemberships = yield programMembershipRepo.search({
-            project: { id: { $eq: req.project.id } },
-            id: { $eq: req.body.programMembershipId }
-        });
-        const programMembership = programMemberships.shift();
-        if (programMembership === undefined) {
-            throw new cinerino.factory.errors.NotFound('ProgramMembership');
-        }
+        const membershipServiceId = req.body.programMembershipId;
         const productService = new cinerino.chevre.service.Product({
             endpoint: project.settings.chevre.endpoint,
             auth: chevreAuthClient
         });
-        const offers = yield productService.searchOffers({ id: programMembership.id });
+        const offers = yield productService.searchOffers({ id: membershipServiceId });
         if (offers.length === 0) {
             throw new cinerino.factory.errors.NotFound('offers');
         }
@@ -90,7 +82,7 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
                                         object: {
                                             typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership,
                                             membershipFor: {
-                                                id: programMembership.id
+                                                id: membershipServiceId
                                             }
                                         },
                                         potentialActions: {
@@ -115,14 +107,13 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
                     }
                 }
             },
-            programMembershipId: programMembership.id,
+            programMembershipId: membershipServiceId,
             seller: {
                 typeOf: req.body.sellerType,
                 id: req.body.sellerId
             }
         })({
             seller: new cinerino.repository.Seller(mongoose.connection),
-            programMembership: programMembershipRepo,
             project: new cinerino.repository.Project(mongoose.connection),
             task: new cinerino.repository.Task(mongoose.connection)
         });
