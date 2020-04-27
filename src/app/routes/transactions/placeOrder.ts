@@ -111,6 +111,8 @@ placeOrderTransactionsRouter.post(
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
+            const now = new Date();
+
             // WAITER有効設定であれば許可証をセット
             let passport: cinerino.factory.transaction.placeOrder.IPassportBeforeStart | undefined;
             if (!WAITER_DISABLED) {
@@ -127,6 +129,7 @@ placeOrderTransactionsRouter.post(
                 };
             }
 
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
@@ -175,6 +178,16 @@ placeOrderTransactionsRouter.post(
             const useTransactionClientUser =
                 project.settings !== undefined && (<any>project.settings).useTransactionClientUser === true;
 
+            // 現在所有している会員プログラムを全て検索
+            const programMembershipOwnershipInfos =
+                await ownershipInfoRepo.search<cinerino.factory.programMembership.ProgramMembershipType>({
+                    project: { id: { $eq: req.project.id } },
+                    typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
+                    ownedBy: { id: req.user.sub },
+                    ownedFrom: now,
+                    ownedThrough: now
+                });
+
             const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
                 project: req.project,
                 expires: expires,
@@ -192,7 +205,9 @@ placeOrderTransactionsRouter.post(
                 seller: req.body.seller,
                 object: {
                     passport: passport,
-                    ...(useTransactionClientUser) ? { clientUser: req.user } : undefined
+                    ...(useTransactionClientUser) ? { clientUser: req.user } : undefined,
+                    // 所有メンバーシップを記録
+                    ...{ programMembershipUsed: programMembershipOwnershipInfos.map((o) => o.typeOfGood) }
                 },
                 passportValidator: passportValidator
             })({

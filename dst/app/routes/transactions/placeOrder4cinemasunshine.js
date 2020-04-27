@@ -288,6 +288,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/award/pe
         const now = new Date();
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const programMemberships = yield ownershipInfoRepo.search({
+            project: { id: { $eq: req.project.id } },
             typeOfGood: {
                 typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership
             },

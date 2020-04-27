@@ -103,6 +103,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const now = new Date();
         // WAITER有効設定であれば許可証をセット
         let passport;
         if (!WAITER_DISABLED) {
@@ -118,6 +119,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
                 secret: process.env.WAITER_SECRET
             };
         }
+        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
@@ -152,6 +154,14 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         };
         const project = yield projectRepo.findById({ id: req.project.id });
         const useTransactionClientUser = project.settings !== undefined && project.settings.useTransactionClientUser === true;
+        // 現在所有している会員プログラムを全て検索
+        const programMembershipOwnershipInfos = yield ownershipInfoRepo.search({
+            project: { id: { $eq: req.project.id } },
+            typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
+            ownedBy: { id: req.user.sub },
+            ownedFrom: now,
+            ownedThrough: now
+        });
         const transaction = yield cinerino.service.transaction.placeOrderInProgress.start({
             project: req.project,
             expires: expires,
@@ -164,7 +174,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
                         : []
                 ] }),
             seller: req.body.seller,
-            object: Object.assign({ passport: passport }, (useTransactionClientUser) ? { clientUser: req.user } : undefined),
+            object: Object.assign(Object.assign({ passport: passport }, (useTransactionClientUser) ? { clientUser: req.user } : undefined), { programMembershipUsed: programMembershipOwnershipInfos.map((o) => o.typeOfGood) }),
             passportValidator: passportValidator
         })({
             project: projectRepo,

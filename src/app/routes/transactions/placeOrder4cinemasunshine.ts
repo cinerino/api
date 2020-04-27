@@ -348,6 +348,7 @@ placeOrder4cinemasunshineRouter.post<ParamsDictionary>(
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
 
             const programMemberships = await ownershipInfoRepo.search<cinerino.factory.programMembership.ProgramMembershipType>({
+                project: { id: { $eq: req.project.id } },
                 typeOfGood: {
                     typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership
                 },

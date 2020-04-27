@@ -247,6 +247,7 @@ me4cinemasunshineRouter.put(
             // 現在所有している会員プログラムを全て検索
             const now = new Date();
             const ownershipInfos = await ownershipInfoRepo.search<cinerino.factory.programMembership.ProgramMembershipType>({
+                project: { id: { $eq: req.project.id } },
                 typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
                 ownedBy: { id: req.agent.id },
                 ownedFrom: now,
