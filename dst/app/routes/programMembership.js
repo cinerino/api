@@ -41,11 +41,9 @@ programMembershipsRouter.get('', permitScopes_1.default(['programMemberships.*',
             endpoint: project.settings.chevre.endpoint,
             auth: chevreAuthClient
         });
-        const searchResult = yield productService.search({
-            limit: 1,
-            project: { id: { $eq: req.project.id } },
-            typeOf: { $eq: 'MembershipService' }
-        });
+        const searchResult = yield productService.search(Object.assign({ project: { id: { $eq: req.project.id } }, typeOf: { $eq: 'MembershipService' } }, {
+            limit: 1
+        }));
         let membershipServices = searchResult.data;
         // api使用側への互換性維持のため、offers属性を補完
         membershipServices = membershipServices.map((m) => {

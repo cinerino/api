@@ -42,9 +42,11 @@ programMembershipsRouter.get(
             });
 
             const searchResult = await productService.search({
-                limit: 1,
                 project: { id: { $eq: req.project.id } },
-                typeOf: { $eq: 'MembershipService' }
+                typeOf: { $eq: 'MembershipService' },
+                ...{
+                    limit: 1
+                }
             });
 
             let membershipServices = searchResult.data;
