@@ -5,7 +5,6 @@
  */
 import * as cinerino from '@cinerino/domain';
 
-import * as createDebug from 'debug';
 import { Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
@@ -17,71 +16,6 @@ import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
-
-const debug = createDebug('cinerino-api:router');
-
-export interface ICOATicket extends cinerino.COA.factory.master.ITicketResult {
-    theaterCode: string;
-}
-
-let coaTickets: ICOATicket[];
-
-function initializeCOATickets() {
-    return async (repos: { seller: cinerino.repository.Seller }) => {
-        try {
-            const tickets: ICOATicket[] = [];
-
-            const branchCodes: string[] = [];
-            const sellers = await repos.seller.search({});
-            sellers.forEach(async (seller) => {
-                if (Array.isArray(seller.makesOffer)) {
-                    branchCodes.push(...seller.makesOffer.map((o) => o.itemOffered.reservationFor.location.branchCode));
-                }
-            });
-
-            const masterService = new cinerino.COA.service.Master({
-                endpoint: cinerino.credentials.coa.endpoint,
-                auth: new cinerino.COA.auth.RefreshToken({
-                    endpoint: cinerino.credentials.coa.endpoint,
-                    refreshToken: cinerino.credentials.coa.refreshToken
-                })
-            });
-            await Promise.all(branchCodes.map(async (branchCode) => {
-                const ticketResults = await masterService.ticket({ theaterCode: branchCode });
-                debug(branchCode, ticketResults.length, 'COA Tickets found');
-                tickets.push(...ticketResults.map((t) => {
-                    return { ...t, theaterCode: branchCode };
-                }));
-            }));
-
-            coaTickets = tickets;
-        } catch (error) {
-            // no op
-        }
-    };
-}
-
-const USE_IN_MEMORY_OFFER_REPO = (process.env.USE_IN_MEMORY_OFFER_REPO === '1') ? true : false;
-if (USE_IN_MEMORY_OFFER_REPO) {
-    initializeCOATickets()({ seller: new cinerino.repository.Seller(mongoose.connection) })
-        .then()
-        // tslint:disable-next-line:no-console
-        .catch(console.error);
-
-    const HOUR = 3600000;
-    setInterval(
-        async () => {
-            try {
-                await initializeCOATickets()({ seller: new cinerino.repository.Seller(mongoose.connection) });
-            } catch (error) {
-                // tslint:disable-next-line:no-console
-                console.error(error);
-            }
-        },
-        // tslint:disable-next-line:no-magic-numbers
-        HOUR
-    );
-}
 
 const placeOrder4cinemasunshineRouter = Router();
 
@@ -117,8 +51,7 @@ placeOrder4cinemasunshineRouter.post(
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 project: new cinerino.repository.Project(mongoose.connection),
-                transaction: new cinerino.repository.Transaction(mongoose.connection),
-                offer: (coaTickets !== undefined) ? new cinerino.repository.Offer(coaTickets) : undefined
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
             res.status(CREATED)
@@ -200,7 +133,6 @@ placeOrder4cinemasunshineRouter.patch(
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 project: new cinerino.repository.Project(mongoose.connection),
-                offer: (coaTickets !== undefined) ? new cinerino.repository.Offer(coaTickets) : undefined,
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 

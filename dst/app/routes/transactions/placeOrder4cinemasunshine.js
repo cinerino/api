@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * 可能な部分から順次placeOrderTransactionsRouterへ移行していくことが望ましい
  */
 const cinerino = require("@cinerino/domain");
-const createDebug = require("debug");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
@@ -24,59 +23,6 @@ const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
-const debug = createDebug('cinerino-api:router');
-let coaTickets;
-function initializeCOATickets() {
-    return (repos) => __awaiter(this, void 0, void 0, function* () {
-        try {
-            const tickets = [];
-            const branchCodes = [];
-            const sellers = yield repos.seller.search({});
-            sellers.forEach((seller) => __awaiter(this, void 0, void 0, function* () {
-                if (Array.isArray(seller.makesOffer)) {
-                    branchCodes.push(...seller.makesOffer.map((o) => o.itemOffered.reservationFor.location.branchCode));
-                }
-            }));
-            const masterService = new cinerino.COA.service.Master({
-                endpoint: cinerino.credentials.coa.endpoint,
-                auth: new cinerino.COA.auth.RefreshToken({
-                    endpoint: cinerino.credentials.coa.endpoint,
-                    refreshToken: cinerino.credentials.coa.refreshToken
-                })
-            });
-            yield Promise.all(branchCodes.map((branchCode) => __awaiter(this, void 0, void 0, function* () {
-                const ticketResults = yield masterService.ticket({ theaterCode: branchCode });
-                debug(branchCode, ticketResults.length, 'COA Tickets found');
-                tickets.push(...ticketResults.map((t) => {
-                    return Object.assign(Object.assign({}, t), { theaterCode: branchCode });
-                }));
-            })));
-            coaTickets = tickets;
-        }
-        catch (error) {
-            // no op
-        }
-    });
-}
-const USE_IN_MEMORY_OFFER_REPO = (process.env.USE_IN_MEMORY_OFFER_REPO === '1') ? true : false;
-if (USE_IN_MEMORY_OFFER_REPO) {
-    initializeCOATickets()({ seller: new cinerino.repository.Seller(mongoose.connection) })
-        .then()
-        // tslint:disable-next-line:no-console
-        .catch(console.error);
-    const HOUR = 3600000;
-    setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
-        try {
-            yield initializeCOATickets()({ seller: new cinerino.repository.Seller(mongoose.connection) });
-        }
-        catch (error) {
-            // tslint:disable-next-line:no-console
-            console.error(error);
-        }
-    }), 
-    // tslint:disable-next-line:no-magic-numbers
-    HOUR);
-}
 const placeOrder4cinemasunshineRouter = express_1.Router();
 /**
  * 座席仮予約
@@ -104,8 +50,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/seatRese
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             project: new cinerino.repository.Project(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
-            offer: (coaTickets !== undefined) ? new cinerino.repository.Offer(coaTickets) : undefined
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED)
             .json(action);
@@ -171,7 +116,6 @@ placeOrder4cinemasunshineRouter.patch('/:transactionId/actions/authorize/seatRes
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             project: new cinerino.repository.Project(mongoose.connection),
-            offer: (coaTickets !== undefined) ? new cinerino.repository.Offer(coaTickets) : undefined,
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.json(action);
