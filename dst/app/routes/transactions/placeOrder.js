@@ -158,23 +158,23 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         const programMembershipOwnershipInfos = yield ownershipInfoRepo.search({
             project: { id: { $eq: req.project.id } },
             typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
-            ownedBy: { id: req.user.sub },
+            ownedBy: { id: req.agent.id },
             ownedFrom: now,
             ownedThrough: now
         });
         const transaction = yield cinerino.service.transaction.placeOrderInProgress.start({
             project: req.project,
             expires: expires,
-            agent: Object.assign(Object.assign({}, req.agent), { identifier: [
+            agent: Object.assign(Object.assign(Object.assign({}, req.agent), { identifier: [
                     ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
                     ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
                         ? req.body.agent.identifier.map((p) => {
                             return { name: String(p.name), value: String(p.value) };
                         })
                         : []
-                ] }),
+                ] }), { memberOfs: programMembershipOwnershipInfos.map((o) => o.typeOfGood) }),
             seller: req.body.seller,
-            object: Object.assign(Object.assign({ passport: passport }, (useTransactionClientUser) ? { clientUser: req.user } : undefined), { programMembershipUsed: programMembershipOwnershipInfos.map((o) => o.typeOfGood) }),
+            object: Object.assign({ passport: passport }, (useTransactionClientUser) ? { clientUser: req.user } : undefined),
             passportValidator: passportValidator
         })({
             project: projectRepo,

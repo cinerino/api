@@ -183,7 +183,7 @@ placeOrderTransactionsRouter.post(
                 await ownershipInfoRepo.search<cinerino.factory.programMembership.ProgramMembershipType>({
                     project: { id: { $eq: req.project.id } },
                     typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
-                    ownedBy: { id: req.user.sub },
+                    ownedBy: { id: req.agent.id },
                     ownedFrom: now,
                     ownedThrough: now
                 });
@@ -200,14 +200,14 @@ placeOrderTransactionsRouter.post(
                                 return { name: String(p.name), value: String(p.value) };
                             })
                             : []
-                    ]
+                    ],
+                    // 所有メンバーシップを記録
+                    ...{ memberOfs: programMembershipOwnershipInfos.map((o) => o.typeOfGood) }
                 },
                 seller: req.body.seller,
                 object: {
                     passport: passport,
-                    ...(useTransactionClientUser) ? { clientUser: req.user } : undefined,
-                    // 所有メンバーシップを記録
-                    ...{ programMembershipUsed: programMembershipOwnershipInfos.map((o) => o.typeOfGood) }
+                    ...(useTransactionClientUser) ? { clientUser: req.user } : undefined
                 },
                 passportValidator: passportValidator
             })({
