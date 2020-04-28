@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 会員サービスリポジトリをChevreへ移行
 - InMemoryオファーリポジトリをChevreへ移行
 - 注文取引開始時に所有メンバーシップを実験的に記録
+- ポイントインセンティブ承認時に口座取引を開始しないように調整
 
 ### Deprecated
 
