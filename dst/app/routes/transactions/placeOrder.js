@@ -867,9 +867,7 @@ exports.authorizePointAward = authorizePointAward;
  * インセンティブ承認アクション取消
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accounts/point/:actionId/cancel', permitScopes_1.default(['transactions']), (__1, __2, next) => {
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accounts/point/:actionId/cancel', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
         id: req.params.transactionId
@@ -883,8 +881,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accoun
     try {
         yield cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({
             agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId },
-            id: req.params.actionId
+            transaction: { id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)

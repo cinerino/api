@@ -46,8 +46,8 @@ if (process.env.USE_MONEY_TRANSFER === '1') {
                 .isEmpty()
                 .withMessage(() => 'required'),
             body('object.toLocation.accountType')
-                .isIn([cinerino.factory.accountType.Coin])
-                .withMessage(() => `must be "${cinerino.factory.accountType.Coin}"`),
+                .isIn(['Coin'])
+                .withMessage(() => `must be "${'Coin'}"`),
             body('object.additionalProperty')
                 .optional()
                 .isArray({ max: 10 }),

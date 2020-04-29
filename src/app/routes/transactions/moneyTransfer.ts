@@ -185,7 +185,7 @@ async function validateFromLocation(req: Request): Promise<cinerino.factory.tran
             issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
         })({ action: new cinerino.repository.Action(mongoose.connection) });
         const account = accountOwnershipInfo.typeOfGood;
-        if (account.accountType !== cinerino.factory.accountType.Coin) {
+        if (account.accountType !== 'Coin') {
             throw new cinerino.factory.errors.Argument('fromAccount', 'Invalid token');
         }
         fromLocation = <any>account;

@@ -22,7 +22,6 @@ const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
-const placeOrder_1 = require("./placeOrder");
 const placeOrder4cinemasunshineRouter = express_1.Router();
 /**
  * 座席仮予約
@@ -247,63 +246,6 @@ placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/mvtk/:
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
             actionId: req.params.actionId
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection)
-        });
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * インセンティブ承認アクション
- */
-// tslint:disable-next-line:use-default-type-parameter
-placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/award/pecorino', permitScopes_1.default(['transactions']), ...[], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        yield placeOrder_1.authorizePointAward(req);
-        res.status(http_status_1.CREATED)
-            .json({
-            id: 'dummy',
-            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
-        });
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * インセンティブ承認アクション取消
- */
-placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/award/pecorino/:actionId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        yield cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({
-            agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId },
-            id: req.params.actionId
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)

@@ -1041,9 +1041,6 @@ export async function authorizePointAward(req: Request) {
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/actions/authorize/award/accounts/point/:actionId/cancel',
     permitScopes(['transactions']),
-    (__1, __2, next) => {
-        next();
-    },
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -1061,8 +1058,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
         try {
             await cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({
                 agent: { id: req.user.sub },
-                transaction: { id: req.params.transactionId },
-                id: req.params.actionId
+                transaction: { id: req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
