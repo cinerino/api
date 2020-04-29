@@ -35,6 +35,7 @@ const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== und
     ? Number(process.env.NUM_ORDER_ITEMS_MAX_VALUE)
     // tslint:disable-next-line:no-magic-numbers
     : 50;
+const DEFAULT_ORDER_NAME = process.env.DEFAULT_ORDER_NAME;
 const placeOrderTransactionsRouter = express_1.Router();
 const debug = createDebug('cinerino-api:router');
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
@@ -109,6 +110,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
 ], validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     try {
         const now = new Date();
         // WAITER有効設定であれば許可証をセット
@@ -169,6 +171,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
             ownedFrom: now,
             ownedThrough: now
         });
+        const orderName = (typeof ((_a = req.body.object) === null || _a === void 0 ? void 0 : _a.name) === 'string') ? (_b = req.body.object) === null || _b === void 0 ? void 0 : _b.name : DEFAULT_ORDER_NAME;
         const transaction = yield cinerino.service.transaction.placeOrderInProgress.start({
             project: req.project,
             expires: expires,
@@ -181,7 +184,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
                         : []
                 ] }), { memberOfs: programMembershipOwnershipInfos.map((o) => o.typeOfGood) }),
             seller: req.body.seller,
-            object: Object.assign({ passport: passport }, (useTransactionClientUser) ? { clientUser: req.user } : undefined),
+            object: Object.assign(Object.assign({ passport: passport }, (useTransactionClientUser) ? { clientUser: req.user } : undefined), (typeof orderName === 'string') ? { name: orderName } : undefined),
             passportValidator: passportValidator
         })({
             project: projectRepo,
