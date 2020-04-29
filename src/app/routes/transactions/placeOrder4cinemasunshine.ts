@@ -8,7 +8,6 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
-import { body } from 'express-validator';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
@@ -16,6 +15,8 @@ import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
+
+import { authorizePointAward } from './placeOrder';
 
 const placeOrder4cinemasunshineRouter = Router();
 
@@ -311,24 +312,13 @@ placeOrder4cinemasunshineRouter.delete(
 );
 
 /**
- * ポイントインセンティブ承認アクション
+ * インセンティブ承認アクション
  */
 // tslint:disable-next-line:use-default-type-parameter
 placeOrder4cinemasunshineRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/award/pecorino',
     permitScopes(['transactions']),
-    ...[
-        body('amount')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required')
-            .isInt()
-            .toInt(),
-        body('toAccountNumber')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required')
-    ],
+    ...[],
     validator,
     async (req, res, next) => {
         await rateLimit4transactionInProgress({
@@ -344,40 +334,13 @@ placeOrder4cinemasunshineRouter.post<ParamsDictionary>(
     },
     async (req, res, next) => {
         try {
-            const now = new Date();
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-
-            const programMemberships = await ownershipInfoRepo.search<cinerino.factory.programMembership.ProgramMembershipType>({
-                project: { id: { $eq: req.project.id } },
-                typeOfGood: {
-                    typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership
-                },
-                ownedBy: { id: req.user.sub },
-                ownedFrom: now,
-                ownedThrough: now
-            });
-            if (programMemberships.length === 0) {
-                throw new cinerino.factory.errors.Forbidden('Membership program requirements not satisfied');
-            }
-
-            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.create({
-                agent: { id: req.user.sub },
-                transaction: { id: req.params.transactionId },
-                object: {
-                    typeOf: cinerino.factory.action.authorize.award.point.ObjectType.PointAward,
-                    amount: Number(req.body.amount),
-                    toAccountNumber: <string>req.body.toAccountNumber,
-                    notes: <string>req.body.notes
-                }
-            })({
-                action: new cinerino.repository.Action(mongoose.connection),
-                ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
-                project: new cinerino.repository.Project(mongoose.connection),
-                transaction: new cinerino.repository.Transaction(mongoose.connection)
-            });
+            await authorizePointAward(req);
 
             res.status(CREATED)
-                .json(action);
+                .json({
+                    id: 'dummy',
+                    purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
+                });
         } catch (error) {
             next(error);
         }
@@ -385,7 +348,7 @@ placeOrder4cinemasunshineRouter.post<ParamsDictionary>(
 );
 
 /**
- * ポイントインセンティブ承認アクション取消
+ * インセンティブ承認アクション取消
  */
 placeOrder4cinemasunshineRouter.delete(
     '/:transactionId/actions/authorize/award/pecorino/:actionId',
@@ -411,9 +374,9 @@ placeOrder4cinemasunshineRouter.delete(
                 id: req.params.actionId
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                project: new cinerino.repository.Project(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
+
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {
