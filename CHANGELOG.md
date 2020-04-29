@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v4.0.0 - 2020-04-26
+
+### Added
+
 - 取引確定後アクションパラメータにインセンティブ付与を追加
 
 ### Changed
@@ -19,16 +33,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - ポイントインセンティブ承認時に口座取引を開始しないように調整
 - インセンティブ付与承認アクションを、取引確定後アクションパラメータへ移行
 
-### Deprecated
-
 ### Removed
 
 - ポイントインセンティブ承認アクション取消タスクを削除
 - 口座タイプをChevre管理へ移行
-
-### Fixed
-
-### Security
 
 ## v3.6.0 - 2020-04-26
 
