@@ -5,14 +5,14 @@ import * as cinerino from '@cinerino/domain';
 import * as middlewares from '@motionpicture/express-middleware';
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { NO_CONTENT } from 'http-status';
+import { CREATED, NO_CONTENT } from 'http-status';
 import * as ioredis from 'ioredis';
 import * as mongoose from 'mongoose';
 
-// import * as redis from '../../redis';
+import * as redis from '../../redis';
 
 import permitScopes from '../middlewares/permitScopes';
-// import rateLimit from '../middlewares/rateLimit';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 // const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
@@ -28,37 +28,37 @@ const accountsRouter = Router();
 /**
  * 管理者として口座開設
  */
-// accountsRouter.post(
-//     '',
-//     permitScopes(['accounts.*', 'accounts.write']),
-//     ...[
-//         body('accountType', 'invalid accountType')
-//             .not()
-//             .isEmpty(),
-//         body('name', 'invalid name')
-//             .not()
-//             .isEmpty()
-//     ],
-//     rateLimit,
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const account = await cinerino.service.account.openWithoutOwnershipInfo({
-//                 project: req.project,
-//                 accountType: req.body.accountType,
-//                 name: req.body.name
-//             })({
-//                 accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
-//                 project: new cinerino.repository.Project(mongoose.connection)
-//             });
+accountsRouter.post(
+    '',
+    permitScopes(['accounts.*', 'accounts.write']),
+    ...[
+        body('accountType', 'invalid accountType')
+            .not()
+            .isEmpty(),
+        body('name', 'invalid name')
+            .not()
+            .isEmpty()
+    ],
+    rateLimit,
+    validator,
+    async (req, res, next) => {
+        try {
+            const account = await cinerino.service.account.openWithoutOwnershipInfo({
+                project: req.project,
+                accountType: req.body.accountType,
+                name: req.body.name
+            })({
+                accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
+                project: new cinerino.repository.Project(mongoose.connection)
+            });
 
-//             res.status(CREATED)
-//                 .json(account);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
+            res.status(CREATED)
+                .json(account);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 
 /**
  * 管理者として口座解約
@@ -81,90 +81,6 @@ const accountsRouter = Router();
 
 //             res.status(NO_CONTENT)
 //                 .end();
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
-
-/**
- * 口座検索
- */
-// accountsRouter.get(
-//     '',
-//     permitScopes(['accounts.*', 'accounts.read']),
-//     rateLimit,
-//     ...[
-//         query('accountType', 'invalid accountType')
-//             .not()
-//             .isEmpty()
-//             .withMessage(() => 'required')
-//     ],
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const projectRepo = new cinerino.repository.Project(mongoose.connection);
-//             const project = await projectRepo.findById({ id: req.project.id });
-//             if (project.settings === undefined) {
-//                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-//             }
-//             if (project.settings.pecorino === undefined) {
-//                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-//             }
-
-//             // クエリをそのままPecorino検索へパス
-//             const accountService = new cinerino.pecorinoapi.service.Account({
-//                 endpoint: project.settings.pecorino.endpoint,
-//                 auth: pecorinoAuthClient
-//             });
-//             const searchResult = await accountService.search({
-//                 ...req.query,
-//                 project: { id: { $eq: req.project.id } }
-//             });
-
-//             res.json(searchResult.data);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
-
-/**
- * 取引履歴検索
- */
-// accountsRouter.get(
-//     '/actions/moneyTransfer',
-//     permitScopes(['accounts.*', 'accounts.read']),
-//     rateLimit,
-//     ...[
-//         query('accountType', 'invalid accountType')
-//             .not()
-//             .isEmpty()
-//             .withMessage(() => 'required')
-//     ],
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const projectRepo = new cinerino.repository.Project(mongoose.connection);
-//             const project = await projectRepo.findById({ id: req.project.id });
-//             if (project.settings === undefined) {
-//                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-//             }
-//             if (project.settings.pecorino === undefined) {
-//                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-//             }
-
-//             // クエリをそのままPecorino検索へパス
-//             const actionService = new cinerino.pecorinoapi.service.Action({
-//                 endpoint: project.settings.pecorino.endpoint,
-//                 auth: pecorinoAuthClient
-//             });
-//             const searchResult = await actionService.searchMoneyTransferActions({
-//                 ...req.query,
-//                 project: { id: { $eq: req.project.id } }
-//             });
-
-//             res.json(searchResult.data);
 //         } catch (error) {
 //             next(error);
 //         }

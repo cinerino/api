@@ -9,6 +9,14 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+
 const programMembershipsRouter = Router();
 
 /**
@@ -21,34 +29,37 @@ programMembershipsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const programMembershipRepo = new cinerino.repository.ProgramMembership(mongoose.connection);
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
-            const searchConditions: cinerino.factory.programMembership.ISearchConditions = {
-                ...req.query,
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (typeof project.settings?.chevre?.endpoint !== 'string') {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
+            }
+
+            const productService = new cinerino.chevre.service.Product({
+                endpoint: project.settings.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+
+            const searchResult = await productService.search({
                 project: { id: { $eq: req.project.id } },
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
-            };
+                typeOf: { $eq: 'MembershipService' },
+                ...{
+                    limit: 1
+                }
+            });
 
-            let programMemberships = await programMembershipRepo.search(searchConditions);
+            let membershipServices = searchResult.data;
 
-            // api使用側への互換性維持のため、price属性を補完
-            programMemberships = programMemberships.map((p) => {
-                const offers = p.offers?.map((o) => {
-                    return {
-                        ...o,
-                        price: o.priceSpecification?.price
-                    };
-                });
-
+            // api使用側への互換性維持のため、offers属性を補完
+            membershipServices = membershipServices.map((m) => {
                 return {
-                    ...p,
-                    ...(Array.isArray(offers)) ? { offers } : undefined
+                    ...m,
+                    offers: [{ typeOf: cinerino.factory.chevre.offerType.Offer, identifier: 'AnnualPlan', price: 500 }]
                 };
             });
 
-            res.json(programMemberships);
+            res.json(membershipServices);
         } catch (error) {
             next(error);
         }

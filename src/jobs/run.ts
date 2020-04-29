@@ -14,7 +14,6 @@ import onTransactionExpired from './continuous/onTransactionExpired/run';
 
 import cancelAccount from './continuous/cancelAccount/run';
 import cancelCreditCard from './continuous/cancelCreditCard/run';
-import cancelPointAward from './continuous/cancelPointAward/run';
 import cancelReservation from './continuous/cancelReservation/run';
 import cancelSeatReservation from './continuous/cancelSeatReservation/run';
 import confirmReservation from './continuous/confirmReservation/run';
@@ -56,7 +55,6 @@ export default async () => {
 
     await cancelAccount({ project: project });
     await cancelCreditCard({ project: project });
-    await cancelPointAward({ project: project });
     await cancelReservation({ project: project });
     await cancelSeatReservation({ project: project });
     await confirmReservation({ project: project });

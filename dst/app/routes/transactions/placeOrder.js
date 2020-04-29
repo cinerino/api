@@ -37,6 +37,13 @@ const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== und
     : 50;
 const placeOrderTransactionsRouter = express_1.Router();
 const debug = createDebug('cinerino-api:router');
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials({
     domain: process.env.MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.MVTK_RESERVE_CLIENT_ID,
@@ -103,6 +110,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const now = new Date();
         // WAITER有効設定であれば許可証をセット
         let passport;
         if (!WAITER_DISABLED) {
@@ -118,6 +126,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
                 secret: process.env.WAITER_SECRET
             };
         }
+        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
@@ -152,17 +161,25 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         };
         const project = yield projectRepo.findById({ id: req.project.id });
         const useTransactionClientUser = project.settings !== undefined && project.settings.useTransactionClientUser === true;
+        // 現在所有している会員プログラムを全て検索
+        const programMembershipOwnershipInfos = yield ownershipInfoRepo.search({
+            project: { id: { $eq: req.project.id } },
+            typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
+            ownedBy: { id: req.agent.id },
+            ownedFrom: now,
+            ownedThrough: now
+        });
         const transaction = yield cinerino.service.transaction.placeOrderInProgress.start({
             project: req.project,
             expires: expires,
-            agent: Object.assign(Object.assign({}, req.agent), { identifier: [
+            agent: Object.assign(Object.assign(Object.assign({}, req.agent), { identifier: [
                     ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
                     ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
                         ? req.body.agent.identifier.map((p) => {
                             return { name: String(p.name), value: String(p.value) };
                         })
                         : []
-                ] }),
+                ] }), { memberOfs: programMembershipOwnershipInfos.map((o) => o.typeOfGood) }),
             seller: req.body.seller,
             object: Object.assign({ passport: passport }, (useTransactionClientUser) ? { clientUser: req.user } : undefined),
             passportValidator: passportValidator
@@ -721,21 +738,10 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMetho
     }
 }));
 /**
- * ポイントインセンティブ承認アクション
+ * インセンティブ承認アクション
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accounts/point', permitScopes_1.default(['transactions']), ...[
-    express_validator_1.body('amount')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required')
-        .isInt()
-        .toInt(),
-    express_validator_1.body('toAccountNumber')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required')
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accounts/point', permitScopes_1.default(['transactions']), ...[], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
         id: req.params.transactionId
@@ -747,30 +753,121 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accou
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const action = yield cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.create({
-            transaction: { id: req.params.transactionId },
-            agent: { id: req.user.sub },
-            object: req.body
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection)
-        });
+        yield authorizePointAward(req);
         res.status(http_status_1.CREATED)
-            .json(action);
+            .json({
+            id: 'dummy',
+            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
+        });
     }
     catch (error) {
         next(error);
     }
 }));
+// tslint:disable-next-line:max-func-body-length
+function authorizePointAward(req) {
+    var _a, _b, _c;
+    return __awaiter(this, void 0, void 0, function* () {
+        const now = new Date();
+        const notes = req.body.notes;
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (typeof ((_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === null || _b === void 0 ? void 0 : _b.endpoint) !== 'string') {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
+        }
+        const productService = new cinerino.chevre.service.Product({
+            endpoint: project.settings.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        // 所有メンバーシップを検索
+        const programMembershipOwnershipInfos = yield ownershipInfoRepo.search({
+            project: { id: { $eq: req.project.id } },
+            typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
+            ownedBy: { id: req.agent.id },
+            ownedFrom: now,
+            ownedThrough: now
+        });
+        const programMemberships = programMembershipOwnershipInfos.map((o) => o.typeOfGood);
+        if (programMemberships.length > 0) {
+            const givePointAwardParams = [];
+            for (const programMembership of programMemberships) {
+                const membershipServiceId = (_c = programMembership.membershipFor) === null || _c === void 0 ? void 0 : _c.id;
+                const membershipService = yield productService.findById({ id: membershipServiceId });
+                // 登録時の獲得ポイント
+                const membershipServiceOutput = membershipService.serviceOutput;
+                if (Array.isArray(membershipServiceOutput)) {
+                    yield Promise.all(membershipServiceOutput
+                        .map((serviceOutput) => __awaiter(this, void 0, void 0, function* () {
+                        var _d, _e, _f;
+                        const membershipPointsEarnedName = (_d = serviceOutput.membershipPointsEarned) === null || _d === void 0 ? void 0 : _d.name;
+                        const membershipPointsEarnedValue = (_e = serviceOutput.membershipPointsEarned) === null || _e === void 0 ? void 0 : _e.value;
+                        const membershipPointsEarnedUnitText = (_f = serviceOutput.membershipPointsEarned) === null || _f === void 0 ? void 0 : _f.unitText;
+                        if (typeof membershipPointsEarnedValue === 'number' && typeof membershipPointsEarnedUnitText === 'string') {
+                            // 所有口座を検索
+                            // 最も古い所有口座をデフォルト口座として扱う使用なので、ソート条件はこの通り
+                            let accountOwnershipInfos = yield cinerino.service.account.search({
+                                project: { typeOf: req.project.typeOf, id: req.project.id },
+                                conditions: {
+                                    sort: { ownedFrom: cinerino.factory.sortType.Ascending },
+                                    limit: 1,
+                                    typeOfGood: {
+                                        typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                                        accountType: membershipPointsEarnedUnitText
+                                    },
+                                    ownedBy: { id: req.agent.id },
+                                    ownedFrom: now,
+                                    ownedThrough: now
+                                }
+                            })({
+                                ownershipInfo: ownershipInfoRepo,
+                                project: projectRepo
+                            });
+                            // 開設口座に絞る
+                            accountOwnershipInfos = accountOwnershipInfos.filter((o) => o.typeOfGood.status === cinerino.factory.pecorino.accountStatusType.Opened);
+                            if (accountOwnershipInfos.length === 0) {
+                                throw new cinerino.factory.errors.NotFound('accountOwnershipInfos');
+                            }
+                            const toAccount = accountOwnershipInfos[0].typeOfGood;
+                            givePointAwardParams.push({
+                                object: {
+                                    typeOf: cinerino.factory.action.authorize.award.point.ObjectType.PointAward,
+                                    amount: membershipPointsEarnedValue,
+                                    toLocation: {
+                                        accountType: membershipPointsEarnedUnitText,
+                                        accountNumber: toAccount.accountNumber
+                                    },
+                                    description: (typeof notes === 'string') ? notes : membershipPointsEarnedName
+                                }
+                            });
+                        }
+                    })));
+                }
+            }
+            yield cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.create({
+                transaction: { id: req.params.transactionId },
+                agent: { id: req.agent.id },
+                object: {
+                    potentialActions: {
+                        givePointAwardParams: givePointAwardParams
+                    }
+                }
+            })({
+                action: actionRepo,
+                ownershipInfo: ownershipInfoRepo,
+                transaction: transactionRepo
+            });
+        }
+    });
+}
+exports.authorizePointAward = authorizePointAward;
 /**
- * ポイントインセンティブ承認アクション取消
+ * インセンティブ承認アクション取消
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accounts/point/:actionId/cancel', permitScopes_1.default(['transactions']), (__1, __2, next) => {
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accounts/point/:actionId/cancel', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
         id: req.params.transactionId
@@ -784,11 +881,9 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accoun
     try {
         yield cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({
             agent: { id: req.user.sub },
-            transaction: { id: req.params.transactionId },
-            id: req.params.actionId
+            transaction: { id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)

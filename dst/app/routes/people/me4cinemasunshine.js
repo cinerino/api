@@ -17,44 +17,61 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
-const moment = require("moment");
+// import * as moment from 'moment';
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
-const CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP = process.env.CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP === '1';
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+// const CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP = process.env.CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP === '1';
 const me4cinemasunshineRouter = express_1.Router();
 /**
  * 会員プログラム登録
  */
-me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.default(['people.ownershipInfos', 'people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.default(['people.ownershipInfos', 'people.me.*']), rateLimit_1.default, validator_1.default, 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
-        const programMembershipRepo = new cinerino.repository.ProgramMembership(mongoose.connection);
-        const programMemberships = yield programMembershipRepo.search({
-            project: { id: { $eq: req.project.id } },
-            id: { $eq: req.body.programMembershipId }
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (typeof ((_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === null || _b === void 0 ? void 0 : _b.endpoint) !== 'string') {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
+        }
+        const membershipServiceId = req.body.programMembershipId;
+        const productService = new cinerino.chevre.service.Product({
+            endpoint: project.settings.chevre.endpoint,
+            auth: chevreAuthClient
         });
-        const programMembership = programMemberships.shift();
-        if (programMembership === undefined) {
-            throw new cinerino.factory.errors.NotFound('ProgramMembership');
+        const offers = yield productService.searchOffers({ id: membershipServiceId });
+        if (offers.length === 0) {
+            throw new cinerino.factory.errors.NotFound('offers');
         }
-        if (CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP) {
-            if (programMembership.offers === undefined) {
-                throw new cinerino.factory.errors.NotFound('ProgramMembership.offers');
-            }
-            const offer = programMembership.offers.find((o) => o.identifier === req.body.offerIdentifier);
-            if (offer === undefined) {
-                throw new cinerino.factory.errors.NotFound('Offer');
-            }
-            if (typeof ((_a = offer.priceSpecification) === null || _a === void 0 ? void 0 : _a.price) !== 'number') {
-                throw new cinerino.factory.errors.NotFound('Offer Price undefined');
-            }
-            yield checkCard(req, (_b = offer.priceSpecification) === null || _b === void 0 ? void 0 : _b.price);
-        }
+        // sskts専用なので、強制的に一つ目のオファーを選択
+        const acceptedOffer = offers[0];
+        // if (CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP) {
+        //     if (programMembership.offers === undefined) {
+        //         throw new cinerino.factory.errors.NotFound('ProgramMembership.offers');
+        //     }
+        //     const offer = programMembership.offers.find((o) => o.identifier === req.body.offerIdentifier);
+        //     if (offer === undefined) {
+        //         throw new cinerino.factory.errors.NotFound('Offer');
+        //     }
+        //     if (typeof offer.priceSpecification?.price !== 'number') {
+        //         throw new cinerino.factory.errors.NotFound('Offer Price undefined');
+        //     }
+        //     await checkCard(req, offer.priceSpecification?.price);
+        // }
         const task = yield cinerino.service.programMembership.createRegisterTask({
+            project: { id: req.project.id },
             agent: req.agent,
-            offerIdentifier: req.body.offerIdentifier,
+            offerIdentifier: acceptedOffer.identifier,
             potentialActions: {
                 order: {
                     potentialActions: {
@@ -65,7 +82,7 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
                                         object: {
                                             typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership,
                                             membershipFor: {
-                                                id: programMembership.id
+                                                id: membershipServiceId
                                             }
                                         },
                                         potentialActions: {
@@ -90,14 +107,14 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
                     }
                 }
             },
-            programMembershipId: req.body.programMembershipId,
+            programMembershipId: membershipServiceId,
             seller: {
                 typeOf: req.body.sellerType,
                 id: req.body.sellerId
             }
         })({
             seller: new cinerino.repository.Seller(mongoose.connection),
-            programMembership: programMembershipRepo,
+            project: new cinerino.repository.Project(mongoose.connection),
             task: new cinerino.repository.Task(mongoose.connection)
         });
         // 会員登録タスクとして受け入れられたのでACCEPTED
@@ -109,95 +126,96 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
     }
 }));
 // tslint:disable-next-line:max-func-body-length
-function checkCard(req, amount) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
-        if (project.settings.gmo === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-        }
-        let creditCardPaymentAccepted;
-        const seller = yield sellerRepo.findById({ id: req.body.sellerId });
-        if (seller.paymentAccepted === undefined) {
-            throw new cinerino.factory.errors.Argument('transaction', 'Credit card payment not accepted.');
-        }
-        creditCardPaymentAccepted = seller.paymentAccepted.find((a) => a.paymentMethodType === cinerino.factory.paymentMethodType.CreditCard);
-        if (creditCardPaymentAccepted === undefined) {
-            throw new cinerino.factory.errors.Argument('transaction', 'Credit card payment not accepted.');
-        }
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore next */
-        if (creditCardPaymentAccepted.gmoInfo.shopPass === undefined) {
-            throw new cinerino.factory.errors.Argument('transaction', 'Credit card payment settings not enough');
-        }
-        // 事前にクレジットカードを登録しているはず
-        const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
-        const memberId = (useUsernameAsGMOMemberId) ? req.user.username : req.user.sub;
-        const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
-            siteId: project.settings.gmo.siteId,
-            sitePass: project.settings.gmo.sitePass,
-            cardService: new cinerino.GMO.service.Card({ endpoint: project.settings.gmo.endpoint })
-        });
-        const searchCardResults = yield creditCardRepo.search({ personId: memberId });
-        const creditCard = searchCardResults.shift();
-        if (creditCard === undefined) {
-            throw new cinerino.factory.errors.NotFound('CreditCard');
-        }
-        // カード有効性確認のために取引開始
-        const transaction = yield transactionRepo.start({
-            project: { typeOf: project.typeOf, id: project.id },
-            typeOf: cinerino.factory.transactionType.PlaceOrder,
-            agent: req.agent,
-            seller: {
-                project: req.project,
-                id: seller.id,
-                typeOf: seller.typeOf,
-                name: seller.name,
-                location: seller.location,
-                telephone: seller.telephone,
-                url: seller.url,
-                image: seller.image
-            },
-            object: {
-                authorizeActions: []
-            },
-            expires: moment()
-                .add(1, 'minutes')
-                .toDate()
-        });
-        // カードが有効でなければ、ここでエラーのはず
-        yield cinerino.service.payment.creditCard.authorize({
-            project: { id: project.id },
-            agent: { id: req.user.sub },
-            object: {
-                additionalProperty: [{ name: 'CheckForProgramMembership', value: '1' }],
-                typeOf: cinerino.factory.paymentMethodType.CreditCard,
-                amount: amount,
-                method: cinerino.GMO.utils.util.Method.Lump,
-                creditCard: {
-                    memberId: memberId,
-                    cardSeq: Number(creditCard.cardSeq)
-                }
-            },
-            purpose: { typeOf: transaction.typeOf, id: transaction.id }
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
-            seller: new cinerino.repository.Seller(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection)
-        });
-        // 確認のためだけの取引なので、すぐに中止
-        yield transactionRepo.cancel({
-            typeOf: transaction.typeOf,
-            id: transaction.id
-        });
-    });
-}
+// async function checkCard(req: Request, amount: number) {
+//     const projectRepo = new cinerino.repository.Project(mongoose.connection);
+//     const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+//     const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+//     const project = await projectRepo.findById({ id: req.project.id });
+//     if (project.settings === undefined) {
+//         throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+//     }
+//     if (project.settings.gmo === undefined) {
+//         throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+//     }
+//     let creditCardPaymentAccepted: cinerino.factory.seller.IPaymentAccepted<cinerino.factory.paymentMethodType.CreditCard>;
+//     const seller = await sellerRepo.findById({ id: req.body.sellerId });
+//     if (seller.paymentAccepted === undefined) {
+//         throw new cinerino.factory.errors.Argument('transaction', 'Credit card payment not accepted.');
+//     }
+//     creditCardPaymentAccepted = <cinerino.factory.seller.IPaymentAccepted<cinerino.factory.paymentMethodType.CreditCard>>
+//         seller.paymentAccepted.find(
+//             (a) => a.paymentMethodType === cinerino.factory.paymentMethodType.CreditCard
+//         );
+//     if (creditCardPaymentAccepted === undefined) {
+//         throw new cinerino.factory.errors.Argument('transaction', 'Credit card payment not accepted.');
+//     }
+//     // tslint:disable-next-line:no-single-line-block-comment
+//     /* istanbul ignore next */
+//     if (creditCardPaymentAccepted.gmoInfo.shopPass === undefined) {
+//         throw new cinerino.factory.errors.Argument('transaction', 'Credit card payment settings not enough');
+//     }
+//     // 事前にクレジットカードを登録しているはず
+//     const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+//     const memberId = (useUsernameAsGMOMemberId) ? <string>req.user.username : req.user.sub;
+//     const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
+//         siteId: project.settings.gmo.siteId,
+//         sitePass: project.settings.gmo.sitePass,
+//         cardService: new cinerino.GMO.service.Card({ endpoint: project.settings.gmo.endpoint })
+//     });
+//     const searchCardResults = await creditCardRepo.search({ personId: memberId });
+//     const creditCard = searchCardResults.shift();
+//     if (creditCard === undefined) {
+//         throw new cinerino.factory.errors.NotFound('CreditCard');
+//     }
+//     // カード有効性確認のために取引開始
+//     const transaction = await transactionRepo.start({
+//         project: { typeOf: project.typeOf, id: project.id },
+//         typeOf: cinerino.factory.transactionType.PlaceOrder,
+//         agent: req.agent,
+//         seller: {
+//             project: req.project,
+//             id: seller.id,
+//             typeOf: seller.typeOf,
+//             name: seller.name,
+//             location: seller.location,
+//             telephone: seller.telephone,
+//             url: seller.url,
+//             image: seller.image
+//         },
+//         object: {
+//             authorizeActions: []
+//         },
+//         expires: moment()
+//             .add(1, 'minutes')
+//             .toDate()
+//     });
+//     // カードが有効でなければ、ここでエラーのはず
+//     await cinerino.service.payment.creditCard.authorize({
+//         project: { id: project.id },
+//         agent: { id: req.user.sub },
+//         object: {
+//             additionalProperty: [{ name: 'CheckForProgramMembership', value: '1' }],
+//             typeOf: cinerino.factory.paymentMethodType.CreditCard,
+//             amount: amount,
+//             method: cinerino.GMO.utils.util.Method.Lump,
+//             creditCard: {
+//                 memberId: memberId,
+//                 cardSeq: Number(creditCard.cardSeq)
+//             }
+//         },
+//         purpose: { typeOf: transaction.typeOf, id: transaction.id }
+//     })({
+//         action: new cinerino.repository.Action(mongoose.connection),
+//         project: new cinerino.repository.Project(mongoose.connection),
+//         seller: new cinerino.repository.Seller(mongoose.connection),
+//         transaction: new cinerino.repository.Transaction(mongoose.connection)
+//     });
+//     // 確認のためだけの取引なので、すぐに中止
+//     await transactionRepo.cancel({
+//         typeOf: transaction.typeOf,
+//         id: transaction.id
+//     });
+// }
 /**
  * 会員プログラム登録解除
  * 所有権のidentifierをURLで指定
@@ -210,6 +228,7 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/:identifier/unReg
         // 現在所有している会員プログラムを全て検索
         const now = new Date();
         const ownershipInfos = yield ownershipInfoRepo.search({
+            project: { id: { $eq: req.project.id } },
             typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
             ownedBy: { id: req.agent.id },
             ownedFrom: now,

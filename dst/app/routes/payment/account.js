@@ -81,7 +81,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
                 issuer: process.env.RESOURCE_SERVER_IDENTIFIER
             })({ action: new cinerino.repository.Action(mongoose.connection) });
             const account = accountOwnershipInfo.typeOfGood;
-            if (account.accountType !== cinerino.factory.accountType.Coin) {
+            if (account.accountType !== 'Coin') {
                 throw new cinerino.factory.errors.Argument('fromAccount', 'Invalid token');
             }
             fromAccount = account;
@@ -146,7 +146,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
                 };
             }
         }
-        const currency = (accountType === cinerino.factory.accountType.Coin)
+        const currency = (accountType === 'Coin')
             ? cinerino.factory.priceCurrency.JPY
             : accountType;
         const action = yield cinerino.service.payment.account.authorize({

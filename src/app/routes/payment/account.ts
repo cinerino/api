@@ -71,9 +71,9 @@ accountPaymentRouter.post<ParamsDictionary>(
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
-            let fromAccount: cinerino.factory.action.authorize.paymentMethod.account.IFromAccount<cinerino.factory.accountType> | undefined
+            let fromAccount: cinerino.factory.action.authorize.paymentMethod.account.IFromAccount<string> | undefined
                 = req.body.object.fromAccount;
-            let toAccount: cinerino.factory.action.authorize.paymentMethod.account.IToAccount<cinerino.factory.accountType> | undefined
+            let toAccount: cinerino.factory.action.authorize.paymentMethod.account.IToAccount<string> | undefined
                 = req.body.object.toAccount;
 
             // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
@@ -88,7 +88,7 @@ accountPaymentRouter.post<ParamsDictionary>(
                     issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
                 })({ action: new cinerino.repository.Action(mongoose.connection) });
                 const account = accountOwnershipInfo.typeOfGood;
-                if (account.accountType !== cinerino.factory.accountType.Coin) {
+                if (account.accountType !== 'Coin') {
                     throw new cinerino.factory.errors.Argument('fromAccount', 'Invalid token');
                 }
                 fromAccount = account;
@@ -158,7 +158,7 @@ accountPaymentRouter.post<ParamsDictionary>(
                 }
             }
 
-            const currency = (accountType === cinerino.factory.accountType.Coin)
+            const currency = (accountType === 'Coin')
                 ? cinerino.factory.priceCurrency.JPY
                 : accountType;
 
