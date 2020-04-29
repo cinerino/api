@@ -804,8 +804,8 @@ function authorizePointAward(req) {
                         var _d, _e, _f;
                         const membershipPointsEarnedName = (_d = serviceOutput.membershipPointsEarned) === null || _d === void 0 ? void 0 : _d.name;
                         const membershipPointsEarnedValue = (_e = serviceOutput.membershipPointsEarned) === null || _e === void 0 ? void 0 : _e.value;
-                        const membershipPointsEarnedUnitCode = (_f = serviceOutput.membershipPointsEarned) === null || _f === void 0 ? void 0 : _f.unitCode;
-                        if (typeof membershipPointsEarnedValue === 'number' && typeof membershipPointsEarnedUnitCode === 'string') {
+                        const membershipPointsEarnedUnitText = (_f = serviceOutput.membershipPointsEarned) === null || _f === void 0 ? void 0 : _f.unitText;
+                        if (typeof membershipPointsEarnedValue === 'number' && typeof membershipPointsEarnedUnitText === 'string') {
                             // 所有口座を検索
                             // 最も古い所有口座をデフォルト口座として扱う使用なので、ソート条件はこの通り
                             let accountOwnershipInfos = yield cinerino.service.account.search({
@@ -815,7 +815,7 @@ function authorizePointAward(req) {
                                     limit: 1,
                                     typeOfGood: {
                                         typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
-                                        accountType: membershipPointsEarnedUnitCode
+                                        accountType: membershipPointsEarnedUnitText
                                     },
                                     ownedBy: { id: req.agent.id },
                                     ownedFrom: now,
@@ -836,7 +836,7 @@ function authorizePointAward(req) {
                                     typeOf: cinerino.factory.action.authorize.award.point.ObjectType.PointAward,
                                     amount: membershipPointsEarnedValue,
                                     toLocation: {
-                                        accountType: membershipPointsEarnedUnitCode,
+                                        accountType: membershipPointsEarnedUnitText,
                                         accountNumber: toAccount.accountNumber
                                     },
                                     description: (typeof notes === 'string') ? notes : membershipPointsEarnedName
