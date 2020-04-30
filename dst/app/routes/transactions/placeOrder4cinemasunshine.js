@@ -185,24 +185,25 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/mvtk', p
         id: req.params.transactionId
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
     try {
         const authorizeObject = {
             typeOf: (typeof req.body.typeOf === 'string' && req.body.typeOf.length > 0)
                 ? req.body.typeOf
                 : cinerino.factory.paymentMethodType.MovieTicket,
             seatInfoSyncIn: {
-                kgygishCd: req.body.seatInfoSyncIn.kgygishCd,
-                yykDvcTyp: req.body.seatInfoSyncIn.yykDvcTyp,
-                trkshFlg: req.body.seatInfoSyncIn.trkshFlg,
-                kgygishSstmZskyykNo: req.body.seatInfoSyncIn.kgygishSstmZskyykNo,
-                kgygishUsrZskyykNo: req.body.seatInfoSyncIn.kgygishUsrZskyykNo,
-                jeiDt: req.body.seatInfoSyncIn.jeiDt,
-                kijYmd: req.body.seatInfoSyncIn.kijYmd,
-                stCd: req.body.seatInfoSyncIn.stCd,
-                screnCd: req.body.seatInfoSyncIn.screnCd,
-                knyknrNoInfo: req.body.seatInfoSyncIn.knyknrNoInfo,
-                zskInfo: req.body.seatInfoSyncIn.zskInfo,
-                skhnCd: req.body.seatInfoSyncIn.skhnCd
+                kgygishCd: (_a = req.body.seatInfoSyncIn) === null || _a === void 0 ? void 0 : _a.kgygishCd,
+                yykDvcTyp: (_b = req.body.seatInfoSyncIn) === null || _b === void 0 ? void 0 : _b.yykDvcTyp,
+                trkshFlg: (_c = req.body.seatInfoSyncIn) === null || _c === void 0 ? void 0 : _c.trkshFlg,
+                kgygishSstmZskyykNo: (_d = req.body.seatInfoSyncIn) === null || _d === void 0 ? void 0 : _d.kgygishSstmZskyykNo,
+                kgygishUsrZskyykNo: (_e = req.body.seatInfoSyncIn) === null || _e === void 0 ? void 0 : _e.kgygishUsrZskyykNo,
+                jeiDt: (_f = req.body.seatInfoSyncIn) === null || _f === void 0 ? void 0 : _f.jeiDt,
+                kijYmd: (_g = req.body.seatInfoSyncIn) === null || _g === void 0 ? void 0 : _g.kijYmd,
+                stCd: (_h = req.body.seatInfoSyncIn) === null || _h === void 0 ? void 0 : _h.stCd,
+                screnCd: (_j = req.body.seatInfoSyncIn) === null || _j === void 0 ? void 0 : _j.screnCd,
+                knyknrNoInfo: (_k = req.body.seatInfoSyncIn) === null || _k === void 0 ? void 0 : _k.knyknrNoInfo,
+                zskInfo: (_l = req.body.seatInfoSyncIn) === null || _l === void 0 ? void 0 : _l.zskInfo,
+                skhnCd: (_m = req.body.seatInfoSyncIn) === null || _m === void 0 ? void 0 : _m.skhnCd
             }
         };
         const actions = yield cinerino.service.payment.advancedTicket.authorize({
