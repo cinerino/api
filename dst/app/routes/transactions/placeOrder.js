@@ -849,7 +849,7 @@ function authorizePointAward(req) {
                     })));
                 }
             }
-            yield cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.create({
+            yield cinerino.service.transaction.placeOrderInProgress.authorizeAward({
                 transaction: { id: req.params.transactionId },
                 agent: { id: req.agent.id },
                 object: {
@@ -859,7 +859,6 @@ function authorizePointAward(req) {
                 }
             })({
                 action: actionRepo,
-                ownershipInfo: ownershipInfoRepo,
                 transaction: transactionRepo
             });
         }
@@ -882,7 +881,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accoun
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({
+        yield cinerino.service.transaction.placeOrderInProgress.voidAward({
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId }
         })({

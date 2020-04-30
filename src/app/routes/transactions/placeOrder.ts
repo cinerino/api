@@ -1023,7 +1023,7 @@ export async function authorizePointAward(req: Request) {
             }
         }
 
-        await cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.create({
+        await cinerino.service.transaction.placeOrderInProgress.authorizeAward({
             transaction: { id: req.params.transactionId },
             agent: { id: req.agent.id },
             object: {
@@ -1033,7 +1033,6 @@ export async function authorizePointAward(req: Request) {
             }
         })({
             action: actionRepo,
-            ownershipInfo: ownershipInfoRepo,
             transaction: transactionRepo
         });
     }
@@ -1061,7 +1060,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
     },
     async (req, res, next) => {
         try {
-            await cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({
+            await cinerino.service.transaction.placeOrderInProgress.voidAward({
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId }
             })({

@@ -172,7 +172,7 @@ placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/offer/
     }
 }));
 /**
- * ムビチケ追加
+ * 前売券決済承認
  */
 placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/mvtk', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
@@ -187,9 +187,9 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/mvtk', p
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const authorizeObject = {
-            // typeOf: cinerino.factory.action.authorize.discount.mvtk.ObjectType.Mvtk,
-            // price: Number(req.body.price),
-            // transactionId: req.params.transactionId,
+            typeOf: (typeof req.body.typeOf === 'string' && req.body.typeOf.length > 0)
+                ? req.body.typeOf
+                : cinerino.factory.paymentMethodType.MovieTicket,
             seatInfoSyncIn: {
                 kgygishCd: req.body.seatInfoSyncIn.kgygishCd,
                 yykDvcTyp: req.body.seatInfoSyncIn.yykDvcTyp,
@@ -205,8 +205,7 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/mvtk', p
                 skhnCd: req.body.seatInfoSyncIn.skhnCd
             }
         };
-        const mvtkService = cinerino.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk;
-        const actions = yield mvtkService.createMovieTicketPaymentAuthorization({
+        const actions = yield cinerino.service.payment.advancedTicket.authorize({
             project: req.project,
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
@@ -242,7 +241,7 @@ placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/mvtk/:
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield cinerino.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.cancel({
+        yield cinerino.service.payment.advancedTicket.voidTransaction({
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
             actionId: req.params.actionId
