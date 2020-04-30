@@ -182,7 +182,9 @@ accountsRouter.post(
                     amount: req.body.object?.amount,
                     toLocation: {
                         typeOf: cinerino.factory.pecorino.account.TypeOf.Account,
-                        accountType: req.body.object?.toLocation?.accountType,
+                        accountType: (typeof req.body.object?.toLocation?.accountType === 'string')
+                            ? req.body.object?.toLocation?.accountType
+                            : 'Point',
                         accountNumber: req.body.object?.toLocation?.accountNumber
                     },
                     description: (typeof req.body.object.description === 'string') ? req.body.object.description : '入金'
