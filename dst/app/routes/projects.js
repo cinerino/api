@@ -194,8 +194,7 @@ function createFromBody(params) {
             transactionWebhookUrl: (_z = params.settings) === null || _z === void 0 ? void 0 : _z.transactionWebhookUrl,
             useInMemoryOfferRepo: false,
             useReservationNumberAsConfirmationNumber: false,
-            useUsernameAsGMOMemberId: false,
-            validateMovieTicket: true
+            useUsernameAsGMOMemberId: false
         } }, {
         subscription: { identifier: 'Free' }
     });
