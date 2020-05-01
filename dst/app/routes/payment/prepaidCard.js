@@ -148,9 +148,9 @@ prepaidCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
         //     }
         // }
         const currency = cinerino.factory.priceCurrency.JPY;
-        const action = yield cinerino.service.payment.account.authorize({
+        const action = yield cinerino.service.payment.prepaidCard.authorize({
             project: req.project,
-            object: Object.assign(Object.assign({ typeOf: cinerino.factory.paymentMethodType.Account, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+            object: Object.assign(Object.assign({ typeOf: cinerino.factory.paymentMethodType.PrepaidCard, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {
                         return { name: String(p.name), value: String(p.value) };
                     })
@@ -186,7 +186,7 @@ prepaidCardPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield cinerino.service.payment.account.voidTransaction({
+        yield cinerino.service.payment.prepaidCard.voidTransaction({
             project: req.project,
             id: req.params.actionId,
             agent: { id: req.user.sub },

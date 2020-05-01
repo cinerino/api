@@ -159,10 +159,10 @@ prepaidCardPaymentRouter.post<ParamsDictionary>(
 
             const currency = cinerino.factory.priceCurrency.JPY;
 
-            const action = await cinerino.service.payment.account.authorize({
+            const action = await cinerino.service.payment.prepaidCard.authorize({
                 project: req.project,
                 object: {
-                    typeOf: cinerino.factory.paymentMethodType.Account,
+                    typeOf: cinerino.factory.paymentMethodType.PrepaidCard,
                     amount: Number(req.body.object.amount),
                     currency: currency,
                     additionalProperty: (Array.isArray(req.body.object.additionalProperty))
@@ -213,7 +213,7 @@ prepaidCardPaymentRouter.put(
     },
     async (req, res, next) => {
         try {
-            await cinerino.service.payment.account.voidTransaction({
+            await cinerino.service.payment.prepaidCard.voidTransaction({
                 project: req.project,
                 id: req.params.actionId,
                 agent: { id: req.user.sub },
