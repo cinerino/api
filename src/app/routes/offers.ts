@@ -46,8 +46,8 @@ if (process.env.USE_MONEY_TRANSFER === '1') {
                 .isEmpty()
                 .withMessage(() => 'required'),
             body('object.toLocation.accountType')
-                .isIn(['Coin'])
-                .withMessage(() => `must be "${'Coin'}"`),
+                .isIn([cinerino.factory.paymentMethodType.PrepaidCard])
+                .withMessage(() => `must be "${cinerino.factory.paymentMethodType.PrepaidCard}"`),
             body('object.additionalProperty')
                 .optional()
                 .isArray({ max: 10 }),
