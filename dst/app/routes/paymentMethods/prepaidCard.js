@@ -15,6 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
+const http_status_1 = require("http-status");
+const moment = require("moment-timezone");
 const mongoose = require("mongoose");
 const redis = require("../../../redis");
 const permitScopes_1 = require("../../middlewares/permitScopes");
@@ -48,11 +50,22 @@ prepaidCardPaymentMethodsRouter.post('', permitScopes_1.default(['paymentMethods
         const accessCode = req.body.accessCode;
         // プリペイドカード作成
         const paymentMethodRepo = new cinerino.repository.PaymentMethod(mongoose.connection);
-        const prepaidCard = Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: cinerino.factory.paymentMethodType.PrepaidCard, identifier: account.accountNumber, accessCode: accessCode, serviceOutput: req.body.serviceOutput }, {
+        const prepaidCard = {
+            project: { typeOf: req.project.typeOf, id: req.project.id },
+            typeOf: cinerino.factory.paymentMethodType.PrepaidCard,
+            identifier: account.accountNumber,
+            accessCode: accessCode,
+            amount: {
+                typeOf: 'MonetaryAmount',
+                currency: cinerino.factory.priceCurrency.JPY,
+                validFrom: moment(account.openDate)
+                    .toDate()
+            },
             name: account.name
-        });
+        };
         const doc = yield paymentMethodRepo.paymentMethodModel.create(prepaidCard);
-        res.json(doc.toObject());
+        res.status(http_status_1.CREATED)
+            .json(doc.toObject());
     }
     catch (error) {
         next(error);
@@ -61,29 +74,23 @@ prepaidCardPaymentMethodsRouter.post('', permitScopes_1.default(['paymentMethods
 /**
  * プリペイドカード検索
  */
-prepaidCardPaymentMethodsRouter.get('', permitScopes_1.default(['paymentMethods.*', 'paymentMethods.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+prepaidCardPaymentMethodsRouter.get('', permitScopes_1.default(['paymentMethods.*', 'paymentMethods.read']), rateLimit_1.default, ...[
+    express_validator_1.query('limit')
+        .optional()
+        .isInt()
+        .toInt(),
+    express_validator_1.query('page')
+        .optional()
+        .isInt()
+        .toInt()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const paymentMethodRepo = new cinerino.repository.PaymentMethod(mongoose.connection);
-        // const searchCoinditions = {
-        //     ...req.query,
-        //     project: { ids: [req.project.id] },
-        //     // tslint:disable-next-line:no-magic-numbers
-        //     limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-        //     page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
-        // };
-        const docs = yield paymentMethodRepo.paymentMethodModel.find({
-            'project.id': { $exists: true, $eq: req.project.id },
-            typeOf: { $eq: cinerino.factory.paymentMethodType.PrepaidCard }
-        }, {
-            __v: 0,
-            createdAt: 0,
-            updatedAt: 0
-        })
-            .limit(req.query.limit)
-            .skip(req.query.limit * (req.query.page - 1))
-            .setOptions({ maxTimeMS: 10000 })
-            .exec();
-        res.json(docs.map((doc) => doc.toObject()));
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, typeOf: { $eq: cinerino.factory.paymentMethodType.PrepaidCard } });
+        const paymentMethods = yield paymentMethodRepo.search(searchConditions);
+        res.json(paymentMethods);
     }
     catch (error) {
         next(error);

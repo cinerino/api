@@ -3,7 +3,9 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
-import { body } from 'express-validator';
+import { body, query } from 'express-validator';
+import { CREATED } from 'http-status';
+import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 
 import * as redis from '../../../redis';
@@ -55,15 +57,19 @@ prepaidCardPaymentMethodsRouter.post(
                 typeOf: cinerino.factory.paymentMethodType.PrepaidCard,
                 identifier: account.accountNumber,
                 accessCode: accessCode,
-                serviceOutput: req.body.serviceOutput,
-                ...{
-                    name: account.name
-                }
+                amount: {
+                    typeOf: 'MonetaryAmount',
+                    currency: cinerino.factory.priceCurrency.JPY,
+                    validFrom: moment(account.openDate)
+                        .toDate()
+                },
+                name: account.name
             };
 
             const doc = await paymentMethodRepo.paymentMethodModel.create(prepaidCard);
 
-            res.json(doc.toObject());
+            res.status(CREATED)
+                .json(doc.toObject());
         } catch (error) {
             next(error);
         }
@@ -77,34 +83,33 @@ prepaidCardPaymentMethodsRouter.get(
     '',
     permitScopes(['paymentMethods.*', 'paymentMethods.read']),
     rateLimit,
+    ...[
+        query('limit')
+            .optional()
+            .isInt()
+            .toInt(),
+        query('page')
+            .optional()
+            .isInt()
+            .toInt()
+    ],
     validator,
     async (req, res, next) => {
         try {
             const paymentMethodRepo = new cinerino.repository.PaymentMethod(mongoose.connection);
-            // const searchCoinditions = {
-            //     ...req.query,
-            //     project: { ids: [req.project.id] },
-            //     // tslint:disable-next-line:no-magic-numbers
-            //     limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-            //     page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
-            // };
-            const docs = await paymentMethodRepo.paymentMethodModel.find(
-                {
-                    'project.id': { $exists: true, $eq: req.project.id },
-                    typeOf: { $eq: cinerino.factory.paymentMethodType.PrepaidCard }
-                },
-                {
-                    __v: 0,
-                    createdAt: 0,
-                    updatedAt: 0
-                }
-            )
-                .limit(req.query.limit)
-                .skip(req.query.limit * (req.query.page - 1))
-                .setOptions({ maxTimeMS: 10000 })
-                .exec();
 
-            res.json(docs.map((doc) => doc.toObject()));
+            const searchConditions: cinerino.factory.paymentMethod.ISearchConditions<cinerino.factory.paymentMethodType.PrepaidCard> = {
+                ...req.query,
+                project: { ids: [req.project.id] },
+                // tslint:disable-next-line:no-magic-numbers
+                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+                typeOf: { $eq: cinerino.factory.paymentMethodType.PrepaidCard }
+            };
+
+            const paymentMethods = await paymentMethodRepo.search(searchConditions);
+
+            res.json(paymentMethods);
         } catch (error) {
             next(error);
         }
