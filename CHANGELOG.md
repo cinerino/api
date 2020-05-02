@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - プリペイドカードインターフェースを追加
 - プリペイドカード決済インターフェースを追加
 - プリペイドカード返金インターフェースを追加
+- プリペイドカード作成を追加
+- プリペイドカード検索を追加
 
 ### Changed
 

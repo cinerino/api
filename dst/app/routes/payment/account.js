@@ -146,9 +146,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
                 };
             }
         }
-        const currency = (accountType === 'Coin')
-            ? cinerino.factory.priceCurrency.JPY
-            : accountType;
+        const currency = accountType;
         const action = yield cinerino.service.payment.account.authorize({
             project: req.project,
             object: Object.assign(Object.assign(Object.assign(Object.assign({ typeOf: cinerino.factory.paymentMethodType.Account, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))

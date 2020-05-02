@@ -158,9 +158,7 @@ accountPaymentRouter.post<ParamsDictionary>(
                 }
             }
 
-            const currency = (accountType === 'Coin')
-                ? cinerino.factory.priceCurrency.JPY
-                : accountType;
+            const currency = accountType;
 
             const action = await cinerino.service.payment.account.authorize({
                 project: req.project,
