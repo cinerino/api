@@ -83,7 +83,7 @@ prepaidCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
             })({ action: new cinerino.repository.Action(mongoose.connection) });
             const account = accountOwnershipInfo.typeOfGood;
             fromLocation = {
-                accountType: cinerino.factory.paymentMethodType.PrepaidCard,
+                accountType: cinerino.factory.accountType.Prepaid,
                 accountNumber: account.identifier
             };
         }

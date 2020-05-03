@@ -39,7 +39,7 @@ prepaidCardPaymentMethodsRouter.post(
             // 口座作成
             const account = await cinerino.service.account.openWithoutOwnershipInfo({
                 project: { typeOf: req.project.typeOf, id: req.project.id },
-                accountType: cinerino.factory.paymentMethodType.PrepaidCard,
+                accountType: cinerino.factory.accountType.Prepaid,
                 name: req.body.name
             })({
                 accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
