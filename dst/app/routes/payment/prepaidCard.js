@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 口座決済ルーター
+ * プリペイドカード決済ルーター
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
@@ -26,12 +26,12 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
     : 256;
-const accountPaymentRouter = express_1.Router();
+const prepaidCardPaymentRouter = express_1.Router();
 /**
  * 口座確保
  */
 // tslint:disable-next-line:use-default-type-parameter
-accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions']), rateLimit_1.default, ...[
+prepaidCardPaymentRouter.post('/authorize', permitScopes_1.default(['transactions']), rateLimit_1.default, ...[
     express_validator_1.body('object')
         .not()
         .isEmpty(),
@@ -69,27 +69,28 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        let fromAccount = req.body.object.fromAccount;
-        let toAccount = req.body.object.toAccount;
+        let fromLocation = req.body.object.fromLocation;
+        // let toLocation: cinerino.factory.action.authorize.paymentMethod.prepaidCard.IToLocation | undefined
+        //     = req.body.object.toLocation;
         // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
-        if (typeof fromAccount === 'string') {
+        if (typeof fromLocation === 'string') {
             const accountOwnershipInfo = yield cinerino.service.code.verifyToken({
                 project: req.project,
                 agent: req.agent,
-                token: fromAccount,
+                token: fromLocation,
                 secret: process.env.TOKEN_SECRET,
                 issuer: process.env.RESOURCE_SERVER_IDENTIFIER
             })({ action: new cinerino.repository.Action(mongoose.connection) });
             const account = accountOwnershipInfo.typeOfGood;
-            // if (account.accountType !== 'Coin') {
-            //     throw new cinerino.factory.errors.Argument('fromAccount', 'Invalid token');
-            // }
-            fromAccount = account;
+            fromLocation = {
+                accountType: cinerino.factory.accountType.Prepaid,
+                accountNumber: account.identifier
+            };
         }
         else {
             // 口座情報がトークンでない、かつ、APIユーザーが管理者でない場合、許可されるリクエストかどうか確認
             if (!req.isAdmin) {
-                if (fromAccount === undefined) {
+                if (fromLocation === undefined) {
                     // 入金処理は禁止
                     throw new cinerino.factory.errors.ArgumentNull('From Account');
                 }
@@ -103,8 +104,8 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
                         ownedThrough: new Date(),
                         typeOfGood: {
                             typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
-                            accountType: fromAccount.accountType,
-                            accountNumber: fromAccount.accountNumber
+                            accountType: fromLocation.accountType,
+                            accountNumber: fromLocation.accountNumber
                         }
                     });
                     if (count === 0) {
@@ -113,47 +114,49 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
                 }
             }
         }
-        const accountType = (fromAccount !== undefined)
-            ? fromAccount.accountType
-            : (toAccount !== undefined) ? toAccount.accountType : undefined;
+        // const accountType = cinerino.factory.paymentMethodType.PrepaidCard;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+        // const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         // 注文取引、かつ、toAccount未指定の場合、販売者の口座を検索して、toAccountにセット
-        if (toAccount === undefined) {
-            const transaction = yield transactionRepo.findById({
-                typeOf: req.body.purpose.typeOf,
-                id: req.body.purpose.id
-            });
-            if (transaction.typeOf === cinerino.factory.transactionType.PlaceOrder) {
-                const seller = yield sellerRepo.findById({
-                    id: transaction.seller.id
-                });
-                if (seller.paymentAccepted === undefined) {
-                    throw new cinerino.factory.errors.Argument('object', 'Account payment not accepted');
-                }
-                const accountPaymentsAccepted = seller.paymentAccepted.filter((a) => a.paymentMethodType === cinerino.factory.paymentMethodType.Account);
-                const paymentAccepted = accountPaymentsAccepted.find((a) => a.accountType === accountType);
-                // tslint:disable-next-line:no-single-line-block-comment
-                /* istanbul ignore if */
-                if (paymentAccepted === undefined) {
-                    throw new cinerino.factory.errors.Argument('object', `${accountType} payment not accepted`);
-                }
-                toAccount = {
-                    accountNumber: paymentAccepted.accountNumber,
-                    accountType: paymentAccepted.accountType
-                };
-            }
-        }
-        const currency = accountType;
-        const action = yield cinerino.service.payment.account.authorize({
+        // if (toLocation === undefined) {
+        //     const transaction = await transactionRepo.findById({
+        //         typeOf: req.body.purpose.typeOf,
+        //         id: <string>req.body.purpose.id
+        //     });
+        //     if (transaction.typeOf === cinerino.factory.transactionType.PlaceOrder) {
+        //         const seller = await sellerRepo.findById({
+        //             id: transaction.seller.id
+        //         });
+        //         if (seller.paymentAccepted === undefined) {
+        //             throw new cinerino.factory.errors.Argument('object', 'Account payment not accepted');
+        //         }
+        //         const accountPaymentsAccepted =
+        //             <cinerino.factory.seller.IPaymentAccepted<cinerino.factory.paymentMethodType.PrepaidCard>[]>
+        //             seller.paymentAccepted.filter((a) => a.paymentMethodType === cinerino.factory.paymentMethodType.PrepaidCard);
+        //         const paymentAccepted = accountPaymentsAccepted.find((a) => a.accountType === accountType);
+        //         // tslint:disable-next-line:no-single-line-block-comment
+        //         /* istanbul ignore if */
+        //         if (paymentAccepted === undefined) {
+        //             throw new cinerino.factory.errors.Argument('object', `${accountType} payment not accepted`);
+        //         }
+        //         toLocation = {
+        //             accountNumber: paymentAccepted.accountNumber,
+        //             accountType: paymentAccepted.accountType
+        //         };
+        //     }
+        // }
+        const currency = cinerino.factory.priceCurrency.JPY;
+        const action = yield cinerino.service.payment.prepaidCard.authorize({
             project: req.project,
-            object: Object.assign(Object.assign(Object.assign(Object.assign({ typeOf: cinerino.factory.paymentMethodType.Account, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+            object: Object.assign(Object.assign({ typeOf: cinerino.factory.paymentMethodType.PrepaidCard, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {
                         return { name: String(p.name), value: String(p.value) };
                     })
-                    : [] }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined), (typeof req.body.object.notes === 'string') ? { notes: req.body.object.notes } : undefined), (fromAccount !== undefined) ? { fromAccount } : {}), (toAccount !== undefined) ? { toAccount } : {}),
+                    : [] }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined), (fromLocation !== undefined) ? { fromLocation } : {}
+            // ...(toLocation !== undefined) ? { toLocation } : {}
+            ),
             agent: { id: req.user.sub },
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
@@ -171,7 +174,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
 /**
  * 口座承認取消
  */
-accountPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+prepaidCardPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id
@@ -183,7 +186,7 @@ accountPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['t
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield cinerino.service.payment.account.voidTransaction({
+        yield cinerino.service.payment.prepaidCard.voidTransaction({
             project: req.project,
             id: req.params.actionId,
             agent: { id: req.user.sub },
@@ -200,4 +203,4 @@ accountPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['t
         next(error);
     }
 }));
-exports.default = accountPaymentRouter;
+exports.default = prepaidCardPaymentRouter;

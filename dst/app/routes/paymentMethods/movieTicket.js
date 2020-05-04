@@ -14,18 +14,28 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+const express_validator_1 = require("express-validator");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
 const movieTicketPaymentMethodsRouter = express_1.Router();
-movieTicketPaymentMethodsRouter.get('', permitScopes_1.default(['paymentMethods.*', 'paymentMethods.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+movieTicketPaymentMethodsRouter.get('', permitScopes_1.default(['paymentMethods.*', 'paymentMethods.read']), rateLimit_1.default, ...[
+    express_validator_1.query('limit')
+        .optional()
+        .isInt()
+        .toInt(),
+    express_validator_1.query('page')
+        .optional()
+        .isInt()
+        .toInt()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const paymentMethodRepo = new cinerino.repository.PaymentMethod(mongoose.connection);
-        const searchCoinditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const paymentMethods = yield paymentMethodRepo.searchMovieTickets(searchCoinditions);
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, typeOf: { $eq: cinerino.factory.paymentMethodType.MovieTicket } });
+        const paymentMethods = yield paymentMethodRepo.search(searchConditions);
         res.json(paymentMethods);
     }
     catch (error) {

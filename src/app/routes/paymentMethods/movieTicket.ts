@@ -3,6 +3,7 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+import { query } from 'express-validator';
 import * as mongoose from 'mongoose';
 
 import permitScopes from '../../middlewares/permitScopes';
@@ -15,18 +16,31 @@ movieTicketPaymentMethodsRouter.get(
     '',
     permitScopes(['paymentMethods.*', 'paymentMethods.read']),
     rateLimit,
+    ...[
+        query('limit')
+            .optional()
+            .isInt()
+            .toInt(),
+        query('page')
+            .optional()
+            .isInt()
+            .toInt()
+    ],
     validator,
     async (req, res, next) => {
         try {
             const paymentMethodRepo = new cinerino.repository.PaymentMethod(mongoose.connection);
-            const searchCoinditions = {
+
+            const searchConditions: cinerino.factory.paymentMethod.ISearchConditions<cinerino.factory.paymentMethodType.MovieTicket> = {
                 ...req.query,
                 project: { ids: [req.project.id] },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+                typeOf: { $eq: cinerino.factory.paymentMethodType.MovieTicket }
             };
-            const paymentMethods = await paymentMethodRepo.searchMovieTickets(searchCoinditions);
+
+            const paymentMethods = await paymentMethodRepo.search(searchConditions);
 
             res.json(paymentMethods);
         } catch (error) {

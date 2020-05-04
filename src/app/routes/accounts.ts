@@ -179,7 +179,14 @@ accountsRouter.post(
                     id: req.user.sub
                 },
                 object: {
-                    ...req.body.object,
+                    amount: req.body.object?.amount,
+                    toLocation: {
+                        typeOf: cinerino.factory.pecorino.account.TypeOf.Account,
+                        accountType: (typeof req.body.object?.toLocation?.accountType === 'string')
+                            ? req.body.object?.toLocation?.accountType
+                            : 'Point',
+                        accountNumber: req.body.object?.toLocation?.accountNumber
+                    },
                     description: (typeof req.body.object.description === 'string') ? req.body.object.description : '入金'
                 },
                 recipient: {

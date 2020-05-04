@@ -172,7 +172,7 @@ placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/offer/
     }
 }));
 /**
- * ムビチケ追加
+ * 前売券決済承認
  */
 placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/mvtk', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
@@ -185,28 +185,28 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/mvtk', p
         id: req.params.transactionId
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
     try {
         const authorizeObject = {
-            // typeOf: cinerino.factory.action.authorize.discount.mvtk.ObjectType.Mvtk,
-            // price: Number(req.body.price),
-            // transactionId: req.params.transactionId,
+            typeOf: (typeof req.body.typeOf === 'string' && req.body.typeOf.length > 0)
+                ? req.body.typeOf
+                : cinerino.factory.paymentMethodType.MovieTicket,
             seatInfoSyncIn: {
-                kgygishCd: req.body.seatInfoSyncIn.kgygishCd,
-                yykDvcTyp: req.body.seatInfoSyncIn.yykDvcTyp,
-                trkshFlg: req.body.seatInfoSyncIn.trkshFlg,
-                kgygishSstmZskyykNo: req.body.seatInfoSyncIn.kgygishSstmZskyykNo,
-                kgygishUsrZskyykNo: req.body.seatInfoSyncIn.kgygishUsrZskyykNo,
-                jeiDt: req.body.seatInfoSyncIn.jeiDt,
-                kijYmd: req.body.seatInfoSyncIn.kijYmd,
-                stCd: req.body.seatInfoSyncIn.stCd,
-                screnCd: req.body.seatInfoSyncIn.screnCd,
-                knyknrNoInfo: req.body.seatInfoSyncIn.knyknrNoInfo,
-                zskInfo: req.body.seatInfoSyncIn.zskInfo,
-                skhnCd: req.body.seatInfoSyncIn.skhnCd
+                kgygishCd: (_a = req.body.seatInfoSyncIn) === null || _a === void 0 ? void 0 : _a.kgygishCd,
+                yykDvcTyp: (_b = req.body.seatInfoSyncIn) === null || _b === void 0 ? void 0 : _b.yykDvcTyp,
+                trkshFlg: (_c = req.body.seatInfoSyncIn) === null || _c === void 0 ? void 0 : _c.trkshFlg,
+                kgygishSstmZskyykNo: (_d = req.body.seatInfoSyncIn) === null || _d === void 0 ? void 0 : _d.kgygishSstmZskyykNo,
+                kgygishUsrZskyykNo: (_e = req.body.seatInfoSyncIn) === null || _e === void 0 ? void 0 : _e.kgygishUsrZskyykNo,
+                jeiDt: (_f = req.body.seatInfoSyncIn) === null || _f === void 0 ? void 0 : _f.jeiDt,
+                kijYmd: (_g = req.body.seatInfoSyncIn) === null || _g === void 0 ? void 0 : _g.kijYmd,
+                stCd: (_h = req.body.seatInfoSyncIn) === null || _h === void 0 ? void 0 : _h.stCd,
+                screnCd: (_j = req.body.seatInfoSyncIn) === null || _j === void 0 ? void 0 : _j.screnCd,
+                knyknrNoInfo: (_k = req.body.seatInfoSyncIn) === null || _k === void 0 ? void 0 : _k.knyknrNoInfo,
+                zskInfo: (_l = req.body.seatInfoSyncIn) === null || _l === void 0 ? void 0 : _l.zskInfo,
+                skhnCd: (_m = req.body.seatInfoSyncIn) === null || _m === void 0 ? void 0 : _m.skhnCd
             }
         };
-        const mvtkService = cinerino.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk;
-        const actions = yield mvtkService.createMovieTicketPaymentAuthorization({
+        const actions = yield cinerino.service.payment.advancedTicket.authorize({
             project: req.project,
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
@@ -242,7 +242,7 @@ placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/mvtk/:
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield cinerino.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.cancel({
+        yield cinerino.service.payment.advancedTicket.voidTransaction({
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
             actionId: req.params.actionId

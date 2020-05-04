@@ -185,9 +185,9 @@ async function validateFromLocation(req: Request): Promise<cinerino.factory.tran
             issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
         })({ action: new cinerino.repository.Action(mongoose.connection) });
         const account = accountOwnershipInfo.typeOfGood;
-        if (account.accountType !== 'Coin') {
-            throw new cinerino.factory.errors.Argument('fromAccount', 'Invalid token');
-        }
+        // if (account.accountType !== 'Coin') {
+        //     throw new cinerino.factory.errors.Argument('fromAccount', 'Invalid token');
+        // }
         fromLocation = <any>account;
     } else {
         // 口座情報がトークンでない、かつ、APIユーザーが管理者でない場合、許可されるリクエストかどうか確認

@@ -151,12 +151,22 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['accounts.t
         .isEmpty()
         .withMessage(() => 'required')
 ], validator_1.default, depositAccountRateLimiet, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d, _e, _f, _g;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         yield cinerino.service.account.deposit({
             project: req.project,
             agent: Object.assign(Object.assign({ typeOf: cinerino.factory.personType.Person, name: (req.user.username !== undefined) ? req.user.username : req.user.sub }, req.body.agent), { id: req.user.sub }),
-            object: Object.assign(Object.assign({}, req.body.object), { description: (typeof req.body.object.description === 'string') ? req.body.object.description : '入金' }),
+            object: {
+                amount: (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.amount,
+                toLocation: {
+                    typeOf: cinerino.factory.pecorino.account.TypeOf.Account,
+                    accountType: (typeof ((_c = (_b = req.body.object) === null || _b === void 0 ? void 0 : _b.toLocation) === null || _c === void 0 ? void 0 : _c.accountType) === 'string')
+                        ? (_e = (_d = req.body.object) === null || _d === void 0 ? void 0 : _d.toLocation) === null || _e === void 0 ? void 0 : _e.accountType : 'Point',
+                    accountNumber: (_g = (_f = req.body.object) === null || _f === void 0 ? void 0 : _f.toLocation) === null || _g === void 0 ? void 0 : _g.accountNumber
+                },
+                description: (typeof req.body.object.description === 'string') ? req.body.object.description : '入金'
+            },
             recipient: Object.assign({ typeOf: cinerino.factory.personType.Person }, req.body.recipient)
         })({
             project: projectRepo

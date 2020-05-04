@@ -33,6 +33,8 @@ const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== und
     // tslint:disable-next-line:no-magic-numbers
     : 50;
 
+const DEFAULT_ORDER_NAME = process.env.DEFAULT_ORDER_NAME;
+
 const placeOrderTransactionsRouter = Router();
 const debug = createDebug('cinerino-api:router');
 
@@ -196,6 +198,8 @@ placeOrderTransactionsRouter.post(
                     ownedThrough: now
                 });
 
+            const orderName: string | undefined = (typeof req.body.object?.name === 'string') ? req.body.object?.name : DEFAULT_ORDER_NAME;
+
             const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
                 project: req.project,
                 expires: expires,
@@ -215,7 +219,8 @@ placeOrderTransactionsRouter.post(
                 seller: req.body.seller,
                 object: {
                     passport: passport,
-                    ...(useTransactionClientUser) ? { clientUser: req.user } : undefined
+                    ...(useTransactionClientUser) ? { clientUser: req.user } : undefined,
+                    ...(typeof orderName === 'string') ? { name: orderName } : undefined
                 },
                 passportValidator: passportValidator
             })({
@@ -1018,7 +1023,7 @@ export async function authorizePointAward(req: Request) {
             }
         }
 
-        await cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.create({
+        await cinerino.service.transaction.placeOrderInProgress.authorizeAward({
             transaction: { id: req.params.transactionId },
             agent: { id: req.agent.id },
             object: {
@@ -1028,7 +1033,6 @@ export async function authorizePointAward(req: Request) {
             }
         })({
             action: actionRepo,
-            ownershipInfo: ownershipInfoRepo,
             transaction: transactionRepo
         });
     }
@@ -1056,7 +1060,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
     },
     async (req, res, next) => {
         try {
-            await cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({
+            await cinerino.service.transaction.placeOrderInProgress.voidAward({
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId }
             })({

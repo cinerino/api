@@ -207,8 +207,7 @@ function createFromBody(params: any): cinerino.factory.project.IProject {
             transactionWebhookUrl: params.settings?.transactionWebhookUrl,
             useInMemoryOfferRepo: false,
             useReservationNumberAsConfirmationNumber: false,
-            useUsernameAsGMOMemberId: false,
-            validateMovieTicket: true
+            useUsernameAsGMOMemberId: false
         },
         ...{
             subscription: { identifier: 'Free' }
