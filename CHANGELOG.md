@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v4.1.0 - 2020-05-04
+
+### Added
+
 - イベントオファー承認結果にamountを追加
 - 注文にnameを追加
 - COA予約承認にpriceSpecificationを追加
@@ -26,15 +40,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - ムビチケディスカウントサービスを前売券決済サービスとして再定義
 - 注文取引確定時の口座バリデーションを口座タイプ管理に対応
 
-### Deprecated
-
 ### Removed
 
 - プロジェクトのvalidateMovieTicket設定を削除
-
-### Fixed
-
-### Security
 
 ## v4.0.0 - 2020-04-26
 
