@@ -20,11 +20,11 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     // tslint:disable-next-line:no-magic-numbers
     : 256;
 
-const moneyTransferOffersRouter = Router();
+const monetaryAmountOffersRouter = Router();
 
 if (process.env.USE_MONEY_TRANSFER === '1') {
     // tslint:disable-next-line:use-default-type-parameter
-    moneyTransferOffersRouter.post<ParamsDictionary>(
+    monetaryAmountOffersRouter.post<ParamsDictionary>(
         '/authorize',
         permitScopes(['transactions']),
         rateLimit,
@@ -122,7 +122,7 @@ if (process.env.USE_MONEY_TRANSFER === '1') {
 }
 
 // tslint:disable-next-line:use-default-type-parameter
-moneyTransferOffersRouter.put<ParamsDictionary>(
+monetaryAmountOffersRouter.put<ParamsDictionary>(
     '/authorize/:actionId/void',
     permitScopes(['transactions']),
     rateLimit,
@@ -165,4 +165,4 @@ moneyTransferOffersRouter.put<ParamsDictionary>(
     }
 );
 
-export default moneyTransferOffersRouter;
+export default monetaryAmountOffersRouter;

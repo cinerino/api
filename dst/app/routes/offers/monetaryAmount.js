@@ -26,10 +26,10 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
     : 256;
-const moneyTransferOffersRouter = express_1.Router();
+const monetaryAmountOffersRouter = express_1.Router();
 if (process.env.USE_MONEY_TRANSFER === '1') {
     // tslint:disable-next-line:use-default-type-parameter
-    moneyTransferOffersRouter.post('/authorize', permitScopes_1.default(['transactions']), rateLimit_1.default, ...[
+    monetaryAmountOffersRouter.post('/authorize', permitScopes_1.default(['transactions']), rateLimit_1.default, ...[
         express_validator_1.body('object')
             .not()
             .isEmpty(),
@@ -117,7 +117,7 @@ if (process.env.USE_MONEY_TRANSFER === '1') {
     }));
 }
 // tslint:disable-next-line:use-default-type-parameter
-moneyTransferOffersRouter.put('/authorize/:actionId/void', permitScopes_1.default(['transactions']), rateLimit_1.default, ...[
+monetaryAmountOffersRouter.put('/authorize/:actionId/void', permitScopes_1.default(['transactions']), rateLimit_1.default, ...[
     express_validator_1.body('purpose')
         .not()
         .isEmpty()
@@ -150,4 +150,4 @@ moneyTransferOffersRouter.put('/authorize/:actionId/void', permitScopes_1.defaul
         next(error);
     }
 }));
-exports.default = moneyTransferOffersRouter;
+exports.default = monetaryAmountOffersRouter;
