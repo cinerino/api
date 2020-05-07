@@ -68,6 +68,7 @@ prepaidCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
 }), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         let fromLocation = req.body.object.fromLocation;
         // let toLocation: cinerino.factory.action.authorize.paymentMethod.prepaidCard.IToLocation | undefined
@@ -81,10 +82,10 @@ prepaidCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
                 secret: process.env.TOKEN_SECRET,
                 issuer: process.env.RESOURCE_SERVER_IDENTIFIER
             })({ action: new cinerino.repository.Action(mongoose.connection) });
-            const account = accountOwnershipInfo.typeOfGood;
+            const paymentCard = accountOwnershipInfo.typeOfGood;
             fromLocation = {
-                accountType: cinerino.factory.accountType.Prepaid,
-                accountNumber: account.identifier
+                typeOf: paymentCard.typeOf,
+                identifier: paymentCard.identifier
             };
         }
         else {
@@ -96,21 +97,21 @@ prepaidCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
                 }
                 else {
                     // 口座に所有権があるかどうか確認
-                    const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-                    const count = yield ownershipInfoRepo.count({
-                        limit: 1,
-                        ownedBy: { id: req.user.sub },
-                        ownedFrom: new Date(),
-                        ownedThrough: new Date(),
-                        typeOfGood: {
-                            typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
-                            accountType: fromLocation.accountType,
-                            accountNumber: fromLocation.accountNumber
-                        }
-                    });
-                    if (count === 0) {
-                        throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
-                    }
+                    // const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+                    // const count = await ownershipInfoRepo.count<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
+                    //     limit: 1,
+                    //     ownedBy: { id: req.user.sub },
+                    //     ownedFrom: new Date(),
+                    //     ownedThrough: new Date(),
+                    //     typeOfGood: {
+                    //         typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                    //         accountType: fromLocation.accountType,
+                    //         accountNumber: fromLocation.accountNumber
+                    //     }
+                    // });
+                    // if (count === 0) {
+                    //     throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
+                    // }
                 }
             }
         }
@@ -150,7 +151,7 @@ prepaidCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
         const currency = cinerino.factory.priceCurrency.JPY;
         const action = yield cinerino.service.payment.prepaidCard.authorize({
             project: req.project,
-            object: Object.assign(Object.assign({ typeOf: cinerino.factory.paymentMethodType.PrepaidCard, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+            object: Object.assign(Object.assign({ typeOf: (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.typeOf, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {
                         return { name: String(p.name), value: String(p.value) };
                     })

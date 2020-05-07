@@ -87,10 +87,10 @@ prepaidCardPaymentRouter.post<ParamsDictionary>(
                     secret: <string>process.env.TOKEN_SECRET,
                     issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
                 })({ action: new cinerino.repository.Action(mongoose.connection) });
-                const account = accountOwnershipInfo.typeOfGood;
+                const paymentCard = accountOwnershipInfo.typeOfGood;
                 fromLocation = {
-                    accountType: cinerino.factory.accountType.Prepaid,
-                    accountNumber: account.identifier
+                    typeOf: paymentCard.typeOf,
+                    identifier: paymentCard.identifier
                 };
             } else {
                 // 口座情報がトークンでない、かつ、APIユーザーが管理者でない場合、許可されるリクエストかどうか確認
@@ -100,21 +100,21 @@ prepaidCardPaymentRouter.post<ParamsDictionary>(
                         throw new cinerino.factory.errors.ArgumentNull('From Account');
                     } else {
                         // 口座に所有権があるかどうか確認
-                        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-                        const count = await ownershipInfoRepo.count<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
-                            limit: 1,
-                            ownedBy: { id: req.user.sub },
-                            ownedFrom: new Date(),
-                            ownedThrough: new Date(),
-                            typeOfGood: {
-                                typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
-                                accountType: fromLocation.accountType,
-                                accountNumber: fromLocation.accountNumber
-                            }
-                        });
-                        if (count === 0) {
-                            throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
-                        }
+                        // const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+                        // const count = await ownershipInfoRepo.count<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
+                        //     limit: 1,
+                        //     ownedBy: { id: req.user.sub },
+                        //     ownedFrom: new Date(),
+                        //     ownedThrough: new Date(),
+                        //     typeOfGood: {
+                        //         typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                        //         accountType: fromLocation.accountType,
+                        //         accountNumber: fromLocation.accountNumber
+                        //     }
+                        // });
+                        // if (count === 0) {
+                        //     throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
+                        // }
                     }
                 }
             }
@@ -162,7 +162,7 @@ prepaidCardPaymentRouter.post<ParamsDictionary>(
             const action = await cinerino.service.payment.prepaidCard.authorize({
                 project: req.project,
                 object: {
-                    typeOf: cinerino.factory.paymentMethodType.PrepaidCard,
+                    typeOf: req.body.object?.typeOf,
                     amount: Number(req.body.object.amount),
                     currency: currency,
                     additionalProperty: (Array.isArray(req.body.object.additionalProperty))
