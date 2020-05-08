@@ -79,7 +79,7 @@ prepaidCardPaymentRouter.post<ParamsDictionary>(
             // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
             if (typeof fromLocation === 'string') {
                 // tslint:disable-next-line:max-line-length
-                type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.paymentMethodType.PrepaidCard>>;
+                type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<any>>;
                 const accountOwnershipInfo = await cinerino.service.code.verifyToken<IPayload>({
                     project: req.project,
                     agent: req.agent,

@@ -45,9 +45,6 @@ if (process.env.USE_MONEY_TRANSFER === '1') {
                 .not()
                 .isEmpty()
                 .withMessage(() => 'required'),
-            body('object.toLocation.accountType')
-                .isIn([cinerino.factory.accountType.Prepaid])
-                .withMessage(() => `must be "${cinerino.factory.accountType.Prepaid}"`),
             body('object.additionalProperty')
                 .optional()
                 .isArray({ max: 10 }),
