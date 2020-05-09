@@ -22,11 +22,52 @@ const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
     : 256;
 const prepaidCardPaymentRouter = express_1.Router();
+/**
+ * カード照会
+ */
+prepaidCardPaymentRouter.post('/check', permitScopes_1.default(['transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (typeof ((_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === null || _b === void 0 ? void 0 : _b.endpoint) !== 'string') {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+        }
+        const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
+            endpoint: project.settings.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const searchPaymentCardResult = yield serviceOutputService.search({
+            limit: 1,
+            page: 1,
+            project: { typeOf: 'Project', id: req.project.id },
+            typeOf: { $eq: req.body.object.typeOf },
+            identifier: { $eq: req.body.object.identifier },
+            accessCode: { $eq: req.body.object.accessCode }
+        });
+        if (searchPaymentCardResult.data.length === 0) {
+            throw new cinerino.factory.errors.NotFound('PaymentCard');
+        }
+        const paymetCard = searchPaymentCardResult.data.shift();
+        res.json(Object.assign(Object.assign({}, paymetCard), { accessCode: undefined // アクセスコードをマスク
+         }));
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 /**
  * 口座確保
  */
@@ -68,7 +109,7 @@ prepaidCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
 }), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _c;
     try {
         let fromLocation = req.body.object.fromLocation;
         // let toLocation: cinerino.factory.action.authorize.paymentMethod.prepaidCard.IToLocation | undefined
@@ -151,7 +192,7 @@ prepaidCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
         const currency = cinerino.factory.priceCurrency.JPY;
         const action = yield cinerino.service.payment.prepaidCard.authorize({
             project: req.project,
-            object: Object.assign(Object.assign({ typeOf: (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.typeOf, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+            object: Object.assign(Object.assign({ typeOf: (_c = req.body.object) === null || _c === void 0 ? void 0 : _c.typeOf, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {
                         return { name: String(p.name), value: String(p.value) };
                     })

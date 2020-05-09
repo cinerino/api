@@ -15,12 +15,63 @@ import rateLimit from '../../middlewares/rateLimit';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
     : 256;
 
 const prepaidCardPaymentRouter = Router();
+
+/**
+ * カード照会
+ */
+prepaidCardPaymentRouter.post(
+    '/check',
+    permitScopes(['transactions']),
+    rateLimit,
+    validator,
+    async (req, res, next) => {
+        try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (typeof project.settings?.chevre?.endpoint !== 'string') {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+            }
+
+            const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
+                endpoint: project.settings.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const searchPaymentCardResult = await serviceOutputService.search({
+                limit: 1,
+                page: 1,
+                project: { typeOf: 'Project', id: req.project.id },
+                typeOf: { $eq: req.body.object.typeOf },
+                identifier: { $eq: req.body.object.identifier },
+                accessCode: { $eq: req.body.object.accessCode }
+            });
+            if (searchPaymentCardResult.data.length === 0) {
+                throw new cinerino.factory.errors.NotFound('PaymentCard');
+            }
+            const paymetCard = searchPaymentCardResult.data.shift();
+
+            res.json({
+                ...paymetCard,
+                accessCode: undefined // アクセスコードをマスク
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 
 /**
  * 口座確保
