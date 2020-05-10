@@ -14,7 +14,7 @@ import onTransactionExpired from './continuous/onTransactionExpired/run';
 
 import cancelAccount from './continuous/cancelAccount/run';
 import cancelCreditCard from './continuous/cancelCreditCard/run';
-import cancelPrepaidCard from './continuous/cancelPrepaidCard/run';
+import cancelPaymentCard from './continuous/cancelPaymentCard/run';
 import cancelReservation from './continuous/cancelReservation/run';
 import cancelSeatReservation from './continuous/cancelSeatReservation/run';
 import confirmReservation from './continuous/confirmReservation/run';
@@ -26,12 +26,12 @@ import orderProgramMembership from './continuous/orderProgramMembership/run';
 import payAccount from './continuous/payAccount/run';
 import payCreditCard from './continuous/payCreditCard/run';
 import payMovieTicket from './continuous/payMovieTicket/run';
-import payPrepaidCard from './continuous/payPrepaidCard/run';
+import payPaymentCard from './continuous/payPaymentCard/run';
 import placeOrder from './continuous/placeOrder/run';
 import refundAccount from './continuous/refundAccount/run';
 import refundCreditCard from './continuous/refundCreditCard/run';
 import refundMovieTicket from './continuous/refundMovieTicket/run';
-import refundPrepaidCard from './continuous/refundPrepaidCard/run';
+import refundPaymentCard from './continuous/refundPaymentCard/run';
 import registerProgramMembership from './continuous/registerProgramMembership/run';
 import returnOrder from './continuous/returnOrder/run';
 import returnPointAward from './continuous/returnPointAward/run';
@@ -58,7 +58,7 @@ export default async () => {
 
     await cancelAccount({ project: project });
     await cancelCreditCard({ project: project });
-    await cancelPrepaidCard({ project: project });
+    await cancelPaymentCard({ project: project });
     await cancelReservation({ project: project });
     await cancelSeatReservation({ project: project });
     await confirmReservation({ project: project });
@@ -70,12 +70,12 @@ export default async () => {
     await payAccount({ project: project });
     await payCreditCard({ project: project });
     await payMovieTicket({ project: project });
-    await payPrepaidCard({ project: project });
+    await payPaymentCard({ project: project });
     await placeOrder({ project: project });
     await refundAccount({ project: project });
     await refundCreditCard({ project: project });
     await refundMovieTicket({ project: project });
-    await refundPrepaidCard({ project: project });
+    await refundPaymentCard({ project: project });
     await registerProgramMembership({ project: project });
     await returnOrder({ project: project });
     await returnPointAward({ project: project });

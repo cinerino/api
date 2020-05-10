@@ -85,7 +85,6 @@ paymentCardOffersRouter.post('/authorize', permitScopes_1.default(['transactions
                         accessCode: (_f = (_e = (_d = req.body.object) === null || _d === void 0 ? void 0 : _d.itemOffered) === null || _e === void 0 ? void 0 : _e.serviceOutput) === null || _f === void 0 ? void 0 : _f.accessCode,
                         name: (_j = (_h = (_g = req.body.object) === null || _g === void 0 ? void 0 : _g.itemOffered) === null || _h === void 0 ? void 0 : _h.serviceOutput) === null || _j === void 0 ? void 0 : _j.name
                         // additionalProperty: [
-                        //     { name: 'accountType', value: 'Prepaid' },
                         //     { name: 'accountNumber', value: identifier },
                         // ]
                     }

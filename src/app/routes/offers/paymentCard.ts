@@ -88,7 +88,6 @@ paymentCardOffersRouter.post<ParamsDictionary>(
                             accessCode: req.body.object?.itemOffered?.serviceOutput?.accessCode,
                             name: req.body.object?.itemOffered?.serviceOutput?.name
                             // additionalProperty: [
-                            //     { name: 'accountType', value: 'Prepaid' },
                             //     { name: 'accountNumber', value: identifier },
                             // ]
                         }

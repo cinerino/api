@@ -33,11 +33,11 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
     : 256;
-const prepaidCardPaymentRouter = express_1.Router();
+const paymentCardPaymentRouter = express_1.Router();
 /**
  * カード照会
  */
-prepaidCardPaymentRouter.post('/check', permitScopes_1.default(['transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+paymentCardPaymentRouter.post('/check', permitScopes_1.default(['transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -72,7 +72,7 @@ prepaidCardPaymentRouter.post('/check', permitScopes_1.default(['transactions'])
  * 口座確保
  */
 // tslint:disable-next-line:use-default-type-parameter
-prepaidCardPaymentRouter.post('/authorize', permitScopes_1.default(['transactions']), rateLimit_1.default, ...[
+paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transactions']), rateLimit_1.default, ...[
     express_validator_1.body('object')
         .not()
         .isEmpty(),
@@ -109,11 +109,8 @@ prepaidCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
 }), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c;
     try {
         let fromLocation = req.body.object.fromLocation;
-        // let toLocation: cinerino.factory.action.authorize.paymentMethod.prepaidCard.IToLocation | undefined
-        //     = req.body.object.toLocation;
         // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
         if (typeof fromLocation === 'string') {
             const accountOwnershipInfo = yield cinerino.service.code.verifyToken({
@@ -156,7 +153,6 @@ prepaidCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
                 }
             }
         }
-        // const accountType = cinerino.factory.paymentMethodType.PrepaidCard;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         // const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
@@ -175,8 +171,8 @@ prepaidCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
         //             throw new cinerino.factory.errors.Argument('object', 'Account payment not accepted');
         //         }
         //         const accountPaymentsAccepted =
-        //             <cinerino.factory.seller.IPaymentAccepted<cinerino.factory.paymentMethodType.PrepaidCard>[]>
-        //             seller.paymentAccepted.filter((a) => a.paymentMethodType === cinerino.factory.paymentMethodType.PrepaidCard);
+        //             <cinerino.factory.seller.IPaymentAccepted<cinerino.factory.paymentMethodType.PaymentCard>[]>
+        //             seller.paymentAccepted.filter((a) => a.paymentMethodType === cinerino.factory.paymentMethodType.PaymentCard);
         //         const paymentAccepted = accountPaymentsAccepted.find((a) => a.accountType === accountType);
         //         // tslint:disable-next-line:no-single-line-block-comment
         //         /* istanbul ignore if */
@@ -190,9 +186,9 @@ prepaidCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
         //     }
         // }
         const currency = cinerino.factory.priceCurrency.JPY;
-        const action = yield cinerino.service.payment.prepaidCard.authorize({
+        const action = yield cinerino.service.payment.paymentCard.authorize({
             project: req.project,
-            object: Object.assign(Object.assign({ typeOf: (_c = req.body.object) === null || _c === void 0 ? void 0 : _c.typeOf, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+            object: Object.assign(Object.assign({ typeOf: cinerino.factory.paymentMethodType.PaymentCard, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {
                         return { name: String(p.name), value: String(p.value) };
                     })
@@ -216,7 +212,7 @@ prepaidCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
 /**
  * 口座承認取消
  */
-prepaidCardPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+paymentCardPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id
@@ -228,7 +224,7 @@ prepaidCardPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield cinerino.service.payment.prepaidCard.voidTransaction({
+        yield cinerino.service.payment.paymentCard.voidTransaction({
             project: req.project,
             id: req.params.actionId,
             agent: { id: req.user.sub },
@@ -245,4 +241,4 @@ prepaidCardPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default
         next(error);
     }
 }));
-exports.default = prepaidCardPaymentRouter;
+exports.default = paymentCardPaymentRouter;

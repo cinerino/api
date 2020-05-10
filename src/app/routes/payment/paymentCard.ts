@@ -28,12 +28,12 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     // tslint:disable-next-line:no-magic-numbers
     : 256;
 
-const prepaidCardPaymentRouter = Router();
+const paymentCardPaymentRouter = Router();
 
 /**
  * カード照会
  */
-prepaidCardPaymentRouter.post(
+paymentCardPaymentRouter.post(
     '/check',
     permitScopes(['transactions']),
     rateLimit,
@@ -77,7 +77,7 @@ prepaidCardPaymentRouter.post(
  * 口座確保
  */
 // tslint:disable-next-line:use-default-type-parameter
-prepaidCardPaymentRouter.post<ParamsDictionary>(
+paymentCardPaymentRouter.post<ParamsDictionary>(
     '/authorize',
     permitScopes(['transactions']),
     rateLimit,
@@ -122,10 +122,8 @@ prepaidCardPaymentRouter.post<ParamsDictionary>(
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
-            let fromLocation: cinerino.factory.action.authorize.paymentMethod.prepaidCard.IFromLocation | undefined
+            let fromLocation: cinerino.factory.action.authorize.paymentMethod.paymentCard.IFromLocation | undefined
                 = req.body.object.fromLocation;
-            // let toLocation: cinerino.factory.action.authorize.paymentMethod.prepaidCard.IToLocation | undefined
-            //     = req.body.object.toLocation;
 
             // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
             if (typeof fromLocation === 'string') {
@@ -170,8 +168,6 @@ prepaidCardPaymentRouter.post<ParamsDictionary>(
                 }
             }
 
-            // const accountType = cinerino.factory.paymentMethodType.PrepaidCard;
-
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             // const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
@@ -193,8 +189,8 @@ prepaidCardPaymentRouter.post<ParamsDictionary>(
             //             throw new cinerino.factory.errors.Argument('object', 'Account payment not accepted');
             //         }
             //         const accountPaymentsAccepted =
-            //             <cinerino.factory.seller.IPaymentAccepted<cinerino.factory.paymentMethodType.PrepaidCard>[]>
-            //             seller.paymentAccepted.filter((a) => a.paymentMethodType === cinerino.factory.paymentMethodType.PrepaidCard);
+            //             <cinerino.factory.seller.IPaymentAccepted<cinerino.factory.paymentMethodType.PaymentCard>[]>
+            //             seller.paymentAccepted.filter((a) => a.paymentMethodType === cinerino.factory.paymentMethodType.PaymentCard);
             //         const paymentAccepted = accountPaymentsAccepted.find((a) => a.accountType === accountType);
             //         // tslint:disable-next-line:no-single-line-block-comment
             //         /* istanbul ignore if */
@@ -210,10 +206,10 @@ prepaidCardPaymentRouter.post<ParamsDictionary>(
 
             const currency = cinerino.factory.priceCurrency.JPY;
 
-            const action = await cinerino.service.payment.prepaidCard.authorize({
+            const action = await cinerino.service.payment.paymentCard.authorize({
                 project: req.project,
                 object: {
-                    typeOf: req.body.object?.typeOf,
+                    typeOf: cinerino.factory.paymentMethodType.PaymentCard,
                     amount: Number(req.body.object.amount),
                     currency: currency,
                     additionalProperty: (Array.isArray(req.body.object.additionalProperty))
@@ -245,7 +241,7 @@ prepaidCardPaymentRouter.post<ParamsDictionary>(
 /**
  * 口座承認取消
  */
-prepaidCardPaymentRouter.put(
+paymentCardPaymentRouter.put(
     '/authorize/:actionId/void',
     permitScopes(['transactions']),
     rateLimit,
@@ -264,7 +260,7 @@ prepaidCardPaymentRouter.put(
     },
     async (req, res, next) => {
         try {
-            await cinerino.service.payment.prepaidCard.voidTransaction({
+            await cinerino.service.payment.paymentCard.voidTransaction({
                 project: req.project,
                 id: req.params.actionId,
                 agent: { id: req.user.sub },
@@ -283,4 +279,4 @@ prepaidCardPaymentRouter.put(
     }
 );
 
-export default prepaidCardPaymentRouter;
+export default paymentCardPaymentRouter;
