@@ -62,4 +62,33 @@ productsRouter.get(
     }
 );
 
+/**
+ * オファー検索
+ */
+productsRouter.get(
+    '/:id/offers',
+    permitScopes(['products.*', 'products.read']),
+    rateLimit,
+    validator,
+    async (req, res, next) => {
+        try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (project.settings?.chevre === undefined) {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
+            }
+
+            const productService = new cinerino.chevre.service.Product({
+                endpoint: project.settings.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const offers = await productService.searchOffers({ id: req.params.id });
+
+            res.json(offers);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 export default productsRouter;
