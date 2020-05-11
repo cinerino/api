@@ -109,7 +109,12 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
 }), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c, _d, _e, _f, _g;
     try {
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        // const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         let fromLocation = req.body.object.fromLocation;
         // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
         if (typeof fromLocation === 'string') {
@@ -127,36 +132,59 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
             };
         }
         else {
-            // 口座情報がトークンでない、かつ、APIユーザーが管理者でない場合、許可されるリクエストかどうか確認
-            if (!req.isAdmin) {
-                if (fromLocation === undefined) {
-                    // 入金処理は禁止
-                    throw new cinerino.factory.errors.ArgumentNull('From Account');
+            const accessCode = (_c = fromLocation) === null || _c === void 0 ? void 0 : _c.accessCode;
+            if (typeof accessCode === 'string') {
+                // アクセスコード情報があれば、認証
+                const project = yield projectRepo.findById({ id: req.project.id });
+                if (typeof ((_e = (_d = project.settings) === null || _d === void 0 ? void 0 : _d.chevre) === null || _e === void 0 ? void 0 : _e.endpoint) !== 'string') {
+                    throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
                 }
-                else {
-                    // 口座に所有権があるかどうか確認
-                    // const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-                    // const count = await ownershipInfoRepo.count<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
-                    //     limit: 1,
-                    //     ownedBy: { id: req.user.sub },
-                    //     ownedFrom: new Date(),
-                    //     ownedThrough: new Date(),
-                    //     typeOfGood: {
-                    //         typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
-                    //         accountType: fromLocation.accountType,
-                    //         accountNumber: fromLocation.accountNumber
-                    //     }
-                    // });
-                    // if (count === 0) {
-                    //     throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
-                    // }
+                const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
+                    endpoint: project.settings.chevre.endpoint,
+                    auth: chevreAuthClient
+                });
+                const searchPaymentCardResult = yield serviceOutputService.search({
+                    limit: 1,
+                    page: 1,
+                    project: { typeOf: 'Project', id: req.project.id },
+                    typeOf: { $eq: (_f = fromLocation) === null || _f === void 0 ? void 0 : _f.typeOf },
+                    identifier: { $eq: (_g = fromLocation) === null || _g === void 0 ? void 0 : _g.identifier },
+                    accessCode: { $eq: accessCode }
+                });
+                if (searchPaymentCardResult.data.length === 0) {
+                    throw new cinerino.factory.errors.NotFound('PaymentCard');
                 }
+                const paymetCard = searchPaymentCardResult.data.shift();
+                fromLocation = {
+                    typeOf: paymetCard.typeOf,
+                    identifier: paymetCard.identifier
+                };
+            }
+            else {
+                fromLocation = undefined;
+                // アクセスコード情報なし、かつ、会員の場合、所有権を確認
+                // 口座に所有権があるかどうか確認
+                // const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+                // const count = await ownershipInfoRepo.count<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
+                //     limit: 1,
+                //     ownedBy: { id: req.user.sub },
+                //     ownedFrom: new Date(),
+                //     ownedThrough: new Date(),
+                //     typeOfGood: {
+                //         typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                //         accountType: fromLocation.accountType,
+                //         accountNumber: fromLocation.accountNumber
+                //     }
+                // });
+                // if (count === 0) {
+                //     throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
+                // }
             }
         }
-        const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        // const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+        if (fromLocation === undefined) {
+            // 入金処理は禁止
+            throw new cinerino.factory.errors.ArgumentNull('From Location');
+        }
         // 注文取引、かつ、toAccount未指定の場合、販売者の口座を検索して、toAccountにセット
         // if (toLocation === undefined) {
         //     const transaction = await transactionRepo.findById({

@@ -24,6 +24,13 @@ const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -142,47 +149,72 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
     }
 }));
 function validateFromLocation(req) {
+    var _a, _b, _c, _d, _e;
     return __awaiter(this, void 0, void 0, function* () {
-        return req.body.object.fromLocation;
+        let fromLocation = req.body.object.fromLocation;
         // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
-        // if (typeof fromLocation === 'string') {
-        //     // tslint:disable-next-line:max-line-length
-        // tslint:disable-next-line:max-line-length
-        //     type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.ownershipInfo.AccountGoodType.Account>>;
-        //     const accountOwnershipInfo = await cinerino.service.code.verifyToken<IPayload>({
-        //         project: req.project,
-        //         agent: req.agent,
-        //         token: fromLocation,
-        //         secret: <string>process.env.TOKEN_SECRET,
-        //         issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
-        //     })({ action: new cinerino.repository.Action(mongoose.connection) });
-        //     const account = accountOwnershipInfo.typeOfGood;
-        //     // if (account.accountType !== 'Coin') {
-        //     //     throw new cinerino.factory.errors.Argument('fromAccount', 'Invalid token');
-        //     // }
-        //     fromLocation = <any>account;
-        // } else {
-        //     // 口座情報がトークンでない、かつ、APIユーザーが管理者でない場合、許可されるリクエストかどうか確認
-        //     if (!req.isAdmin) {
-        //         // 口座に所有権があるかどうか確認
-        //         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-        //         const count = await ownershipInfoRepo.count<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
-        //             limit: 1,
-        //             ownedBy: { id: req.user.sub },
-        //             ownedFrom: new Date(),
-        //             ownedThrough: new Date(),
-        //             typeOfGood: {
-        //                 typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
-        //                 accountType: fromLocation.accountType,
-        //                 accountNumber: fromLocation.accountNumber
-        //             }
-        //         });
-        //         if (count === 0) {
-        //             throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
-        //         }
-        //     }
-        // }
-        // return fromLocation;
+        if (typeof fromLocation === 'string') {
+            const accountOwnershipInfo = yield cinerino.service.code.verifyToken({
+                project: req.project,
+                agent: req.agent,
+                token: fromLocation,
+                secret: process.env.TOKEN_SECRET,
+                issuer: process.env.RESOURCE_SERVER_IDENTIFIER
+            })({ action: new cinerino.repository.Action(mongoose.connection) });
+            fromLocation = accountOwnershipInfo.typeOfGood;
+        }
+        else {
+            const accessCode = (_a = fromLocation) === null || _a === void 0 ? void 0 : _a.accessCode;
+            if (typeof accessCode === 'string') {
+                // アクセスコード情報があれば、認証
+                const projectRepo = new cinerino.repository.Project(mongoose.connection);
+                const project = yield projectRepo.findById({ id: req.project.id });
+                if (typeof ((_c = (_b = project.settings) === null || _b === void 0 ? void 0 : _b.chevre) === null || _c === void 0 ? void 0 : _c.endpoint) !== 'string') {
+                    throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+                }
+                const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
+                    endpoint: project.settings.chevre.endpoint,
+                    auth: chevreAuthClient
+                });
+                const searchPaymentCardResult = yield serviceOutputService.search({
+                    limit: 1,
+                    page: 1,
+                    project: { typeOf: 'Project', id: req.project.id },
+                    typeOf: { $eq: (_d = fromLocation) === null || _d === void 0 ? void 0 : _d.typeOf },
+                    identifier: { $eq: (_e = fromLocation) === null || _e === void 0 ? void 0 : _e.identifier },
+                    accessCode: { $eq: accessCode }
+                });
+                if (searchPaymentCardResult.data.length === 0) {
+                    throw new cinerino.factory.errors.NotFound('PaymentCard');
+                }
+                const paymetCard = searchPaymentCardResult.data.shift();
+                fromLocation = {
+                    typeOf: paymetCard.typeOf,
+                    identifier: paymetCard.identifier
+                };
+            }
+            else {
+                fromLocation = undefined;
+                // アクセスコード情報なし、かつ、会員の場合、所有権を確認
+                // 口座に所有権があるかどうか確認
+                // const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+                // const count = await ownershipInfoRepo.count<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
+                //     limit: 1,
+                //     ownedBy: { id: req.user.sub },
+                //     ownedFrom: new Date(),
+                //     ownedThrough: new Date(),
+                //     typeOfGood: {
+                //         typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                //         accountType: fromLocation.accountType,
+                //         accountNumber: fromLocation.accountNumber
+                //     }
+                // });
+                // if (count === 0) {
+                //     throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
+                // }
+            }
+        }
+        return fromLocation;
     });
 }
 /**
