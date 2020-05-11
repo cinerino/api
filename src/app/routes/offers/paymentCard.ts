@@ -30,28 +30,28 @@ paymentCardOffersRouter.post<ParamsDictionary>(
     permitScopes(['transactions']),
     rateLimit,
     ...[
-        body('object.id')
+        body('object.*.id')
             .not()
             .isEmpty()
             .withMessage(() => 'required'),
-        body('object.itemOffered.id')
+        body('object.*.itemOffered.id')
             .not()
             .isEmpty()
             .withMessage(() => 'required'),
-        body('object.itemOffered.serviceOutput.accessCode')
+        body('object.*.itemOffered.serviceOutput.accessCode')
             .not()
             .isEmpty()
             .withMessage(() => 'required'),
-        body('object.itemOffered.serviceOutput.additionalProperty')
+        body('object.*.itemOffered.serviceOutput.additionalProperty')
             .optional()
             .isArray({ max: 10 }),
-        body('object.itemOffered.serviceOutput.additionalProperty.*.name')
+        body('object.*.itemOffered.serviceOutput.additionalProperty.*.name')
             .optional()
             .not()
             .isEmpty()
             .isString()
             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        body('object.itemOffered.serviceOutput.additionalProperty.*.value')
+        body('object.*.itemOffered.serviceOutput.additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
@@ -76,28 +76,34 @@ paymentCardOffersRouter.post<ParamsDictionary>(
     },
     async (req, res, next) => {
         try {
+            let object: any[] = req.body.object;
+            if (!Array.isArray(object)) {
+                object = [object];
+            }
+
             const action = await cinerino.service.offer.paymentCard.authorize({
                 project: req.project,
-                object: {
-                    typeOf: cinerino.factory.chevre.offerType.Offer,
-                    id: req.body.object?.id,
-                    itemOffered: {
-                        id: req.body.object?.itemOffered?.id,
-                        serviceOutput: {
-                            // identifier: identifier,
-                            accessCode: req.body.object?.itemOffered?.serviceOutput?.accessCode,
-                            name: req.body.object?.itemOffered?.serviceOutput?.name
-                            // additionalProperty: [
-                            //     { name: 'accountNumber', value: identifier },
-                            // ]
+                object: object.map((o: any) => {
+                    return {
+                        typeOf: cinerino.factory.chevre.offerType.Offer,
+                        id: o?.id,
+                        itemOffered: {
+                            id: o?.itemOffered?.id,
+                            serviceOutput: {
+                                accessCode: o?.itemOffered?.serviceOutput?.accessCode,
+                                name: o?.itemOffered?.serviceOutput?.name
+                                // additionalProperty: [
+                                //     { name: 'accountNumber', value: identifier },
+                                // ]
+                            }
                         }
-                    }
-                    // additionalProperty: (Array.isArray(req.body.object.additionalProperty))
-                    //     ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
-                    //         return { name: String(p.name), value: String(p.value) };
-                    //     })
-                    //     : [],
-                },
+                        // additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+                        //     ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
+                        //         return { name: String(p.name), value: String(p.value) };
+                        //     })
+                        //     : [],
+                    };
+                }),
                 agent: { id: req.user.sub },
                 transaction: <any>{ typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({

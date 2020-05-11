@@ -30,28 +30,28 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
 const paymentCardOffersRouter = express_1.Router();
 // tslint:disable-next-line:use-default-type-parameter
 paymentCardOffersRouter.post('/authorize', permitScopes_1.default(['transactions']), rateLimit_1.default, ...[
-    express_validator_1.body('object.id')
+    express_validator_1.body('object.*.id')
         .not()
         .isEmpty()
         .withMessage(() => 'required'),
-    express_validator_1.body('object.itemOffered.id')
+    express_validator_1.body('object.*.itemOffered.id')
         .not()
         .isEmpty()
         .withMessage(() => 'required'),
-    express_validator_1.body('object.itemOffered.serviceOutput.accessCode')
+    express_validator_1.body('object.*.itemOffered.serviceOutput.accessCode')
         .not()
         .isEmpty()
         .withMessage(() => 'required'),
-    express_validator_1.body('object.itemOffered.serviceOutput.additionalProperty')
+    express_validator_1.body('object.*.itemOffered.serviceOutput.additionalProperty')
         .optional()
         .isArray({ max: 10 }),
-    express_validator_1.body('object.itemOffered.serviceOutput.additionalProperty.*.name')
+    express_validator_1.body('object.*.itemOffered.serviceOutput.additionalProperty.*.name')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.body('object.itemOffered.serviceOutput.additionalProperty.*.value')
+    express_validator_1.body('object.*.itemOffered.serviceOutput.additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
@@ -71,30 +71,35 @@ paymentCardOffersRouter.post('/authorize', permitScopes_1.default(['transactions
         id: req.body.purpose.id
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
     try {
+        let object = req.body.object;
+        if (!Array.isArray(object)) {
+            object = [object];
+        }
         const action = yield cinerino.service.offer.paymentCard.authorize({
             project: req.project,
-            object: {
-                typeOf: cinerino.factory.chevre.offerType.Offer,
-                id: (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.id,
-                itemOffered: {
-                    id: (_c = (_b = req.body.object) === null || _b === void 0 ? void 0 : _b.itemOffered) === null || _c === void 0 ? void 0 : _c.id,
-                    serviceOutput: {
-                        // identifier: identifier,
-                        accessCode: (_f = (_e = (_d = req.body.object) === null || _d === void 0 ? void 0 : _d.itemOffered) === null || _e === void 0 ? void 0 : _e.serviceOutput) === null || _f === void 0 ? void 0 : _f.accessCode,
-                        name: (_j = (_h = (_g = req.body.object) === null || _g === void 0 ? void 0 : _g.itemOffered) === null || _h === void 0 ? void 0 : _h.serviceOutput) === null || _j === void 0 ? void 0 : _j.name
-                        // additionalProperty: [
-                        //     { name: 'accountNumber', value: identifier },
-                        // ]
+            object: object.map((o) => {
+                var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+                return {
+                    typeOf: cinerino.factory.chevre.offerType.Offer,
+                    id: (_a = o) === null || _a === void 0 ? void 0 : _a.id,
+                    itemOffered: {
+                        id: (_c = (_b = o) === null || _b === void 0 ? void 0 : _b.itemOffered) === null || _c === void 0 ? void 0 : _c.id,
+                        serviceOutput: {
+                            accessCode: (_f = (_e = (_d = o) === null || _d === void 0 ? void 0 : _d.itemOffered) === null || _e === void 0 ? void 0 : _e.serviceOutput) === null || _f === void 0 ? void 0 : _f.accessCode,
+                            name: (_j = (_h = (_g = o) === null || _g === void 0 ? void 0 : _g.itemOffered) === null || _h === void 0 ? void 0 : _h.serviceOutput) === null || _j === void 0 ? void 0 : _j.name
+                            // additionalProperty: [
+                            //     { name: 'accountNumber', value: identifier },
+                            // ]
+                        }
                     }
-                }
-                // additionalProperty: (Array.isArray(req.body.object.additionalProperty))
-                //     ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
-                //         return { name: String(p.name), value: String(p.value) };
-                //     })
-                //     : [],
-            },
+                    // additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+                    //     ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
+                    //         return { name: String(p.name), value: String(p.value) };
+                    //     })
+                    //     : [],
+                };
+            }),
             agent: { id: req.user.sub },
             transaction: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
