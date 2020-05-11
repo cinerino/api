@@ -33,6 +33,7 @@ import refundCreditCard from './continuous/refundCreditCard/run';
 import refundMovieTicket from './continuous/refundMovieTicket/run';
 import refundPaymentCard from './continuous/refundPaymentCard/run';
 import registerProgramMembership from './continuous/registerProgramMembership/run';
+import registerService from './continuous/registerService/run';
 import returnOrder from './continuous/returnOrder/run';
 import returnPointAward from './continuous/returnPointAward/run';
 import sendEmailMessage from './continuous/sendEmailMessage/run';
@@ -77,6 +78,7 @@ export default async () => {
     await refundMovieTicket({ project: project });
     await refundPaymentCard({ project: project });
     await registerProgramMembership({ project: project });
+    await registerService({ project: project });
     await returnOrder({ project: project });
     await returnPointAward({ project: project });
     await sendEmailMessage({ project: project });

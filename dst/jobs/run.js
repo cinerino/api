@@ -41,13 +41,14 @@ const run_25 = require("./continuous/refundCreditCard/run");
 const run_26 = require("./continuous/refundMovieTicket/run");
 const run_27 = require("./continuous/refundPaymentCard/run");
 const run_28 = require("./continuous/registerProgramMembership/run");
-const run_29 = require("./continuous/returnOrder/run");
-const run_30 = require("./continuous/returnPointAward/run");
-const run_31 = require("./continuous/sendEmailMessage/run");
-const run_32 = require("./continuous/sendOrder/run");
-const run_33 = require("./continuous/triggerWebhook/run");
-const run_34 = require("./continuous/unRegisterProgramMembership/run");
-const run_35 = require("./continuous/voidMoneyTransfer/run");
+const run_29 = require("./continuous/registerService/run");
+const run_30 = require("./continuous/returnOrder/run");
+const run_31 = require("./continuous/returnPointAward/run");
+const run_32 = require("./continuous/sendEmailMessage/run");
+const run_33 = require("./continuous/sendOrder/run");
+const run_34 = require("./continuous/triggerWebhook/run");
+const run_35 = require("./continuous/unRegisterProgramMembership/run");
+const run_36 = require("./continuous/voidMoneyTransfer/run");
 const project = (typeof process.env.PROJECT_ID === 'string')
     ? { typeOf: domain_1.factory.organizationType.Project, id: process.env.PROJECT_ID }
     : undefined;
@@ -88,4 +89,5 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_33.default({ project: project });
     yield run_34.default({ project: project });
     yield run_35.default({ project: project });
+    yield run_36.default({ project: project });
 });
