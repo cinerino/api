@@ -3,6 +3,7 @@
  */
 import * as express from 'express';
 
+import ahRouter from './_ah';
 import healthRouter from './health';
 import projectsRouter from './projects';
 import projectDetailRouter from './projects/detail';
@@ -21,6 +22,7 @@ const router = express.Router();
 // })
 
 // 例外的なpublic router
+router.use('/_ah', ahRouter);
 router.use('/health', healthRouter);
 router.use('/stats', statsRouter);
 

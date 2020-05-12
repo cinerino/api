@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * ルーター
  */
 const express = require("express");
+const _ah_1 = require("./_ah");
 const health_1 = require("./health");
 const projects_1 = require("./projects");
 const detail_1 = require("./projects/detail");
@@ -18,6 +19,7 @@ const router = express.Router();
 //   next()
 // })
 // 例外的なpublic router
+router.use('/_ah', _ah_1.default);
 router.use('/health', health_1.default);
 router.use('/stats', stats_1.default);
 // 認証
