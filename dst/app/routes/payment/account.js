@@ -17,6 +17,7 @@ const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
+const redis = require("../../../redis");
 const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
@@ -117,6 +118,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
             ? fromAccount.accountType
             : (toAccount !== undefined) ? toAccount.accountType : undefined;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const moneyTransferTransactionNumberRepo = new cinerino.repository.MoneyTransferTransactionNumber(redis.getClient());
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
@@ -158,6 +160,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: actionRepo,
+            moneyTransferTransactionNumber: moneyTransferTransactionNumberRepo,
             project: projectRepo,
             transaction: transactionRepo
         });

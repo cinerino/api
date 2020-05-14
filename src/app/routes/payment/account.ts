@@ -9,6 +9,8 @@ import { body } from 'express-validator';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
+import * as redis from '../../../redis';
+
 import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
@@ -124,6 +126,7 @@ accountPaymentRouter.post<ParamsDictionary>(
                 : (toAccount !== undefined) ? toAccount.accountType : undefined;
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const moneyTransferTransactionNumberRepo = new cinerino.repository.MoneyTransferTransactionNumber(redis.getClient());
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
@@ -180,6 +183,7 @@ accountPaymentRouter.post<ParamsDictionary>(
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({
                 action: actionRepo,
+                moneyTransferTransactionNumber: moneyTransferTransactionNumberRepo,
                 project: projectRepo,
                 transaction: transactionRepo
             });

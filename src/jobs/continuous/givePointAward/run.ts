@@ -2,8 +2,16 @@
  * ポイントインセンティブ入金実行
  */
 import * as cinerino from '@cinerino/domain';
+import * as redis from 'redis';
 
 import { connectMongo } from '../../../connectMongo';
+
+const redisClient = redis.createClient({
+    port: Number(<string>process.env.REDIS_PORT),
+    host: <string>process.env.REDIS_HOST,
+    password: <string>process.env.REDIS_KEY,
+    tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
+});
 
 export default async (params: {
     project?: cinerino.factory.project.IProject;
@@ -28,7 +36,8 @@ export default async (params: {
                     project: params.project,
                     name: cinerino.factory.taskName.GivePointAward
                 })({
-                    connection: connection
+                    connection: connection,
+                    redisClient: redisClient
                 });
             } catch (error) {
                 console.error(error);
