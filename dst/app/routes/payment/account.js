@@ -69,9 +69,9 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
 }), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         let fromAccount = req.body.object.fromAccount;
-        let toAccount = req.body.object.toAccount;
         // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
         if (typeof fromAccount === 'string') {
             const accountOwnershipInfo = yield cinerino.service.code.verifyToken({
@@ -114,48 +114,19 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
                 }
             }
         }
-        const accountType = (fromAccount !== undefined)
-            ? fromAccount.accountType
-            : (toAccount !== undefined) ? toAccount.accountType : undefined;
+        const accountType = (_a = fromAccount) === null || _a === void 0 ? void 0 : _a.accountType;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const moneyTransferTransactionNumberRepo = new cinerino.repository.MoneyTransferTransactionNumber(redis.getClient());
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        // 注文取引、かつ、toAccount未指定の場合、販売者の口座を検索して、toAccountにセット
-        if (toAccount === undefined) {
-            const transaction = yield transactionRepo.findById({
-                typeOf: req.body.purpose.typeOf,
-                id: req.body.purpose.id
-            });
-            if (transaction.typeOf === cinerino.factory.transactionType.PlaceOrder) {
-                const seller = yield sellerRepo.findById({
-                    id: transaction.seller.id
-                });
-                if (seller.paymentAccepted === undefined) {
-                    throw new cinerino.factory.errors.Argument('object', 'Account payment not accepted');
-                }
-                const accountPaymentsAccepted = seller.paymentAccepted.filter((a) => a.paymentMethodType === cinerino.factory.paymentMethodType.Account);
-                const paymentAccepted = accountPaymentsAccepted.find((a) => a.accountType === accountType);
-                // tslint:disable-next-line:no-single-line-block-comment
-                /* istanbul ignore if */
-                if (paymentAccepted === undefined) {
-                    throw new cinerino.factory.errors.Argument('object', `${accountType} payment not accepted`);
-                }
-                toAccount = {
-                    accountNumber: paymentAccepted.accountNumber,
-                    accountType: paymentAccepted.accountType
-                };
-            }
-        }
         const currency = accountType;
         const action = yield cinerino.service.payment.account.authorize({
             project: req.project,
-            object: Object.assign(Object.assign(Object.assign(Object.assign({ typeOf: cinerino.factory.paymentMethodType.Account, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+            object: Object.assign(Object.assign(Object.assign({ typeOf: cinerino.factory.paymentMethodType.Account, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {
                         return { name: String(p.name), value: String(p.value) };
                     })
-                    : [] }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined), (typeof req.body.object.notes === 'string') ? { notes: req.body.object.notes } : undefined), (fromAccount !== undefined) ? { fromAccount } : {}), (toAccount !== undefined) ? { toAccount } : {}),
+                    : [] }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined), (typeof req.body.object.notes === 'string') ? { notes: req.body.object.notes } : undefined), (fromAccount !== undefined) ? { fromAccount } : {}),
             agent: { id: req.user.sub },
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
