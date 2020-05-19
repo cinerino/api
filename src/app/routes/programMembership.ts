@@ -21,6 +21,7 @@ const programMembershipsRouter = Router();
 
 /**
  * 会員プログラム検索
+ * @deprecated ssktsでのみ仕様可能
  */
 programMembershipsRouter.get(
     '',
@@ -55,7 +56,15 @@ programMembershipsRouter.get(
             membershipServices = membershipServices.map((m) => {
                 return {
                     ...m,
-                    offers: [{ typeOf: cinerino.factory.chevre.offerType.Offer, identifier: 'AnnualPlan', price: 500 }]
+                    offers: [
+                        {
+                            project: m.project,
+                            typeOf: cinerino.factory.chevre.offerType.Offer,
+                            identifier: 'AnnualPlan',
+                            price: 500,
+                            priceCurrency: cinerino.factory.chevre.priceCurrency.JPY
+                        }
+                    ]
                 };
             });
 

@@ -28,6 +28,7 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 const programMembershipsRouter = express_1.Router();
 /**
  * 会員プログラム検索
+ * @deprecated ssktsでのみ仕様可能
  */
 programMembershipsRouter.get('', permitScopes_1.default(['programMemberships.*', 'programMemberships.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
@@ -47,7 +48,15 @@ programMembershipsRouter.get('', permitScopes_1.default(['programMemberships.*',
         let membershipServices = searchResult.data;
         // api使用側への互換性維持のため、offers属性を補完
         membershipServices = membershipServices.map((m) => {
-            return Object.assign(Object.assign({}, m), { offers: [{ typeOf: cinerino.factory.chevre.offerType.Offer, identifier: 'AnnualPlan', price: 500 }] });
+            return Object.assign(Object.assign({}, m), { offers: [
+                    {
+                        project: m.project,
+                        typeOf: cinerino.factory.chevre.offerType.Offer,
+                        identifier: 'AnnualPlan',
+                        price: 500,
+                        priceCurrency: cinerino.factory.chevre.priceCurrency.JPY
+                    }
+                ] });
         });
         res.json(membershipServices);
     }
