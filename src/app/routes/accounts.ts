@@ -168,7 +168,6 @@ accountsRouter.post(
     depositAccountRateLimiet,
     async (req, res, next) => {
         try {
-            const moneyTransferTransactionNumberRepo = new cinerino.repository.MoneyTransferTransactionNumber(redis.getClient());
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
             await cinerino.service.account.deposit({
@@ -195,7 +194,6 @@ accountsRouter.post(
                     ...req.body.recipient
                 }
             })({
-                moneyTransferTransactionNumber: moneyTransferTransactionNumberRepo,
                 project: projectRepo
             });
 

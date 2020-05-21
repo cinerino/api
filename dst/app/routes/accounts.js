@@ -153,7 +153,6 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['accounts.t
 ], validator_1.default, depositAccountRateLimiet, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f, _g;
     try {
-        const moneyTransferTransactionNumberRepo = new cinerino.repository.MoneyTransferTransactionNumber(redis.getClient());
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         yield cinerino.service.account.deposit({
             project: req.project,
@@ -170,7 +169,6 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['accounts.t
             },
             recipient: Object.assign({ typeOf: cinerino.factory.personType.Person }, req.body.recipient)
         })({
-            moneyTransferTransactionNumber: moneyTransferTransactionNumberRepo,
             project: projectRepo
         });
         res.status(http_status_1.NO_CONTENT)
