@@ -150,7 +150,7 @@ reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitSc
 /**
  * 発券
  */
-reservationsRouter.put('/checkedIn', permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+reservationsRouter.put('/checkedIn', permitScopes_1.default(['reservations.findByToken']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -173,7 +173,7 @@ reservationsRouter.put('/checkedIn', permitScopes_1.default(['pos']), validator_
 /**
  * 入場
  */
-reservationsRouter.put('/:id/attended', permitScopes_1.default(['pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+reservationsRouter.put('/:id/attended', permitScopes_1.default(['reservations.findByToken']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _c, _d;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);

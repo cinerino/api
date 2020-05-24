@@ -185,7 +185,7 @@ reservationsRouter.post(
  */
 reservationsRouter.put(
     '/checkedIn',
-    permitScopes(['pos']),
+    permitScopes(['reservations.findByToken']),
     validator,
     async (req, res, next) => {
         try {
@@ -214,7 +214,7 @@ reservationsRouter.put(
  */
 reservationsRouter.put(
     '/:id/attended',
-    permitScopes(['pos']),
+    permitScopes(['reservations.findByToken']),
     validator,
     async (req, res, next) => {
         try {
