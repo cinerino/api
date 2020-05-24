@@ -4,6 +4,7 @@
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import { body, query } from 'express-validator';
+import { NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
 import permitScopes from '../middlewares/permitScopes';
@@ -173,6 +174,64 @@ reservationsRouter.post(
             await reservationService.attendScreeningEvent(reservation);
 
             res.json({ ...ownershipInfo, typeOfGood: reservation });
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 発券
+ */
+reservationsRouter.put(
+    '/checkedIn',
+    permitScopes(['pos']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (typeof project.settings?.chevre?.endpoint !== 'string') {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
+            }
+
+            const reservationService = new cinerino.chevre.service.Reservation({
+                endpoint: project.settings.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            await reservationService.checkInScreeningEventReservations(req.body);
+
+            res.status(NO_CONTENT)
+                .end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 入場
+ */
+reservationsRouter.put(
+    '/:id/attended',
+    permitScopes(['pos']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (typeof project.settings?.chevre?.endpoint !== 'string') {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
+            }
+
+            const reservationService = new cinerino.chevre.service.Reservation({
+                endpoint: project.settings.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            await reservationService.attendScreeningEvent({ id: req.params.id });
+
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }
