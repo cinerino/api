@@ -16,6 +16,7 @@ const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
+const moment = require("moment");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
@@ -162,7 +163,16 @@ reservationsRouter.put('/cancel', permitScopes_1.default(['reservations.*', 'res
             endpoint: project.settings.chevre.endpoint,
             auth: chevreAuthClient
         });
-        yield cancelReservationService.startAndConfirm(req.body);
+        yield cancelReservationService.startAndConfirm({
+            project: { typeOf: req.project.typeOf, id: req.project.id },
+            typeOf: cinerino.factory.chevre.transactionType.CancelReservation,
+            expires: moment()
+                .add(1, 'minute')
+                .toDate(),
+            agent: Object.assign({}, req.body.agent),
+            object: Object.assign({}, req.body.object),
+            potentialActions: Object.assign({}, req.body.potentialActions)
+        });
         res.status(http_status_1.NO_CONTENT)
             .end();
     }

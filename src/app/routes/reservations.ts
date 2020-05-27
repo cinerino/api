@@ -5,6 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import { body, query } from 'express-validator';
 import { NO_CONTENT } from 'http-status';
+import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import permitScopes from '../middlewares/permitScopes';
@@ -199,7 +200,22 @@ reservationsRouter.put(
                 endpoint: project.settings.chevre.endpoint,
                 auth: chevreAuthClient
             });
-            await cancelReservationService.startAndConfirm(req.body);
+            await cancelReservationService.startAndConfirm({
+                project: { typeOf: req.project.typeOf, id: req.project.id },
+                typeOf: cinerino.factory.chevre.transactionType.CancelReservation,
+                expires: moment()
+                    .add(1, 'minute')
+                    .toDate(),
+                agent: {
+                    ...req.body.agent
+                },
+                object: {
+                    ...req.body.object
+                },
+                potentialActions: {
+                    ...req.body.potentialActions
+                }
+            });
 
             res.status(NO_CONTENT)
                 .end();
