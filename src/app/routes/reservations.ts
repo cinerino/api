@@ -181,6 +181,35 @@ reservationsRouter.post(
 );
 
 /**
+ * 予約取消
+ */
+reservationsRouter.put(
+    '/cancel',
+    permitScopes(['reservations.*', 'reservations.cancel']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (typeof project.settings?.chevre?.endpoint !== 'string') {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
+            }
+
+            const cancelReservationService = new cinerino.chevre.service.transaction.CancelReservation({
+                endpoint: project.settings.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            await cancelReservationService.startAndConfirm(req.body);
+
+            res.status(NO_CONTENT)
+                .end();
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
  * 発券
  */
 reservationsRouter.put(
