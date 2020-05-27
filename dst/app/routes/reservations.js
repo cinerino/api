@@ -69,6 +69,7 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.*', 'reservatio
         res.json(searchResult.data);
     }
     catch (error) {
+        error = cinerino.errorHandler.handleChevreError(error);
         next(error);
     }
 }));
@@ -145,6 +146,7 @@ reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitSc
         res.json(Object.assign(Object.assign({}, ownershipInfo), { typeOfGood: reservation }));
     }
     catch (error) {
+        error = cinerino.errorHandler.handleChevreError(error);
         next(error);
     }
 }));
@@ -177,6 +179,7 @@ reservationsRouter.put('/cancel', permitScopes_1.default(['reservations.*', 'res
             .end();
     }
     catch (error) {
+        error = cinerino.errorHandler.handleChevreError(error);
         next(error);
     }
 }));
@@ -200,6 +203,7 @@ reservationsRouter.put('/checkedIn', permitScopes_1.default(['reservations.findB
             .end();
     }
     catch (error) {
+        error = cinerino.errorHandler.handleChevreError(error);
         next(error);
     }
 }));
@@ -223,6 +227,7 @@ reservationsRouter.put('/:id/attended', permitScopes_1.default(['reservations.fi
             .end();
     }
     catch (error) {
+        error = cinerino.errorHandler.handleChevreError(error);
         next(error);
     }
 }));

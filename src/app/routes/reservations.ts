@@ -75,6 +75,7 @@ reservationsRouter.get(
             // res.set('X-Total-Count', searchResult.totalCount.toString());
             res.json(searchResult.data);
         } catch (error) {
+            error = cinerino.errorHandler.handleChevreError(error);
             next(error);
         }
     }
@@ -176,6 +177,7 @@ reservationsRouter.post(
 
             res.json({ ...ownershipInfo, typeOfGood: reservation });
         } catch (error) {
+            error = cinerino.errorHandler.handleChevreError(error);
             next(error);
         }
     }
@@ -220,6 +222,7 @@ reservationsRouter.put(
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {
+            error = cinerino.errorHandler.handleChevreError(error);
             next(error);
         }
     }
@@ -249,6 +252,7 @@ reservationsRouter.put(
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {
+            error = cinerino.errorHandler.handleChevreError(error);
             next(error);
         }
     }
@@ -278,6 +282,7 @@ reservationsRouter.put(
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {
+            error = cinerino.errorHandler.handleChevreError(error);
             next(error);
         }
     }
