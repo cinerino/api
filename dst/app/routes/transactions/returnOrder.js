@@ -191,14 +191,16 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         yield cinerino.service.transaction.returnOrder.confirm(Object.assign(Object.assign({}, req.body), { id: req.params.transactionId, agent: { id: req.user.sub } }))({
             action: actionRepo,
-            transaction: transactionRepo,
-            seller: sellerRepo
+            order: orderRepo,
+            seller: sellerRepo,
+            transaction: transactionRepo
         });
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
         // tslint:disable-next-line:no-floating-promises

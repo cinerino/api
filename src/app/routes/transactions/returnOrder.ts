@@ -224,6 +224,7 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
@@ -235,8 +236,9 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
                 agent: { id: req.user.sub }
             })({
                 action: actionRepo,
-                transaction: transactionRepo,
-                seller: sellerRepo
+                order: orderRepo,
+                seller: sellerRepo,
+                transaction: transactionRepo
             });
 
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
