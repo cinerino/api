@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 予約発券を追加
 - 予約入場を追加
 - 1トランザクションでの予約取消取引処理を追加
+- プロジェクトに返金通知設定を追加
 
 ### Changed
 
