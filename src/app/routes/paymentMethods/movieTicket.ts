@@ -31,7 +31,7 @@ movieTicketPaymentMethodsRouter.get(
         try {
             const paymentMethodRepo = new cinerino.repository.PaymentMethod(mongoose.connection);
 
-            const searchConditions: cinerino.factory.paymentMethod.ISearchConditions<cinerino.factory.paymentMethodType.MovieTicket> = {
+            const searchConditions: any = {
                 ...req.query,
                 project: { ids: [req.project.id] },
                 // tslint:disable-next-line:no-magic-numbers

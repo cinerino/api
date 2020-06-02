@@ -37,17 +37,25 @@ returnOrderTransactionsRouter.post(
     '/start',
     permitScopes(['transactions', 'pos']),
     rateLimit,
+    (req, _, next) => {
+        // 互換性維持対応として、注文指定を配列に変換
+        if (req.body.object?.order !== undefined && req.body.object?.order !== null && !Array.isArray(req.body.object?.order)) {
+            req.body.object.order = [req.body.object.order];
+        }
+
+        next();
+    },
     ...[
         body('expires')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
+            .withMessage(() => 'expires required')
             .isISO8601()
             .toDate(),
-        body('object.order.orderNumber')
+        body('object.order.*.orderNumber')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
+            .withMessage(() => 'orderNumber required')
     ],
     validator,
     async (req, res, next) => {
@@ -60,14 +68,18 @@ returnOrderTransactionsRouter.post(
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
             let order: cinerino.factory.order.IOrder | undefined;
-            let returnableOrder: cinerino.factory.transaction.returnOrder.IReturnableOrder = req.body.object.order;
+            let returnableOrder: cinerino.factory.transaction.returnOrder.IReturnableOrder[] = req.body.object.order;
 
             // APIユーザーが管理者の場合、顧客情報を自動取得
             if (req.isAdmin) {
-                order = await orderRepo.findByOrderNumber({ orderNumber: returnableOrder.orderNumber });
-                returnableOrder = { ...returnableOrder, customer: { email: order.customer.email, telephone: order.customer.telephone } };
+                order = await orderRepo.findByOrderNumber({ orderNumber: returnableOrder[0].orderNumber });
+                // returnableOrder = { ...returnableOrder, customer: { email: order.customer.email, telephone: order.customer.telephone } };
             } else {
-                const returnableOrderCustomer = returnableOrder.customer;
+                if (returnableOrder.length !== 1) {
+                    throw new cinerino.factory.errors.Argument('object.order', 'number of order must be 1');
+                }
+
+                const returnableOrderCustomer = returnableOrder[0].customer;
                 if (returnableOrderCustomer === undefined) {
                     throw new cinerino.factory.errors.ArgumentNull('Order Customer', 'Order customer info required');
                 }
@@ -77,7 +89,7 @@ returnOrderTransactionsRouter.post(
 
                 // 管理者でない場合は、個人情報完全一致で承認
                 const orders = await orderRepo.search({
-                    orderNumbers: [returnableOrder.orderNumber],
+                    orderNumbers: returnableOrder.map((o) => o.orderNumber),
                     customer: {
                         email: (returnableOrderCustomer.email !== undefined)
                             ? `^${escapeRegExp(returnableOrderCustomer.email)}$`
@@ -91,7 +103,7 @@ returnOrderTransactionsRouter.post(
                 if (order === undefined) {
                     throw new cinerino.factory.errors.NotFound('Order');
                 }
-                returnableOrder = order;
+                returnableOrder = [order];
             }
 
             const cancellationFee = (req.isAdmin)
@@ -224,6 +236,7 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
@@ -235,8 +248,9 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
                 agent: { id: req.user.sub }
             })({
                 action: actionRepo,
-                transaction: transactionRepo,
-                seller: sellerRepo
+                order: orderRepo,
+                seller: sellerRepo,
+                transaction: transactionRepo
             });
 
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)

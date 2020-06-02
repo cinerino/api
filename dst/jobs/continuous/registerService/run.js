@@ -10,12 +10,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * プリペイドカード返金実行
+ * サービス登録タスク
  */
 const cinerino = require("@cinerino/domain");
+const redis = require("redis");
 const connectMongo_1 = require("../../../connectMongo");
 exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
+    const redisClient = redis.createClient({
+        host: process.env.REDIS_HOST,
+        port: Number(process.env.REDIS_PORT),
+        password: process.env.REDIS_KEY,
+        tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
+    });
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 200;
@@ -27,12 +34,14 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             yield cinerino.service.task.executeByName({
                 project: params.project,
-                name: cinerino.factory.taskName.RefundPrepaidCard
+                name: cinerino.factory.taskName.RegisterService
             })({
-                connection: connection
+                connection: connection,
+                redisClient: redisClient
             });
         }
         catch (error) {
+            // tslint:disable-next-line:no-console
             console.error(error);
         }
         count -= 1;

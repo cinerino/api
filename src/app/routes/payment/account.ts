@@ -73,8 +73,6 @@ accountPaymentRouter.post<ParamsDictionary>(
         try {
             let fromAccount: cinerino.factory.action.authorize.paymentMethod.account.IFromAccount<string> | undefined
                 = req.body.object.fromAccount;
-            let toAccount: cinerino.factory.action.authorize.paymentMethod.account.IToAccount<string> | undefined
-                = req.body.object.toAccount;
 
             // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
             if (typeof fromAccount === 'string') {
@@ -119,44 +117,11 @@ accountPaymentRouter.post<ParamsDictionary>(
                 }
             }
 
-            const accountType = (fromAccount !== undefined)
-                ? fromAccount.accountType
-                : (toAccount !== undefined) ? toAccount.accountType : undefined;
+            const accountType = fromAccount?.accountType;
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-
-            // 注文取引、かつ、toAccount未指定の場合、販売者の口座を検索して、toAccountにセット
-            if (toAccount === undefined) {
-                const transaction = await transactionRepo.findById({
-                    typeOf: req.body.purpose.typeOf,
-                    id: <string>req.body.purpose.id
-                });
-
-                if (transaction.typeOf === cinerino.factory.transactionType.PlaceOrder) {
-                    const seller = await sellerRepo.findById({
-                        id: transaction.seller.id
-                    });
-
-                    if (seller.paymentAccepted === undefined) {
-                        throw new cinerino.factory.errors.Argument('object', 'Account payment not accepted');
-                    }
-                    const accountPaymentsAccepted = <cinerino.factory.seller.IPaymentAccepted<cinerino.factory.paymentMethodType.Account>[]>
-                        seller.paymentAccepted.filter((a) => a.paymentMethodType === cinerino.factory.paymentMethodType.Account);
-                    const paymentAccepted = accountPaymentsAccepted.find((a) => a.accountType === accountType);
-                    // tslint:disable-next-line:no-single-line-block-comment
-                    /* istanbul ignore if */
-                    if (paymentAccepted === undefined) {
-                        throw new cinerino.factory.errors.Argument('object', `${accountType} payment not accepted`);
-                    }
-                    toAccount = {
-                        accountNumber: paymentAccepted.accountNumber,
-                        accountType: paymentAccepted.accountType
-                    };
-                }
-            }
 
             const currency = accountType;
 
@@ -173,8 +138,7 @@ accountPaymentRouter.post<ParamsDictionary>(
                         : [],
                     ...(typeof req.body.object.name === 'string') ? { name: <string>req.body.object.name } : undefined,
                     ...(typeof req.body.object.notes === 'string') ? { notes: <string>req.body.object.notes } : undefined,
-                    ...(fromAccount !== undefined) ? { fromAccount } : {},
-                    ...(toAccount !== undefined) ? { toAccount } : {}
+                    ...(fromAccount !== undefined) ? { fromAccount } : {}
                 },
                 agent: { id: req.user.sub },
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }

@@ -1,22 +1,22 @@
 /**
- * 口座返金実行
+ * サービス登録タスク
  */
 import * as cinerino from '@cinerino/domain';
 import * as redis from 'redis';
 
 import { connectMongo } from '../../../connectMongo';
 
-const redisClient = redis.createClient({
-    port: Number(<string>process.env.REDIS_PORT),
-    host: <string>process.env.REDIS_HOST,
-    password: <string>process.env.REDIS_KEY,
-    tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
-});
-
 export default async (params: {
     project?: cinerino.factory.project.IProject;
 }) => {
     const connection = await connectMongo({ defaultConnection: false });
+
+    const redisClient = redis.createClient({
+        host: <string>process.env.REDIS_HOST,
+        port: Number(<string>process.env.REDIS_PORT),
+        password: <string>process.env.REDIS_KEY,
+        tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
+    });
 
     let count = 0;
 
@@ -34,12 +34,13 @@ export default async (params: {
             try {
                 await cinerino.service.task.executeByName({
                     project: params.project,
-                    name: cinerino.factory.taskName.RefundAccount
+                    name: cinerino.factory.taskName.RegisterService
                 })({
                     connection: connection,
                     redisClient: redisClient
                 });
             } catch (error) {
+                // tslint:disable-next-line:no-console
                 console.error(error);
             }
 

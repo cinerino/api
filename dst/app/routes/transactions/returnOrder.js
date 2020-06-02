@@ -35,17 +35,24 @@ const returnOrderTransactionsRouter = express_1.Router();
 function escapeRegExp(params) {
     return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
 }
-returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions', 'pos']), rateLimit_1.default, ...[
+returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions', 'pos']), rateLimit_1.default, (req, _, next) => {
+    var _a, _b, _c;
+    // 互換性維持対応として、注文指定を配列に変換
+    if (((_a = req.body.object) === null || _a === void 0 ? void 0 : _a.order) !== undefined && ((_b = req.body.object) === null || _b === void 0 ? void 0 : _b.order) !== null && !Array.isArray((_c = req.body.object) === null || _c === void 0 ? void 0 : _c.order)) {
+        req.body.object.order = [req.body.object.order];
+    }
+    next();
+}, ...[
     express_validator_1.body('expires')
         .not()
         .isEmpty()
-        .withMessage((_, __) => 'required')
+        .withMessage(() => 'expires required')
         .isISO8601()
         .toDate(),
-    express_validator_1.body('object.order.orderNumber')
+    express_validator_1.body('object.order.*.orderNumber')
         .not()
         .isEmpty()
-        .withMessage((_, __) => 'required')
+        .withMessage(() => 'orderNumber required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
@@ -58,11 +65,14 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
         let returnableOrder = req.body.object.order;
         // APIユーザーが管理者の場合、顧客情報を自動取得
         if (req.isAdmin) {
-            order = yield orderRepo.findByOrderNumber({ orderNumber: returnableOrder.orderNumber });
-            returnableOrder = Object.assign(Object.assign({}, returnableOrder), { customer: { email: order.customer.email, telephone: order.customer.telephone } });
+            order = yield orderRepo.findByOrderNumber({ orderNumber: returnableOrder[0].orderNumber });
+            // returnableOrder = { ...returnableOrder, customer: { email: order.customer.email, telephone: order.customer.telephone } };
         }
         else {
-            const returnableOrderCustomer = returnableOrder.customer;
+            if (returnableOrder.length !== 1) {
+                throw new cinerino.factory.errors.Argument('object.order', 'number of order must be 1');
+            }
+            const returnableOrderCustomer = returnableOrder[0].customer;
             if (returnableOrderCustomer === undefined) {
                 throw new cinerino.factory.errors.ArgumentNull('Order Customer', 'Order customer info required');
             }
@@ -71,7 +81,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
             }
             // 管理者でない場合は、個人情報完全一致で承認
             const orders = yield orderRepo.search({
-                orderNumbers: [returnableOrder.orderNumber],
+                orderNumbers: returnableOrder.map((o) => o.orderNumber),
                 customer: {
                     email: (returnableOrderCustomer.email !== undefined)
                         ? `^${escapeRegExp(returnableOrderCustomer.email)}$`
@@ -85,7 +95,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
             if (order === undefined) {
                 throw new cinerino.factory.errors.NotFound('Order');
             }
-            returnableOrder = order;
+            returnableOrder = [order];
         }
         const cancellationFee = (req.isAdmin)
             ? 0
@@ -191,14 +201,16 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         yield cinerino.service.transaction.returnOrder.confirm(Object.assign(Object.assign({}, req.body), { id: req.params.transactionId, agent: { id: req.user.sub } }))({
             action: actionRepo,
-            transaction: transactionRepo,
-            seller: sellerRepo
+            order: orderRepo,
+            seller: sellerRepo,
+            transaction: transactionRepo
         });
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
         // tslint:disable-next-line:no-floating-promises

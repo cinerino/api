@@ -1,5 +1,5 @@
 /**
- * プリペイドカード決済中止
+ * プリペイドカード決済実行
  */
 import * as cinerino from '@cinerino/domain';
 
@@ -26,7 +26,7 @@ export default async (params: {
             try {
                 await cinerino.service.task.executeByName({
                     project: params.project,
-                    name: cinerino.factory.taskName.CancelPrepaidCard
+                    name: cinerino.factory.taskName.PayPaymentCard
                 })({
                     connection: connection
                 });

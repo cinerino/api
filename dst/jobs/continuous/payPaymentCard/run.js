@@ -10,17 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 口座返金実行
+ * プリペイドカード決済実行
  */
 const cinerino = require("@cinerino/domain");
-const redis = require("redis");
 const connectMongo_1 = require("../../../connectMongo");
-const redisClient = redis.createClient({
-    port: Number(process.env.REDIS_PORT),
-    host: process.env.REDIS_HOST,
-    password: process.env.REDIS_KEY,
-    tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
-});
 exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     let count = 0;
@@ -34,10 +27,9 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             yield cinerino.service.task.executeByName({
                 project: params.project,
-                name: cinerino.factory.taskName.RefundAccount
+                name: cinerino.factory.taskName.PayPaymentCard
             })({
-                connection: connection,
-                redisClient: redisClient
+                connection: connection
             });
         }
         catch (error) {

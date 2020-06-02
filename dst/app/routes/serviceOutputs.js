@@ -10,10 +10,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 会員プログラムルーター
+ * サービスアウトプットルーター
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+const express_validator_1 = require("express-validator");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
@@ -25,43 +26,34 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-const programMembershipsRouter = express_1.Router();
+const serviceOutputsRouter = express_1.Router();
 /**
- * 会員プログラム検索
- * @deprecated ssktsでのみ仕様可能
+ * 検索
  */
-programMembershipsRouter.get('', permitScopes_1.default(['programMemberships.*', 'programMemberships.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+serviceOutputsRouter.get('', permitScopes_1.default(['serviceOutputs.*', 'serviceOutputs.read']), rateLimit_1.default, ...[
+    express_validator_1.query('typeOf')
+        .not()
+        .isEmpty()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        if (typeof ((_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === null || _b === void 0 ? void 0 : _b.endpoint) !== 'string') {
+        if (((_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
         }
-        const productService = new cinerino.chevre.service.Product({
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined });
+        const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
             endpoint: project.settings.chevre.endpoint,
             auth: chevreAuthClient
         });
-        const searchResult = yield productService.search(Object.assign({ project: { id: { $eq: req.project.id } }, typeOf: { $eq: 'MembershipService' } }, {
-            limit: 1
-        }));
-        let membershipServices = searchResult.data;
-        // api使用側への互換性維持のため、offers属性を補完
-        membershipServices = membershipServices.map((m) => {
-            return Object.assign(Object.assign({}, m), { offers: [
-                    {
-                        project: m.project,
-                        typeOf: cinerino.factory.chevre.offerType.Offer,
-                        identifier: 'AnnualPlan',
-                        price: 500,
-                        priceCurrency: cinerino.factory.chevre.priceCurrency.JPY
-                    }
-                ] });
-        });
-        res.json(membershipServices);
+        const { data } = yield serviceOutputService.search(searchConditions);
+        res.json(data);
     }
     catch (error) {
         next(error);
     }
 }));
-exports.default = programMembershipsRouter;
+exports.default = serviceOutputsRouter;

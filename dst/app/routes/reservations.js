@@ -15,6 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
+const http_status_1 = require("http-status");
+const moment = require("moment");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
@@ -67,6 +69,7 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.*', 'reservatio
         res.json(searchResult.data);
     }
     catch (error) {
+        error = cinerino.errorHandler.handleChevreError(error);
         next(error);
     }
 }));
@@ -143,6 +146,88 @@ reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitSc
         res.json(Object.assign(Object.assign({}, ownershipInfo), { typeOfGood: reservation }));
     }
     catch (error) {
+        error = cinerino.errorHandler.handleChevreError(error);
+        next(error);
+    }
+}));
+/**
+ * 予約取消
+ */
+reservationsRouter.put('/cancel', permitScopes_1.default(['reservations.*', 'reservations.cancel']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (typeof ((_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === null || _b === void 0 ? void 0 : _b.endpoint) !== 'string') {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
+        }
+        const cancelReservationService = new cinerino.chevre.service.transaction.CancelReservation({
+            endpoint: project.settings.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        yield cancelReservationService.startAndConfirm({
+            project: { typeOf: req.project.typeOf, id: req.project.id },
+            typeOf: cinerino.factory.chevre.transactionType.CancelReservation,
+            expires: moment()
+                .add(1, 'minute')
+                .toDate(),
+            agent: Object.assign({}, req.body.agent),
+            object: Object.assign({}, req.body.object),
+            potentialActions: Object.assign({}, req.body.potentialActions)
+        });
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        error = cinerino.errorHandler.handleChevreError(error);
+        next(error);
+    }
+}));
+/**
+ * 発券
+ */
+reservationsRouter.put('/checkedIn', permitScopes_1.default(['reservations.findByToken']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c, _d;
+    try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (typeof ((_d = (_c = project.settings) === null || _c === void 0 ? void 0 : _c.chevre) === null || _d === void 0 ? void 0 : _d.endpoint) !== 'string') {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
+        }
+        const reservationService = new cinerino.chevre.service.Reservation({
+            endpoint: project.settings.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        yield reservationService.checkInScreeningEventReservations(req.body);
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        error = cinerino.errorHandler.handleChevreError(error);
+        next(error);
+    }
+}));
+/**
+ * 入場
+ */
+reservationsRouter.put('/:id/attended', permitScopes_1.default(['reservations.findByToken']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _e, _f;
+    try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        if (typeof ((_f = (_e = project.settings) === null || _e === void 0 ? void 0 : _e.chevre) === null || _f === void 0 ? void 0 : _f.endpoint) !== 'string') {
+            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
+        }
+        const reservationService = new cinerino.chevre.service.Reservation({
+            endpoint: project.settings.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        yield reservationService.attendScreeningEvent({ id: req.params.id });
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        error = cinerino.errorHandler.handleChevreError(error);
         next(error);
     }
 }));
