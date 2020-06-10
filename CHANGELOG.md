@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v4.2.1 - 2020-06-10
+
+### Changed
+
+- メンバーシップサービスのserviceOutputがarrayでない場合に対応
+
 ## v4.2.0 - 2020-06-02
 
 ### Added
