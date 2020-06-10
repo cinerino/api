@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- メンバーシップサービスのserviceOutputがarrayでない場合に対応
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v4.2.1 - 2020-06-10
+
+### Changed
+
+- メンバーシップサービスのserviceOutputがarrayでない場合に対応
 
 ## v4.2.0 - 2020-06-02
 
