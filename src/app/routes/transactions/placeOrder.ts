@@ -190,9 +190,9 @@ placeOrderTransactionsRouter.post(
 
             // 現在所有している会員プログラムを全て検索
             const programMembershipOwnershipInfos =
-                await ownershipInfoRepo.search<cinerino.factory.programMembership.ProgramMembershipType>({
+                await ownershipInfoRepo.search<cinerino.factory.chevre.programMembership.ProgramMembershipType>({
                     project: { id: { $eq: req.project.id } },
-                    typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
+                    typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
                     ownedBy: { id: req.agent.id },
                     ownedFrom: now,
                     ownedThrough: now
@@ -951,9 +951,9 @@ export async function authorizePointAward(req: Request) {
 
     // 所有メンバーシップを検索
     const programMembershipOwnershipInfos =
-        await ownershipInfoRepo.search<cinerino.factory.programMembership.ProgramMembershipType>({
+        await ownershipInfoRepo.search<cinerino.factory.chevre.programMembership.ProgramMembershipType>({
             project: { id: { $eq: req.project.id } },
-            typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
+            typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
             ownedBy: { id: req.agent.id },
             ownedFrom: now,
             ownedThrough: now

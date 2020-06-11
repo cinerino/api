@@ -51,7 +51,7 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                         name: 'Default Program Membership',
                         programName: 'Default Program Membership',
                         project: req.project,
-                        typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership,
+                        typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership,
                         url: user.iss
                     };
                 }

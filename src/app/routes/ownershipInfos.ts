@@ -192,7 +192,7 @@ ownershipInfosRouter.get(
             const repository = new cinerino.repository.OwnershipInfo(mongoose.connection);
 
             const andConditions: any[] = [
-                { 'typeOfGood.typeOf': cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership }
+                { 'typeOfGood.typeOf': cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership }
             ];
 
             andConditions.push({

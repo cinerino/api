@@ -45,7 +45,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                         name: 'Default Program Membership',
                         programName: 'Default Program Membership',
                         project: req.project,
-                        typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership,
+                        typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership,
                         url: user.iss
                     };
                 }
