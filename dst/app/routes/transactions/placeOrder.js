@@ -800,7 +800,11 @@ function authorizePointAward(req) {
                 const membershipServiceId = (_c = programMembership.membershipFor) === null || _c === void 0 ? void 0 : _c.id;
                 const membershipService = yield productService.findById({ id: membershipServiceId });
                 // 登録時の獲得ポイント
-                const membershipServiceOutput = membershipService.serviceOutput;
+                let membershipServiceOutput = membershipService.serviceOutput;
+                // 元々配列型だったので、互換性維持対応として
+                if (!Array.isArray(membershipServiceOutput)) {
+                    membershipServiceOutput = [membershipServiceOutput];
+                }
                 if (Array.isArray(membershipServiceOutput)) {
                     yield Promise.all(membershipServiceOutput
                         .map((serviceOutput) => __awaiter(this, void 0, void 0, function* () {

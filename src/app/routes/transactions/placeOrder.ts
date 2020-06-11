@@ -969,7 +969,12 @@ export async function authorizePointAward(req: Request) {
             const membershipService = await productService.findById({ id: membershipServiceId });
 
             // 登録時の獲得ポイント
-            const membershipServiceOutput = membershipService.serviceOutput;
+            let membershipServiceOutput = membershipService.serviceOutput;
+            // 元々配列型だったので、互換性維持対応として
+            if (!Array.isArray(membershipServiceOutput)) {
+                membershipServiceOutput = <any>[membershipServiceOutput];
+            }
+
             if (Array.isArray(membershipServiceOutput)) {
                 await Promise.all((<cinerino.factory.chevre.programMembership.IProgramMembership[]>membershipServiceOutput)
                     .map(async (serviceOutput) => {
