@@ -482,13 +482,18 @@ ordersRouter.post(
                     }
                 }
             });
-            const order = orders.shift();
-            if (order === undefined) {
-                // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
-                throw new cinerino.factory.errors.NotFound('Order');
-            }
 
-            res.json(order);
+            if (orders.length <= 1) {
+                const order = orders.shift();
+                if (order === undefined) {
+                    // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
+                    throw new cinerino.factory.errors.NotFound('Order');
+                }
+
+                res.json(order);
+            } else {
+                res.json(orders);
+            }
         } catch (error) {
             next(error);
         }
@@ -579,13 +584,17 @@ ordersRouter.post(
                 orderDateThrough: orderDateThrough
             });
 
-            const order = orders.shift();
-            if (order === undefined) {
-                // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
-                throw new cinerino.factory.errors.NotFound('Order');
-            }
+            if (orders.length <= 1) {
+                const order = orders.shift();
+                if (order === undefined) {
+                    // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
+                    throw new cinerino.factory.errors.NotFound('Order');
+                }
 
-            res.json(order);
+                res.json(order);
+            } else {
+                res.json(orders);
+            }
         } catch (error) {
             next(error);
         }
