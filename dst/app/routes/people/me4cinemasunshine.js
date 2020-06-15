@@ -80,7 +80,7 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
                                 registerProgramMembership: [
                                     {
                                         object: {
-                                            typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership,
+                                            typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership,
                                             membershipFor: {
                                                 id: membershipServiceId
                                             }
@@ -229,7 +229,7 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/:identifier/unReg
         const now = new Date();
         const ownershipInfos = yield ownershipInfoRepo.search({
             project: { id: { $eq: req.project.id } },
-            typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
+            typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
             ownedBy: { id: req.agent.id },
             ownedFrom: now,
             ownedThrough: now

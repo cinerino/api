@@ -190,9 +190,9 @@ placeOrderTransactionsRouter.post(
 
             // 現在所有している会員プログラムを全て検索
             const programMembershipOwnershipInfos =
-                await ownershipInfoRepo.search<cinerino.factory.programMembership.ProgramMembershipType>({
+                await ownershipInfoRepo.search<cinerino.factory.chevre.programMembership.ProgramMembershipType>({
                     project: { id: { $eq: req.project.id } },
-                    typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
+                    typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
                     ownedBy: { id: req.agent.id },
                     ownedFrom: now,
                     ownedThrough: now
@@ -951,9 +951,9 @@ export async function authorizePointAward(req: Request) {
 
     // 所有メンバーシップを検索
     const programMembershipOwnershipInfos =
-        await ownershipInfoRepo.search<cinerino.factory.programMembership.ProgramMembershipType>({
+        await ownershipInfoRepo.search<cinerino.factory.chevre.programMembership.ProgramMembershipType>({
             project: { id: { $eq: req.project.id } },
-            typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
+            typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
             ownedBy: { id: req.agent.id },
             ownedFrom: now,
             ownedThrough: now
@@ -969,7 +969,12 @@ export async function authorizePointAward(req: Request) {
             const membershipService = await productService.findById({ id: membershipServiceId });
 
             // 登録時の獲得ポイント
-            const membershipServiceOutput = membershipService.serviceOutput;
+            let membershipServiceOutput = membershipService.serviceOutput;
+            // 元々配列型だったので、互換性維持対応として
+            if (!Array.isArray(membershipServiceOutput)) {
+                membershipServiceOutput = <any>[membershipServiceOutput];
+            }
+
             if (Array.isArray(membershipServiceOutput)) {
                 await Promise.all((<cinerino.factory.chevre.programMembership.IProgramMembership[]>membershipServiceOutput)
                     .map(async (serviceOutput) => {
