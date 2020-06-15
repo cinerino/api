@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER環境変数を追加
+
 ### Changed
 
 ### Deprecated

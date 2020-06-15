@@ -24,6 +24,7 @@ const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const connectMongo_1 = require("../../connectMongo");
 const redis = require("../../redis");
+const USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER = process.env.USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER === '1';
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -426,7 +427,12 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders.*', 
             res.json(order);
         }
         else {
-            res.json(orders);
+            if (USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER) {
+                res.json(orders);
+            }
+            else {
+                res.json(orders[0]);
+            }
         }
     }
     catch (error) {
@@ -516,7 +522,12 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['orders.*
             res.json(order);
         }
         else {
-            res.json(orders);
+            if (USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER) {
+                res.json(orders);
+            }
+            else {
+                res.json(orders[0]);
+            }
         }
     }
     catch (error) {
