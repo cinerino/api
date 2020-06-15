@@ -13,7 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * 注文取引ルーター
  */
 const cinerino = require("@cinerino/domain");
-const createDebug = require("debug");
+// import * as createDebug from 'debug';
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
@@ -37,7 +37,7 @@ const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== und
     : 50;
 const DEFAULT_ORDER_NAME = process.env.DEFAULT_ORDER_NAME;
 const placeOrderTransactionsRouter = express_1.Router();
-const debug = createDebug('cinerino-api:router');
+// const debug = createDebug('cinerino-api:router');
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -417,329 +417,383 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatRe
  * @deprecated /payment
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/any', permitScopes_1.default(['payment.any.write']), ...[
-    express_validator_1.body('typeOf')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('amount')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required')
-        .isInt(),
-    express_validator_1.body('additionalProperty')
-        .optional()
-        .isArray({ max: 10 }),
-    express_validator_1.body('additionalProperty.*.name')
-        .optional()
-        .not()
-        .isEmpty()
-        .isString()
-        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.body('additionalProperty.*.value')
-        .optional()
-        .not()
-        .isEmpty()
-        // バリデーション強化前の数字リクエストに対する互換性維持のため
-        .customSanitizer((value) => typeof value === 'number' ? String(value) : value)
-        .isString()
-        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH })
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const action = yield cinerino.service.payment.any.authorize({
-            agent: { id: req.user.sub },
-            object: req.body,
-            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
-            seller: new cinerino.repository.Seller(mongoose.connection)
-        });
-        res.status(http_status_1.CREATED)
-            .json(action);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// placeOrderTransactionsRouter.post<ParamsDictionary>(
+//     '/:transactionId/actions/authorize/paymentMethod/any',
+//     permitScopes(['payment.any.write']),
+//     ...[
+//         body('typeOf')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('amount')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required')
+//             .isInt(),
+//         body('additionalProperty')
+//             .optional()
+//             .isArray({ max: 10 }),
+//         body('additionalProperty.*.name')
+//             .optional()
+//             .not()
+//             .isEmpty()
+//             .isString()
+//             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+//         body('additionalProperty.*.value')
+//             .optional()
+//             .not()
+//             .isEmpty()
+//             // バリデーション強化前の数字リクエストに対する互換性維持のため
+//             .customSanitizer((value) => typeof value === 'number' ? String(value) : value)
+//             .isString()
+//             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH })
+//     ],
+//     validator,
+//     async (req, res, next) => {
+//         await rateLimit4transactionInProgress({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         await lockTransaction({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         try {
+//             const action = await cinerino.service.payment.any.authorize({
+//                 agent: { id: req.user.sub },
+//                 object: req.body,
+//                 purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
+//             })({
+//                 action: new cinerino.repository.Action(mongoose.connection),
+//                 transaction: new cinerino.repository.Transaction(mongoose.connection),
+//                 seller: new cinerino.repository.Seller(mongoose.connection)
+//             });
+//             res.status(CREATED)
+//                 .json(action);
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 /**
  * 汎用決済承認取消
  * @deprecated /payment
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel', permitScopes_1.default(['payment.any.write']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        yield cinerino.service.payment.any.voidTransaction({
-            agent: { id: req.user.sub },
-            id: req.params.actionId,
-            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection)
-        });
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// placeOrderTransactionsRouter.put<ParamsDictionary>(
+//     '/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel',
+//     permitScopes(['payment.any.write']),
+//     validator,
+//     async (req, res, next) => {
+//         await rateLimit4transactionInProgress({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         await lockTransaction({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         try {
+//             await cinerino.service.payment.any.voidTransaction({
+//                 agent: { id: req.user.sub },
+//                 id: req.params.actionId,
+//                 purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
+//             })({
+//                 action: new cinerino.repository.Action(mongoose.connection),
+//                 transaction: new cinerino.repository.Transaction(mongoose.connection)
+//             });
+//             res.status(NO_CONTENT)
+//                 .end();
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 /**
  * クレジットカードオーソリ
  * @deprecated /payment
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/creditCard', permitScopes_1.default(['transactions']), ...[
-    express_validator_1.body('typeOf')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('amount')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required')
-        .isInt(),
-    express_validator_1.body('additionalProperty')
-        .optional()
-        .isArray({ max: 10 }),
-    express_validator_1.body('additionalProperty.*.name')
-        .optional()
-        .not()
-        .isEmpty()
-        .isString()
-        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.body('additionalProperty.*.value')
-        .optional()
-        .not()
-        .isEmpty()
-        .isString()
-        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.body('orderId')
-        .optional()
-        .isString()
-        .withMessage((_, options) => `${options.path} must be string`)
-        .isLength({ max: 27 }),
-    express_validator_1.body('method')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('creditCard')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required')
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
-        const memberId = (useUsernameAsGMOMemberId) ? req.user.username : req.user.sub;
-        const creditCard = Object.assign(Object.assign({}, req.body.creditCard), { memberId: memberId });
-        debug('authorizing credit card...', creditCard);
-        debug('authorizing credit card...', req.body.creditCard);
-        const action = yield cinerino.service.payment.creditCard.authorize({
-            project: req.project,
-            agent: { id: req.user.sub },
-            object: Object.assign({ typeOf: cinerino.factory.paymentMethodType.CreditCard, additionalProperty: (Array.isArray(req.body.additionalProperty))
-                    ? req.body.additionalProperty.map((p) => {
-                        return { name: String(p.name), value: String(p.value) };
-                    })
-                    : [], amount: req.body.amount, method: req.body.method, creditCard: creditCard }, (typeof req.body.orderId === 'string') ? { orderId: req.body.orderId } : undefined),
-            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            project: projectRepo,
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
-            seller: new cinerino.repository.Seller(mongoose.connection)
-        });
-        res.status(http_status_1.CREATED)
-            .json(Object.assign(Object.assign({}, action), { result: undefined }));
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// placeOrderTransactionsRouter.post<ParamsDictionary>(
+//     '/:transactionId/actions/authorize/paymentMethod/creditCard',
+//     permitScopes(['transactions']),
+//     ...[
+//         body('typeOf')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('amount')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required')
+//             .isInt(),
+//         body('additionalProperty')
+//             .optional()
+//             .isArray({ max: 10 }),
+//         body('additionalProperty.*.name')
+//             .optional()
+//             .not()
+//             .isEmpty()
+//             .isString()
+//             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+//         body('additionalProperty.*.value')
+//             .optional()
+//             .not()
+//             .isEmpty()
+//             .isString()
+//             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+//         body('orderId')
+//             .optional()
+//             .isString()
+//             .withMessage((_, options) => `${options.path} must be string`)
+//             .isLength({ max: 27 }),
+//         body('method')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('creditCard')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required')
+//     ],
+//     validator,
+//     async (req, res, next) => {
+//         await rateLimit4transactionInProgress({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         await lockTransaction({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         try {
+//             const projectRepo = new cinerino.repository.Project(mongoose.connection);
+//             const project = await projectRepo.findById({ id: req.project.id });
+//             const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+//             // 会員IDを強制的にログイン中の人物IDに変更
+//             type ICreditCard4authorizeAction = cinerino.factory.action.authorize.paymentMethod.creditCard.ICreditCard;
+//             const memberId = (useUsernameAsGMOMemberId) ? <string>req.user.username : req.user.sub;
+//             const creditCard: ICreditCard4authorizeAction = {
+//                 ...req.body.creditCard,
+//                 memberId: memberId
+//             };
+//             debug('authorizing credit card...', creditCard);
+//             debug('authorizing credit card...', req.body.creditCard);
+//             const action = await cinerino.service.payment.creditCard.authorize({
+//                 project: req.project,
+//                 agent: { id: req.user.sub },
+//                 object: {
+//                     typeOf: cinerino.factory.paymentMethodType.CreditCard,
+//                     additionalProperty: (Array.isArray(req.body.additionalProperty))
+//                         ? (<any[]>req.body.additionalProperty).map((p: any) => {
+//                             return { name: String(p.name), value: String(p.value) };
+//                         })
+//                         : [],
+//                     amount: req.body.amount,
+//                     method: req.body.method,
+//                     creditCard: creditCard,
+//                     ...(typeof req.body.orderId === 'string') ? { orderId: <string>req.body.orderId } : undefined
+//                 },
+//                 purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
+//             })({
+//                 action: new cinerino.repository.Action(mongoose.connection),
+//                 project: projectRepo,
+//                 transaction: new cinerino.repository.Transaction(mongoose.connection),
+//                 seller: new cinerino.repository.Seller(mongoose.connection)
+//             });
+//             res.status(CREATED)
+//                 .json({
+//                     ...action,
+//                     result: undefined
+//                 });
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 /**
  * クレジットカードオーソリ取消
  * @deprecated /payment
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/creditCard/:actionId/cancel', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        yield cinerino.service.payment.creditCard.voidTransaction({
-            project: { id: req.project.id },
-            id: req.params.actionId,
-            agent: { id: req.user.sub },
-            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
-            seller: new cinerino.repository.Seller(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection)
-        });
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// placeOrderTransactionsRouter.put<ParamsDictionary>(
+//     '/:transactionId/actions/authorize/paymentMethod/creditCard/:actionId/cancel',
+//     permitScopes(['transactions']),
+//     validator,
+//     async (req, res, next) => {
+//         await rateLimit4transactionInProgress({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         await lockTransaction({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         try {
+//             await cinerino.service.payment.creditCard.voidTransaction({
+//                 project: { id: req.project.id },
+//                 id: req.params.actionId,
+//                 agent: { id: req.user.sub },
+//                 purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
+//             })({
+//                 action: new cinerino.repository.Action(mongoose.connection),
+//                 project: new cinerino.repository.Project(mongoose.connection),
+//                 seller: new cinerino.repository.Seller(mongoose.connection),
+//                 transaction: new cinerino.repository.Transaction(mongoose.connection)
+//             });
+//             res.status(NO_CONTENT)
+//                 .end();
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 /**
  * ムビチケ承認
  * @deprecated /payment
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/movieTicket', permitScopes_1.default(['transactions']), ...[
-    express_validator_1.body('typeOf')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('amount')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required')
-        .isInt(),
-    express_validator_1.body('additionalProperty')
-        .optional()
-        .isArray({ max: 10 }),
-    express_validator_1.body('additionalProperty.*.name')
-        .optional()
-        .not()
-        .isEmpty()
-        .isString()
-        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.body('additionalProperty.*.value')
-        .optional()
-        .not()
-        .isEmpty()
-        .isString()
-        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.body('movieTickets')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required')
-        .isArray({ max: 20 })
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
-        if (project.settings.mvtkReserve === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-        }
-        const action = yield cinerino.service.payment.movieTicket.authorize({
-            agent: { id: req.user.sub },
-            object: {
-                typeOf: cinerino.factory.paymentMethodType.MovieTicket,
-                amount: 0,
-                additionalProperty: (Array.isArray(req.body.additionalProperty))
-                    ? req.body.additionalProperty.map((p) => {
-                        return { name: String(p.name), value: String(p.value) };
-                    })
-                    : [],
-                movieTickets: req.body.movieTickets
-            },
-            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
-            seller: new cinerino.repository.Seller(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
-            movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                endpoint: project.settings.mvtkReserve.endpoint,
-                auth: mvtkReserveAuthClient
-            })
-        });
-        res.status(http_status_1.CREATED)
-            .json(action);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// placeOrderTransactionsRouter.post<ParamsDictionary>(
+//     '/:transactionId/actions/authorize/paymentMethod/movieTicket',
+//     permitScopes(['transactions']),
+//     ...[
+//         body('typeOf')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('amount')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required')
+//             .isInt(),
+//         body('additionalProperty')
+//             .optional()
+//             .isArray({ max: 10 }),
+//         body('additionalProperty.*.name')
+//             .optional()
+//             .not()
+//             .isEmpty()
+//             .isString()
+//             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+//         body('additionalProperty.*.value')
+//             .optional()
+//             .not()
+//             .isEmpty()
+//             .isString()
+//             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+//         body('movieTickets')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required')
+//             .isArray({ max: 20 })
+//     ],
+//     validator,
+//     async (req, res, next) => {
+//         await rateLimit4transactionInProgress({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         await lockTransaction({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         try {
+//             const projectRepo = new cinerino.repository.Project(mongoose.connection);
+//             const project = await projectRepo.findById({ id: req.project.id });
+//             if (project.settings === undefined) {
+//                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+//             }
+//             if (project.settings.mvtkReserve === undefined) {
+//                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+//             }
+//             const action = await cinerino.service.payment.movieTicket.authorize({
+//                 agent: { id: req.user.sub },
+//                 object: {
+//                     typeOf: cinerino.factory.paymentMethodType.MovieTicket,
+//                     amount: 0,
+//                     additionalProperty: (Array.isArray(req.body.additionalProperty))
+//                         ? (<any[]>req.body.additionalProperty).map((p: any) => {
+//                             return { name: String(p.name), value: String(p.value) };
+//                         })
+//                         : [],
+//                     movieTickets: req.body.movieTickets
+//                 },
+//                 purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
+//             })({
+//                 action: new cinerino.repository.Action(mongoose.connection),
+//                 project: new cinerino.repository.Project(mongoose.connection),
+//                 seller: new cinerino.repository.Seller(mongoose.connection),
+//                 transaction: new cinerino.repository.Transaction(mongoose.connection),
+//                 movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
+//                     endpoint: project.settings.mvtkReserve.endpoint,
+//                     auth: mvtkReserveAuthClient
+//                 })
+//             });
+//             res.status(CREATED)
+//                 .json(action);
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 /**
  * ムビチケ承認取消
  * @deprecated /payment
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/movieTicket/:actionId/cancel', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        yield cinerino.service.payment.movieTicket.voidTransaction({
-            id: req.params.actionId,
-            agent: { id: req.user.sub },
-            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection)
-        });
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// placeOrderTransactionsRouter.put<ParamsDictionary>(
+//     '/:transactionId/actions/authorize/paymentMethod/movieTicket/:actionId/cancel',
+//     permitScopes(['transactions']),
+//     validator,
+//     async (req, res, next) => {
+//         await rateLimit4transactionInProgress({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         await lockTransaction({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         try {
+//             await cinerino.service.payment.movieTicket.voidTransaction({
+//                 id: req.params.actionId,
+//                 agent: { id: req.user.sub },
+//                 purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
+//             })({
+//                 action: new cinerino.repository.Action(mongoose.connection),
+//                 transaction: new cinerino.repository.Transaction(mongoose.connection)
+//             });
+//             res.status(NO_CONTENT)
+//                 .end();
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 /**
  * インセンティブ承認アクション
  */
