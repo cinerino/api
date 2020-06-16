@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- メンバーシップ登録時のポイント特典をChevreで処理するように調整
+
 ### Deprecated
 
 ### Removed
