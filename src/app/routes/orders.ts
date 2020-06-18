@@ -768,7 +768,10 @@ ordersRouter.post<ParamsDictionary>(
                 const itemOffered = offer.itemOffered;
                 if (itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
                     // 実際の予約データで置き換え
-                    const reservation = searchReservationsResult.data.find((r) => r.id === itemOffered.id);
+                    const reservation = searchReservationsResult.data.find(
+                        (r) => r.id === (<cinerino.factory.order.IReservation>itemOffered).id
+                    );
+
                     if (reservation !== undefined) {
                         // 所有権コード情報を追加
                         const ownershipInfo = ownershipInfos
