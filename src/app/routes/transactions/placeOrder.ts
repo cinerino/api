@@ -206,7 +206,7 @@ placeOrderTransactionsRouter.post(
                     ...req.agent,
                     identifier: [
                         ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
-                        ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
+                        ...(Array.isArray(req.body.agent?.identifier))
                             ? (<any[]>req.body.agent.identifier).map((p: any) => {
                                 return { name: String(p.name), value: String(p.value) };
                             })
@@ -424,10 +424,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-            }
-            if (project.settings.mvtkReserve === undefined) {
+            if (typeof project.settings?.mvtkReserve?.endpoint !== 'string') {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
             }
 
@@ -747,37 +744,37 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 email.template = String(req.body.emailTemplate);
             }
 
-            let potentialActions: cinerino.factory.transaction.placeOrder.IPotentialActionsParams | undefined = req.body.potentialActions;
-            if (potentialActions === undefined) {
-                potentialActions = {};
-            }
-            if (potentialActions.order === undefined) {
-                potentialActions.order = {};
-            }
-            if (potentialActions.order.potentialActions === undefined) {
-                potentialActions.order.potentialActions = {};
-            }
-            if (potentialActions.order.potentialActions.sendOrder === undefined) {
-                potentialActions.order.potentialActions.sendOrder = {};
-            }
-            if (potentialActions.order.potentialActions.sendOrder.potentialActions === undefined) {
-                potentialActions.order.potentialActions.sendOrder.potentialActions = {};
-            }
-            if (!Array.isArray(potentialActions.order.potentialActions.sendOrder.potentialActions.sendEmailMessage)) {
-                potentialActions.order.potentialActions.sendOrder.potentialActions.sendEmailMessage = [];
-            }
-            if (sendEmailMessage) {
-                potentialActions.order.potentialActions.sendOrder.potentialActions.sendEmailMessage.push({
-                    object: email
-                });
-            }
+            const potentialActions: cinerino.factory.transaction.placeOrder.IPotentialActionsParams | undefined = {
+                ...req.body.potentialActions,
+                order: {
+                    ...req.body.potentialActions?.order,
+                    potentialActions: {
+                        ...req.body.potentialActions?.order?.potentialActions,
+                        sendOrder: {
+                            ...req.body.potentialActions?.order?.potentialActions?.sendOrder,
+                            potentialActions: {
+                                ...req.body.potentialActions?.order?.potentialActions?.sendOrder?.potentialActions,
+                                sendEmailMessage: [
+                                    // tslint:disable-next-line:max-line-length
+                                    ...(Array.isArray(req.body.potentialActions?.order?.potentialActions?.sendOrder?.potentialActions?.sendEmailMessage))
+                                        // tslint:disable-next-line:max-line-length
+                                        ? req.body.potentialActions?.order?.potentialActions?.sendOrder?.potentialActions?.sendEmailMessage
+                                        : [],
+                                    ...(sendEmailMessage) ? [{ object: email }] : []
+                                ]
+
+                            }
+
+                        }
+                    }
+                }
+            };
 
             let confirmationNumber:
                 string | cinerino.service.transaction.placeOrderInProgress.IConfirmationNumberGenerator | undefined;
 
             const project = await projectRepo.findById({ id: req.project.id });
-            const useReservationNumberAsConfirmationNumber =
-                project.settings !== undefined && project.settings.useReservationNumberAsConfirmationNumber === true;
+            const useReservationNumberAsConfirmationNumber = project.settings?.useReservationNumberAsConfirmationNumber === true;
             if (useReservationNumberAsConfirmationNumber) {
                 confirmationNumber = (params) => {
                     const firstOffer = params.acceptedOffers[0];
@@ -793,7 +790,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
             }
 
             const resultOrderParams: cinerino.service.transaction.placeOrderInProgress.IResultOrderParams = {
-                ...(req.body.result !== undefined && req.body.result !== null) ? req.body.result.order : undefined,
+                ...req.body.result?.order,
                 confirmationNumber: confirmationNumber,
                 orderDate: orderDate,
                 numItems: {

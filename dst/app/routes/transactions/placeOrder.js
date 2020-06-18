@@ -110,7 +110,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
 ], validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c;
     try {
         const now = new Date();
         // WAITER有効設定であれば許可証をセット
@@ -177,7 +177,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
             expires: expires,
             agent: Object.assign(Object.assign(Object.assign({}, req.agent), { identifier: [
                     ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
-                    ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
+                    ...(Array.isArray((_c = req.body.agent) === null || _c === void 0 ? void 0 : _c.identifier))
                         ? req.body.agent.identifier.map((p) => {
                             return { name: String(p.name), value: String(p.value) };
                         })
@@ -348,13 +348,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         id: req.params.transactionId
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _d, _e;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
-        if (project.settings.mvtkReserve === undefined) {
+        if (typeof ((_e = (_d = project.settings) === null || _d === void 0 ? void 0 : _d.mvtkReserve) === null || _e === void 0 ? void 0 : _e.endpoint) !== 'string') {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
         }
         const action = yield cinerino.service.offer.seatReservation.create({
@@ -603,6 +601,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
 }), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2;
     try {
         const orderDate = new Date();
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
@@ -621,33 +620,16 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             }
             email.template = String(req.body.emailTemplate);
         }
-        let potentialActions = req.body.potentialActions;
-        if (potentialActions === undefined) {
-            potentialActions = {};
-        }
-        if (potentialActions.order === undefined) {
-            potentialActions.order = {};
-        }
-        if (potentialActions.order.potentialActions === undefined) {
-            potentialActions.order.potentialActions = {};
-        }
-        if (potentialActions.order.potentialActions.sendOrder === undefined) {
-            potentialActions.order.potentialActions.sendOrder = {};
-        }
-        if (potentialActions.order.potentialActions.sendOrder.potentialActions === undefined) {
-            potentialActions.order.potentialActions.sendOrder.potentialActions = {};
-        }
-        if (!Array.isArray(potentialActions.order.potentialActions.sendOrder.potentialActions.sendEmailMessage)) {
-            potentialActions.order.potentialActions.sendOrder.potentialActions.sendEmailMessage = [];
-        }
-        if (sendEmailMessage) {
-            potentialActions.order.potentialActions.sendOrder.potentialActions.sendEmailMessage.push({
-                object: email
-            });
-        }
+        const potentialActions = Object.assign(Object.assign({}, req.body.potentialActions), { order: Object.assign(Object.assign({}, (_f = req.body.potentialActions) === null || _f === void 0 ? void 0 : _f.order), { potentialActions: Object.assign(Object.assign({}, (_h = (_g = req.body.potentialActions) === null || _g === void 0 ? void 0 : _g.order) === null || _h === void 0 ? void 0 : _h.potentialActions), { sendOrder: Object.assign(Object.assign({}, (_l = (_k = (_j = req.body.potentialActions) === null || _j === void 0 ? void 0 : _j.order) === null || _k === void 0 ? void 0 : _k.potentialActions) === null || _l === void 0 ? void 0 : _l.sendOrder), { potentialActions: Object.assign(Object.assign({}, (_q = (_p = (_o = (_m = req.body.potentialActions) === null || _m === void 0 ? void 0 : _m.order) === null || _o === void 0 ? void 0 : _o.potentialActions) === null || _p === void 0 ? void 0 : _p.sendOrder) === null || _q === void 0 ? void 0 : _q.potentialActions), { sendEmailMessage: [
+                                // tslint:disable-next-line:max-line-length
+                                ...(Array.isArray((_v = (_u = (_t = (_s = (_r = req.body.potentialActions) === null || _r === void 0 ? void 0 : _r.order) === null || _s === void 0 ? void 0 : _s.potentialActions) === null || _t === void 0 ? void 0 : _t.sendOrder) === null || _u === void 0 ? void 0 : _u.potentialActions) === null || _v === void 0 ? void 0 : _v.sendEmailMessage))
+                                    // tslint:disable-next-line:max-line-length
+                                    ? (_0 = (_z = (_y = (_x = (_w = req.body.potentialActions) === null || _w === void 0 ? void 0 : _w.order) === null || _x === void 0 ? void 0 : _x.potentialActions) === null || _y === void 0 ? void 0 : _y.sendOrder) === null || _z === void 0 ? void 0 : _z.potentialActions) === null || _0 === void 0 ? void 0 : _0.sendEmailMessage : [],
+                                ...(sendEmailMessage) ? [{ object: email }] : []
+                            ] }) }) }) }) });
         let confirmationNumber;
         const project = yield projectRepo.findById({ id: req.project.id });
-        const useReservationNumberAsConfirmationNumber = project.settings !== undefined && project.settings.useReservationNumberAsConfirmationNumber === true;
+        const useReservationNumberAsConfirmationNumber = ((_1 = project.settings) === null || _1 === void 0 ? void 0 : _1.useReservationNumberAsConfirmationNumber) === true;
         if (useReservationNumberAsConfirmationNumber) {
             confirmationNumber = (params) => {
                 const firstOffer = params.acceptedOffers[0];
@@ -661,7 +643,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
                 }
             };
         }
-        const resultOrderParams = Object.assign(Object.assign({}, (req.body.result !== undefined && req.body.result !== null) ? req.body.result.order : undefined), { confirmationNumber: confirmationNumber, orderDate: orderDate, numItems: {
+        const resultOrderParams = Object.assign(Object.assign({}, (_2 = req.body.result) === null || _2 === void 0 ? void 0 : _2.order), { confirmationNumber: confirmationNumber, orderDate: orderDate, numItems: {
                 maxValue: NUM_ORDER_ITEMS_MAX_VALUE
                 // minValue: 0
             } });
