@@ -18,6 +18,8 @@ import validator from '../middlewares/validator';
 import { connectMongo } from '../../connectMongo';
 import * as redis from '../../redis';
 
+const USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER = process.env.USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER === '1';
+
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -492,7 +494,11 @@ ordersRouter.post(
 
                 res.json(order);
             } else {
-                res.json(orders);
+                if (USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER) {
+                    res.json(orders);
+                } else {
+                    res.json(orders[0]);
+                }
             }
         } catch (error) {
             next(error);
@@ -593,7 +599,11 @@ ordersRouter.post(
 
                 res.json(order);
             } else {
-                res.json(orders);
+                if (USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER) {
+                    res.json(orders);
+                } else {
+                    res.json(orders[0]);
+                }
             }
         } catch (error) {
             next(error);
@@ -758,7 +768,10 @@ ordersRouter.post<ParamsDictionary>(
                 const itemOffered = offer.itemOffered;
                 if (itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
                     // 実際の予約データで置き換え
-                    const reservation = searchReservationsResult.data.find((r) => r.id === itemOffered.id);
+                    const reservation = searchReservationsResult.data.find(
+                        (r) => r.id === (<cinerino.factory.order.IReservation>itemOffered).id
+                    );
+
                     if (reservation !== undefined) {
                         // 所有権コード情報を追加
                         const ownershipInfo = ownershipInfos

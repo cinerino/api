@@ -13,7 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * 注文取引ルーター
  */
 const cinerino = require("@cinerino/domain");
-const createDebug = require("debug");
+// import * as createDebug from 'debug';
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
@@ -37,7 +37,7 @@ const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== und
     : 50;
 const DEFAULT_ORDER_NAME = process.env.DEFAULT_ORDER_NAME;
 const placeOrderTransactionsRouter = express_1.Router();
-const debug = createDebug('cinerino-api:router');
+// const debug = createDebug('cinerino-api:router');
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -110,7 +110,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
 ], validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c;
     try {
         const now = new Date();
         // WAITER有効設定であれば許可証をセット
@@ -177,7 +177,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
             expires: expires,
             agent: Object.assign(Object.assign(Object.assign({}, req.agent), { identifier: [
                     ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
-                    ...(req.body.agent !== undefined && Array.isArray(req.body.agent.identifier))
+                    ...(Array.isArray((_c = req.body.agent) === null || _c === void 0 ? void 0 : _c.identifier))
                         ? req.body.agent.identifier.map((p) => {
                             return { name: String(p.name), value: String(p.value) };
                         })
@@ -348,13 +348,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         id: req.params.transactionId
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _d, _e;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
-        if (project.settings.mvtkReserve === undefined) {
+        if (typeof ((_e = (_d = project.settings) === null || _d === void 0 ? void 0 : _d.mvtkReserve) === null || _e === void 0 ? void 0 : _e.endpoint) !== 'string') {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
         }
         const action = yield cinerino.service.offer.seatReservation.create({
@@ -403,334 +401,6 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatRe
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             project: new cinerino.repository.Project(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection)
-        });
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * 汎用決済承認
- * @deprecated /payment
- */
-// tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/any', permitScopes_1.default(['payment.any.write']), ...[
-    express_validator_1.body('typeOf')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('amount')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required')
-        .isInt(),
-    express_validator_1.body('additionalProperty')
-        .optional()
-        .isArray({ max: 10 }),
-    express_validator_1.body('additionalProperty.*.name')
-        .optional()
-        .not()
-        .isEmpty()
-        .isString()
-        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.body('additionalProperty.*.value')
-        .optional()
-        .not()
-        .isEmpty()
-        // バリデーション強化前の数字リクエストに対する互換性維持のため
-        .customSanitizer((value) => typeof value === 'number' ? String(value) : value)
-        .isString()
-        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH })
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const action = yield cinerino.service.payment.any.authorize({
-            agent: { id: req.user.sub },
-            object: req.body,
-            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
-            seller: new cinerino.repository.Seller(mongoose.connection)
-        });
-        res.status(http_status_1.CREATED)
-            .json(action);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * 汎用決済承認取消
- * @deprecated /payment
- */
-// tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/any/:actionId/cancel', permitScopes_1.default(['payment.any.write']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        yield cinerino.service.payment.any.voidTransaction({
-            agent: { id: req.user.sub },
-            id: req.params.actionId,
-            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection)
-        });
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * クレジットカードオーソリ
- * @deprecated /payment
- */
-// tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/creditCard', permitScopes_1.default(['transactions']), ...[
-    express_validator_1.body('typeOf')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('amount')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required')
-        .isInt(),
-    express_validator_1.body('additionalProperty')
-        .optional()
-        .isArray({ max: 10 }),
-    express_validator_1.body('additionalProperty.*.name')
-        .optional()
-        .not()
-        .isEmpty()
-        .isString()
-        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.body('additionalProperty.*.value')
-        .optional()
-        .not()
-        .isEmpty()
-        .isString()
-        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.body('orderId')
-        .optional()
-        .isString()
-        .withMessage((_, options) => `${options.path} must be string`)
-        .isLength({ max: 27 }),
-    express_validator_1.body('method')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('creditCard')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required')
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
-        const memberId = (useUsernameAsGMOMemberId) ? req.user.username : req.user.sub;
-        const creditCard = Object.assign(Object.assign({}, req.body.creditCard), { memberId: memberId });
-        debug('authorizing credit card...', creditCard);
-        debug('authorizing credit card...', req.body.creditCard);
-        const action = yield cinerino.service.payment.creditCard.authorize({
-            project: req.project,
-            agent: { id: req.user.sub },
-            object: Object.assign({ typeOf: cinerino.factory.paymentMethodType.CreditCard, additionalProperty: (Array.isArray(req.body.additionalProperty))
-                    ? req.body.additionalProperty.map((p) => {
-                        return { name: String(p.name), value: String(p.value) };
-                    })
-                    : [], amount: req.body.amount, method: req.body.method, creditCard: creditCard }, (typeof req.body.orderId === 'string') ? { orderId: req.body.orderId } : undefined),
-            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            project: projectRepo,
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
-            seller: new cinerino.repository.Seller(mongoose.connection)
-        });
-        res.status(http_status_1.CREATED)
-            .json(Object.assign(Object.assign({}, action), { result: undefined }));
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * クレジットカードオーソリ取消
- * @deprecated /payment
- */
-// tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/creditCard/:actionId/cancel', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        yield cinerino.service.payment.creditCard.voidTransaction({
-            project: { id: req.project.id },
-            id: req.params.actionId,
-            agent: { id: req.user.sub },
-            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
-            seller: new cinerino.repository.Seller(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection)
-        });
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * ムビチケ承認
- * @deprecated /payment
- */
-// tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/movieTicket', permitScopes_1.default(['transactions']), ...[
-    express_validator_1.body('typeOf')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('amount')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required')
-        .isInt(),
-    express_validator_1.body('additionalProperty')
-        .optional()
-        .isArray({ max: 10 }),
-    express_validator_1.body('additionalProperty.*.name')
-        .optional()
-        .not()
-        .isEmpty()
-        .isString()
-        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.body('additionalProperty.*.value')
-        .optional()
-        .not()
-        .isEmpty()
-        .isString()
-        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.body('movieTickets')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required')
-        .isArray({ max: 20 })
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
-        if (project.settings.mvtkReserve === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-        }
-        const action = yield cinerino.service.payment.movieTicket.authorize({
-            agent: { id: req.user.sub },
-            object: {
-                typeOf: cinerino.factory.paymentMethodType.MovieTicket,
-                amount: 0,
-                additionalProperty: (Array.isArray(req.body.additionalProperty))
-                    ? req.body.additionalProperty.map((p) => {
-                        return { name: String(p.name), value: String(p.value) };
-                    })
-                    : [],
-                movieTickets: req.body.movieTickets
-            },
-            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
-            seller: new cinerino.repository.Seller(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
-            movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                endpoint: project.settings.mvtkReserve.endpoint,
-                auth: mvtkReserveAuthClient
-            })
-        });
-        res.status(http_status_1.CREATED)
-            .json(action);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
- * ムビチケ承認取消
- * @deprecated /payment
- */
-// tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/paymentMethod/movieTicket/:actionId/cancel', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        yield cinerino.service.payment.movieTicket.voidTransaction({
-            id: req.params.actionId,
-            agent: { id: req.user.sub },
-            purpose: { typeOf: cinerino.factory.transactionType.PlaceOrder, id: req.params.transactionId }
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)
@@ -931,6 +601,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
 }), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2;
     try {
         const orderDate = new Date();
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
@@ -949,33 +620,16 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             }
             email.template = String(req.body.emailTemplate);
         }
-        let potentialActions = req.body.potentialActions;
-        if (potentialActions === undefined) {
-            potentialActions = {};
-        }
-        if (potentialActions.order === undefined) {
-            potentialActions.order = {};
-        }
-        if (potentialActions.order.potentialActions === undefined) {
-            potentialActions.order.potentialActions = {};
-        }
-        if (potentialActions.order.potentialActions.sendOrder === undefined) {
-            potentialActions.order.potentialActions.sendOrder = {};
-        }
-        if (potentialActions.order.potentialActions.sendOrder.potentialActions === undefined) {
-            potentialActions.order.potentialActions.sendOrder.potentialActions = {};
-        }
-        if (!Array.isArray(potentialActions.order.potentialActions.sendOrder.potentialActions.sendEmailMessage)) {
-            potentialActions.order.potentialActions.sendOrder.potentialActions.sendEmailMessage = [];
-        }
-        if (sendEmailMessage) {
-            potentialActions.order.potentialActions.sendOrder.potentialActions.sendEmailMessage.push({
-                object: email
-            });
-        }
+        const potentialActions = Object.assign(Object.assign({}, req.body.potentialActions), { order: Object.assign(Object.assign({}, (_f = req.body.potentialActions) === null || _f === void 0 ? void 0 : _f.order), { potentialActions: Object.assign(Object.assign({}, (_h = (_g = req.body.potentialActions) === null || _g === void 0 ? void 0 : _g.order) === null || _h === void 0 ? void 0 : _h.potentialActions), { sendOrder: Object.assign(Object.assign({}, (_l = (_k = (_j = req.body.potentialActions) === null || _j === void 0 ? void 0 : _j.order) === null || _k === void 0 ? void 0 : _k.potentialActions) === null || _l === void 0 ? void 0 : _l.sendOrder), { potentialActions: Object.assign(Object.assign({}, (_q = (_p = (_o = (_m = req.body.potentialActions) === null || _m === void 0 ? void 0 : _m.order) === null || _o === void 0 ? void 0 : _o.potentialActions) === null || _p === void 0 ? void 0 : _p.sendOrder) === null || _q === void 0 ? void 0 : _q.potentialActions), { sendEmailMessage: [
+                                // tslint:disable-next-line:max-line-length
+                                ...(Array.isArray((_v = (_u = (_t = (_s = (_r = req.body.potentialActions) === null || _r === void 0 ? void 0 : _r.order) === null || _s === void 0 ? void 0 : _s.potentialActions) === null || _t === void 0 ? void 0 : _t.sendOrder) === null || _u === void 0 ? void 0 : _u.potentialActions) === null || _v === void 0 ? void 0 : _v.sendEmailMessage))
+                                    // tslint:disable-next-line:max-line-length
+                                    ? (_0 = (_z = (_y = (_x = (_w = req.body.potentialActions) === null || _w === void 0 ? void 0 : _w.order) === null || _x === void 0 ? void 0 : _x.potentialActions) === null || _y === void 0 ? void 0 : _y.sendOrder) === null || _z === void 0 ? void 0 : _z.potentialActions) === null || _0 === void 0 ? void 0 : _0.sendEmailMessage : [],
+                                ...(sendEmailMessage) ? [{ object: email }] : []
+                            ] }) }) }) }) });
         let confirmationNumber;
         const project = yield projectRepo.findById({ id: req.project.id });
-        const useReservationNumberAsConfirmationNumber = project.settings !== undefined && project.settings.useReservationNumberAsConfirmationNumber === true;
+        const useReservationNumberAsConfirmationNumber = ((_1 = project.settings) === null || _1 === void 0 ? void 0 : _1.useReservationNumberAsConfirmationNumber) === true;
         if (useReservationNumberAsConfirmationNumber) {
             confirmationNumber = (params) => {
                 const firstOffer = params.acceptedOffers[0];
@@ -989,7 +643,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
                 }
             };
         }
-        const resultOrderParams = Object.assign(Object.assign({}, (req.body.result !== undefined && req.body.result !== null) ? req.body.result.order : undefined), { confirmationNumber: confirmationNumber, orderDate: orderDate, numItems: {
+        const resultOrderParams = Object.assign(Object.assign({}, (_2 = req.body.result) === null || _2 === void 0 ? void 0 : _2.order), { confirmationNumber: confirmationNumber, orderDate: orderDate, numItems: {
                 maxValue: NUM_ORDER_ITEMS_MAX_VALUE
                 // minValue: 0
             } });
