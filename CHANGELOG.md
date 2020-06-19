@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v5.0.0 - 2020-06-19
+
+### Added
+
 - USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER環境変数を追加
 
 ### Changed
@@ -19,15 +33,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - メンバーシップ注文失敗時に、メンバーシップオファー承認を明示的に取り消すように調整
 - 注文アイテムを複数のプロダクト対応に対応
 
-### Deprecated
-
 ### Removed
 
 - 非推奨エンドポイントを削除
-
-### Fixed
-
-### Security
 
 ## v4.3.0 - 2020-06-15
 
