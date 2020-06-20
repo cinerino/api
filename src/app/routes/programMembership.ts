@@ -25,7 +25,7 @@ const programMembershipsRouter = Router();
  */
 programMembershipsRouter.get(
     '',
-    permitScopes(['programMemberships.*', 'programMemberships.read']),
+    permitScopes(['programMemberships.*', 'programMemberships.read', 'products.*', 'products.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
@@ -44,7 +44,7 @@ programMembershipsRouter.get(
 
             const searchResult = await productService.search({
                 project: { id: { $eq: req.project.id } },
-                typeOf: { $eq: 'MembershipService' },
+                typeOf: { $eq: cinerino.service.offer.product.ProductType.MembershipService },
                 ...{
                     limit: 1
                 }
