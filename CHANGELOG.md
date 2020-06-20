@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- update @cinerino/domain
-- メンバーシップ注文配送処理をプロダクト注文配送処理に統合
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v5.1.0 - 2020-06-20
+
+### Changed
+
+- update @cinerino/domain
+- メンバーシップ注文配送処理をプロダクト注文配送処理に統合
 
 ## v5.0.0 - 2020-06-19
 
