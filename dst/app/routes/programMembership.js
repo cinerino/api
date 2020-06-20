@@ -30,7 +30,7 @@ const programMembershipsRouter = express_1.Router();
  * 会員プログラム検索
  * @deprecated ssktsでのみ仕様可能
  */
-programMembershipsRouter.get('', permitScopes_1.default(['programMemberships.*', 'programMemberships.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+programMembershipsRouter.get('', permitScopes_1.default(['programMemberships.*', 'programMemberships.read', 'products.*', 'products.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -42,7 +42,7 @@ programMembershipsRouter.get('', permitScopes_1.default(['programMemberships.*',
             endpoint: project.settings.chevre.endpoint,
             auth: chevreAuthClient
         });
-        const searchResult = yield productService.search(Object.assign({ project: { id: { $eq: req.project.id } }, typeOf: { $eq: 'MembershipService' } }, {
+        const searchResult = yield productService.search(Object.assign({ project: { id: { $eq: req.project.id } }, typeOf: { $eq: cinerino.service.offer.product.ProductType.MembershipService } }, {
             limit: 1
         }));
         let membershipServices = searchResult.data;
