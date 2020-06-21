@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- プロダクトオファー承認取消処理を追加
-
 ### Changed
 
 ### Deprecated
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v5.4.0 - 2020-06-21
+
+### Added
+
+- プロダクトオファー承認取消処理を追加
 
 ## v5.3.0 - 2020-06-21
 
