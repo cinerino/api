@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.3.0 - 2020-06-21
+
+### Changed
+
+- プロダクトオファー承認に対してサービス登録排他ロック処理を追加
+
 ## v5.2.0 - 2020-06-21
 
 ### Added
