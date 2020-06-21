@@ -558,6 +558,7 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['orders.*', '
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const registerActionInProgressRepo = new cinerino.repository.action.RegisterProgramMembershipInProgress(redis.getClient());
         const orderNumber = req.params.orderNumber;
         // 注文検索
@@ -581,7 +582,8 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['orders.*', '
                 order: orderRepo,
                 ownershipInfo: ownershipInfoRepo,
                 registerActionInProgress: registerActionInProgressRepo,
-                task: taskRepo
+                task: taskRepo,
+                transaction: transactionRepo
             });
         }
         res.status(http_status_1.NO_CONTENT)
