@@ -30,7 +30,7 @@ const programMembershipsRouter = express_1.Router();
  * 会員プログラム検索
  * @deprecated ssktsでのみ仕様可能
  */
-programMembershipsRouter.get('', permitScopes_1.default(['programMemberships.*', 'programMemberships.read', 'products.*', 'products.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+programMembershipsRouter.get('', permitScopes_1.default(['products.*', 'products.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
