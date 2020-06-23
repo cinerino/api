@@ -83,7 +83,7 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
             project: new cinerino.repository.Project(mongoose.connection),
             task: new cinerino.repository.Task(mongoose.connection)
         });
-        // 会員登録タスクとして受け入れられたのでACCEPTED
+        // プロダクト注文タスクとして受け入れられたのでACCEPTED
         res.status(http_status_1.ACCEPTED)
             .json(task);
     }
