@@ -32,11 +32,9 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 // const CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP = process.env.CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP === '1';
 const me4cinemasunshineRouter = express_1.Router();
 /**
- * 会員プログラム登録
+ * メンバーシップ登録
  */
-me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.default(['people.ownershipInfos', 'people.me.*']), rateLimit_1.default, validator_1.default, 
-// tslint:disable-next-line:max-func-body-length
-(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.default(['people.ownershipInfos', 'people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -44,12 +42,12 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
         if (typeof ((_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === null || _b === void 0 ? void 0 : _b.endpoint) !== 'string') {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
         }
-        const membershipServiceId = req.body.programMembershipId;
+        const productId = req.body.programMembershipId;
         const productService = new cinerino.chevre.service.Product({
             endpoint: project.settings.chevre.endpoint,
             auth: chevreAuthClient
         });
-        const offers = yield productService.searchOffers({ id: membershipServiceId });
+        const offers = yield productService.searchOffers({ id: productId });
         if (offers.length === 0) {
             throw new cinerino.factory.errors.NotFound('offers');
         }
@@ -68,57 +66,24 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
         //     }
         //     await checkCard(req, offer.priceSpecification?.price);
         // }
-        const task = yield cinerino.service.programMembership.createRegisterTask({
+        const task = yield cinerino.service.product.createOrderTask({
             project: { id: req.project.id },
             agent: req.agent,
-            offerIdentifier: acceptedOffer.identifier,
-            potentialActions: {
-            // order: {
-            //     potentialActions: {
-            //         sendOrder: {
-            //             potentialActions: {
-            //                 registerProgramMembership: [
-            //                     {
-            //                         object: {
-            // tslint:disable-next-line:max-line-length
-            //                             typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership,
-            //                             membershipFor: {
-            //                                 id: membershipServiceId
-            //                             }
-            //                         },
-            //                         potentialActions: {
-            //                             orderProgramMembership: {
-            //                                 potentialActions: {
-            //                                     order: {
-            //                                         potentialActions: {
-            //                                             sendOrder: {
-            //                                                 potentialActions: {
-            //                                                     sendEmailMessage: []
-            //                                                 }
-            //                                             }
-            //                                         }
-            //                                     }
-            //                                 }
-            //                             }
-            //                         }
-            //                     }
-            //                 ]
-            //             }
-            //         }
-            //     }
-            // }
-            },
-            programMembershipId: membershipServiceId,
-            seller: {
-                typeOf: req.body.sellerType,
-                id: req.body.sellerId
+            object: {
+                typeOf: cinerino.factory.chevre.offerType.Offer,
+                id: String(acceptedOffer.id),
+                itemOffered: { id: productId },
+                seller: {
+                    typeOf: req.body.sellerType,
+                    id: req.body.sellerId
+                }
             }
         })({
             seller: new cinerino.repository.Seller(mongoose.connection),
             project: new cinerino.repository.Project(mongoose.connection),
             task: new cinerino.repository.Task(mongoose.connection)
         });
-        // 会員登録タスクとして受け入れられたのでACCEPTED
+        // プロダクト注文タスクとして受け入れられたのでACCEPTED
         res.status(http_status_1.ACCEPTED)
             .json(task);
     }

@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@cinerino/domain": "^6.0.0",
+    "@cinerino/domain": "^6.1.0",
     "@motionpicture/express-middleware": "^0.1.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
@@ -97,5 +97,5 @@
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
-  "version": "5.5.0"
+  "version": "5.5.1"
 }

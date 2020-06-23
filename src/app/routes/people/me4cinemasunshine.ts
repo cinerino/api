@@ -26,14 +26,13 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 const me4cinemasunshineRouter = Router();
 
 /**
- * 会員プログラム登録
+ * メンバーシップ登録
  */
 me4cinemasunshineRouter.put(
     '/ownershipInfos/programMembership/register',
     permitScopes(['people.ownershipInfos', 'people.me.*']),
     rateLimit,
     validator,
-    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -43,13 +42,13 @@ me4cinemasunshineRouter.put(
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
             }
 
-            const membershipServiceId = <string>req.body.programMembershipId;
+            const productId = <string>req.body.programMembershipId;
 
             const productService = new cinerino.chevre.service.Product({
                 endpoint: project.settings.chevre.endpoint,
                 auth: chevreAuthClient
             });
-            const offers = await productService.searchOffers({ id: membershipServiceId });
+            const offers = await productService.searchOffers({ id: productId });
             if (offers.length === 0) {
                 throw new cinerino.factory.errors.NotFound('offers');
             }
@@ -72,50 +71,17 @@ me4cinemasunshineRouter.put(
             //     await checkCard(req, offer.priceSpecification?.price);
             // }
 
-            const task = await cinerino.service.programMembership.createRegisterTask({
+            const task = await cinerino.service.product.createOrderTask({
                 project: { id: req.project.id },
                 agent: req.agent,
-                offerIdentifier: acceptedOffer.identifier,
-                potentialActions: {
-                    // order: {
-                    //     potentialActions: {
-                    //         sendOrder: {
-                    //             potentialActions: {
-                    //                 registerProgramMembership: [
-                    //                     {
-                    //                         object: {
-                    // tslint:disable-next-line:max-line-length
-                    //                             typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership,
-                    //                             membershipFor: {
-                    //                                 id: membershipServiceId
-                    //                             }
-                    //                         },
-                    //                         potentialActions: {
-                    //                             orderProgramMembership: {
-                    //                                 potentialActions: {
-                    //                                     order: {
-                    //                                         potentialActions: {
-                    //                                             sendOrder: {
-                    //                                                 potentialActions: {
-                    //                                                     sendEmailMessage: []
-                    //                                                 }
-                    //                                             }
-                    //                                         }
-                    //                                     }
-                    //                                 }
-                    //                             }
-                    //                         }
-                    //                     }
-                    //                 ]
-                    //             }
-                    //         }
-                    //     }
-                    // }
-                },
-                programMembershipId: membershipServiceId,
-                seller: {
-                    typeOf: req.body.sellerType,
-                    id: req.body.sellerId
+                object: {
+                    typeOf: cinerino.factory.chevre.offerType.Offer,
+                    id: String(acceptedOffer.id),
+                    itemOffered: { id: productId },
+                    seller: {
+                        typeOf: req.body.sellerType,
+                        id: req.body.sellerId
+                    }
                 }
             })({
                 seller: new cinerino.repository.Seller(mongoose.connection),
@@ -123,7 +89,7 @@ me4cinemasunshineRouter.put(
                 task: new cinerino.repository.Task(mongoose.connection)
             });
 
-            // 会員登録タスクとして受け入れられたのでACCEPTED
+            // プロダクト注文タスクとして受け入れられたのでACCEPTED
             res.status(ACCEPTED)
                 .json(task);
         } catch (error) {
