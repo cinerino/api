@@ -76,23 +76,30 @@ paymentCardOffersRouter.post('/authorize', permitScopes_1.default(['transactions
         if (!Array.isArray(object)) {
             object = [object];
         }
-        const action = yield cinerino.service.offer.paymentCard.authorize({
+        const action = yield cinerino.service.offer.product.authorize({
             project: req.project,
             object: object.map((o) => {
-                var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+                var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
                 return {
+                    project: req.project,
                     typeOf: cinerino.factory.chevre.offerType.Offer,
                     id: (_a = o) === null || _a === void 0 ? void 0 : _a.id,
+                    priceCurrency: cinerino.factory.chevre.priceCurrency.JPY,
                     itemOffered: {
-                        id: (_c = (_b = o) === null || _b === void 0 ? void 0 : _b.itemOffered) === null || _c === void 0 ? void 0 : _c.id,
+                        project: req.project,
+                        typeOf: (_c = (_b = o) === null || _b === void 0 ? void 0 : _b.itemOffered) === null || _c === void 0 ? void 0 : _c.typeOf,
+                        id: (_e = (_d = o) === null || _d === void 0 ? void 0 : _d.itemOffered) === null || _e === void 0 ? void 0 : _e.id,
                         serviceOutput: {
-                            accessCode: (_f = (_e = (_d = o) === null || _d === void 0 ? void 0 : _d.itemOffered) === null || _e === void 0 ? void 0 : _e.serviceOutput) === null || _f === void 0 ? void 0 : _f.accessCode,
-                            name: (_j = (_h = (_g = o) === null || _g === void 0 ? void 0 : _g.itemOffered) === null || _h === void 0 ? void 0 : _h.serviceOutput) === null || _j === void 0 ? void 0 : _j.name
+                            project: req.project,
+                            typeOf: (_h = (_g = (_f = o) === null || _f === void 0 ? void 0 : _f.itemOffered) === null || _g === void 0 ? void 0 : _g.serviceOutput) === null || _h === void 0 ? void 0 : _h.typeOf,
+                            accessCode: (_l = (_k = (_j = o) === null || _j === void 0 ? void 0 : _j.itemOffered) === null || _k === void 0 ? void 0 : _k.serviceOutput) === null || _l === void 0 ? void 0 : _l.accessCode,
+                            name: (_p = (_o = (_m = o) === null || _m === void 0 ? void 0 : _m.itemOffered) === null || _o === void 0 ? void 0 : _o.serviceOutput) === null || _p === void 0 ? void 0 : _p.name
                             // additionalProperty: [
                             //     { name: 'accountNumber', value: identifier },
                             // ]
                         }
-                    }
+                    },
+                    seller: {} // この指定は実質無視される
                     // additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     //     ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
                     //         return { name: String(p.name), value: String(p.value) };
@@ -105,7 +112,9 @@ paymentCardOffersRouter.post('/authorize', permitScopes_1.default(['transactions
         })({
             accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
             action: new cinerino.repository.Action(mongoose.connection),
+            ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
             project: new cinerino.repository.Project(mongoose.connection),
+            registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),
             seller: new cinerino.repository.Seller(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });

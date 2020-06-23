@@ -559,7 +559,7 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['orders.*', '
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        const registerActionInProgressRepo = new cinerino.repository.action.RegisterProgramMembershipInProgress(redis.getClient());
+        const registerActionInProgressRepo = new cinerino.repository.action.RegisterServiceInProgress(redis.getClient());
         const orderNumber = req.params.orderNumber;
         // 注文検索
         const order = yield orderRepo.findByOrderNumber({

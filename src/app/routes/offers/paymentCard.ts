@@ -81,22 +81,29 @@ paymentCardOffersRouter.post<ParamsDictionary>(
                 object = [object];
             }
 
-            const action = await cinerino.service.offer.paymentCard.authorize({
+            const action = await cinerino.service.offer.product.authorize({
                 project: req.project,
                 object: object.map((o: any) => {
                     return {
+                        project: req.project,
                         typeOf: cinerino.factory.chevre.offerType.Offer,
                         id: o?.id,
+                        priceCurrency: cinerino.factory.chevre.priceCurrency.JPY,
                         itemOffered: {
+                            project: req.project,
+                            typeOf: o?.itemOffered?.typeOf,
                             id: o?.itemOffered?.id,
                             serviceOutput: {
+                                project: req.project,
+                                typeOf: o?.itemOffered?.serviceOutput?.typeOf,
                                 accessCode: o?.itemOffered?.serviceOutput?.accessCode,
                                 name: o?.itemOffered?.serviceOutput?.name
                                 // additionalProperty: [
                                 //     { name: 'accountNumber', value: identifier },
                                 // ]
                             }
-                        }
+                        },
+                        seller: <any>{} // この指定は実質無視される
                         // additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                         //     ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
                         //         return { name: String(p.name), value: String(p.value) };
@@ -109,7 +116,9 @@ paymentCardOffersRouter.post<ParamsDictionary>(
             })({
                 accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
                 action: new cinerino.repository.Action(mongoose.connection),
+                ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
                 project: new cinerino.repository.Project(mongoose.connection),
+                registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),
                 seller: new cinerino.repository.Seller(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
