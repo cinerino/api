@@ -73,39 +73,40 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
             agent: req.agent,
             offerIdentifier: acceptedOffer.identifier,
             potentialActions: {
-                order: {
-                    potentialActions: {
-                        sendOrder: {
-                            potentialActions: {
-                                registerProgramMembership: [
-                                    {
-                                        object: {
-                                            typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership,
-                                            membershipFor: {
-                                                id: membershipServiceId
-                                            }
-                                        },
-                                        potentialActions: {
-                                            orderProgramMembership: {
-                                                potentialActions: {
-                                                    order: {
-                                                        potentialActions: {
-                                                            sendOrder: {
-                                                                potentialActions: {
-                                                                    sendEmailMessage: []
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    }
-                }
+            // order: {
+            //     potentialActions: {
+            //         sendOrder: {
+            //             potentialActions: {
+            //                 registerProgramMembership: [
+            //                     {
+            //                         object: {
+            // tslint:disable-next-line:max-line-length
+            //                             typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership,
+            //                             membershipFor: {
+            //                                 id: membershipServiceId
+            //                             }
+            //                         },
+            //                         potentialActions: {
+            //                             orderProgramMembership: {
+            //                                 potentialActions: {
+            //                                     order: {
+            //                                         potentialActions: {
+            //                                             sendOrder: {
+            //                                                 potentialActions: {
+            //                                                     sendEmailMessage: []
+            //                                                 }
+            //                                             }
+            //                                         }
+            //                                     }
+            //                                 }
+            //                             }
+            //                         }
+            //                     }
+            //                 ]
+            //             }
+            //         }
+            //     }
+            // }
             },
             programMembershipId: membershipServiceId,
             seller: {

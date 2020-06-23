@@ -25,7 +25,7 @@ const programMembershipsRouter = Router();
  */
 programMembershipsRouter.get(
     '',
-    permitScopes(['programMemberships.*', 'programMemberships.read', 'products.*', 'products.read']),
+    permitScopes(['products.*', 'products.read']),
     rateLimit,
     validator,
     async (req, res, next) => {
