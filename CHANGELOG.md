@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- プロダクトオファー承認サービスを追加
+
 ### Changed
 
 - プロダクトオファー承認にポイント特典を指定できるように調整

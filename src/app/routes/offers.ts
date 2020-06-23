@@ -4,9 +4,9 @@
 import { Router } from 'express';
 
 import monetaryAmountOffersRouter from './offers/monetaryAmount';
-import paymentCardOffersRouter from './offers/paymentCard';
+import productOffersRouter from './offers/product';
 
 const offersRouter = Router();
 offersRouter.use('/monetaryAmount', monetaryAmountOffersRouter);
-offersRouter.use('/paymentCard', paymentCardOffersRouter);
+offersRouter.use('/product', productOffersRouter);
 export default offersRouter;

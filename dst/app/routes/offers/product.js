@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * オファールーター
+ * プロダクトオファールーター
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
@@ -27,9 +27,15 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
     : 256;
-const paymentCardOffersRouter = express_1.Router();
+const productOffersRouter = express_1.Router();
 // tslint:disable-next-line:use-default-type-parameter
-paymentCardOffersRouter.post('/authorize', permitScopes_1.default(['transactions']), rateLimit_1.default, ...[
+productOffersRouter.post('/authorize', permitScopes_1.default(['transactions']), rateLimit_1.default, (req, _, next) => {
+    // objectが配列でない場合は強制変換
+    if (!Array.isArray(req.body.object)) {
+        req.body.object = [req.body.object];
+    }
+    next();
+}, ...[
     express_validator_1.body('object.*.id')
         .not()
         .isEmpty()
@@ -72,41 +78,27 @@ paymentCardOffersRouter.post('/authorize', permitScopes_1.default(['transactions
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        let object = req.body.object;
-        if (!Array.isArray(object)) {
-            object = [object];
-        }
+        const actionObject = req.body.object.map((o) => {
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t;
+            return {
+                project: req.project,
+                typeOf: cinerino.factory.chevre.offerType.Offer,
+                id: (_a = o) === null || _a === void 0 ? void 0 : _a.id,
+                priceCurrency: cinerino.factory.chevre.priceCurrency.JPY,
+                itemOffered: Object.assign(Object.assign({}, (_b = o) === null || _b === void 0 ? void 0 : _b.itemOffered), { project: req.project, typeOf: (_d = (_c = o) === null || _c === void 0 ? void 0 : _c.itemOffered) === null || _d === void 0 ? void 0 : _d.typeOf, id: (_f = (_e = o) === null || _e === void 0 ? void 0 : _e.itemOffered) === null || _f === void 0 ? void 0 : _f.id, serviceOutput: Object.assign({ project: req.project, typeOf: (_j = (_h = (_g = o) === null || _g === void 0 ? void 0 : _g.itemOffered) === null || _h === void 0 ? void 0 : _h.serviceOutput) === null || _j === void 0 ? void 0 : _j.typeOf, accessCode: (_m = (_l = (_k = o) === null || _k === void 0 ? void 0 : _k.itemOffered) === null || _l === void 0 ? void 0 : _l.serviceOutput) === null || _m === void 0 ? void 0 : _m.accessCode, name: (_q = (_p = (_o = o) === null || _o === void 0 ? void 0 : _o.itemOffered) === null || _p === void 0 ? void 0 : _p.serviceOutput) === null || _q === void 0 ? void 0 : _q.name }, (Array.isArray((_t = (_s = (_r = o) === null || _r === void 0 ? void 0 : _r.itemOffered) === null || _s === void 0 ? void 0 : _s.serviceOutput) === null || _t === void 0 ? void 0 : _t.additionalProperty))
+                        ? { additionalProperty: o.itemOffered.serviceOutput.additionalProperty }
+                        : undefined) }),
+                seller: {} // この指定は実質無視される
+                // additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+                //     ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
+                //         return { name: String(p.name), value: String(p.value) };
+                //     })
+                //     : [],
+            };
+        });
         const action = yield cinerino.service.offer.product.authorize({
             project: req.project,
-            object: object.map((o) => {
-                var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
-                return {
-                    project: req.project,
-                    typeOf: cinerino.factory.chevre.offerType.Offer,
-                    id: (_a = o) === null || _a === void 0 ? void 0 : _a.id,
-                    priceCurrency: cinerino.factory.chevre.priceCurrency.JPY,
-                    itemOffered: {
-                        project: req.project,
-                        typeOf: (_c = (_b = o) === null || _b === void 0 ? void 0 : _b.itemOffered) === null || _c === void 0 ? void 0 : _c.typeOf,
-                        id: (_e = (_d = o) === null || _d === void 0 ? void 0 : _d.itemOffered) === null || _e === void 0 ? void 0 : _e.id,
-                        serviceOutput: {
-                            project: req.project,
-                            typeOf: (_h = (_g = (_f = o) === null || _f === void 0 ? void 0 : _f.itemOffered) === null || _g === void 0 ? void 0 : _g.serviceOutput) === null || _h === void 0 ? void 0 : _h.typeOf,
-                            accessCode: (_l = (_k = (_j = o) === null || _j === void 0 ? void 0 : _j.itemOffered) === null || _k === void 0 ? void 0 : _k.serviceOutput) === null || _l === void 0 ? void 0 : _l.accessCode,
-                            name: (_p = (_o = (_m = o) === null || _m === void 0 ? void 0 : _m.itemOffered) === null || _o === void 0 ? void 0 : _o.serviceOutput) === null || _p === void 0 ? void 0 : _p.name
-                            // additionalProperty: [
-                            //     { name: 'accountNumber', value: identifier },
-                            // ]
-                        }
-                    },
-                    seller: {} // この指定は実質無視される
-                    // additionalProperty: (Array.isArray(req.body.object.additionalProperty))
-                    //     ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
-                    //         return { name: String(p.name), value: String(p.value) };
-                    //     })
-                    //     : [],
-                };
-            }),
+            object: actionObject,
             agent: { id: req.user.sub },
             transaction: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
@@ -126,45 +118,36 @@ paymentCardOffersRouter.post('/authorize', permitScopes_1.default(['transactions
     }
 }));
 // tslint:disable-next-line:use-default-type-parameter
-// paymentCardOffersRouter.put<ParamsDictionary>(
-//     '/authorize/:actionId/void',
-//     permitScopes(['transactions']),
-//     rateLimit,
-//     ...[
-//         body('purpose')
-//             .not()
-//             .isEmpty()
-//     ],
-//     validator,
-//     async (req, res, next) => {
-//         await rateLimit4transactionInProgress({
-//             typeOf: req.body.purpose.typeOf,
-//             id: <string>req.body.purpose.id
-//         })(req, res, next);
-//     },
-//     async (req, res, next) => {
-//         await lockTransaction({
-//             typeOf: req.body.purpose.typeOf,
-//             id: <string>req.body.purpose.id
-//         })(req, res, next);
-//     },
-//     async (req, res, next) => {
-//         try {
-//             await cinerino.service.offer.paymentCard.voidTransaction({
-//                 project: req.project,
-//                 id: req.params.actionId,
-//                 agent: { id: req.user.sub },
-//                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
-//             })({
-//                 action: new cinerino.repository.Action(mongoose.connection),
-//                 project: new cinerino.repository.Project(mongoose.connection),
-//                 transaction: new cinerino.repository.Transaction(mongoose.connection)
-//             });
-//             res.status(NO_CONTENT)
-//                 .end();
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
-exports.default = paymentCardOffersRouter;
+productOffersRouter.put('/authorize/:actionId/void', permitScopes_1.default(['transactions']), rateLimit_1.default, ...[
+    express_validator_1.body('purpose')
+        .not()
+        .isEmpty()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    yield rateLimit4transactionInProgress_1.default({
+        typeOf: req.body.purpose.typeOf,
+        id: req.body.purpose.id
+    })(req, res, next);
+}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    yield lockTransaction_1.default({
+        typeOf: req.body.purpose.typeOf,
+        id: req.body.purpose.id
+    })(req, res, next);
+}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield cinerino.service.offer.product.voidTransaction({
+            id: req.params.actionId,
+            agent: { id: req.user.sub },
+            purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
+        })({
+            action: new cinerino.repository.Action(mongoose.connection),
+            registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
+        });
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+exports.default = productOffersRouter;
