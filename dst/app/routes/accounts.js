@@ -19,7 +19,7 @@ const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const ioredis = require("ioredis");
 const mongoose = require("mongoose");
-const redis = require("../../redis");
+// import * as redis from '../../redis';
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
@@ -48,7 +48,7 @@ accountsRouter.post('', permitScopes_1.default(['accounts.*', 'accounts.write'])
             accountType: req.body.accountType,
             name: req.body.name
         })({
-            accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
+            // accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
             project: new cinerino.repository.Project(mongoose.connection)
         });
         res.status(http_status_1.CREATED)

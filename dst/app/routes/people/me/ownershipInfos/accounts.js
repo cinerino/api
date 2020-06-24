@@ -20,7 +20,7 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../../../../middlewares/permitScopes");
 const rateLimit_1 = require("../../../../middlewares/rateLimit");
 const validator_1 = require("../../../../middlewares/validator");
-const redis = require("../../../../../redis");
+// import * as redis from '../../../../../redis';
 const accountsRouter = express_1.Router();
 /**
  * 口座開設
@@ -33,7 +33,7 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
         .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const accountNumberRepo = new cinerino.repository.AccountNumber(redis.getClient());
+        // const accountNumberRepo = new cinerino.repository.AccountNumber(redis.getClient());
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const ownershipInfo = yield cinerino.service.account.open({
@@ -42,7 +42,7 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
             name: req.body.name,
             accountType: req.params.accountType
         })({
-            accountNumber: accountNumberRepo,
+            // accountNumber: accountNumberRepo,
             ownershipInfo: ownershipInfoRepo,
             project: projectRepo
         });

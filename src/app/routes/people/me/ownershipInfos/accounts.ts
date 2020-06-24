@@ -13,7 +13,7 @@ import permitScopes from '../../../../middlewares/permitScopes';
 import rateLimit from '../../../../middlewares/rateLimit';
 import validator from '../../../../middlewares/validator';
 
-import * as redis from '../../../../../redis';
+// import * as redis from '../../../../../redis';
 
 const accountsRouter = Router();
 
@@ -34,7 +34,7 @@ accountsRouter.post<ParamsDictionary>(
     validator,
     async (req, res, next) => {
         try {
-            const accountNumberRepo = new cinerino.repository.AccountNumber(redis.getClient());
+            // const accountNumberRepo = new cinerino.repository.AccountNumber(redis.getClient());
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
@@ -44,7 +44,7 @@ accountsRouter.post<ParamsDictionary>(
                 name: req.body.name,
                 accountType: req.params.accountType
             })({
-                accountNumber: accountNumberRepo,
+                // accountNumber: accountNumberRepo,
                 ownershipInfo: ownershipInfoRepo,
                 project: projectRepo
             });
