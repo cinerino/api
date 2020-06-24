@@ -120,7 +120,6 @@ productOffersRouter.post<ParamsDictionary>(
                 agent: { id: req.user.sub },
                 transaction: <any>{ typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({
-                accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
                 action: new cinerino.repository.Action(mongoose.connection),
                 ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
                 project: new cinerino.repository.Project(mongoose.connection),
