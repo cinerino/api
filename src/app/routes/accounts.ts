@@ -9,7 +9,7 @@ import { CREATED, NO_CONTENT } from 'http-status';
 import * as ioredis from 'ioredis';
 import * as mongoose from 'mongoose';
 
-import * as redis from '../../redis';
+// import * as redis from '../../redis';
 
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
@@ -48,7 +48,7 @@ accountsRouter.post(
                 accountType: req.body.accountType,
                 name: req.body.name
             })({
-                accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
+                // accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
                 project: new cinerino.repository.Project(mongoose.connection)
             });
 
