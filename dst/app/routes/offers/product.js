@@ -102,7 +102,6 @@ productOffersRouter.post('/authorize', permitScopes_1.default(['transactions']),
             agent: { id: req.user.sub },
             transaction: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
-            accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
             action: new cinerino.repository.Action(mongoose.connection),
             ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
             project: new cinerino.repository.Project(mongoose.connection),

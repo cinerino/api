@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.5.2 - 2020-06-24
+
+### Changed
+
+- プロダクト識別子をChevreで発行するように調整
+
 ## v5.5.1 - 2020-06-23
 
 ### Changed
