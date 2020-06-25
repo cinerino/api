@@ -18,6 +18,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.8.0 - 2020-06-25
+
+### Added
+
+- プロダクトタイプにAccountを追加
+
+### Changed
+
+- 口座開設を口座注文としても処理できるように調整
+
 ## v5.7.0 - 2020-06-24
 
 ### Added

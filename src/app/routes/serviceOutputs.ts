@@ -3,7 +3,7 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
-import { query } from 'express-validator';
+// import { query } from 'express-validator';
 import * as mongoose from 'mongoose';
 
 import permitScopes from '../middlewares/permitScopes';
@@ -28,9 +28,9 @@ serviceOutputsRouter.get(
     permitScopes(['serviceOutputs.*', 'serviceOutputs.read']),
     rateLimit,
     ...[
-        query('typeOf')
-            .not()
-            .isEmpty()
+        // query('typeOf')
+        //     .not()
+        //     .isEmpty()
     ],
     validator,
     async (req, res, next) => {
