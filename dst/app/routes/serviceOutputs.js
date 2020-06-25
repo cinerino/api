@@ -14,7 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-const express_validator_1 = require("express-validator");
+// import { query } from 'express-validator';
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
@@ -31,9 +31,9 @@ const serviceOutputsRouter = express_1.Router();
  * 検索
  */
 serviceOutputsRouter.get('', permitScopes_1.default(['serviceOutputs.*', 'serviceOutputs.read']), rateLimit_1.default, ...[
-    express_validator_1.query('typeOf')
-        .not()
-        .isEmpty()
+// query('typeOf')
+//     .not()
+//     .isEmpty()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
