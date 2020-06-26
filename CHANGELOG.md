@@ -18,6 +18,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.8.1 - 2020-06-25
+
+### Added
+
+- 所有権検索条件拡張
+- COA予約にbookingTime属性を追加
+
+### Changed
+
+- update @cinerino/domain
+
 ## v5.8.0 - 2020-06-25
 
 ### Added

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RoleName = exports.Permission = void 0;
 /**
  * 権限
  */

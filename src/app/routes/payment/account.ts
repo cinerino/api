@@ -71,7 +71,7 @@ accountPaymentRouter.post<ParamsDictionary>(
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
-            let fromAccount: cinerino.factory.action.authorize.paymentMethod.account.IFromAccount<string> | undefined
+            let fromAccount: cinerino.factory.action.authorize.paymentMethod.account.IFromAccount | undefined
                 = req.body.object.fromAccount;
 
             // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する

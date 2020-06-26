@@ -68,7 +68,6 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
 }), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     try {
         let fromAccount = req.body.object.fromAccount;
         // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
@@ -113,7 +112,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
                 }
             }
         }
-        const accountType = (_a = fromAccount) === null || _a === void 0 ? void 0 : _a.accountType;
+        const accountType = fromAccount === null || fromAccount === void 0 ? void 0 : fromAccount.accountType;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);

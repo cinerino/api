@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@cinerino/domain": "^7.2.2",
+    "@cinerino/domain": "^7.3.0",
     "@motionpicture/express-middleware": "^0.1.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
@@ -23,7 +23,7 @@
     "ioredis": "^3.2.2",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.26",
-    "mongoose": "^5.8.3",
+    "mongoose": "^5.9.20",
     "qs": "^6.8.0",
     "redis": "^2.8.0",
     "serve-favicon": "^2.5.0"
@@ -42,7 +42,7 @@
     "@types/ioredis": "^3.2.23",
     "@types/mocha": "^5.2.7",
     "@types/moment-timezone": "^0.5.12",
-    "@types/mongoose": "^5.5.32",
+    "@types/mongoose": "^5.7.28",
     "@types/nock": "^9.3.1",
     "@types/node": "^8.10.53",
     "@types/power-assert": "^1.5.0",
@@ -61,10 +61,10 @@
     "sinon": "^5.1.1",
     "supertest": "^3.4.2",
     "swagger2blueprint": "^1.1.0",
-    "ts-node": "^8.5.2",
-    "tslint": "^5.20.1",
+    "ts-node": "^8.10.2",
+    "tslint": "^6.1.2",
     "tslint-microsoft-contrib": "^6.2.0",
-    "typescript": "^3.7.2"
+    "typescript": "^3.9.5"
   },
   "engines": {
     "node": "10.x.x",
@@ -97,5 +97,5 @@
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
-  "version": "5.8.0"
+  "version": "5.8.1"
 }

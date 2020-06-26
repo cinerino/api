@@ -149,7 +149,7 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
     }
 }));
 function validateFromLocation(req) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         let fromLocation = req.body.object.fromLocation;
         // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
@@ -164,12 +164,12 @@ function validateFromLocation(req) {
             fromLocation = accountOwnershipInfo.typeOfGood;
         }
         else {
-            const accessCode = (_a = fromLocation) === null || _a === void 0 ? void 0 : _a.accessCode;
+            const accessCode = fromLocation === null || fromLocation === void 0 ? void 0 : fromLocation.accessCode;
             if (typeof accessCode === 'string') {
                 // アクセスコード情報があれば、認証
                 const projectRepo = new cinerino.repository.Project(mongoose.connection);
                 const project = yield projectRepo.findById({ id: req.project.id });
-                if (typeof ((_c = (_b = project.settings) === null || _b === void 0 ? void 0 : _b.chevre) === null || _c === void 0 ? void 0 : _c.endpoint) !== 'string') {
+                if (typeof ((_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === null || _b === void 0 ? void 0 : _b.endpoint) !== 'string') {
                     throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
                 }
                 const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
@@ -180,8 +180,8 @@ function validateFromLocation(req) {
                     limit: 1,
                     page: 1,
                     project: { typeOf: 'Project', id: req.project.id },
-                    typeOf: { $eq: (_d = fromLocation) === null || _d === void 0 ? void 0 : _d.typeOf },
-                    identifier: { $eq: (_e = fromLocation) === null || _e === void 0 ? void 0 : _e.identifier },
+                    typeOf: { $eq: fromLocation === null || fromLocation === void 0 ? void 0 : fromLocation.typeOf },
+                    identifier: { $eq: fromLocation === null || fromLocation === void 0 ? void 0 : fromLocation.identifier },
                     accessCode: { $eq: accessCode }
                 });
                 if (searchPaymentCardResult.data.length === 0) {
