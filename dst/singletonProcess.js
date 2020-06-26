@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.lock = void 0;
 const createDebug = require("debug");
 const moment = require("moment");
 const os = require("os");

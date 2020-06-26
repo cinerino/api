@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getClient = void 0;
 /**
  * redis cacheクライアント
  */

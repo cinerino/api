@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SCOPE_COGNITO_USER_ADMIN = void 0;
 /**
  * スコープ許可ミドルウェア
  */
