@@ -79,13 +79,13 @@ productOffersRouter.post('/authorize', permitScopes_1.default(['transactions']),
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionObject = req.body.object.map((o) => {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
             return {
                 project: req.project,
                 typeOf: cinerino.factory.chevre.offerType.Offer,
-                id: (_a = o) === null || _a === void 0 ? void 0 : _a.id,
+                id: o === null || o === void 0 ? void 0 : o.id,
                 priceCurrency: cinerino.factory.chevre.priceCurrency.JPY,
-                itemOffered: Object.assign(Object.assign({}, (_b = o) === null || _b === void 0 ? void 0 : _b.itemOffered), { project: req.project, typeOf: (_d = (_c = o) === null || _c === void 0 ? void 0 : _c.itemOffered) === null || _d === void 0 ? void 0 : _d.typeOf, id: (_f = (_e = o) === null || _e === void 0 ? void 0 : _e.itemOffered) === null || _f === void 0 ? void 0 : _f.id, serviceOutput: Object.assign({ project: req.project, typeOf: (_j = (_h = (_g = o) === null || _g === void 0 ? void 0 : _g.itemOffered) === null || _h === void 0 ? void 0 : _h.serviceOutput) === null || _j === void 0 ? void 0 : _j.typeOf, accessCode: (_m = (_l = (_k = o) === null || _k === void 0 ? void 0 : _k.itemOffered) === null || _l === void 0 ? void 0 : _l.serviceOutput) === null || _m === void 0 ? void 0 : _m.accessCode, name: (_q = (_p = (_o = o) === null || _o === void 0 ? void 0 : _o.itemOffered) === null || _p === void 0 ? void 0 : _p.serviceOutput) === null || _q === void 0 ? void 0 : _q.name }, (Array.isArray((_t = (_s = (_r = o) === null || _r === void 0 ? void 0 : _r.itemOffered) === null || _s === void 0 ? void 0 : _s.serviceOutput) === null || _t === void 0 ? void 0 : _t.additionalProperty))
+                itemOffered: Object.assign(Object.assign({}, o === null || o === void 0 ? void 0 : o.itemOffered), { project: req.project, typeOf: (_a = o === null || o === void 0 ? void 0 : o.itemOffered) === null || _a === void 0 ? void 0 : _a.typeOf, id: (_b = o === null || o === void 0 ? void 0 : o.itemOffered) === null || _b === void 0 ? void 0 : _b.id, serviceOutput: Object.assign({ project: req.project, typeOf: (_d = (_c = o === null || o === void 0 ? void 0 : o.itemOffered) === null || _c === void 0 ? void 0 : _c.serviceOutput) === null || _d === void 0 ? void 0 : _d.typeOf, accessCode: (_f = (_e = o === null || o === void 0 ? void 0 : o.itemOffered) === null || _e === void 0 ? void 0 : _e.serviceOutput) === null || _f === void 0 ? void 0 : _f.accessCode, name: (_h = (_g = o === null || o === void 0 ? void 0 : o.itemOffered) === null || _g === void 0 ? void 0 : _g.serviceOutput) === null || _h === void 0 ? void 0 : _h.name }, (Array.isArray((_k = (_j = o === null || o === void 0 ? void 0 : o.itemOffered) === null || _j === void 0 ? void 0 : _j.serviceOutput) === null || _k === void 0 ? void 0 : _k.additionalProperty))
                         ? { additionalProperty: o.itemOffered.serviceOutput.additionalProperty }
                         : undefined) }),
                 seller: {} // この指定は実質無視される

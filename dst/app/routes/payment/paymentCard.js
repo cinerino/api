@@ -109,7 +109,7 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
 }), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d, _e, _f, _g;
+    var _c, _d;
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -132,11 +132,11 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
             };
         }
         else {
-            const accessCode = (_c = fromLocation) === null || _c === void 0 ? void 0 : _c.accessCode;
+            const accessCode = fromLocation === null || fromLocation === void 0 ? void 0 : fromLocation.accessCode;
             if (typeof accessCode === 'string') {
                 // アクセスコード情報があれば、認証
                 const project = yield projectRepo.findById({ id: req.project.id });
-                if (typeof ((_e = (_d = project.settings) === null || _d === void 0 ? void 0 : _d.chevre) === null || _e === void 0 ? void 0 : _e.endpoint) !== 'string') {
+                if (typeof ((_d = (_c = project.settings) === null || _c === void 0 ? void 0 : _c.chevre) === null || _d === void 0 ? void 0 : _d.endpoint) !== 'string') {
                     throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
                 }
                 const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
@@ -147,8 +147,8 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
                     limit: 1,
                     page: 1,
                     project: { typeOf: 'Project', id: req.project.id },
-                    typeOf: { $eq: (_f = fromLocation) === null || _f === void 0 ? void 0 : _f.typeOf },
-                    identifier: { $eq: (_g = fromLocation) === null || _g === void 0 ? void 0 : _g.identifier },
+                    typeOf: { $eq: fromLocation === null || fromLocation === void 0 ? void 0 : fromLocation.typeOf },
+                    identifier: { $eq: fromLocation === null || fromLocation === void 0 ? void 0 : fromLocation.identifier },
                     accessCode: { $eq: accessCode }
                 });
                 if (searchPaymentCardResult.data.length === 0) {
