@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- メンバーシップと口座注文時に確認番号を発行するように調整
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v5.9.0 - 2020-06-27
+
+### Changed
+
+- メンバーシップと口座注文時に確認番号を発行するように調整
 
 ## v5.8.1 - 2020-06-25
 
