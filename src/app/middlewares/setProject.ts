@@ -24,19 +24,19 @@ setProject.use(async (req, _, next) => {
     }
 
     // 環境変数設定が存在する場合
-    if (typeof process.env.PROJECT_ID === 'string') {
-        if (project === undefined) {
-            // 環境変数
-            project = { typeOf: cinerino.factory.organizationType.Project, id: process.env.PROJECT_ID };
-        } else {
-            // アプリケーション設定と環境変数設定両方が存在する場合、プロジェクトが異なればforbidden
-            if (project.id !== process.env.PROJECT_ID) {
-                next(new cinerino.factory.errors.Forbidden(`client for ${project.id} forbidden`));
+    // if (typeof process.env.PROJECT_ID === 'string') {
+    //     if (project === undefined) {
+    //         // 環境変数
+    //         project = { typeOf: cinerino.factory.organizationType.Project, id: process.env.PROJECT_ID };
+    //     } else {
+    //         // アプリケーション設定と環境変数設定両方が存在する場合、プロジェクトが異なればforbidden
+    //         if (project.id !== process.env.PROJECT_ID) {
+    //             next(new cinerino.factory.errors.Forbidden(`client for ${project.id} forbidden`));
 
-                return;
-            }
-        }
-    }
+    //             return;
+    //         }
+    //     }
+    // }
 
     // プロジェクトが決定すればリクエストに設定
     if (project !== undefined) {

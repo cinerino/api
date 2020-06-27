@@ -40,7 +40,7 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     // 同時実行タスク数監視
     setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
-            yield cinerino.service.notification.report2developers(`[${process.env.PROJECT_ID}] api:connectMongo`, `jobs:placeOrder:taskCount reached MAX_NUBMER_OF_PARALLEL_TASKS. ${count.toString()}`)();
+            yield cinerino.service.notification.report2developers(`api:connectMongo`, `jobs:placeOrder:taskCount reached MAX_NUBMER_OF_PARALLEL_TASKS. ${count.toString()}`)();
         }
     }), 
     // tslint:disable-next-line:no-magic-numbers
