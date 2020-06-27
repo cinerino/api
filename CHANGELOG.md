@@ -14,11 +14,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
-- PROJECT_ID設定を削除
-
 ### Fixed
 
 ### Security
+
+## v5.11.1 - 2020-06-27
+
+### Removed
+
+- PROJECT_ID設定を削除
 
 ## v5.11.0 - 2020-06-27
 
