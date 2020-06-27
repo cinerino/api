@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.11.0 - 2020-06-27
+
+### Added
+
+- サービス登録中止タスクを追加
+
 ## v5.10.0 - 2020-06-27
 
 ### Added
