@@ -41,6 +41,7 @@ import sendOrder from './continuous/sendOrder/run';
 import triggerWebhook from './continuous/triggerWebhook/run';
 import unRegisterProgramMembership from './continuous/unRegisterProgramMembership/run';
 import voidMoneyTransfer from './continuous/voidMoneyTransfer/run';
+import voidRegisterService from './continuous/voidRegisterService/run';
 
 const project: factory.project.IProject | undefined = (typeof process.env.PROJECT_ID === 'string')
     ? { typeOf: factory.organizationType.Project, id: process.env.PROJECT_ID }
@@ -86,4 +87,5 @@ export default async () => {
     await triggerWebhook({ project: project });
     await unRegisterProgramMembership({ project: project });
     await voidMoneyTransfer({ project: project });
+    await voidRegisterService({ project: project });
 };

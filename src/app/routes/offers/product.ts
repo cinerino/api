@@ -164,9 +164,11 @@ productOffersRouter.put<ParamsDictionary>(
             await cinerino.service.offer.product.voidTransaction({
                 id: req.params.actionId,
                 agent: { id: req.user.sub },
+                project: req.project,
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
+                project: new cinerino.repository.Project(mongoose.connection),
                 registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });

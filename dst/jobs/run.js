@@ -49,6 +49,7 @@ const run_33 = require("./continuous/sendOrder/run");
 const run_34 = require("./continuous/triggerWebhook/run");
 const run_35 = require("./continuous/unRegisterProgramMembership/run");
 const run_36 = require("./continuous/voidMoneyTransfer/run");
+const run_37 = require("./continuous/voidRegisterService/run");
 const project = (typeof process.env.PROJECT_ID === 'string')
     ? { typeOf: domain_1.factory.organizationType.Project, id: process.env.PROJECT_ID }
     : undefined;
@@ -90,4 +91,5 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_34.default({ project: project });
     yield run_35.default({ project: project });
     yield run_36.default({ project: project });
+    yield run_37.default({ project: project });
 });

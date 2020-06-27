@@ -136,9 +136,11 @@ productOffersRouter.put('/authorize/:actionId/void', permitScopes_1.default(['tr
         yield cinerino.service.offer.product.voidTransaction({
             id: req.params.actionId,
             agent: { id: req.user.sub },
+            project: req.project,
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
+            project: new cinerino.repository.Project(mongoose.connection),
             registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
