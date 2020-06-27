@@ -58,6 +58,7 @@ accountsRouter.post<ParamsDictionary>(
                 const orderRepo = new cinerino.repository.Order(mongoose.connection);
                 const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
                 const taskRepo = new cinerino.repository.Task(mongoose.connection);
+                const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
                 const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
 
                 const project = await projectRepo.findById({ id: req.project.id });
@@ -78,6 +79,7 @@ accountsRouter.post<ParamsDictionary>(
                     seller: { typeOf: seller.typeOf, id: seller.id }
                 })({
                     action: actionRepo,
+                    confirmationNumber: confirmationNumberRepo,
                     orderNumber: orderNumberRepo,
                     ownershipInfo: ownershipInfoRepo,
                     person: personRepo,
