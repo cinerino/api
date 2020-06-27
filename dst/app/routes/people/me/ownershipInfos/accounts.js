@@ -56,6 +56,7 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
+            const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
             const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
             const project = yield projectRepo.findById({ id: req.project.id });
             if (typeof ((_c = (_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.cognito) === null || _b === void 0 ? void 0 : _b.customerUserPool) === null || _c === void 0 ? void 0 : _c.id) !== 'string') {
@@ -73,6 +74,7 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
                 seller: { typeOf: seller.typeOf, id: seller.id }
             })({
                 action: actionRepo,
+                confirmationNumber: confirmationNumberRepo,
                 orderNumber: orderNumberRepo,
                 ownershipInfo: ownershipInfoRepo,
                 person: personRepo,
