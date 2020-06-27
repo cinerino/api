@@ -44,7 +44,7 @@ export default async (params: {
         async () => {
             if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
                 await cinerino.service.notification.report2developers(
-                    `[${process.env.PROJECT_ID}] api:connectMongo`,
+                    `api:connectMongo`,
                     `jobs:placeOrder:taskCount reached MAX_NUBMER_OF_PARALLEL_TASKS. ${count.toString()}`
                 )();
             }

@@ -1,8 +1,6 @@
 /**
  * 非同期ジョブ
  */
-import { factory } from '@cinerino/domain';
-
 import abortTasks from './continuous/abortTasks/run';
 import makeTransactionExpired from './continuous/makeTransactionExpired/run';
 import reexportTransactionTasks from './continuous/reexportTransactionTasks/run';
@@ -43,49 +41,44 @@ import unRegisterProgramMembership from './continuous/unRegisterProgramMembershi
 import voidMoneyTransfer from './continuous/voidMoneyTransfer/run';
 import voidRegisterService from './continuous/voidRegisterService/run';
 
-const project: factory.project.IProject | undefined = (typeof process.env.PROJECT_ID === 'string')
-    ? { typeOf: factory.organizationType.Project, id: process.env.PROJECT_ID }
-    : undefined;
-
-// tslint:disable-next-line:cyclomatic-complexity
 export default async () => {
-    await abortTasks({ project: project });
-    await retryTasks({ project: project });
-    await makeTransactionExpired({ project: project });
-    await reexportTransactionTasks({ project: project });
+    await abortTasks({});
+    await retryTasks({});
+    await makeTransactionExpired({});
+    await reexportTransactionTasks({});
 
-    await onTransactionCanceled({ project: project });
-    await onTransactionConfirmed({ project: project });
-    await onTransactionExpired({ project: project });
+    await onTransactionCanceled({});
+    await onTransactionConfirmed({});
+    await onTransactionExpired({});
 
-    await cancelAccount({ project: project });
-    await cancelCreditCard({ project: project });
-    await cancelPaymentCard({ project: project });
-    await cancelReservation({ project: project });
-    await cancelSeatReservation({ project: project });
-    await confirmReservation({ project: project });
-    await createOrderReport({ project: project });
-    await deleteMember({ project: project });
-    await givePointAward({ project: project });
-    await moneyTransfer({ project: project });
-    await orderProgramMembership({ project: project });
-    await payAccount({ project: project });
-    await payCreditCard({ project: project });
-    await payMovieTicket({ project: project });
-    await payPaymentCard({ project: project });
-    await placeOrder({ project: project });
-    await refundAccount({ project: project });
-    await refundCreditCard({ project: project });
-    await refundMovieTicket({ project: project });
-    await refundPaymentCard({ project: project });
-    await registerProgramMembership({ project: project });
-    await registerService({ project: project });
-    await returnOrder({ project: project });
-    await returnPointAward({ project: project });
-    await sendEmailMessage({ project: project });
-    await sendOrder({ project: project });
-    await triggerWebhook({ project: project });
-    await unRegisterProgramMembership({ project: project });
-    await voidMoneyTransfer({ project: project });
-    await voidRegisterService({ project: project });
+    await cancelAccount({});
+    await cancelCreditCard({});
+    await cancelPaymentCard({});
+    await cancelReservation({});
+    await cancelSeatReservation({});
+    await confirmReservation({});
+    await createOrderReport({});
+    await deleteMember({});
+    await givePointAward({});
+    await moneyTransfer({});
+    await orderProgramMembership({});
+    await payAccount({});
+    await payCreditCard({});
+    await payMovieTicket({});
+    await payPaymentCard({});
+    await placeOrder({});
+    await refundAccount({});
+    await refundCreditCard({});
+    await refundMovieTicket({});
+    await refundPaymentCard({});
+    await registerProgramMembership({});
+    await registerService({});
+    await returnOrder({});
+    await returnPointAward({});
+    await sendEmailMessage({});
+    await sendOrder({});
+    await triggerWebhook({});
+    await unRegisterProgramMembership({});
+    await voidMoneyTransfer({});
+    await voidRegisterService({});
 };
