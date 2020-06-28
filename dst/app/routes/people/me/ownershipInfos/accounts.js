@@ -120,19 +120,7 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
             ownershipInfo = ownershipInfos[0];
         }
         else {
-            // const accountNumberRepo = new cinerino.repository.AccountNumber(redis.getClient());
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            ownershipInfo = yield cinerino.service.account.open({
-                project: req.project,
-                agent: req.agent,
-                name: req.body.name,
-                accountType: req.params.accountType
-            })({
-                // accountNumber: accountNumberRepo,
-                ownershipInfo: ownershipInfoRepo,
-                project: projectRepo
-            });
+            throw new cinerino.factory.errors.ServiceUnavailable('Default seller undefined');
         }
         res.status(http_status_1.CREATED)
             .json(ownershipInfo);

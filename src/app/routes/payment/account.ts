@@ -99,7 +99,7 @@ accountPaymentRouter.post<ParamsDictionary>(
                     } else {
                         // 口座に所有権があるかどうか確認
                         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-                        const count = await ownershipInfoRepo.count<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
+                        const count = await ownershipInfoRepo.count({
                             limit: 1,
                             ownedBy: { id: req.user.sub },
                             ownedFrom: new Date(),

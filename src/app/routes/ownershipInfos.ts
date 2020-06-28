@@ -43,7 +43,7 @@ ownershipInfosRouter.get(
             let ownershipInfos:
                 cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGoodWithDetail<any>>[];
 
-            const searchConditions: cinerino.factory.ownershipInfo.ISearchConditions<any> = {
+            const searchConditions: cinerino.factory.ownershipInfo.ISearchConditions = {
                 ...req.query,
                 project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
