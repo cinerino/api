@@ -37,7 +37,7 @@ const projectDetailRouter = express.Router();
 
 projectDetailRouter.use((req, _, next) => {
     // プロジェクト未指定は拒否
-    if (req.project === undefined || req.project === null || typeof req.project.id !== 'string') {
+    if (typeof req.project?.id !== 'string') {
         next(new cinerino.factory.errors.Forbidden('project not specified'));
 
         return;

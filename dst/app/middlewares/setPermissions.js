@@ -16,13 +16,14 @@ const cinerino = require("@cinerino/domain");
 const mongoose = require("mongoose");
 const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
 exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         let isProjectMember = false;
         let memberPermissions = [];
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const roleRepo = new cinerino.repository.Role(mongoose.connection);
         // プロジェクトが決定していれば権限をセット
-        if (req.project !== undefined && req.project !== null && typeof req.project.id === 'string') {
+        if (((_a = req.project) === null || _a === void 0 ? void 0 : _a.id) === 'string') {
             // プロジェクト決定済のリクエストに対してプロジェクトメンバー権限を決定する
             memberPermissions = yield cinerino.service.iam.searchPermissions({
                 project: { id: req.project.id },

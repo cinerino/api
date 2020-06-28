@@ -32,7 +32,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         }
 
         const routeIdentifier = `${req.baseUrl}${req.path}`;
-        const rateLimitScope = (req.project !== undefined && req.project !== null && typeof req.project.id === 'string')
+        const rateLimitScope = (typeof req.project?.id === 'string')
             ? `api:${req.project.id}:rateLimit:${routeIdentifier}:${req.method}`
             : `api:rateLimit:${routeIdentifier}:${req.method}`;
 
