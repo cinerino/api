@@ -23,7 +23,7 @@ exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* 
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const roleRepo = new cinerino.repository.Role(mongoose.connection);
         // プロジェクトが決定していれば権限をセット
-        if (((_a = req.project) === null || _a === void 0 ? void 0 : _a.id) === 'string') {
+        if (typeof ((_a = req.project) === null || _a === void 0 ? void 0 : _a.id) === 'string') {
             // プロジェクト決定済のリクエストに対してプロジェクトメンバー権限を決定する
             memberPermissions = yield cinerino.service.iam.searchPermissions({
                 project: { id: req.project.id },
