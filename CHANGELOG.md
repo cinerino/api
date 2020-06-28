@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.12.0 - 2020-06-28
+
+### Changed
+
+- 口座開設を口座注文処理へ完全移行
+- 所有権インターフェース汎用性拡張
+
 ## v5.11.1 - 2020-06-27
 
 ### Removed
