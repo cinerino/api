@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- update express-validator
-- メンバーシップ注文処理中のクレジットカード決済に関して、クライアントエラーであればリトライしないように調整
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v5.13.0 - 2020-06-29
+
+### Changed
+
+- update express-validator
+- メンバーシップ注文処理中のクレジットカード決済に関して、クライアントエラーであればリトライしないように調整
 
 ## v5.12.0 - 2020-06-28
 
