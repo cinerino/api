@@ -59,18 +59,20 @@ productsRouter.get('', permitScopes_1.default(['products.*', 'products.read']), 
 /**
  * オファー検索
  */
+// tslint:disable-next-line:use-default-type-parameter
 productsRouter.get('/:id/offers', permitScopes_1.default(['products.*', 'products.read']), rateLimit_1.default, ...[
     express_validator_1.query('seller.id')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const offers = yield cinerino.service.offer.product.search({
             project: { id: req.project.id },
             itemOffered: { id: req.params.id },
-            seller: req.query.seller
+            seller: { id: (_b = req.query.seller) === null || _b === void 0 ? void 0 : _b.id }
             // availableAt: {}
         })({
             project: projectRepo
