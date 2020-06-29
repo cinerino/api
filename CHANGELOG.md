@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - update express-validator
+- メンバーシップ注文処理中のクレジットカード決済に関して、クライアントエラーであればリトライしないように調整
 
 ### Deprecated
 
