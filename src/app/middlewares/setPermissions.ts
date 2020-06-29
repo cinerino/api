@@ -16,7 +16,7 @@ export default async (req: Request, _: Response, next: NextFunction) => {
         const roleRepo = new cinerino.repository.Role(mongoose.connection);
 
         // プロジェクトが決定していれば権限をセット
-        if (req.project !== undefined && req.project !== null && typeof req.project.id === 'string') {
+        if (typeof req.project?.id === 'string') {
             // プロジェクト決定済のリクエストに対してプロジェクトメンバー権限を決定する
             memberPermissions = await cinerino.service.iam.searchPermissions({
                 project: { id: req.project.id },

@@ -2,7 +2,7 @@
  * アプリケーション固有の型
  */
 import * as cinerino from '@cinerino/domain';
-import * as express from 'express';
+
 declare global {
     namespace Express {
         export interface IRequestProject { typeOf: cinerino.factory.organizationType.Project; id: string; }

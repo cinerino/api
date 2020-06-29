@@ -34,8 +34,9 @@ const ttts_1 = require("../ttts");
 const userPools_1 = require("../userPools");
 const projectDetailRouter = express.Router();
 projectDetailRouter.use((req, _, next) => {
+    var _a;
     // プロジェクト未指定は拒否
-    if (req.project === undefined || req.project === null || typeof req.project.id !== 'string') {
+    if (typeof ((_a = req.project) === null || _a === void 0 ? void 0 : _a.id) !== 'string') {
         next(new cinerino.factory.errors.Forbidden('project not specified'));
         return;
     }

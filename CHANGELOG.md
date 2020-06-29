@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.13.0 - 2020-06-29
+
+### Changed
+
+- update express-validator
+- メンバーシップ注文処理中のクレジットカード決済に関して、クライアントエラーであればリトライしないように調整
+
 ## v5.12.0 - 2020-06-28
 
 ### Changed
