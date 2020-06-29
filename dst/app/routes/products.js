@@ -59,19 +59,22 @@ productsRouter.get('', permitScopes_1.default(['products.*', 'products.read']), 
 /**
  * オファー検索
  */
-productsRouter.get('/:id/offers', permitScopes_1.default(['products.*', 'products.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+productsRouter.get('/:id/offers', permitScopes_1.default(['products.*', 'products.read']), rateLimit_1.default, ...[
+    express_validator_1.query('seller.id')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (((_b = project.settings) === null || _b === void 0 ? void 0 : _b.chevre) === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
-        }
-        const productService = new cinerino.chevre.service.Product({
-            endpoint: project.settings.chevre.endpoint,
-            auth: chevreAuthClient
+        const offers = yield cinerino.service.offer.product.search({
+            project: { id: req.project.id },
+            itemOffered: { id: req.params.id },
+            seller: req.query.seller
+            // availableAt: {}
+        })({
+            project: projectRepo
         });
-        const offers = yield productService.searchOffers({ id: req.params.id });
         res.json(offers);
     }
     catch (error) {

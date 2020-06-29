@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- プロダクトオファー検索に利用アプリケーション条件、有効期間条件を適用
+
 ### Deprecated
 
 ### Removed
