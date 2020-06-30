@@ -3,6 +3,8 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+// tslint:disable-next-line:no-implicit-dependencies
+import { ParamsDictionary } from 'express-serve-static-core';
 import { query } from 'express-validator';
 import * as mongoose from 'mongoose';
 
@@ -65,24 +67,30 @@ productsRouter.get(
 /**
  * オファー検索
  */
-productsRouter.get(
+// tslint:disable-next-line:use-default-type-parameter
+productsRouter.get<ParamsDictionary>(
     '/:id/offers',
     permitScopes(['products.*', 'products.read']),
     rateLimit,
+    ...[
+        query('seller.id')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+    ],
     validator,
     async (req, res, next) => {
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings?.chevre === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
-            }
 
-            const productService = new cinerino.chevre.service.Product({
-                endpoint: project.settings.chevre.endpoint,
-                auth: chevreAuthClient
+            const offers = await cinerino.service.offer.product.search({
+                project: { id: req.project.id },
+                itemOffered: { id: req.params.id },
+                seller: { id: req.query.seller?.id }
+                // availableAt: {}
+            })({
+                project: projectRepo
             });
-            const offers = await productService.searchOffers({ id: req.params.id });
 
             res.json(offers);
         } catch (error) {
