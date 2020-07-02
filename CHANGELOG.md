@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - update @cinerino/domain
+- 口座注文進行時に、プロダクトオファーから販売者を自動選択するように調整
 
 ### Deprecated
 

@@ -15,8 +15,6 @@ import validator from '../../../../middlewares/validator';
 
 import * as redis from '../../../../../redis';
 
-const DEFAULT_ACCOUNT_SELLER = process.env.DEFAULT_ACCOUNT_SELLER;
-
 // const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 //     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
 //     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -48,89 +46,82 @@ accountsRouter.post<ParamsDictionary>(
             // tslint:disable-next-line:max-line-length
             let ownershipInfo: cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGoodWithDetail<cinerino.factory.ownershipInfo.AccountGoodType.Account>>;
 
-            if (typeof DEFAULT_ACCOUNT_SELLER === 'string') {
-                const actionRepo = new cinerino.repository.Action(mongoose.connection);
-                const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-                const projectRepo = new cinerino.repository.Project(mongoose.connection);
-                const registerActionInProgressRepo = new cinerino.repository.action.RegisterServiceInProgress(redis.getClient());
-                const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-                const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-                const orderRepo = new cinerino.repository.Order(mongoose.connection);
-                const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
-                const taskRepo = new cinerino.repository.Task(mongoose.connection);
-                const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
-                const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const registerActionInProgressRepo = new cinerino.repository.action.RegisterServiceInProgress(redis.getClient());
+            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+            const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
+            const taskRepo = new cinerino.repository.Task(mongoose.connection);
+            const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
+            const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
 
-                const project = await projectRepo.findById({ id: req.project.id });
-                if (typeof project.settings?.cognito?.customerUserPool?.id !== 'string') {
-                    throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satidfied');
-                }
-                const personRepo = new cinerino.repository.Person({
-                    userPoolId: project.settings.cognito.customerUserPool.id
-                });
-
-                const seller = await sellerRepo.findById({ id: DEFAULT_ACCOUNT_SELLER });
-
-                const result = await cinerino.service.transaction.orderAccount.orderAccount({
-                    project: { typeOf: project.typeOf, id: project.id },
-                    agent: { typeOf: req.agent.typeOf, id: req.agent.id },
-                    name: req.body.name,
-                    accountType: req.params.accountType,
-                    seller: { typeOf: seller.typeOf, id: seller.id }
-                })({
-                    action: actionRepo,
-                    confirmationNumber: confirmationNumberRepo,
-                    orderNumber: orderNumberRepo,
-                    ownershipInfo: ownershipInfoRepo,
-                    person: personRepo,
-                    registerActionInProgress: registerActionInProgressRepo,
-                    project: projectRepo,
-                    seller: sellerRepo,
-                    transaction: transactionRepo
-                });
-
-                const order = result.order;
-
-                const orderActionAttributes: cinerino.factory.action.trade.order.IAttributes = {
-                    agent: order.customer,
-                    object: order,
-                    potentialActions: {},
-                    project: order.project,
-                    typeOf: cinerino.factory.actionType.OrderAction
-                };
-
-                await cinerino.service.order.placeOrder(orderActionAttributes)({
-                    action: actionRepo,
-                    invoice: invoiceRepo,
-                    order: orderRepo,
-                    task: taskRepo,
-                    transaction: transactionRepo
-                });
-
-                // 注文配送を実行する
-                const sendOrderActionAttributes: cinerino.factory.action.transfer.send.order.IAttributes = {
-                    agent: order.seller,
-                    object: order,
-                    potentialActions: {
-                        sendEmailMessage: undefined
-                    },
-                    project: order.project,
-                    recipient: order.customer,
-                    typeOf: cinerino.factory.actionType.SendAction
-                };
-
-                const ownershipInfos = await cinerino.service.delivery.sendOrder(sendOrderActionAttributes)({
-                    action: actionRepo,
-                    order: orderRepo,
-                    ownershipInfo: ownershipInfoRepo,
-                    registerActionInProgress: registerActionInProgressRepo,
-                    task: taskRepo,
-                    transaction: transactionRepo
-                });
-                ownershipInfo = ownershipInfos[0];
-            } else {
-                throw new cinerino.factory.errors.ServiceUnavailable('Default seller undefined');
+            const project = await projectRepo.findById({ id: req.project.id });
+            if (typeof project.settings?.cognito?.customerUserPool?.id !== 'string') {
+                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satidfied');
             }
+            const personRepo = new cinerino.repository.Person({
+                userPoolId: project.settings.cognito.customerUserPool.id
+            });
+
+            const result = await cinerino.service.transaction.orderAccount.orderAccount({
+                project: { typeOf: project.typeOf, id: project.id },
+                agent: { typeOf: req.agent.typeOf, id: req.agent.id },
+                name: req.body.name,
+                accountType: req.params.accountType
+            })({
+                action: actionRepo,
+                confirmationNumber: confirmationNumberRepo,
+                orderNumber: orderNumberRepo,
+                ownershipInfo: ownershipInfoRepo,
+                person: personRepo,
+                registerActionInProgress: registerActionInProgressRepo,
+                project: projectRepo,
+                seller: sellerRepo,
+                transaction: transactionRepo
+            });
+
+            const order = result.order;
+
+            const orderActionAttributes: cinerino.factory.action.trade.order.IAttributes = {
+                agent: order.customer,
+                object: order,
+                potentialActions: {},
+                project: order.project,
+                typeOf: cinerino.factory.actionType.OrderAction
+            };
+
+            await cinerino.service.order.placeOrder(orderActionAttributes)({
+                action: actionRepo,
+                invoice: invoiceRepo,
+                order: orderRepo,
+                task: taskRepo,
+                transaction: transactionRepo
+            });
+
+            // 注文配送を実行する
+            const sendOrderActionAttributes: cinerino.factory.action.transfer.send.order.IAttributes = {
+                agent: order.seller,
+                object: order,
+                potentialActions: {
+                    sendEmailMessage: undefined
+                },
+                project: order.project,
+                recipient: order.customer,
+                typeOf: cinerino.factory.actionType.SendAction
+            };
+
+            const ownershipInfos = await cinerino.service.delivery.sendOrder(sendOrderActionAttributes)({
+                action: actionRepo,
+                order: orderRepo,
+                ownershipInfo: ownershipInfoRepo,
+                registerActionInProgress: registerActionInProgressRepo,
+                task: taskRepo,
+                transaction: transactionRepo
+            });
+            ownershipInfo = ownershipInfos[0];
 
             res.status(CREATED)
                 .json(ownershipInfo);
