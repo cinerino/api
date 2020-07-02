@@ -70,7 +70,8 @@ accountsRouter.post<ParamsDictionary>(
                 project: { typeOf: project.typeOf, id: project.id },
                 agent: { typeOf: req.agent.typeOf, id: req.agent.id },
                 name: req.body.name,
-                accountType: req.params.accountType
+                accountType: req.params.accountType,
+                location: { id: req.user.client_id }
             })({
                 action: actionRepo,
                 confirmationNumber: confirmationNumberRepo,

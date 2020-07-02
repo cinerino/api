@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- プロダクトオファー承認時に利用アプリケーションの検証を追加
+
 ### Changed
 
 - update @cinerino/domain
