@@ -21,40 +21,26 @@ const permitScopes_1 = require("../../../../middlewares/permitScopes");
 const rateLimit_1 = require("../../../../middlewares/rateLimit");
 const validator_1 = require("../../../../middlewares/validator");
 const redis = require("../../../../../redis");
-const USE_ORDER_AS_OPEN_ACCOUNT_RESPONSE = process.env.USE_ORDER_AS_OPEN_ACCOUNT_RESPONSE === '1';
-// const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-//     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-//     clientId: <string>process.env.CHEVRE_CLIENT_ID,
-//     clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-//     scopes: [],
-//     state: ''
-// });
 const accountsRouter = express_1.Router();
 /**
  * 口座開設
+ * @deprecated 注文取引サービスを使用すべし
  */
 // tslint:disable-next-line:use-default-type-parameter
 accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), rateLimit_1.default, ...[
     express_validator_1.body('name')
         .not()
         .isEmpty()
-        .withMessage((_, __) => 'required')
-], validator_1.default, 
-// tslint:disable-next-line:max-func-body-length
-(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        .withMessage(() => 'required')
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     try {
-        // tslint:disable-next-line:max-line-length
-        let ownershipInfo;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const registerActionInProgressRepo = new cinerino.repository.action.RegisterServiceInProgress(redis.getClient());
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        // const orderRepo = new cinerino.repository.Order(mongoose.connection);
-        // const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
-        // const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
         const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -81,64 +67,8 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
             seller: sellerRepo,
             transaction: transactionRepo
         });
-        const order = result.order;
-        // const orderActionAttributes: cinerino.factory.action.trade.order.IAttributes = {
-        //     agent: order.customer,
-        //     object: order,
-        //     potentialActions: {},
-        //     project: order.project,
-        //     typeOf: cinerino.factory.actionType.OrderAction
-        // };
-        // await cinerino.service.order.placeOrder(orderActionAttributes)({
-        //     action: actionRepo,
-        //     invoice: invoiceRepo,
-        //     order: orderRepo,
-        //     task: taskRepo,
-        //     transaction: transactionRepo
-        // });
-        // 注文配送を実行する
-        // const sendOrderActionAttributes: cinerino.factory.action.transfer.send.order.IAttributes = {
-        //     agent: order.seller,
-        //     object: order,
-        //     potentialActions: {
-        //         sendEmailMessage: undefined
-        //     },
-        //     project: order.project,
-        //     recipient: order.customer,
-        //     typeOf: cinerino.factory.actionType.SendAction
-        // };
-        // const ownershipInfos = await cinerino.service.delivery.sendOrder(sendOrderActionAttributes)({
-        //     action: actionRepo,
-        //     order: orderRepo,
-        //     ownershipInfo: ownershipInfoRepo,
-        //     registerActionInProgress: registerActionInProgressRepo,
-        //     task: taskRepo,
-        //     transaction: transactionRepo
-        // });
-        // ownershipInfo = ownershipInfos[0];
-        if (USE_ORDER_AS_OPEN_ACCOUNT_RESPONSE) {
-            res.status(http_status_1.CREATED)
-                .json({ order });
-        }
-        else {
-            const itemOffered = order.acceptedOffers[0].itemOffered;
-            ownershipInfo = {
-                project: order.project,
-                id: '',
-                typeOf: 'OwnershipInfo',
-                ownedBy: {
-                    typeOf: order.customer.typeOf,
-                    id: order.customer.id
-                },
-                ownedFrom: new Date(),
-                ownedThrough: new Date(),
-                typeOfGood: Object.assign({ typeOf: itemOffered.typeOf, accountNumber: itemOffered.accountNumber, accountType: itemOffered.accountType }, {
-                    identifier: itemOffered.identifier
-                })
-            };
-            res.status(http_status_1.CREATED)
-                .json(ownershipInfo);
-        }
+        res.status(http_status_1.CREATED)
+            .json(result);
     }
     catch (error) {
         next(error);

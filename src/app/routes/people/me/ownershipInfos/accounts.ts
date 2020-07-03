@@ -15,20 +15,11 @@ import validator from '../../../../middlewares/validator';
 
 import * as redis from '../../../../../redis';
 
-const USE_ORDER_AS_OPEN_ACCOUNT_RESPONSE = process.env.USE_ORDER_AS_OPEN_ACCOUNT_RESPONSE === '1';
-
-// const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-//     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-//     clientId: <string>process.env.CHEVRE_CLIENT_ID,
-//     clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-//     scopes: [],
-//     state: ''
-// });
-
 const accountsRouter = Router();
 
 /**
  * 口座開設
+ * @deprecated 注文取引サービスを使用すべし
  */
 // tslint:disable-next-line:use-default-type-parameter
 accountsRouter.post<ParamsDictionary>(
@@ -39,24 +30,17 @@ accountsRouter.post<ParamsDictionary>(
         body('name')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
+            .withMessage(() => 'required')
     ],
     validator,
-    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
-            // tslint:disable-next-line:max-line-length
-            let ownershipInfo: cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.ownershipInfo.AccountGoodType.Account>>;
-
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const registerActionInProgressRepo = new cinerino.repository.action.RegisterServiceInProgress(redis.getClient());
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-            // const orderRepo = new cinerino.repository.Order(mongoose.connection);
-            // const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
-            // const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
             const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
 
@@ -86,74 +70,8 @@ accountsRouter.post<ParamsDictionary>(
                 transaction: transactionRepo
             });
 
-            const order = result.order;
-
-            // const orderActionAttributes: cinerino.factory.action.trade.order.IAttributes = {
-            //     agent: order.customer,
-            //     object: order,
-            //     potentialActions: {},
-            //     project: order.project,
-            //     typeOf: cinerino.factory.actionType.OrderAction
-            // };
-
-            // await cinerino.service.order.placeOrder(orderActionAttributes)({
-            //     action: actionRepo,
-            //     invoice: invoiceRepo,
-            //     order: orderRepo,
-            //     task: taskRepo,
-            //     transaction: transactionRepo
-            // });
-
-            // 注文配送を実行する
-            // const sendOrderActionAttributes: cinerino.factory.action.transfer.send.order.IAttributes = {
-            //     agent: order.seller,
-            //     object: order,
-            //     potentialActions: {
-            //         sendEmailMessage: undefined
-            //     },
-            //     project: order.project,
-            //     recipient: order.customer,
-            //     typeOf: cinerino.factory.actionType.SendAction
-            // };
-
-            // const ownershipInfos = await cinerino.service.delivery.sendOrder(sendOrderActionAttributes)({
-            //     action: actionRepo,
-            //     order: orderRepo,
-            //     ownershipInfo: ownershipInfoRepo,
-            //     registerActionInProgress: registerActionInProgressRepo,
-            //     task: taskRepo,
-            //     transaction: transactionRepo
-            // });
-            // ownershipInfo = ownershipInfos[0];
-            if (USE_ORDER_AS_OPEN_ACCOUNT_RESPONSE) {
-                res.status(CREATED)
-                    .json({ order });
-            } else {
-                const itemOffered = <cinerino.factory.order.IServiceOutput>order.acceptedOffers[0].itemOffered;
-                ownershipInfo = {
-                    project: order.project,
-                    id: '',
-                    typeOf: 'OwnershipInfo',
-                    ownedBy: {
-                        typeOf: order.customer.typeOf,
-                        id: order.customer.id
-                    },
-                    ownedFrom: new Date(), // いったん値は適当
-                    ownedThrough: new Date(), // いったん値は適当
-                    typeOfGood: {
-                        typeOf: (<any>itemOffered).typeOf,
-                        accountNumber: (<any>itemOffered).accountNumber,
-                        accountType: (<any>itemOffered).accountType,
-                        // name: (<any>itemOffered).name,
-                        ...{
-                            identifier: <string>itemOffered.identifier
-                        }
-                    }
-                };
-
-                res.status(CREATED)
-                    .json(ownershipInfo);
-            }
+            res.status(CREATED)
+                .json(result);
         } catch (error) {
             next(error);
         }

@@ -17,7 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - update @cinerino/domain
 - 口座注文進行時に、プロダクトオファーから販売者を自動選択するように調整
-- 口座開設レスポンスを最適化
+- 口座開設レスポンスを口座注文取引結果に変更
 
 ### Deprecated
 
