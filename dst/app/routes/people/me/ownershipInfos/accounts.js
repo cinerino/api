@@ -115,6 +115,20 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
             transaction: transactionRepo
         });
         ownershipInfo = ownershipInfos[0];
+        const itemOffered = order.acceptedOffers[0].itemOffered;
+        ownershipInfo = {
+            project: order.project,
+            id: '',
+            typeOf: 'OwnershipInfo',
+            ownedBy: order.customer,
+            ownedFrom: new Date(),
+            ownedThrough: new Date(),
+            typeOfGood: Object.assign({ 
+                // project: order.project,
+                typeOf: itemOffered.typeOf, accountNumber: itemOffered.accountNumber, accountType: itemOffered.accountType }, {
+                identifier: itemOffered.identifier
+            })
+        };
         res.status(http_status_1.CREATED)
             .json(ownershipInfo);
     }

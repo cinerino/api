@@ -44,7 +44,7 @@ accountsRouter.post<ParamsDictionary>(
     async (req, res, next) => {
         try {
             // tslint:disable-next-line:max-line-length
-            let ownershipInfo: cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGoodWithDetail<cinerino.factory.ownershipInfo.AccountGoodType.Account>>;
+            let ownershipInfo: cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.ownershipInfo.AccountGoodType.Account>>;
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
@@ -123,6 +123,26 @@ accountsRouter.post<ParamsDictionary>(
                 transaction: transactionRepo
             });
             ownershipInfo = ownershipInfos[0];
+
+            const itemOffered = <cinerino.factory.order.IServiceOutput>order.acceptedOffers[0].itemOffered;
+            ownershipInfo = {
+                project: order.project,
+                id: '',
+                typeOf: 'OwnershipInfo',
+                ownedBy: order.customer,
+                ownedFrom: new Date(),
+                ownedThrough: new Date(),
+                typeOfGood: {
+                    // project: order.project,
+                    typeOf: (<any>itemOffered).typeOf,
+                    accountNumber: (<any>itemOffered).accountNumber,
+                    accountType: (<any>itemOffered).accountType,
+                    // name: (<any>itemOffered).name,
+                    ...{
+                        identifier: <string>itemOffered.identifier
+                    }
+                }
+            };
 
             res.status(CREATED)
                 .json(ownershipInfo);
