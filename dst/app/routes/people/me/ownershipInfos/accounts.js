@@ -51,9 +51,9 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
         const registerActionInProgressRepo = new cinerino.repository.action.RegisterServiceInProgress(redis.getClient());
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        const orderRepo = new cinerino.repository.Order(mongoose.connection);
-        const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
-        const taskRepo = new cinerino.repository.Task(mongoose.connection);
+        // const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        // const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
+        // const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
         const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -81,20 +81,20 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
             transaction: transactionRepo
         });
         const order = result.order;
-        const orderActionAttributes = {
-            agent: order.customer,
-            object: order,
-            potentialActions: {},
-            project: order.project,
-            typeOf: cinerino.factory.actionType.OrderAction
-        };
-        yield cinerino.service.order.placeOrder(orderActionAttributes)({
-            action: actionRepo,
-            invoice: invoiceRepo,
-            order: orderRepo,
-            task: taskRepo,
-            transaction: transactionRepo
-        });
+        // const orderActionAttributes: cinerino.factory.action.trade.order.IAttributes = {
+        //     agent: order.customer,
+        //     object: order,
+        //     potentialActions: {},
+        //     project: order.project,
+        //     typeOf: cinerino.factory.actionType.OrderAction
+        // };
+        // await cinerino.service.order.placeOrder(orderActionAttributes)({
+        //     action: actionRepo,
+        //     invoice: invoiceRepo,
+        //     order: orderRepo,
+        //     task: taskRepo,
+        //     transaction: transactionRepo
+        // });
         // 注文配送を実行する
         // const sendOrderActionAttributes: cinerino.factory.action.transfer.send.order.IAttributes = {
         //     agent: order.seller,
