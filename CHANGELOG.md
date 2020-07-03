@@ -8,16 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- プロダクトオファー承認時に利用アプリケーションの検証を追加
-- プロダクトオファー承認時に販売者の検証を追加
-- プロダクトオファー検索に販売者の検証を追加
-- USE_ORDER_AS_OPEN_ACCOUNT_RESPONSE設定を追加
-
 ### Changed
-
-- update @cinerino/domain
-- 口座注文進行時に、プロダクトオファーから販売者を自動選択するように調整
-- 口座開設レスポンスを口座注文取引結果に変更
 
 ### Deprecated
 
@@ -26,6 +17,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v5.15.0 - 2020-07-03
+
+### Added
+
+- プロダクトオファー承認時に利用アプリケーションの検証を追加
+- プロダクトオファー承認時に販売者の検証を追加
+- プロダクトオファー検索に販売者の検証を追加
+
+### Changed
+
+- update @cinerino/domain
+- 口座注文進行時に、プロダクトオファーから販売者を自動選択するように調整
+- 口座開設レスポンスを口座注文取引結果に変更
 
 ## v5.14.0 - 2020-06-30
 
