@@ -22,34 +22,23 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.CHEVRE_CLIENT_ID,
-    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
 // const CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP = process.env.CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP === '1';
 const me4cinemasunshineRouter = express_1.Router();
 /**
  * メンバーシップ登録
  */
 me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.default(['people.ownershipInfos', 'people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (typeof ((_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === null || _b === void 0 ? void 0 : _b.endpoint) !== 'string') {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
-        }
         const productId = req.body.programMembershipId;
-        const productService = new cinerino.chevre.service.Product({
-            endpoint: project.settings.chevre.endpoint,
-            auth: chevreAuthClient
-        });
-        const offers = yield productService.searchOffers({ id: productId });
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const offers = yield cinerino.service.offer.product.search({
+            project: { id: req.project.id },
+            itemOffered: { id: productId },
+            seller: { id: req.body.sellerId },
+            availableAt: { id: req.user.client_id }
+        })({ project: projectRepo });
         if (offers.length === 0) {
-            throw new cinerino.factory.errors.NotFound('offers');
+            throw new cinerino.factory.errors.NotFound('Offer');
         }
         // sskts専用なので、強制的に一つ目のオファーを選択
         const acceptedOffer = offers[0];

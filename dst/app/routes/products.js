@@ -72,8 +72,8 @@ productsRouter.get('/:id/offers', permitScopes_1.default(['products.*', 'product
         const offers = yield cinerino.service.offer.product.search({
             project: { id: req.project.id },
             itemOffered: { id: req.params.id },
-            seller: { id: (_b = req.query.seller) === null || _b === void 0 ? void 0 : _b.id }
-            // availableAt: {}
+            seller: { id: (_b = req.query.seller) === null || _b === void 0 ? void 0 : _b.id },
+            availableAt: { id: req.user.client_id }
         })({
             project: projectRepo
         });

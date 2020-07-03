@@ -13,14 +13,6 @@ import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.CHEVRE_CLIENT_ID,
-    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
-
 // const CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP = process.env.CHECK_CARD_BEFORE_REGISTER_PROGRAM_MEMBERSHIP === '1';
 
 const me4cinemasunshineRouter = Router();
@@ -35,22 +27,19 @@ me4cinemasunshineRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (typeof project.settings?.chevre?.endpoint !== 'string') {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
-            }
-
             const productId = <string>req.body.programMembershipId;
 
-            const productService = new cinerino.chevre.service.Product({
-                endpoint: project.settings.chevre.endpoint,
-                auth: chevreAuthClient
-            });
-            const offers = await productService.searchOffers({ id: productId });
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+
+            const offers = await cinerino.service.offer.product.search({
+                project: { id: req.project.id },
+                itemOffered: { id: productId },
+                seller: { id: req.body.sellerId },
+                availableAt: { id: req.user.client_id }
+            })({ project: projectRepo });
+
             if (offers.length === 0) {
-                throw new cinerino.factory.errors.NotFound('offers');
+                throw new cinerino.factory.errors.NotFound('Offer');
             }
 
             // sskts専用なので、強制的に一つ目のオファーを選択

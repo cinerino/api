@@ -23,7 +23,6 @@
 | `COA_ENDPOINT`                           | true     |                | COA endpoint                       |
 | `COA_REFRESH_TOKEN`                      | true     |                | COA refresh token                  |
 | `DEBUG`                                  | false    | cinerino-api:* | Debug                              |
-| `DEFAULT_ACCOUNT_SELLER`                 | true     |                | Default account seller ID          |
 | `DEBUG_SINGLETON_PROCESS`                | false    | 1 or 0         | Singleton Process Debug Flag       |
 | `IMPORT_EVENTS_PER_WEEKS`                | true     |                | イベントインポート処理単位期間     |
 | `JOBS_STOPPED`                           | true     | 1 or 0         | 非同期ジョブ停止フラグ             |
