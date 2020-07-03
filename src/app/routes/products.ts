@@ -86,8 +86,8 @@ productsRouter.get<ParamsDictionary>(
             const offers = await cinerino.service.offer.product.search({
                 project: { id: req.project.id },
                 itemOffered: { id: req.params.id },
-                seller: { id: req.query.seller?.id }
-                // availableAt: {}
+                seller: { id: req.query.seller?.id },
+                availableAt: { id: req.user.client_id }
             })({
                 project: projectRepo
             });
