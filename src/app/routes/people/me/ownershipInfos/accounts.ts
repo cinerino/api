@@ -15,6 +15,8 @@ import validator from '../../../../middlewares/validator';
 
 import * as redis from '../../../../../redis';
 
+const USE_ORDER_AS_OPEN_ACCOUNT_RESPONSE = process.env.USE_ORDER_AS_OPEN_ACCOUNT_RESPONSE === '1';
+
 // const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 //     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
 //     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -123,31 +125,35 @@ accountsRouter.post<ParamsDictionary>(
             //     transaction: transactionRepo
             // });
             // ownershipInfo = ownershipInfos[0];
-
-            const itemOffered = <cinerino.factory.order.IServiceOutput>order.acceptedOffers[0].itemOffered;
-            ownershipInfo = {
-                project: order.project,
-                id: '',
-                typeOf: 'OwnershipInfo',
-                ownedBy: {
-                    typeOf: order.customer.typeOf,
-                    id: order.customer.id
-                },
-                ownedFrom: new Date(), // いったん値は適当
-                ownedThrough: new Date(), // いったん値は適当
-                typeOfGood: {
-                    typeOf: (<any>itemOffered).typeOf,
-                    accountNumber: (<any>itemOffered).accountNumber,
-                    accountType: (<any>itemOffered).accountType,
-                    // name: (<any>itemOffered).name,
-                    ...{
-                        identifier: <string>itemOffered.identifier
+            if (USE_ORDER_AS_OPEN_ACCOUNT_RESPONSE) {
+                res.status(CREATED)
+                    .json({ order });
+            } else {
+                const itemOffered = <cinerino.factory.order.IServiceOutput>order.acceptedOffers[0].itemOffered;
+                ownershipInfo = {
+                    project: order.project,
+                    id: '',
+                    typeOf: 'OwnershipInfo',
+                    ownedBy: {
+                        typeOf: order.customer.typeOf,
+                        id: order.customer.id
+                    },
+                    ownedFrom: new Date(), // いったん値は適当
+                    ownedThrough: new Date(), // いったん値は適当
+                    typeOfGood: {
+                        typeOf: (<any>itemOffered).typeOf,
+                        accountNumber: (<any>itemOffered).accountNumber,
+                        accountType: (<any>itemOffered).accountType,
+                        // name: (<any>itemOffered).name,
+                        ...{
+                            identifier: <string>itemOffered.identifier
+                        }
                     }
-                }
-            };
+                };
 
-            res.status(CREATED)
-                .json(ownershipInfo);
+                res.status(CREATED)
+                    .json(ownershipInfo);
+            }
         } catch (error) {
             next(error);
         }

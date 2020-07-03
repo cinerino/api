@@ -21,6 +21,7 @@ const permitScopes_1 = require("../../../../middlewares/permitScopes");
 const rateLimit_1 = require("../../../../middlewares/rateLimit");
 const validator_1 = require("../../../../middlewares/validator");
 const redis = require("../../../../../redis");
+const USE_ORDER_AS_OPEN_ACCOUNT_RESPONSE = process.env.USE_ORDER_AS_OPEN_ACCOUNT_RESPONSE === '1';
 // const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 //     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
 //     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -115,23 +116,29 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
         //     transaction: transactionRepo
         // });
         // ownershipInfo = ownershipInfos[0];
-        const itemOffered = order.acceptedOffers[0].itemOffered;
-        ownershipInfo = {
-            project: order.project,
-            id: '',
-            typeOf: 'OwnershipInfo',
-            ownedBy: {
-                typeOf: order.customer.typeOf,
-                id: order.customer.id
-            },
-            ownedFrom: new Date(),
-            ownedThrough: new Date(),
-            typeOfGood: Object.assign({ typeOf: itemOffered.typeOf, accountNumber: itemOffered.accountNumber, accountType: itemOffered.accountType }, {
-                identifier: itemOffered.identifier
-            })
-        };
-        res.status(http_status_1.CREATED)
-            .json(ownershipInfo);
+        if (USE_ORDER_AS_OPEN_ACCOUNT_RESPONSE) {
+            res.status(http_status_1.CREATED)
+                .json({ order });
+        }
+        else {
+            const itemOffered = order.acceptedOffers[0].itemOffered;
+            ownershipInfo = {
+                project: order.project,
+                id: '',
+                typeOf: 'OwnershipInfo',
+                ownedBy: {
+                    typeOf: order.customer.typeOf,
+                    id: order.customer.id
+                },
+                ownedFrom: new Date(),
+                ownedThrough: new Date(),
+                typeOfGood: Object.assign({ typeOf: itemOffered.typeOf, accountNumber: itemOffered.accountNumber, accountType: itemOffered.accountType }, {
+                    identifier: itemOffered.identifier
+                })
+            };
+            res.status(http_status_1.CREATED)
+                .json(ownershipInfo);
+        }
     }
     catch (error) {
         next(error);
