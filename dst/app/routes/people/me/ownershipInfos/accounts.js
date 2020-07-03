@@ -96,36 +96,37 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
             transaction: transactionRepo
         });
         // 注文配送を実行する
-        const sendOrderActionAttributes = {
-            agent: order.seller,
-            object: order,
-            potentialActions: {
-                sendEmailMessage: undefined
-            },
-            project: order.project,
-            recipient: order.customer,
-            typeOf: cinerino.factory.actionType.SendAction
-        };
-        const ownershipInfos = yield cinerino.service.delivery.sendOrder(sendOrderActionAttributes)({
-            action: actionRepo,
-            order: orderRepo,
-            ownershipInfo: ownershipInfoRepo,
-            registerActionInProgress: registerActionInProgressRepo,
-            task: taskRepo,
-            transaction: transactionRepo
-        });
-        ownershipInfo = ownershipInfos[0];
+        // const sendOrderActionAttributes: cinerino.factory.action.transfer.send.order.IAttributes = {
+        //     agent: order.seller,
+        //     object: order,
+        //     potentialActions: {
+        //         sendEmailMessage: undefined
+        //     },
+        //     project: order.project,
+        //     recipient: order.customer,
+        //     typeOf: cinerino.factory.actionType.SendAction
+        // };
+        // const ownershipInfos = await cinerino.service.delivery.sendOrder(sendOrderActionAttributes)({
+        //     action: actionRepo,
+        //     order: orderRepo,
+        //     ownershipInfo: ownershipInfoRepo,
+        //     registerActionInProgress: registerActionInProgressRepo,
+        //     task: taskRepo,
+        //     transaction: transactionRepo
+        // });
+        // ownershipInfo = ownershipInfos[0];
         const itemOffered = order.acceptedOffers[0].itemOffered;
         ownershipInfo = {
             project: order.project,
             id: '',
             typeOf: 'OwnershipInfo',
-            ownedBy: order.customer,
+            ownedBy: {
+                typeOf: order.customer.typeOf,
+                id: order.customer.id
+            },
             ownedFrom: new Date(),
             ownedThrough: new Date(),
-            typeOfGood: Object.assign({ 
-                // project: order.project,
-                typeOf: itemOffered.typeOf, accountNumber: itemOffered.accountNumber, accountType: itemOffered.accountType }, {
+            typeOfGood: Object.assign({ typeOf: itemOffered.typeOf, accountNumber: itemOffered.accountNumber, accountType: itemOffered.accountType }, {
                 identifier: itemOffered.identifier
             })
         };
