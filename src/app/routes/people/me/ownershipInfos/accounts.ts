@@ -40,6 +40,7 @@ accountsRouter.post<ParamsDictionary>(
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const registerActionInProgressRepo = new cinerino.repository.action.RegisterServiceInProgress(redis.getClient());
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+            const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
             const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
@@ -69,6 +70,29 @@ accountsRouter.post<ParamsDictionary>(
                 seller: sellerRepo,
                 transaction: transactionRepo
             });
+
+            // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
+            // tslint:disable-next-line:no-floating-promises
+            cinerino.service.transaction.exportTasks({
+                project: req.project,
+                status: cinerino.factory.transactionStatusType.Confirmed,
+                typeOf: { $in: [cinerino.factory.transactionType.PlaceOrder] }
+            })({
+                project: projectRepo,
+                task: taskRepo,
+                transaction: transactionRepo
+            })
+                .then(async (tasks) => {
+                    // タスクがあればすべて実行
+                    if (Array.isArray(tasks)) {
+                        await Promise.all(tasks.map(async (task) => {
+                            await cinerino.service.task.executeByName(task)({
+                                connection: mongoose.connection,
+                                redisClient: redis.getClient()
+                            });
+                        }));
+                    }
+                });
 
             res.status(CREATED)
                 .json(result);

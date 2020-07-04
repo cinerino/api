@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 口座注文後に取引タスクを非同期で実行するように調整
+
 ### Deprecated
 
 ### Removed
