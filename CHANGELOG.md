@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.15.2 - 2020-07-04
+
+### Changed
+
+- 口座注文後に取引タスクを非同期で実行するように調整
+
 ## v5.15.1 - 2020-07-04
 
 ### Changed
