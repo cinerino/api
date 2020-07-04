@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.15.3 - 2020-07-04
+
+### Changed
+
+- プロダクトオファー検索に販売期間の検証を追加
+
 ## v5.15.2 - 2020-07-04
 
 ### Changed
