@@ -37,6 +37,7 @@ const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials
  * 座席仮予約
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['transactions', 'pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         if (!Array.isArray(req.body.offers)) {
@@ -46,8 +47,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
         const offers = req.body.offers;
         // チケットオファー検索
         const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined
-            || project.settings.chevre === undefined) {
+        if (typeof ((_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === null || _b === void 0 ? void 0 : _b.endpoint) !== 'string') {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
         }
         const eventService = new cinerino.chevre.service.Event({
@@ -66,7 +66,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
                 itemOffered: {
                     serviceOutput: {
                         typeOf: cinerino.factory.chevre.reservationType.EventReservation,
-                        additionalTicketText: offer.watcher_name // 予約メモ
+                        additionalTicketText: (typeof offer.watcher_name === 'string') ? offer.watcher_name : ''
                     }
                 },
                 additionalProperty: []

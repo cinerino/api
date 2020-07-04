@@ -29,13 +29,13 @@ const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials
 
 export interface IAcceptedOffer4ttts {
     /**
-     * チケットコード(オファーIDではない)
+     * オファーコード(オファーIDではない)
      */
-    ticket_type: string;
+    ticket_type?: string;
     /**
      * 予約メモ
      */
-    watcher_name: string;
+    watcher_name?: string;
 }
 
 /**
@@ -58,8 +58,7 @@ placeOrderTransactionsRouter.post(
 
             // チケットオファー検索
             const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined
-                || project.settings.chevre === undefined) {
+            if (typeof project.settings?.chevre?.endpoint !== 'string') {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
             const eventService = new cinerino.chevre.service.Event({
@@ -81,7 +80,7 @@ placeOrderTransactionsRouter.post(
                         itemOffered: {
                             serviceOutput: {
                                 typeOf: cinerino.factory.chevre.reservationType.EventReservation,
-                                additionalTicketText: offer.watcher_name // 予約メモ
+                                additionalTicketText: (typeof offer.watcher_name === 'string') ? offer.watcher_name : ''
                             }
                         },
                         additionalProperty: []
