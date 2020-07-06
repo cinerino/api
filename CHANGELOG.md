@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- ポイントインセンティブ承認からnotesの指定を復元
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v5.15.5 - 2020-07-06
+
+### Changed
+
+- ポイントインセンティブ承認からnotesの指定を復元
 
 ## v5.15.4 - 2020-07-06
 
