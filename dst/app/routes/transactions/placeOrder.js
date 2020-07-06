@@ -440,10 +440,9 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accou
 }));
 // tslint:disable-next-line:max-func-body-length
 function authorizePointAward(req) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e, _f;
     return __awaiter(this, void 0, void 0, function* () {
         const now = new Date();
-        const notes = req.body.notes;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -471,57 +470,49 @@ function authorizePointAward(req) {
                 const membershipServiceId = (_c = programMembership.membershipFor) === null || _c === void 0 ? void 0 : _c.id;
                 const membershipService = yield productService.findById({ id: membershipServiceId });
                 // 登録時の獲得ポイント
-                let membershipServiceOutput = membershipService.serviceOutput;
-                // 元々配列型だったので、互換性維持対応として
-                if (!Array.isArray(membershipServiceOutput)) {
-                    membershipServiceOutput = [membershipServiceOutput];
-                }
-                if (Array.isArray(membershipServiceOutput)) {
-                    yield Promise.all(membershipServiceOutput
-                        .map((serviceOutput) => __awaiter(this, void 0, void 0, function* () {
-                        var _d, _e, _f;
-                        const membershipPointsEarnedName = (_d = serviceOutput.membershipPointsEarned) === null || _d === void 0 ? void 0 : _d.name;
-                        const membershipPointsEarnedValue = (_e = serviceOutput.membershipPointsEarned) === null || _e === void 0 ? void 0 : _e.value;
-                        const membershipPointsEarnedUnitText = (_f = serviceOutput.membershipPointsEarned) === null || _f === void 0 ? void 0 : _f.unitText;
-                        if (typeof membershipPointsEarnedValue === 'number' && typeof membershipPointsEarnedUnitText === 'string') {
-                            // 所有口座を検索
-                            // 最も古い所有口座をデフォルト口座として扱う使用なので、ソート条件はこの通り
-                            let accountOwnershipInfos = yield cinerino.service.account.search({
-                                project: { typeOf: req.project.typeOf, id: req.project.id },
-                                conditions: {
-                                    sort: { ownedFrom: cinerino.factory.sortType.Ascending },
-                                    limit: 1,
-                                    typeOfGood: {
-                                        typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
-                                        accountType: membershipPointsEarnedUnitText
-                                    },
-                                    ownedBy: { id: req.agent.id },
-                                    ownedFrom: now,
-                                    ownedThrough: now
-                                }
-                            })({
-                                ownershipInfo: ownershipInfoRepo,
-                                project: projectRepo
-                            });
-                            // 開設口座に絞る
-                            accountOwnershipInfos = accountOwnershipInfos.filter((o) => o.typeOfGood.status === cinerino.factory.pecorino.accountStatusType.Opened);
-                            if (accountOwnershipInfos.length === 0) {
-                                throw new cinerino.factory.errors.NotFound('accountOwnershipInfos');
+                const membershipServiceOutput = membershipService.serviceOutput;
+                if (membershipServiceOutput !== undefined) {
+                    const membershipPointsEarnedName = (_d = membershipServiceOutput.membershipPointsEarned) === null || _d === void 0 ? void 0 : _d.name;
+                    const membershipPointsEarnedValue = (_e = membershipServiceOutput.membershipPointsEarned) === null || _e === void 0 ? void 0 : _e.value;
+                    const membershipPointsEarnedUnitText = (_f = membershipServiceOutput.membershipPointsEarned) === null || _f === void 0 ? void 0 : _f.unitText;
+                    if (typeof membershipPointsEarnedValue === 'number' && typeof membershipPointsEarnedUnitText === 'string') {
+                        // 所有口座を検索
+                        // 最も古い所有口座をデフォルト口座として扱う使用なので、ソート条件はこの通り
+                        let accountOwnershipInfos = yield cinerino.service.account.search({
+                            project: { typeOf: req.project.typeOf, id: req.project.id },
+                            conditions: {
+                                sort: { ownedFrom: cinerino.factory.sortType.Ascending },
+                                limit: 1,
+                                typeOfGood: {
+                                    typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                                    accountType: membershipPointsEarnedUnitText
+                                },
+                                ownedBy: { id: req.agent.id },
+                                ownedFrom: now,
+                                ownedThrough: now
                             }
-                            const toAccount = accountOwnershipInfos[0].typeOfGood;
-                            givePointAwardParams.push({
-                                object: {
-                                    typeOf: cinerino.factory.action.authorize.award.point.ObjectType.PointAward,
-                                    amount: membershipPointsEarnedValue,
-                                    toLocation: {
-                                        accountType: membershipPointsEarnedUnitText,
-                                        accountNumber: toAccount.accountNumber
-                                    },
-                                    description: (typeof notes === 'string') ? notes : membershipPointsEarnedName
-                                }
-                            });
+                        })({
+                            ownershipInfo: ownershipInfoRepo,
+                            project: projectRepo
+                        });
+                        // 開設口座に絞る
+                        accountOwnershipInfos = accountOwnershipInfos.filter((o) => o.typeOfGood.status === cinerino.factory.pecorino.accountStatusType.Opened);
+                        if (accountOwnershipInfos.length === 0) {
+                            throw new cinerino.factory.errors.NotFound('accountOwnershipInfos');
                         }
-                    })));
+                        const toAccount = accountOwnershipInfos[0].typeOfGood;
+                        givePointAwardParams.push({
+                            object: {
+                                typeOf: cinerino.factory.action.authorize.award.point.ObjectType.PointAward,
+                                amount: membershipPointsEarnedValue,
+                                toLocation: {
+                                    accountType: membershipPointsEarnedUnitText,
+                                    accountNumber: toAccount.accountNumber
+                                },
+                                description: (typeof membershipPointsEarnedName === 'string') ? membershipPointsEarnedName : ''
+                            }
+                        });
+                    }
                 }
             }
             yield cinerino.service.transaction.placeOrderInProgress.authorizeAward({
