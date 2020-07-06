@@ -247,7 +247,6 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
                         })
                         : [],
                     ...(typeof req.body.object.name === 'string') ? { name: <string>req.body.object.name } : undefined,
-                    // ...(typeof req.body.object.notes === 'string') ? { notes: <string>req.body.object.notes } : undefined,
                     ...(fromLocation !== undefined) ? { fromLocation } : {}
                     // ...(toLocation !== undefined) ? { toLocation } : {}
                 },

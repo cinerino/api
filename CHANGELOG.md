@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.15.4 - 2020-07-06
+
+### Changed
+
+- ポイントインセンティブ承認からnotesの指定を削除
+
 ## v5.15.3 - 2020-07-04
 
 ### Changed
