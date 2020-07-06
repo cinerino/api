@@ -443,6 +443,7 @@ function authorizePointAward(req) {
     var _a, _b, _c, _d, _e, _f;
     return __awaiter(this, void 0, void 0, function* () {
         const now = new Date();
+        const notes = req.body.notes;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -509,7 +510,7 @@ function authorizePointAward(req) {
                                     accountType: membershipPointsEarnedUnitText,
                                     accountNumber: toAccount.accountNumber
                                 },
-                                description: (typeof membershipPointsEarnedName === 'string') ? membershipPointsEarnedName : ''
+                                description: (typeof notes === 'string') ? notes : String(membershipPointsEarnedName)
                             }
                         });
                     }

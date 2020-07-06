@@ -534,6 +534,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
 // tslint:disable-next-line:max-func-body-length
 export async function authorizePointAward(req: Request) {
     const now = new Date();
+    const notes = req.body.notes;
 
     const actionRepo = new cinerino.repository.Action(mongoose.connection);
     const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
@@ -616,7 +617,7 @@ export async function authorizePointAward(req: Request) {
                                 accountType: membershipPointsEarnedUnitText,
                                 accountNumber: toAccount.accountNumber
                             },
-                            description: (typeof membershipPointsEarnedName === 'string') ? membershipPointsEarnedName : ''
+                            description: (typeof notes === 'string') ? notes : String(membershipPointsEarnedName)
                         }
                     });
                 }
