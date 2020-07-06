@@ -14,7 +14,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
@@ -31,15 +30,9 @@ const programMembershipsRouter = express_1.Router();
  * @deprecated ssktsでのみ仕様可能
  */
 programMembershipsRouter.get('', permitScopes_1.default(['products.*', 'products.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (typeof ((_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === null || _b === void 0 ? void 0 : _b.endpoint) !== 'string') {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
-        }
         const productService = new cinerino.chevre.service.Product({
-            endpoint: project.settings.chevre.endpoint,
+            endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
         const searchResult = yield productService.search(Object.assign({ project: { id: { $eq: req.project.id } }, typeOf: { $eq: cinerino.service.offer.product.ProductType.MembershipService } }, {

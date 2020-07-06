@@ -709,7 +709,6 @@ ordersRouter.post<ParamsDictionary>(
             const now = new Date();
 
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
 
             const customer = req.body.customer;
             if (customer.email !== undefined && customer.telephone !== undefined) {
@@ -750,14 +749,8 @@ ordersRouter.post<ParamsDictionary>(
                 .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
                 .map((o) => <string>(<EventReservationGoodType>o.typeOfGood).id);
 
-            if (project.settings === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-            }
-            if (project.settings.chevre === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-            }
             const reservationService = new cinerino.chevre.service.Reservation({
-                endpoint: project.settings.chevre.endpoint,
+                endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
             const searchReservationsResult = await reservationService.search<cinerino.factory.chevre.reservationType.EventReservation>({

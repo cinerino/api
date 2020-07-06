@@ -35,18 +35,12 @@ productsRouter.get('', permitScopes_1.default(['products.*', 'products.read']), 
         .not()
         .isEmpty()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (((_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
-        }
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined });
         const productService = new cinerino.chevre.service.Product({
-            endpoint: project.settings.chevre.endpoint,
+            endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
         const { data } = yield productService.search(searchConditions);
@@ -66,13 +60,13 @@ productsRouter.get('/:id/offers', permitScopes_1.default(['products.*', 'product
         .isEmpty()
         .withMessage(() => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+    var _a;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const offers = yield cinerino.service.offer.product.search({
             project: { id: req.project.id },
             itemOffered: { id: req.params.id },
-            seller: { id: (_b = req.query.seller) === null || _b === void 0 ? void 0 : _b.id },
+            seller: { id: (_a = req.query.seller) === null || _a === void 0 ? void 0 : _a.id },
             availableAt: { id: req.user.client_id }
         })({
             project: projectRepo

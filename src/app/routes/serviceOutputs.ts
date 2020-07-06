@@ -4,7 +4,6 @@
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // import { query } from 'express-validator';
-import * as mongoose from 'mongoose';
 
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
@@ -35,12 +34,6 @@ serviceOutputsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings?.chevre === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
-            }
-
             const searchConditions: any = {
                 ...req.query,
                 project: { id: { $eq: req.project.id } },
@@ -50,7 +43,7 @@ serviceOutputsRouter.get(
             };
 
             const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
-                endpoint: project.settings.chevre.endpoint,
+                endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
             const { data } = await serviceOutputService.search(searchConditions);

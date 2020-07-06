@@ -103,16 +103,10 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
  * IDでイベント検索
  */
 eventsRouter.get('/:id', permitScopes_1.default(['events.*', 'events.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         let event;
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (((_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
-        }
         const eventService = new cinerino.chevre.service.Event({
-            endpoint: project.settings.chevre.endpoint,
+            endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
         event = yield eventService.findById({ id: req.params.id });
@@ -173,15 +167,9 @@ eventsRouter.get('/:id/offers/ticket', permitScopes_1.default(['events.*', 'even
  * イベントに対する座席検索
  */
 eventsRouter.get('/:id/seats', permitScopes_1.default(['events.*', 'events.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (((_b = project.settings) === null || _b === void 0 ? void 0 : _b.chevre) === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
-        }
         const eventService = new cinerino.chevre.service.Event({
-            endpoint: project.settings.chevre.endpoint,
+            endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
         const seats = yield eventService.searchSeats(Object.assign(Object.assign({}, req.query), { id: req.params.id }));

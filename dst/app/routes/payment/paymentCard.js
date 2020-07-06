@@ -38,15 +38,9 @@ const paymentCardPaymentRouter = express_1.Router();
  * カード照会
  */
 paymentCardPaymentRouter.post('/check', permitScopes_1.default(['transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (typeof ((_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === null || _b === void 0 ? void 0 : _b.endpoint) !== 'string') {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-        }
         const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
-            endpoint: project.settings.chevre.endpoint,
+            endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
         const searchPaymentCardResult = yield serviceOutputService.search({
@@ -109,7 +103,6 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
 }), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d;
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -135,12 +128,8 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
             const accessCode = fromLocation === null || fromLocation === void 0 ? void 0 : fromLocation.accessCode;
             if (typeof accessCode === 'string') {
                 // アクセスコード情報があれば、認証
-                const project = yield projectRepo.findById({ id: req.project.id });
-                if (typeof ((_d = (_c = project.settings) === null || _c === void 0 ? void 0 : _c.chevre) === null || _d === void 0 ? void 0 : _d.endpoint) !== 'string') {
-                    throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-                }
                 const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
-                    endpoint: project.settings.chevre.endpoint,
+                    endpoint: cinerino.credentials.chevre.endpoint,
                     auth: chevreAuthClient
                 });
                 const searchPaymentCardResult = yield serviceOutputService.search({

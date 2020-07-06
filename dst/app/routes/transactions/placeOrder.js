@@ -440,7 +440,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accou
 }));
 // tslint:disable-next-line:max-func-body-length
 function authorizePointAward(req) {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
         const now = new Date();
         const notes = req.body.notes;
@@ -448,12 +448,8 @@ function authorizePointAward(req) {
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (typeof ((_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === null || _b === void 0 ? void 0 : _b.endpoint) !== 'string') {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
-        }
         const productService = new cinerino.chevre.service.Product({
-            endpoint: project.settings.chevre.endpoint,
+            endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
         // 所有メンバーシップを検索
@@ -468,14 +464,14 @@ function authorizePointAward(req) {
         if (programMemberships.length > 0) {
             const givePointAwardParams = [];
             for (const programMembership of programMemberships) {
-                const membershipServiceId = (_c = programMembership.membershipFor) === null || _c === void 0 ? void 0 : _c.id;
+                const membershipServiceId = (_a = programMembership.membershipFor) === null || _a === void 0 ? void 0 : _a.id;
                 const membershipService = yield productService.findById({ id: membershipServiceId });
                 // 登録時の獲得ポイント
                 const membershipServiceOutput = membershipService.serviceOutput;
                 if (membershipServiceOutput !== undefined) {
-                    const membershipPointsEarnedName = (_d = membershipServiceOutput.membershipPointsEarned) === null || _d === void 0 ? void 0 : _d.name;
-                    const membershipPointsEarnedValue = (_e = membershipServiceOutput.membershipPointsEarned) === null || _e === void 0 ? void 0 : _e.value;
-                    const membershipPointsEarnedUnitText = (_f = membershipServiceOutput.membershipPointsEarned) === null || _f === void 0 ? void 0 : _f.unitText;
+                    const membershipPointsEarnedName = (_b = membershipServiceOutput.membershipPointsEarned) === null || _b === void 0 ? void 0 : _b.name;
+                    const membershipPointsEarnedValue = (_c = membershipServiceOutput.membershipPointsEarned) === null || _c === void 0 ? void 0 : _c.value;
+                    const membershipPointsEarnedUnitText = (_d = membershipServiceOutput.membershipPointsEarned) === null || _d === void 0 ? void 0 : _d.unitText;
                     if (typeof membershipPointsEarnedValue === 'number' && typeof membershipPointsEarnedUnitText === 'string') {
                         // 所有口座を検索
                         // 最も古い所有口座をデフォルト口座として扱う使用なので、ソート条件はこの通り

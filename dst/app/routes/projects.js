@@ -65,11 +65,6 @@ rateLimit_1.default, ...[
         .isEmpty()
         .withMessage(() => 'required')
         .isString(),
-    express_validator_1.body('settings.chevre.endpoint')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-        .isString(),
     express_validator_1.body('settings.cognito.adminUserPool.id')
         .not()
         .isEmpty()
@@ -101,11 +96,6 @@ rateLimit_1.default, ...[
     //     .withMessage(() => 'required')
     //     .isString(),
     express_validator_1.body('settings.mvtkReserve.endpoint')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-        .isString(),
-    express_validator_1.body('settings.pecorino.endpoint')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
@@ -162,37 +152,30 @@ rateLimit_1.default, ...[
     }
 }));
 function createFromBody(params) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v;
     return Object.assign({ id: params.id, typeOf: params.typeOf, logo: params.logo, name: params.name, parentOrganization: params.parentOrganization, settings: {
-            chevre: {
-                endpoint: (_b = (_a = params.settings) === null || _a === void 0 ? void 0 : _a.chevre) === null || _b === void 0 ? void 0 : _b.endpoint
-            },
             cognito: {
                 adminUserPool: {
-                    id: (_e = (_d = (_c = params.settings) === null || _c === void 0 ? void 0 : _c.cognito) === null || _d === void 0 ? void 0 : _d.adminUserPool) === null || _e === void 0 ? void 0 : _e.id
+                    id: (_c = (_b = (_a = params.settings) === null || _a === void 0 ? void 0 : _a.cognito) === null || _b === void 0 ? void 0 : _b.adminUserPool) === null || _c === void 0 ? void 0 : _c.id
                 },
                 customerUserPool: {
-                    id: (_h = (_g = (_f = params.settings) === null || _f === void 0 ? void 0 : _f.cognito) === null || _g === void 0 ? void 0 : _g.customerUserPool) === null || _h === void 0 ? void 0 : _h.id
+                    id: (_f = (_e = (_d = params.settings) === null || _d === void 0 ? void 0 : _d.cognito) === null || _e === void 0 ? void 0 : _e.customerUserPool) === null || _f === void 0 ? void 0 : _f.id
                 }
             },
             gmo: {
-                endpoint: (_k = (_j = params.settings) === null || _j === void 0 ? void 0 : _j.gmo) === null || _k === void 0 ? void 0 : _k.endpoint,
-                siteId: (_m = (_l = params.settings) === null || _l === void 0 ? void 0 : _l.gmo) === null || _m === void 0 ? void 0 : _m.siteId,
-                sitePass: (_p = (_o = params.settings) === null || _o === void 0 ? void 0 : _o.gmo) === null || _p === void 0 ? void 0 : _p.sitePass
+                endpoint: (_h = (_g = params.settings) === null || _g === void 0 ? void 0 : _g.gmo) === null || _h === void 0 ? void 0 : _h.endpoint,
+                siteId: (_k = (_j = params.settings) === null || _j === void 0 ? void 0 : _j.gmo) === null || _k === void 0 ? void 0 : _k.siteId,
+                sitePass: (_m = (_l = params.settings) === null || _l === void 0 ? void 0 : _l.gmo) === null || _m === void 0 ? void 0 : _m.sitePass
             },
             mvtkReserve: {
-                companyCode: (typeof ((_r = (_q = params.settings) === null || _q === void 0 ? void 0 : _q.mvtkReserve) === null || _r === void 0 ? void 0 : _r.companyCode) === 'string')
-                    ? (_t = (_s = params.settings) === null || _s === void 0 ? void 0 : _s.mvtkReserve) === null || _t === void 0 ? void 0 : _t.companyCode : '',
-                endpoint: (_v = (_u = params.settings) === null || _u === void 0 ? void 0 : _u.mvtkReserve) === null || _v === void 0 ? void 0 : _v.endpoint
-            },
-            pecorino: {
-                endpoint: (_x = (_w = params.settings) === null || _w === void 0 ? void 0 : _w.pecorino) === null || _x === void 0 ? void 0 : _x.endpoint
+                companyCode: (typeof ((_p = (_o = params.settings) === null || _o === void 0 ? void 0 : _o.mvtkReserve) === null || _p === void 0 ? void 0 : _p.companyCode) === 'string')
+                    ? (_r = (_q = params.settings) === null || _q === void 0 ? void 0 : _q.mvtkReserve) === null || _r === void 0 ? void 0 : _r.companyCode : '',
+                endpoint: (_t = (_s = params.settings) === null || _s === void 0 ? void 0 : _s.mvtkReserve) === null || _t === void 0 ? void 0 : _t.endpoint
             },
             onOrderStatusChanged: {},
             codeExpiresInSeconds: 600,
-            sendgridApiKey: (_y = params.settings) === null || _y === void 0 ? void 0 : _y.sendgridApiKey,
-            transactionWebhookUrl: (_z = params.settings) === null || _z === void 0 ? void 0 : _z.transactionWebhookUrl,
-            useInMemoryOfferRepo: false,
+            sendgridApiKey: (_u = params.settings) === null || _u === void 0 ? void 0 : _u.sendgridApiKey,
+            transactionWebhookUrl: (_v = params.settings) === null || _v === void 0 ? void 0 : _v.transactionWebhookUrl,
             useReservationNumberAsConfirmationNumber: false,
             useUsernameAsGMOMemberId: false
         } }, {

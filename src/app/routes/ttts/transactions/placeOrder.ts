@@ -47,8 +47,6 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
             if (!Array.isArray(req.body.offers)) {
                 req.body.offers = [];
             }
@@ -57,12 +55,8 @@ placeOrderTransactionsRouter.post(
             const offers: IAcceptedOffer4ttts[] = req.body.offers;
 
             // チケットオファー検索
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (typeof project.settings?.chevre?.endpoint !== 'string') {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-            }
             const eventService = new cinerino.chevre.service.Event({
-                endpoint: project.settings.chevre.endpoint,
+                endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
             const ticketOffers = await eventService.searchTicketOffers({ id: eventId });

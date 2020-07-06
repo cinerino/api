@@ -114,8 +114,6 @@ ownershipInfosRouter.post(
             const codeRepo = new cinerino.repository.Code(mongoose.connection);
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
 
-            const project = await projectRepo.findById({ id: req.project.id });
-
             const ownershipInfo = await ownershipInfoRepo.findById({ id: req.params.id });
             if (ownershipInfo.ownedBy.id !== req.user.sub) {
                 throw new cinerino.factory.errors.Unauthorized();
@@ -137,15 +135,8 @@ ownershipInfosRouter.post(
 
             // 座席予約に対する所有権であれば、Chevreでチェックイン
             if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
-                if (project.settings === undefined) {
-                    throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-                }
-                if (project.settings.chevre === undefined) {
-                    throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-                }
-
                 const reservationService = new cinerino.chevre.service.Reservation({
-                    endpoint: project.settings.chevre.endpoint,
+                    endpoint: cinerino.credentials.chevre.endpoint,
                     auth: chevreAuthClient
                 });
                 await reservationService.checkInScreeningEventReservations({ id: ownershipInfo.typeOfGood.id });
