@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.16.1 - 2020-07-07
+
+### Added
+
+- プロジェクト更新時に不要な属性を削除するように調整
+
 ## v5.16.0 - 2020-07-07
 
 ### Changed
