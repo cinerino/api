@@ -294,7 +294,14 @@ projectsRouter.patch(
                         : undefined,
                     ...(typeof req.body.settings?.transactionWebhookUrl === 'string')
                         ? { 'settings.transactionWebhookUrl': req.body.settings?.transactionWebhookUrl }
-                        : undefined
+                        : undefined,
+                    // 機能改修で不要になった属性を削除
+                    $unset: {
+                        'settings.chevre': 1,
+                        'settings.pecorino': 1,
+                        'settings.useInMemoryOfferRepo': 1,
+                        'settings.emailInformUpdateProgrammembership': 1
+                    }
                 }
             )
                 .exec();

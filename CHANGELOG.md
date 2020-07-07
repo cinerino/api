@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- プロジェクト更新時に不要な属性を削除するように調整
+
 ### Changed
 
 ### Deprecated
