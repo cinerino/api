@@ -14,7 +14,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-const mongoose = require("mongoose");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
@@ -31,16 +30,8 @@ const movieRouter = express_1.Router();
  */
 movieRouter.get('', permitScopes_1.default(['creativeWorks.*', 'creativeWorks.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
-        if (project.settings.chevre === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-        }
         const creativeWorkService = new cinerino.chevre.service.CreativeWork({
-            endpoint: project.settings.chevre.endpoint,
+            endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
         const { totalCount, data } = yield creativeWorkService.searchMovies(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] } }));

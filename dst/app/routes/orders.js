@@ -608,7 +608,6 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
     try {
         const now = new Date();
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
         const customer = req.body.customer;
         if (customer.email !== undefined && customer.telephone !== undefined) {
             throw new cinerino.factory.errors.Argument('customer');
@@ -640,14 +639,8 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
         const reservationIds = ownershipInfos
             .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
             .map((o) => o.typeOfGood.id);
-        if (project.settings === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
-        if (project.settings.chevre === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-        }
         const reservationService = new cinerino.chevre.service.Reservation({
-            endpoint: project.settings.chevre.endpoint,
+            endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
         const searchReservationsResult = yield reservationService.search({

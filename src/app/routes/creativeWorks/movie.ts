@@ -3,7 +3,6 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
-import * as mongoose from 'mongoose';
 
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
@@ -29,17 +28,8 @@ movieRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-            }
-            if (project.settings.chevre === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-            }
-
             const creativeWorkService = new cinerino.chevre.service.CreativeWork({
-                endpoint: project.settings.chevre.endpoint,
+                endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
             const { totalCount, data } = await creativeWorkService.searchMovies({

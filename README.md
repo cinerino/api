@@ -17,9 +17,10 @@
 | `AWS_SECRET_ACCESS_KEY`                  | true     |                | AWS secret access key              |
 | `BASIC_AUTH_NAME`                        | false    |                | Basic authentication user name     |
 | `BASIC_AUTH_PASS`                        | false    |                | Basic authentication user password |
-| `CHEVRE_AUTHORIZE_SERVER_DOMAIN`         | true     |                | Chevre authorize server domain     |
-| `CHEVRE_CLIENT_ID`                       | true     |                | Chevre client id                   |
-| `CHEVRE_CLIENT_SECRET`                   | true     |                | Chevre client secret               |
+| `CHEVRE_AUTHORIZE_SERVER_DOMAIN`         | true     |                | Chevre credentials                 |
+| `CHEVRE_CLIENT_ID`                       | true     |                | Chevre credentials                 |
+| `CHEVRE_CLIENT_SECRET`                   | true     |                | Chevre credentials                 |
+| `CHEVRE_ENDPOINT`                        | true     |                | Chevre credentials                 |
 | `COA_ENDPOINT`                           | true     |                | COA endpoint                       |
 | `COA_REFRESH_TOKEN`                      | true     |                | COA refresh token                  |
 | `DEBUG`                                  | false    | cinerino-api:* | Debug                              |
@@ -31,9 +32,10 @@
 | `MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN`   | true     |                | Mvtk credentials                   |
 | `MVTK_RESERVE_CLIENT_ID`                 | true     |                | Mvtk credentials                   |
 | `MVTK_RESERVE_CLIENT_SECRET`             | true     |                | Mvtk credentials                   |
-| `PECORINO_AUTHORIZE_SERVER_DOMAIN`       | true     |                | Pecorino authorize server domain   |
-| `PECORINO_CLIENT_ID`                     | true     |                | Pecorino client id                 |
-| `PECORINO_CLIENT_SECRET`                 | true     |                | Pecorino client secret             |
+| `PECORINO_AUTHORIZE_SERVER_DOMAIN`       | true     |                | Pecorino credentials               |
+| `PECORINO_CLIENT_ID`                     | true     |                | Pecorino credentials               |
+| `PECORINO_CLIENT_SECRET`                 | true     |                | Pecorino credentials               |
+| `PECORINO_ENDPOINT`                      | true     |                | Pecorino credentials               |
 | `REDIS_HOST`                             | true     |                | Redis Cache host                   |
 | `REDIS_PORT`                             | true     |                | Redis Cache port                   |
 | `REDIS_KEY`                              | true     |                | Redis Cache key                    |

@@ -120,18 +120,10 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
             let event: cinerino.factory.chevre.event.screeningEvent.IEvent;
 
-            const project = await projectRepo.findById({ id: req.project.id });
-
-            if (project.settings?.chevre === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
-            }
-
             const eventService = new cinerino.chevre.service.Event({
-                endpoint: project.settings.chevre.endpoint,
+                endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
             event = await eventService.findById({ id: req.params.id });
@@ -222,15 +214,8 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings?.chevre === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
-            }
-
             const eventService = new cinerino.chevre.service.Event({
-                endpoint: project.settings.chevre.endpoint,
+                endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
 

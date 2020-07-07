@@ -37,12 +37,6 @@ productsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings?.chevre === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
-            }
-
             const searchConditions: any = {
                 ...req.query,
                 project: { id: { $eq: req.project.id } },
@@ -52,7 +46,7 @@ productsRouter.get(
             };
 
             const productService = new cinerino.chevre.service.Product({
-                endpoint: project.settings.chevre.endpoint,
+                endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
             const { data } = await productService.search(searchConditions);

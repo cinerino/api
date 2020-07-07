@@ -40,14 +40,8 @@ paymentCardPaymentRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (typeof project.settings?.chevre?.endpoint !== 'string') {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-            }
-
             const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
-                endpoint: project.settings.chevre.endpoint,
+                endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
             const searchPaymentCardResult = await serviceOutputService.search({
@@ -150,13 +144,8 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
                 const accessCode = fromLocation?.accessCode;
                 if (typeof accessCode === 'string') {
                     // アクセスコード情報があれば、認証
-                    const project = await projectRepo.findById({ id: req.project.id });
-                    if (typeof project.settings?.chevre?.endpoint !== 'string') {
-                        throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-                    }
-
                     const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
-                        endpoint: project.settings.chevre.endpoint,
+                        endpoint: cinerino.credentials.chevre.endpoint,
                         auth: chevreAuthClient
                     });
                     const searchPaymentCardResult = await serviceOutputService.search({

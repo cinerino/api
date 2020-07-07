@@ -109,15 +109,7 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
     async (req, res, next) => {
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined || project.settings.pecorino === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-            }
 
-            // const accountService = new cinerino.pecorinoapi.service.Account({
-            //     endpoint: project.settings.pecorino.endpoint,
-            //     auth: pecorinoAuthClient
-            // });
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
@@ -191,14 +183,8 @@ async function validateFromLocation(req: Request): Promise<cinerino.factory.tran
         const accessCode = fromLocation?.accessCode;
         if (typeof accessCode === 'string') {
             // アクセスコード情報があれば、認証
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (typeof project.settings?.chevre?.endpoint !== 'string') {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-            }
-
             const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
-                endpoint: project.settings.chevre.endpoint,
+                endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
             const searchPaymentCardResult = await serviceOutputService.search({

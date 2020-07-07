@@ -61,11 +61,6 @@ projectsRouter.post(
             .isEmpty()
             .withMessage(() => 'required')
             .isString(),
-        body('settings.chevre.endpoint')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-            .isString(),
         body('settings.cognito.adminUserPool.id')
             .not()
             .isEmpty()
@@ -97,11 +92,6 @@ projectsRouter.post(
         //     .withMessage(() => 'required')
         //     .isString(),
         body('settings.mvtkReserve.endpoint')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-            .isString(),
-        body('settings.pecorino.endpoint')
             .not()
             .isEmpty()
             .withMessage(() => 'required')
@@ -175,9 +165,6 @@ function createFromBody(params: any): cinerino.factory.project.IProject {
         name: params.name,
         parentOrganization: params.parentOrganization,
         settings: {
-            chevre: {
-                endpoint: params.settings?.chevre?.endpoint
-            },
             cognito: {
                 adminUserPool: {
                     id: params.settings?.cognito?.adminUserPool?.id
@@ -197,15 +184,11 @@ function createFromBody(params: any): cinerino.factory.project.IProject {
                     : '',
                 endpoint: params.settings?.mvtkReserve?.endpoint
             },
-            pecorino: {
-                endpoint: params.settings?.pecorino?.endpoint
-            },
             onOrderStatusChanged: {
             },
             codeExpiresInSeconds: 600,
             sendgridApiKey: params.settings?.sendgridApiKey,
             transactionWebhookUrl: params.settings?.transactionWebhookUrl,
-            useInMemoryOfferRepo: false,
             useReservationNumberAsConfirmationNumber: false,
             useUsernameAsGMOMemberId: false
         },

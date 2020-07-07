@@ -106,14 +106,6 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined || project.settings.pecorino === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-        }
-        // const accountService = new cinerino.pecorinoapi.service.Account({
-        //     endpoint: project.settings.pecorino.endpoint,
-        //     auth: pecorinoAuthClient
-        // });
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
@@ -149,7 +141,6 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
     }
 }));
 function validateFromLocation(req) {
-    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         let fromLocation = req.body.object.fromLocation;
         // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
@@ -167,13 +158,8 @@ function validateFromLocation(req) {
             const accessCode = fromLocation === null || fromLocation === void 0 ? void 0 : fromLocation.accessCode;
             if (typeof accessCode === 'string') {
                 // アクセスコード情報があれば、認証
-                const projectRepo = new cinerino.repository.Project(mongoose.connection);
-                const project = yield projectRepo.findById({ id: req.project.id });
-                if (typeof ((_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.chevre) === null || _b === void 0 ? void 0 : _b.endpoint) !== 'string') {
-                    throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-                }
                 const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
-                    endpoint: project.settings.chevre.endpoint,
+                    endpoint: cinerino.credentials.chevre.endpoint,
                     auth: chevreAuthClient
                 });
                 const searchPaymentCardResult = yield serviceOutputService.search({

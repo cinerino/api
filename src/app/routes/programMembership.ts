@@ -3,7 +3,6 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
-import * as mongoose from 'mongoose';
 
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
@@ -30,15 +29,8 @@ programMembershipsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (typeof project.settings?.chevre?.endpoint !== 'string') {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
-            }
-
             const productService = new cinerino.chevre.service.Product({
-                endpoint: project.settings.chevre.endpoint,
+                endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
 
