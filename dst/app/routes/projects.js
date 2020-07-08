@@ -176,7 +176,6 @@ function createFromBody(params) {
             codeExpiresInSeconds: 600,
             sendgridApiKey: (_u = params.settings) === null || _u === void 0 ? void 0 : _u.sendgridApiKey,
             transactionWebhookUrl: (_v = params.settings) === null || _v === void 0 ? void 0 : _v.transactionWebhookUrl,
-            useReservationNumberAsConfirmationNumber: false,
             useUsernameAsGMOMemberId: false
         } }, {
         subscription: { identifier: 'Free' }
@@ -247,8 +246,9 @@ projectsRouter.patch('/:id', permitScopes_1.default(['projects.*', 'projects.wri
             $unset: {
                 'settings.chevre': 1,
                 'settings.pecorino': 1,
+                'settings.emailInformUpdateProgrammembership': 1,
                 'settings.useInMemoryOfferRepo': 1,
-                'settings.emailInformUpdateProgrammembership': 1
+                'settings.useReservationNumberAsConfirmationNumber': 1
             } }))
             .exec();
         res.status(http_status_1.NO_CONTENT)

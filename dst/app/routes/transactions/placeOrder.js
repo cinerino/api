@@ -590,7 +590,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
 }), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2;
+    var _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
     try {
         const orderDate = new Date();
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
@@ -616,23 +616,25 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
                                     ? (_0 = (_z = (_y = (_x = (_w = req.body.potentialActions) === null || _w === void 0 ? void 0 : _w.order) === null || _x === void 0 ? void 0 : _x.potentialActions) === null || _y === void 0 ? void 0 : _y.sendOrder) === null || _z === void 0 ? void 0 : _z.potentialActions) === null || _0 === void 0 ? void 0 : _0.sendEmailMessage : [],
                                 ...(sendEmailMessage) ? [{ object: email }] : []
                             ] }) }) }) }) });
-        let confirmationNumber;
-        const project = yield projectRepo.findById({ id: req.project.id });
-        const useReservationNumberAsConfirmationNumber = ((_1 = project.settings) === null || _1 === void 0 ? void 0 : _1.useReservationNumberAsConfirmationNumber) === true;
-        if (useReservationNumberAsConfirmationNumber) {
-            confirmationNumber = (params) => {
-                const firstOffer = params.acceptedOffers[0];
-                // COAに適合させるため、座席予約の場合、予約番号を確認番号として設定
-                if (firstOffer !== undefined
-                    && firstOffer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
-                    return String(firstOffer.itemOffered.reservationNumber);
-                }
-                else {
-                    return params.confirmationNumber;
-                }
-            };
-        }
-        const resultOrderParams = Object.assign(Object.assign({}, (_2 = req.body.result) === null || _2 === void 0 ? void 0 : _2.order), { confirmationNumber: confirmationNumber, orderDate: orderDate, numItems: {
+        // let confirmationNumber:
+        //     string | cinerino.service.transaction.placeOrderInProgress.IConfirmationNumberGenerator | undefined;
+        // const project = await projectRepo.findById({ id: req.project.id });
+        // const useReservationNumberAsConfirmationNumber = false;
+        // if (useReservationNumberAsConfirmationNumber) {
+        //     confirmationNumber = (params) => {
+        //         const firstOffer = params.acceptedOffers[0];
+        //         // COAに適合させるため、座席予約の場合、予約番号を確認番号として設定
+        //         if (firstOffer !== undefined
+        //             && firstOffer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
+        //             return String((<cinerino.factory.order.IReservation>firstOffer.itemOffered).reservationNumber);
+        //         } else {
+        //             return params.confirmationNumber;
+        //         }
+        //     };
+        // }
+        const resultOrderParams = Object.assign(Object.assign({}, (_1 = req.body.result) === null || _1 === void 0 ? void 0 : _1.order), { 
+            // confirmationNumber: confirmationNumber,
+            orderDate: orderDate, numItems: {
                 maxValue: NUM_ORDER_ITEMS_MAX_VALUE
                 // minValue: 0
             } });
