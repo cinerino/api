@@ -47,11 +47,19 @@ movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['transac
         if (project.settings.mvtkReserve === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
         }
+        let paymentMethodType = req.body.typeOf;
+        if (typeof paymentMethodType !== 'string') {
+            paymentMethodType = cinerino.factory.paymentMethodType.MovieTicket;
+        }
         const action = yield cinerino.service.payment.movieTicket.checkMovieTicket({
             project: req.project,
             typeOf: cinerino.factory.actionType.CheckAction,
             agent: req.agent,
-            object: req.body
+            object: Object.assign(Object.assign({}, req.body), { movieTickets: (Array.isArray(req.body.movieTickets))
+                    ? req.body.movieTickets.map((m) => {
+                        return Object.assign(Object.assign({}, m), { typeOf: paymentMethodType });
+                    })
+                    : [], typeOf: paymentMethodType })
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             project: new cinerino.repository.Project(mongoose.connection),
@@ -117,6 +125,7 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
         id: req.body.purpose.id
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -126,13 +135,19 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
         if (project.settings.mvtkReserve === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
         }
+        let paymentMethodType = (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.typeOf;
+        if (typeof paymentMethodType !== 'string') {
+            paymentMethodType = cinerino.factory.paymentMethodType.MovieTicket;
+        }
         const action = yield cinerino.service.payment.movieTicket.authorize({
             agent: { id: req.user.sub },
-            object: Object.assign({ typeOf: cinerino.factory.paymentMethodType.MovieTicket, amount: 0, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+            object: Object.assign({ typeOf: paymentMethodType, amount: 0, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {
                         return { name: String(p.name), value: String(p.value) };
                     })
-                    : [], movieTickets: req.body.object.movieTickets }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined),
+                    : [], movieTickets: req.body.object.movieTickets.map((o) => {
+                    return Object.assign(Object.assign({}, o), { typeOf: paymentMethodType });
+                }) }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined),
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
