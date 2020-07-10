@@ -24,7 +24,7 @@ const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
-const movieTicket_1 = require("../payment/movieTicket");
+// import { getMvtKReserveEndpoint } from '../payment/movieTicket';
 const placeOrder4cinemasunshine_1 = require("./placeOrder4cinemasunshine");
 const connectMongo_1 = require("../../../connectMongo");
 const redis = require("../../../redis");
@@ -356,10 +356,10 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         // if (typeof project.settings?.mvtkReserve?.endpoint !== 'string') {
         //     throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
         // }
-        const paymentServiceUrl = yield movieTicket_1.getMvtKReserveEndpoint({
-            project: { id: req.project.id },
-            paymentMethodType: cinerino.factory.paymentMethodType.MovieTicket
-        });
+        // const paymentServiceUrl = await getMvtKReserveEndpoint({
+        //     project: { id: req.project.id },
+        //     paymentMethodType: cinerino.factory.paymentMethodType.MovieTicket
+        // });
         const action = yield cinerino.service.offer.seatReservation.create({
             project: req.project,
             object: Object.assign({}, req.body),
@@ -368,7 +368,8 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                endpoint: paymentServiceUrl,
+                endpoint: '',
+                // endpoint: paymentServiceUrl,
                 auth: mvtkReserveAuthClient
             }),
             project: projectRepo,
