@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getMvtKReserveEndpoint = void 0;
 /**
  * ムビチケ決済ルーター
  */
@@ -40,12 +41,36 @@ const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials
     scopes: [],
     state: ''
 });
+function getMvtKReserveEndpoint(params) {
+    var _a, _b, _c;
+    return __awaiter(this, void 0, void 0, function* () {
+        // Chevreからサービスエンドポイントを取得する
+        const projectService = new cinerino.chevre.service.Project({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const chevreProject = yield projectService.findById({ id: params.project.id });
+        const paymentServiceSetting = (_b = (_a = chevreProject.settings) === null || _a === void 0 ? void 0 : _a.paymentServices) === null || _b === void 0 ? void 0 : _b.find((s) => {
+            var _a;
+            return s.typeOf === cinerino.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket
+                && ((_a = s.serviceOutput) === null || _a === void 0 ? void 0 : _a.typeOf) === params.paymentMethodType;
+        });
+        if (paymentServiceSetting === undefined) {
+            throw new cinerino.factory.errors.NotFound('PaymentService');
+        }
+        const paymentServiceUrl = (_c = paymentServiceSetting.availableChannel) === null || _c === void 0 ? void 0 : _c.serviceUrl;
+        if (typeof paymentServiceUrl !== 'string') {
+            throw new cinerino.factory.errors.NotFound('paymentService.availableChannel.serviceUrl');
+        }
+        return paymentServiceUrl;
+    });
+}
+exports.getMvtKReserveEndpoint = getMvtKReserveEndpoint;
 const movieTicketPaymentRouter = express_1.Router();
 /**
  * ムビチケ購入番号確認
  */
 movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
     try {
         // const projectRepo = new cinerino.repository.Project(mongoose.connection);
         // const project = await projectRepo.findById({ id: req.project.id });
@@ -59,24 +84,10 @@ movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['transac
         if (typeof paymentMethodType !== 'string') {
             paymentMethodType = cinerino.factory.paymentMethodType.MovieTicket;
         }
-        // Chevreからサービスエンドポイントを取得する
-        const projectService = new cinerino.chevre.service.Project({
-            endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+        const paymentServiceUrl = yield getMvtKReserveEndpoint({
+            project: { id: req.project.id },
+            paymentMethodType: paymentMethodType
         });
-        const chevreProject = yield projectService.findById({ id: req.project.id });
-        const paymentServiceSetting = (_b = (_a = chevreProject.settings) === null || _a === void 0 ? void 0 : _a.paymentServices) === null || _b === void 0 ? void 0 : _b.find((s) => {
-            var _a;
-            return s.typeOf === cinerino.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket
-                && ((_a = s.serviceOutput) === null || _a === void 0 ? void 0 : _a.typeOf) === paymentMethodType;
-        });
-        if (paymentServiceSetting === undefined) {
-            throw new cinerino.factory.errors.NotFound('PaymentService');
-        }
-        const paymentServiceUrl = (_c = paymentServiceSetting.availableChannel) === null || _c === void 0 ? void 0 : _c.serviceUrl;
-        if (typeof paymentServiceUrl !== 'string') {
-            throw new cinerino.factory.errors.NotFound('paymentService.availableChannel.serviceUrl');
-        }
         const action = yield cinerino.service.payment.movieTicket.checkMovieTicket({
             project: req.project,
             typeOf: cinerino.factory.actionType.CheckAction,
@@ -151,20 +162,24 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
         id: req.body.purpose.id
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d;
+    var _a;
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
-        if (project.settings.mvtkReserve === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-        }
-        let paymentMethodType = (_d = req.body.object) === null || _d === void 0 ? void 0 : _d.typeOf;
+        // const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        // const project = await projectRepo.findById({ id: req.project.id });
+        // if (project.settings === undefined) {
+        //     throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
+        // }
+        // if (project.settings.mvtkReserve === undefined) {
+        //     throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+        // }
+        let paymentMethodType = (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.typeOf;
         if (typeof paymentMethodType !== 'string') {
             paymentMethodType = cinerino.factory.paymentMethodType.MovieTicket;
         }
+        const paymentServiceUrl = yield getMvtKReserveEndpoint({
+            project: { id: req.project.id },
+            paymentMethodType: paymentMethodType
+        });
         const action = yield cinerino.service.payment.movieTicket.authorize({
             agent: { id: req.user.sub },
             object: Object.assign({ typeOf: paymentMethodType, amount: 0, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
@@ -181,7 +196,7 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
             seller: new cinerino.repository.Seller(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection),
             movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                endpoint: project.settings.mvtkReserve.endpoint,
+                endpoint: paymentServiceUrl,
                 auth: mvtkReserveAuthClient
             })
         });

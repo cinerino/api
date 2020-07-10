@@ -95,11 +95,11 @@ rateLimit_1.default, ...[
     //     .isEmpty()
     //     .withMessage(() => 'required')
     //     .isString(),
-    express_validator_1.body('settings.mvtkReserve.endpoint')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-        .isString(),
+    // body('settings.mvtkReserve.endpoint')
+    //     .not()
+    //     .isEmpty()
+    //     .withMessage(() => 'required')
+    //     .isString(),
     express_validator_1.body('settings.sendgridApiKey')
         .not()
         .isEmpty()

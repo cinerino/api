@@ -91,11 +91,11 @@ projectsRouter.post(
         //     .isEmpty()
         //     .withMessage(() => 'required')
         //     .isString(),
-        body('settings.mvtkReserve.endpoint')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-            .isString(),
+        // body('settings.mvtkReserve.endpoint')
+        //     .not()
+        //     .isEmpty()
+        //     .withMessage(() => 'required')
+        //     .isString(),
         body('settings.sendgridApiKey')
             .not()
             .isEmpty()
