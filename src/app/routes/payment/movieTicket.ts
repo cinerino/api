@@ -73,15 +73,6 @@ movieTicketPaymentRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            // const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            // const project = await projectRepo.findById({ id: req.project.id });
-            // if (project.settings === undefined) {
-            //     throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-            // }
-            // if (project.settings.mvtkReserve === undefined) {
-            //     throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-            // }
-
             let paymentMethodType: cinerino.factory.paymentMethodType.MovieTicket | cinerino.factory.paymentMethodType.MGTicket
                 = req.body.typeOf;
             if (typeof paymentMethodType !== 'string') {
@@ -184,15 +175,6 @@ movieTicketPaymentRouter.post<ParamsDictionary>(
     },
     async (req, res, next) => {
         try {
-            // const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            // const project = await projectRepo.findById({ id: req.project.id });
-            // if (project.settings === undefined) {
-            //     throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-            // }
-            // if (project.settings.mvtkReserve === undefined) {
-            //     throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-            // }
-
             let paymentMethodType: cinerino.factory.paymentMethodType.MovieTicket | cinerino.factory.paymentMethodType.MGTicket
                 = req.body.object?.typeOf;
             if (typeof paymentMethodType !== 'string') {

@@ -72,14 +72,6 @@ const movieTicketPaymentRouter = express_1.Router();
  */
 movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        // const project = await projectRepo.findById({ id: req.project.id });
-        // if (project.settings === undefined) {
-        //     throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        // }
-        // if (project.settings.mvtkReserve === undefined) {
-        //     throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-        // }
         let paymentMethodType = req.body.typeOf;
         if (typeof paymentMethodType !== 'string') {
             paymentMethodType = cinerino.factory.paymentMethodType.MovieTicket;
@@ -164,14 +156,6 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        // const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        // const project = await projectRepo.findById({ id: req.project.id });
-        // if (project.settings === undefined) {
-        //     throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        // }
-        // if (project.settings.mvtkReserve === undefined) {
-        //     throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-        // }
         let paymentMethodType = (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.typeOf;
         if (typeof paymentMethodType !== 'string') {
             paymentMethodType = cinerino.factory.paymentMethodType.MovieTicket;

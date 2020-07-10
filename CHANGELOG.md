@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- update @cinerino/domain
+- プロジェクト設定からmvtkReserveを削除
+
 ### Deprecated
 
 ### Removed

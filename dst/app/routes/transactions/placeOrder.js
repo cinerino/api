@@ -352,14 +352,6 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        // const project = await projectRepo.findById({ id: req.project.id });
-        // if (typeof project.settings?.mvtkReserve?.endpoint !== 'string') {
-        //     throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-        // }
-        // const paymentServiceUrl = await getMvtKReserveEndpoint({
-        //     project: { id: req.project.id },
-        //     paymentMethodType: cinerino.factory.paymentMethodType.MovieTicket
-        // });
         const action = yield cinerino.service.offer.seatReservation.create({
             project: req.project,
             object: Object.assign({}, req.body),
@@ -621,25 +613,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
                                     ? (_y = (_x = (_w = (_v = (_u = req.body.potentialActions) === null || _u === void 0 ? void 0 : _u.order) === null || _v === void 0 ? void 0 : _v.potentialActions) === null || _w === void 0 ? void 0 : _w.sendOrder) === null || _x === void 0 ? void 0 : _x.potentialActions) === null || _y === void 0 ? void 0 : _y.sendEmailMessage : [],
                                 ...(sendEmailMessage) ? [{ object: email }] : []
                             ] }) }) }) }) });
-        // let confirmationNumber:
-        //     string | cinerino.service.transaction.placeOrderInProgress.IConfirmationNumberGenerator | undefined;
-        // const project = await projectRepo.findById({ id: req.project.id });
-        // const useReservationNumberAsConfirmationNumber = false;
-        // if (useReservationNumberAsConfirmationNumber) {
-        //     confirmationNumber = (params) => {
-        //         const firstOffer = params.acceptedOffers[0];
-        //         // COAに適合させるため、座席予約の場合、予約番号を確認番号として設定
-        //         if (firstOffer !== undefined
-        //             && firstOffer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
-        //             return String((<cinerino.factory.order.IReservation>firstOffer.itemOffered).reservationNumber);
-        //         } else {
-        //             return params.confirmationNumber;
-        //         }
-        //     };
-        // }
-        const resultOrderParams = Object.assign(Object.assign({}, (_z = req.body.result) === null || _z === void 0 ? void 0 : _z.order), { 
-            // confirmationNumber: confirmationNumber,
-            orderDate: orderDate, numItems: {
+        const resultOrderParams = Object.assign(Object.assign({}, (_z = req.body.result) === null || _z === void 0 ? void 0 : _z.order), { confirmationNumber: undefined, orderDate: orderDate, numItems: {
                 maxValue: NUM_ORDER_ITEMS_MAX_VALUE
                 // minValue: 0
             } });

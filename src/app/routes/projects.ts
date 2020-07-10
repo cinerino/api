@@ -86,16 +86,6 @@ projectsRouter.post(
             .isEmpty()
             .withMessage(() => 'required')
             .isString(),
-        // body('settings.mvtkReserve.companyCode')
-        //     .not()
-        //     .isEmpty()
-        //     .withMessage(() => 'required')
-        //     .isString(),
-        // body('settings.mvtkReserve.endpoint')
-        //     .not()
-        //     .isEmpty()
-        //     .withMessage(() => 'required')
-        //     .isString(),
         body('settings.sendgridApiKey')
             .not()
             .isEmpty()
@@ -177,12 +167,6 @@ function createFromBody(params: any): cinerino.factory.project.IProject {
                 endpoint: params.settings?.gmo?.endpoint,
                 siteId: params.settings?.gmo?.siteId,
                 sitePass: params.settings?.gmo?.sitePass
-            },
-            mvtkReserve: {
-                companyCode: (typeof params.settings?.mvtkReserve?.companyCode === 'string')
-                    ? params.settings?.mvtkReserve?.companyCode
-                    : '',
-                endpoint: params.settings?.mvtkReserve?.endpoint
             },
             onOrderStatusChanged: {
             },
@@ -297,6 +281,7 @@ projectsRouter.patch(
                     // 機能改修で不要になった属性を削除
                     $unset: {
                         'settings.chevre': 1,
+                        'settings.mvtkReserve': 1,
                         'settings.pecorino': 1,
                         'settings.emailInformUpdateProgrammembership': 1,
                         'settings.useInMemoryOfferRepo': 1,

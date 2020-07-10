@@ -424,15 +424,6 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
     async (req, res, next) => {
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            // const project = await projectRepo.findById({ id: req.project.id });
-            // if (typeof project.settings?.mvtkReserve?.endpoint !== 'string') {
-            //     throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-            // }
-
-            // const paymentServiceUrl = await getMvtKReserveEndpoint({
-            //     project: { id: req.project.id },
-            //     paymentMethodType: cinerino.factory.paymentMethodType.MovieTicket
-            // });
 
             const action = await cinerino.service.offer.seatReservation.create({
                 project: req.project,
@@ -764,28 +755,9 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 }
             };
 
-            // let confirmationNumber:
-            //     string | cinerino.service.transaction.placeOrderInProgress.IConfirmationNumberGenerator | undefined;
-
-            // const project = await projectRepo.findById({ id: req.project.id });
-            // const useReservationNumberAsConfirmationNumber = false;
-            // if (useReservationNumberAsConfirmationNumber) {
-            //     confirmationNumber = (params) => {
-            //         const firstOffer = params.acceptedOffers[0];
-
-            //         // COAに適合させるため、座席予約の場合、予約番号を確認番号として設定
-            //         if (firstOffer !== undefined
-            //             && firstOffer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
-            //             return String((<cinerino.factory.order.IReservation>firstOffer.itemOffered).reservationNumber);
-            //         } else {
-            //             return params.confirmationNumber;
-            //         }
-            //     };
-            // }
-
             const resultOrderParams: cinerino.service.transaction.placeOrderInProgress.IResultOrderParams = {
                 ...req.body.result?.order,
-                // confirmationNumber: confirmationNumber,
+                confirmationNumber: undefined,
                 orderDate: orderDate,
                 numItems: {
                     maxValue: NUM_ORDER_ITEMS_MAX_VALUE
