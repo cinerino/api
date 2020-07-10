@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.17.1 - 2020-07-10
+
+### Changed
+
+- ムビチケサービスエンドポイント設定をChevreへ移行
+
 ## v5.17.0 - 2020-07-10
 
 ### Changed
