@@ -24,6 +24,7 @@ const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
+const movieTicket_1 = require("../payment/movieTicket");
 const placeOrder4cinemasunshine_1 = require("./placeOrder4cinemasunshine");
 const connectMongo_1 = require("../../../connectMongo");
 const redis = require("../../../redis");
@@ -349,13 +350,16 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         id: req.params.transactionId
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d, _e;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (typeof ((_e = (_d = project.settings) === null || _d === void 0 ? void 0 : _d.mvtkReserve) === null || _e === void 0 ? void 0 : _e.endpoint) !== 'string') {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-        }
+        // const project = await projectRepo.findById({ id: req.project.id });
+        // if (typeof project.settings?.mvtkReserve?.endpoint !== 'string') {
+        //     throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+        // }
+        const paymentServiceUrl = yield movieTicket_1.getMvtKReserveEndpoint({
+            project: { id: req.project.id },
+            paymentMethodType: cinerino.factory.paymentMethodType.MovieTicket
+        });
         const action = yield cinerino.service.offer.seatReservation.create({
             project: req.project,
             object: Object.assign({}, req.body),
@@ -364,7 +368,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                endpoint: project.settings.mvtkReserve.endpoint,
+                endpoint: paymentServiceUrl,
                 auth: mvtkReserveAuthClient
             }),
             project: projectRepo,
@@ -590,7 +594,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
 }), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
+    var _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
     try {
         const orderDate = new Date();
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
@@ -609,11 +613,11 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             }
             email.template = String(req.body.emailTemplate);
         }
-        const potentialActions = Object.assign(Object.assign({}, req.body.potentialActions), { order: Object.assign(Object.assign({}, (_f = req.body.potentialActions) === null || _f === void 0 ? void 0 : _f.order), { potentialActions: Object.assign(Object.assign({}, (_h = (_g = req.body.potentialActions) === null || _g === void 0 ? void 0 : _g.order) === null || _h === void 0 ? void 0 : _h.potentialActions), { sendOrder: Object.assign(Object.assign({}, (_l = (_k = (_j = req.body.potentialActions) === null || _j === void 0 ? void 0 : _j.order) === null || _k === void 0 ? void 0 : _k.potentialActions) === null || _l === void 0 ? void 0 : _l.sendOrder), { potentialActions: Object.assign(Object.assign({}, (_q = (_p = (_o = (_m = req.body.potentialActions) === null || _m === void 0 ? void 0 : _m.order) === null || _o === void 0 ? void 0 : _o.potentialActions) === null || _p === void 0 ? void 0 : _p.sendOrder) === null || _q === void 0 ? void 0 : _q.potentialActions), { sendEmailMessage: [
+        const potentialActions = Object.assign(Object.assign({}, req.body.potentialActions), { order: Object.assign(Object.assign({}, (_d = req.body.potentialActions) === null || _d === void 0 ? void 0 : _d.order), { potentialActions: Object.assign(Object.assign({}, (_f = (_e = req.body.potentialActions) === null || _e === void 0 ? void 0 : _e.order) === null || _f === void 0 ? void 0 : _f.potentialActions), { sendOrder: Object.assign(Object.assign({}, (_j = (_h = (_g = req.body.potentialActions) === null || _g === void 0 ? void 0 : _g.order) === null || _h === void 0 ? void 0 : _h.potentialActions) === null || _j === void 0 ? void 0 : _j.sendOrder), { potentialActions: Object.assign(Object.assign({}, (_o = (_m = (_l = (_k = req.body.potentialActions) === null || _k === void 0 ? void 0 : _k.order) === null || _l === void 0 ? void 0 : _l.potentialActions) === null || _m === void 0 ? void 0 : _m.sendOrder) === null || _o === void 0 ? void 0 : _o.potentialActions), { sendEmailMessage: [
                                 // tslint:disable-next-line:max-line-length
-                                ...(Array.isArray((_v = (_u = (_t = (_s = (_r = req.body.potentialActions) === null || _r === void 0 ? void 0 : _r.order) === null || _s === void 0 ? void 0 : _s.potentialActions) === null || _t === void 0 ? void 0 : _t.sendOrder) === null || _u === void 0 ? void 0 : _u.potentialActions) === null || _v === void 0 ? void 0 : _v.sendEmailMessage))
+                                ...(Array.isArray((_t = (_s = (_r = (_q = (_p = req.body.potentialActions) === null || _p === void 0 ? void 0 : _p.order) === null || _q === void 0 ? void 0 : _q.potentialActions) === null || _r === void 0 ? void 0 : _r.sendOrder) === null || _s === void 0 ? void 0 : _s.potentialActions) === null || _t === void 0 ? void 0 : _t.sendEmailMessage))
                                     // tslint:disable-next-line:max-line-length
-                                    ? (_0 = (_z = (_y = (_x = (_w = req.body.potentialActions) === null || _w === void 0 ? void 0 : _w.order) === null || _x === void 0 ? void 0 : _x.potentialActions) === null || _y === void 0 ? void 0 : _y.sendOrder) === null || _z === void 0 ? void 0 : _z.potentialActions) === null || _0 === void 0 ? void 0 : _0.sendEmailMessage : [],
+                                    ? (_y = (_x = (_w = (_v = (_u = req.body.potentialActions) === null || _u === void 0 ? void 0 : _u.order) === null || _v === void 0 ? void 0 : _v.potentialActions) === null || _w === void 0 ? void 0 : _w.sendOrder) === null || _x === void 0 ? void 0 : _x.potentialActions) === null || _y === void 0 ? void 0 : _y.sendEmailMessage : [],
                                 ...(sendEmailMessage) ? [{ object: email }] : []
                             ] }) }) }) }) });
         // let confirmationNumber:
@@ -632,7 +636,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
         //         }
         //     };
         // }
-        const resultOrderParams = Object.assign(Object.assign({}, (_1 = req.body.result) === null || _1 === void 0 ? void 0 : _1.order), { 
+        const resultOrderParams = Object.assign(Object.assign({}, (_z = req.body.result) === null || _z === void 0 ? void 0 : _z.order), { 
             // confirmationNumber: confirmationNumber,
             orderDate: orderDate, numItems: {
                 maxValue: NUM_ORDER_ITEMS_MAX_VALUE

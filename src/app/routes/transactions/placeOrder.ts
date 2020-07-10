@@ -16,6 +16,7 @@ import rateLimit from '../../middlewares/rateLimit';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
+import { getMvtKReserveEndpoint } from '../payment/movieTicket';
 import placeOrder4cinemasunshineRouter from './placeOrder4cinemasunshine';
 
 import { connectMongo } from '../../../connectMongo';
@@ -423,10 +424,15 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
     async (req, res, next) => {
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (typeof project.settings?.mvtkReserve?.endpoint !== 'string') {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-            }
+            // const project = await projectRepo.findById({ id: req.project.id });
+            // if (typeof project.settings?.mvtkReserve?.endpoint !== 'string') {
+            //     throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
+            // }
+
+            const paymentServiceUrl = await getMvtKReserveEndpoint({
+                project: { id: req.project.id },
+                paymentMethodType: cinerino.factory.paymentMethodType.MovieTicket
+            });
 
             const action = await cinerino.service.offer.seatReservation.create({
                 project: req.project,
@@ -438,7 +444,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                    endpoint: project.settings.mvtkReserve.endpoint,
+                    endpoint: paymentServiceUrl,
                     auth: mvtkReserveAuthClient
                 }),
                 project: projectRepo,
