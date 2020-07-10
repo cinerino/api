@@ -189,7 +189,6 @@ function createFromBody(params: any): cinerino.factory.project.IProject {
             codeExpiresInSeconds: 600,
             sendgridApiKey: params.settings?.sendgridApiKey,
             transactionWebhookUrl: params.settings?.transactionWebhookUrl,
-            useReservationNumberAsConfirmationNumber: false,
             useUsernameAsGMOMemberId: false
         },
         ...{
@@ -299,8 +298,9 @@ projectsRouter.patch(
                     $unset: {
                         'settings.chevre': 1,
                         'settings.pecorino': 1,
+                        'settings.emailInformUpdateProgrammembership': 1,
                         'settings.useInMemoryOfferRepo': 1,
-                        'settings.emailInformUpdateProgrammembership': 1
+                        'settings.useReservationNumberAsConfirmationNumber': 1
                     }
                 }
             )

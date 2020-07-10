@@ -757,28 +757,28 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 }
             };
 
-            let confirmationNumber:
-                string | cinerino.service.transaction.placeOrderInProgress.IConfirmationNumberGenerator | undefined;
+            // let confirmationNumber:
+            //     string | cinerino.service.transaction.placeOrderInProgress.IConfirmationNumberGenerator | undefined;
 
-            const project = await projectRepo.findById({ id: req.project.id });
-            const useReservationNumberAsConfirmationNumber = project.settings?.useReservationNumberAsConfirmationNumber === true;
-            if (useReservationNumberAsConfirmationNumber) {
-                confirmationNumber = (params) => {
-                    const firstOffer = params.acceptedOffers[0];
+            // const project = await projectRepo.findById({ id: req.project.id });
+            // const useReservationNumberAsConfirmationNumber = false;
+            // if (useReservationNumberAsConfirmationNumber) {
+            //     confirmationNumber = (params) => {
+            //         const firstOffer = params.acceptedOffers[0];
 
-                    // COAに適合させるため、座席予約の場合、予約番号を確認番号として設定
-                    if (firstOffer !== undefined
-                        && firstOffer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
-                        return String((<cinerino.factory.order.IReservation>firstOffer.itemOffered).reservationNumber);
-                    } else {
-                        return params.confirmationNumber;
-                    }
-                };
-            }
+            //         // COAに適合させるため、座席予約の場合、予約番号を確認番号として設定
+            //         if (firstOffer !== undefined
+            //             && firstOffer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
+            //             return String((<cinerino.factory.order.IReservation>firstOffer.itemOffered).reservationNumber);
+            //         } else {
+            //             return params.confirmationNumber;
+            //         }
+            //     };
+            // }
 
             const resultOrderParams: cinerino.service.transaction.placeOrderInProgress.IResultOrderParams = {
                 ...req.body.result?.order,
-                confirmationNumber: confirmationNumber,
+                // confirmationNumber: confirmationNumber,
                 orderDate: orderDate,
                 numItems: {
                     maxValue: NUM_ORDER_ITEMS_MAX_VALUE
