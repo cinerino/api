@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Eメール送信時にSendGridへユニーク引数を追加
 - ムビチケ決済処理を細分化
 - COA仮予約時のエラーハンドリングを強化
+- 販売者ルーターをChevreサービスのラップに変更
 
 ### Deprecated
 
