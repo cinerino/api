@@ -135,7 +135,11 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const expires = req.body.expires;
-        const seller = yield sellerRepo.findById({ id: req.body.seller.id });
+        const sellerService = new cinerino.chevre.service.Seller({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const seller = yield sellerService.findById({ id: req.body.seller.id });
         const passportValidator = (params) => {
             // 許可証発行者確認
             const validIssuer = params.passport.iss === process.env.WAITER_PASSPORT_ISSUER;

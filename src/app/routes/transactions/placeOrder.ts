@@ -146,7 +146,11 @@ placeOrderTransactionsRouter.post(
 
             const expires: Date = req.body.expires;
 
-            const seller = await sellerRepo.findById({ id: <string>req.body.seller.id });
+            const sellerService = new cinerino.chevre.service.Seller({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const seller = await sellerService.findById({ id: <string>req.body.seller.id });
 
             const passportValidator: cinerino.service.transaction.placeOrderInProgress.IPassportValidator =
                 (params) => {
