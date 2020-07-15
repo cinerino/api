@@ -64,7 +64,6 @@ returnOrderTransactionsRouter.post(
             const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
             let order: cinerino.factory.order.IOrder | undefined;
@@ -139,7 +138,6 @@ returnOrderTransactionsRouter.post(
                 invoice: invoiceRepo,
                 order: orderRepo,
                 project: projectRepo,
-                seller: sellerRepo,
                 transaction: transactionRepo
             });
 
@@ -238,7 +236,6 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
@@ -249,7 +246,6 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
             })({
                 action: actionRepo,
                 order: orderRepo,
-                seller: sellerRepo,
                 transaction: transactionRepo
             });
 

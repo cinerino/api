@@ -97,7 +97,6 @@ placeOrderTransactionsRouter.post(
                     auth: mvtkReserveAuthClient
                 }),
                 project: new cinerino.repository.Project(mongoose.connection),
-                seller: new cinerino.repository.Seller(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 

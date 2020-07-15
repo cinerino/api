@@ -106,7 +106,6 @@ productOffersRouter.post('/authorize', permitScopes_1.default(['transactions']),
             ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
             project: new cinerino.repository.Project(mongoose.connection),
             registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),
-            seller: new cinerino.repository.Seller(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED)

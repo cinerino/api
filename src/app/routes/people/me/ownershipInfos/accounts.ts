@@ -39,7 +39,6 @@ accountsRouter.post<ParamsDictionary>(
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const registerActionInProgressRepo = new cinerino.repository.action.RegisterServiceInProgress(redis.getClient());
-            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
@@ -67,7 +66,6 @@ accountsRouter.post<ParamsDictionary>(
                 person: personRepo,
                 registerActionInProgress: registerActionInProgressRepo,
                 project: projectRepo,
-                seller: sellerRepo,
                 transaction: transactionRepo
             });
 

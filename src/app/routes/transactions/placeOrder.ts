@@ -141,7 +141,6 @@ placeOrderTransactionsRouter.post(
 
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
             const expires: Date = req.body.expires;
@@ -229,7 +228,6 @@ placeOrderTransactionsRouter.post(
                 passportValidator: passportValidator
             })({
                 project: projectRepo,
-                seller: sellerRepo,
                 transaction: transactionRepo
             });
 
@@ -444,7 +442,6 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
                     auth: mvtkReserveAuthClient
                 }),
                 project: projectRepo,
-                seller: new cinerino.repository.Seller(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
@@ -719,7 +716,6 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
             const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
-            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
 
             const sendEmailMessage = req.body.sendEmailMessage === true;
@@ -784,8 +780,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 project: projectRepo,
                 transaction: transactionRepo,
                 confirmationNumber: confirmationNumberRepo,
-                orderNumber: orderNumberRepo,
-                seller: sellerRepo
+                orderNumber: orderNumberRepo
             });
 
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)

@@ -150,12 +150,10 @@ eventsRouter.get('/:id/offers/ticket', permitScopes_1.default(['events.*', 'even
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const offers = yield cinerino.service.offer.searchEventTicketOffers(Object.assign({ project: req.project, event: { id: req.params.id }, seller: req.query.seller, store: req.query.store }, (req.query.movieTicket !== undefined && req.query.movieTicket !== null)
             ? { movieTicket: req.query.movieTicket }
             : {}))({
-            project: projectRepo,
-            seller: sellerRepo
+            project: projectRepo
         });
         res.json(offers);
     }

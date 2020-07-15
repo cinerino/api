@@ -54,7 +54,6 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
             },
             location: { id: req.user.client_id }
         })({
-            seller: new cinerino.repository.Seller(mongoose.connection),
             project: new cinerino.repository.Project(mongoose.connection),
             task: new cinerino.repository.Task(mongoose.connection)
         });

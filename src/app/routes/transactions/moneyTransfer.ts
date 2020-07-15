@@ -111,7 +111,6 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
             const fromLocation = await validateFromLocation(req);
@@ -149,7 +148,6 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
                 // accountService: accountService,
                 action: actionRepo,
                 project: projectRepo,
-                seller: sellerRepo,
                 transaction: transactionRepo
             });
 

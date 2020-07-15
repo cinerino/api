@@ -183,7 +183,6 @@ eventsRouter.get<ParamsDictionary>(
     async (req, res, next) => {
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
 
             const offers = await cinerino.service.offer.searchEventTicketOffers({
                 project: req.project,
@@ -194,8 +193,7 @@ eventsRouter.get<ParamsDictionary>(
                     ? { movieTicket: req.query.movieTicket }
                     : {}
             })({
-                project: projectRepo,
-                seller: sellerRepo
+                project: projectRepo
             });
             res.json(offers);
         } catch (error) {
