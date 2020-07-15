@@ -132,7 +132,10 @@ returnOrderTransactionsRouter.post(
                     order: returnableOrder,
                     reason: reason
                 },
-                seller: order.seller
+                seller: {
+                    typeOf: order.seller.typeOf,
+                    id: String(order.seller.id)
+                }
             })({
                 action: actionRepo,
                 invoice: invoiceRepo,
