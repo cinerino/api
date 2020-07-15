@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - ムビチケ決済処理を細分化
 - COA仮予約時のエラーハンドリングを強化
 - 販売者リポジトリをChevreへ移行
+- ssktsムビチケ決済承認処理を本家に統合
 
 ### Deprecated
 
