@@ -106,7 +106,6 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        // const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         let fromLocation = req.body.object.fromLocation;
         // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する

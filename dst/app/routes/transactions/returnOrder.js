@@ -59,7 +59,6 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
         const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         let order;
         let returnableOrder = req.body.object.order;
@@ -119,13 +118,15 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
                 order: returnableOrder,
                 reason: reason
             },
-            seller: order.seller
+            seller: {
+                typeOf: order.seller.typeOf,
+                id: String(order.seller.id)
+            }
         })({
             action: actionRepo,
             invoice: invoiceRepo,
             order: orderRepo,
             project: projectRepo,
-            seller: sellerRepo,
             transaction: transactionRepo
         });
         // tslint:disable-next-line:no-string-literal
@@ -203,13 +204,11 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         yield cinerino.service.transaction.returnOrder.confirm(Object.assign(Object.assign({}, req.body), { id: req.params.transactionId, agent: { id: req.user.sub } }))({
             action: actionRepo,
             order: orderRepo,
-            seller: sellerRepo,
             transaction: transactionRepo
         });
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)

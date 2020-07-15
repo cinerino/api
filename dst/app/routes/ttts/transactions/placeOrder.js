@@ -82,7 +82,6 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
                 auth: mvtkReserveAuthClient
             }),
             project: new cinerino.repository.Project(mongoose.connection),
-            seller: new cinerino.repository.Seller(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED)

@@ -88,8 +88,7 @@ anyPaymentRouter.post<ParamsDictionary>(
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                transaction: new cinerino.repository.Transaction(mongoose.connection),
-                seller: new cinerino.repository.Seller(mongoose.connection)
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
             res.status(CREATED)

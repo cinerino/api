@@ -14,85 +14,118 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
-const express_validator_1 = require("express-validator");
-const http_status_1 = require("http-status");
-const mongoose = require("mongoose");
+// tslint:disable-next-line:no-implicit-dependencies
+// import { ParamsDictionary } from 'express-serve-static-core';
+// import { body } from 'express-validator';
+// import { CREATED, NO_CONTENT } from 'http-status';
+// import * as mongoose from 'mongoose';
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const sellersRouter = express_1.Router();
 /**
  * 販売者作成
  */
-sellersRouter.post('', permitScopes_1.default(['sellers.*', 'sellers.write']), rateLimit_1.default, ...[
-    express_validator_1.body('typeOf')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('name.ja')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('name.en')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('parentOrganization.typeOf')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('parentOrganization.name.ja')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('parentOrganization.name.en')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('telephone')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('url')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required')
-        .isURL(),
-    express_validator_1.body('paymentAccepted')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required')
-        .isArray(),
-    express_validator_1.body('hasPOS')
-        .isArray(),
-    express_validator_1.body('areaServed')
-        .isArray()
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const attributes = Object.assign(Object.assign({}, req.body), { project: req.project });
-        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-        const seller = yield sellerRepo.save({ attributes: attributes });
-        res.status(http_status_1.CREATED)
-            .json(seller);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// sellersRouter.post(
+//     '',
+//     permitScopes(['sellers.*', 'sellers.write']),
+//     rateLimit,
+//     ...[
+//         body('typeOf')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('name.ja')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('name.en')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('parentOrganization.typeOf')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('parentOrganization.name.ja')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('parentOrganization.name.en')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('telephone')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('url')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required')
+//             .isURL(),
+//         body('paymentAccepted')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required')
+//             .isArray(),
+//         body('hasPOS')
+//             .isArray(),
+//         body('areaServed')
+//             .isArray()
+//     ],
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             const attributes: cinerino.factory.seller.IAttributes<typeof req.body.typeOf> = {
+//                 ...req.body,
+//                 project: req.project
+//             };
+//             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+//             const seller = await sellerRepo.save({ attributes: attributes });
+//             res.status(CREATED)
+//                 .json(seller);
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 /**
  * 販売者検索
  */
 sellersRouter.get('', permitScopes_1.default(['sellers.*', 'sellers.read', 'pos']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const searchCoinditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
-            // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-        const sellers = yield sellerRepo.search(searchCoinditions, 
-        // 管理者以外にセキュアな情報を露出しないように
-        (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined);
-        res.set('X-Total-Count', sellers.length.toString());
-        res.json(sellers);
+        const sellerService = new cinerino.chevre.service.Seller({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const { data, totalCount } = yield sellerService.search(Object.assign(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }), (!req.isAdmin) ? { $projection: { 'paymentAccepted.gmoInfo.shopPass': 0 } } : undefined));
+        if (typeof totalCount === 'number') {
+            res.set('X-Total-Count', totalCount.toString());
+        }
+        res.json(data);
+        // const searchCoinditions: cinerino.factory.seller.ISearchConditions = {
+        //     ...req.query,
+        //     project: { id: { $eq: req.project.id } },
+        //     // tslint:disable-next-line:no-magic-numbers
+        //     limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+        //     page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
+        // };
+        // const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+        // const sellers = await sellerRepo.search(
+        //     searchCoinditions,
+        //     // 管理者以外にセキュアな情報を露出しないように
+        //     (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined
+        // );
+        // res.set('X-Total-Count', sellers.length.toString());
+        // res.json(sellers);
     }
     catch (error) {
         next(error);
@@ -103,13 +136,21 @@ sellersRouter.get('', permitScopes_1.default(['sellers.*', 'sellers.read', 'pos'
  */
 sellersRouter.get('/:id', permitScopes_1.default(['sellers.*', 'sellers.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-        const seller = yield sellerRepo.findById({
-            id: req.params.id
-        }, 
-        // 管理者以外にセキュアな情報を露出しないように
-        (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined);
+        const sellerService = new cinerino.chevre.service.Seller({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const seller = yield sellerService.findById(Object.assign({ id: req.params.id }, (!req.isAdmin) ? { $projection: { 'paymentAccepted.gmoInfo.shopPass': 0 } } : undefined));
         res.json(seller);
+        // const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+        // const seller = await sellerRepo.findById(
+        //     {
+        //         id: req.params.id
+        //     },
+        //     // 管理者以外にセキュアな情報を露出しないように
+        //     (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined
+        // );
+        // res.json(seller);
     }
     catch (error) {
         next(error);
@@ -119,75 +160,89 @@ sellersRouter.get('/:id', permitScopes_1.default(['sellers.*', 'sellers.read']),
  * 販売者更新
  */
 // tslint:disable-next-line:use-default-type-parameter
-sellersRouter.put('/:id', permitScopes_1.default(['sellers.*', 'sellers.write']), rateLimit_1.default, ...[
-    express_validator_1.body('typeOf')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('name.ja')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('name.en')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('parentOrganization.typeOf')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('parentOrganization.name.ja')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('parentOrganization.name.en')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('telephone')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('url')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required')
-        .isURL(),
-    express_validator_1.body('paymentAccepted')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required')
-        .isArray(),
-    express_validator_1.body('hasPOS')
-        .isArray(),
-    express_validator_1.body('areaServed')
-        .isArray()
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const attributes = Object.assign(Object.assign({}, req.body), { project: req.project });
-        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-        yield sellerRepo.save({ id: req.params.id, attributes: attributes });
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// sellersRouter.put<ParamsDictionary>(
+//     '/:id',
+//     permitScopes(['sellers.*', 'sellers.write']),
+//     rateLimit,
+//     ...[
+//         body('typeOf')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('name.ja')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('name.en')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('parentOrganization.typeOf')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('parentOrganization.name.ja')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('parentOrganization.name.en')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('telephone')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('url')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required')
+//             .isURL(),
+//         body('paymentAccepted')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required')
+//             .isArray(),
+//         body('hasPOS')
+//             .isArray(),
+//         body('areaServed')
+//             .isArray()
+//     ],
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             const attributes: cinerino.factory.seller.IAttributes<typeof req.body.typeOf> = {
+//                 ...req.body,
+//                 project: req.project
+//             };
+//             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+//             await sellerRepo.save({ id: req.params.id, attributes: attributes });
+//             res.status(NO_CONTENT)
+//                 .end();
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 /**
  * 販売者削除
  */
-sellersRouter.delete('/:id', permitScopes_1.default(['sellers.*', 'sellers.write']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-        yield sellerRepo.deleteById({
-            id: req.params.id
-        });
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// sellersRouter.delete(
+//     '/:id',
+//     permitScopes(['sellers.*', 'sellers.write']),
+//     rateLimit,
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+//             await sellerRepo.deleteById({
+//                 id: req.params.id
+//             });
+//             res.status(NO_CONTENT)
+//                 .end();
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 exports.default = sellersRouter;

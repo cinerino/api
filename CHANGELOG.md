@@ -18,6 +18,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.18.0 - 2020-07-15
+
+### Changed
+
+- update @cinerino/domain
+- プロジェクト設定からmvtkReserveを削除
+- Eメール送信時にSendGridへユニーク引数を追加
+- ムビチケ決済処理を細分化
+- COA仮予約時のエラーハンドリングを強化
+- 販売者リポジトリをChevreへ移行
+- ssktsムビチケ決済承認処理を本家に統合
+
 ## v5.17.2 - 2020-07-10
 
 ### Changed

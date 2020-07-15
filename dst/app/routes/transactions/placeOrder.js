@@ -132,10 +132,13 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         }
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const expires = req.body.expires;
-        const seller = yield sellerRepo.findById({ id: req.body.seller.id });
+        const sellerService = new cinerino.chevre.service.Seller({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const seller = yield sellerService.findById({ id: req.body.seller.id });
         const passportValidator = (params) => {
             // 許可証発行者確認
             const validIssuer = params.passport.iss === process.env.WAITER_PASSPORT_ISSUER;
@@ -190,7 +193,6 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
             passportValidator: passportValidator
         })({
             project: projectRepo,
-            seller: sellerRepo,
             transaction: transactionRepo
         });
         // tslint:disable-next-line:no-string-literal
@@ -352,14 +354,6 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        // const project = await projectRepo.findById({ id: req.project.id });
-        // if (typeof project.settings?.mvtkReserve?.endpoint !== 'string') {
-        //     throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-        // }
-        // const paymentServiceUrl = await getMvtKReserveEndpoint({
-        //     project: { id: req.project.id },
-        //     paymentMethodType: cinerino.factory.paymentMethodType.MovieTicket
-        // });
         const action = yield cinerino.service.offer.seatReservation.create({
             project: req.project,
             object: Object.assign({}, req.body),
@@ -373,7 +367,6 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
                 auth: mvtkReserveAuthClient
             }),
             project: projectRepo,
-            seller: new cinerino.repository.Seller(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED)
@@ -603,7 +596,6 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
         const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
-        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const sendEmailMessage = req.body.sendEmailMessage === true;
         let email = req.body.email;
@@ -621,25 +613,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
                                     ? (_y = (_x = (_w = (_v = (_u = req.body.potentialActions) === null || _u === void 0 ? void 0 : _u.order) === null || _v === void 0 ? void 0 : _v.potentialActions) === null || _w === void 0 ? void 0 : _w.sendOrder) === null || _x === void 0 ? void 0 : _x.potentialActions) === null || _y === void 0 ? void 0 : _y.sendEmailMessage : [],
                                 ...(sendEmailMessage) ? [{ object: email }] : []
                             ] }) }) }) }) });
-        // let confirmationNumber:
-        //     string | cinerino.service.transaction.placeOrderInProgress.IConfirmationNumberGenerator | undefined;
-        // const project = await projectRepo.findById({ id: req.project.id });
-        // const useReservationNumberAsConfirmationNumber = false;
-        // if (useReservationNumberAsConfirmationNumber) {
-        //     confirmationNumber = (params) => {
-        //         const firstOffer = params.acceptedOffers[0];
-        //         // COAに適合させるため、座席予約の場合、予約番号を確認番号として設定
-        //         if (firstOffer !== undefined
-        //             && firstOffer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
-        //             return String((<cinerino.factory.order.IReservation>firstOffer.itemOffered).reservationNumber);
-        //         } else {
-        //             return params.confirmationNumber;
-        //         }
-        //     };
-        // }
-        const resultOrderParams = Object.assign(Object.assign({}, (_z = req.body.result) === null || _z === void 0 ? void 0 : _z.order), { 
-            // confirmationNumber: confirmationNumber,
-            orderDate: orderDate, numItems: {
+        const resultOrderParams = Object.assign(Object.assign({}, (_z = req.body.result) === null || _z === void 0 ? void 0 : _z.order), { confirmationNumber: undefined, orderDate: orderDate, numItems: {
                 maxValue: NUM_ORDER_ITEMS_MAX_VALUE
                 // minValue: 0
             } });
@@ -648,8 +622,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             project: projectRepo,
             transaction: transactionRepo,
             confirmationNumber: confirmationNumberRepo,
-            orderNumber: orderNumberRepo,
-            seller: sellerRepo
+            orderNumber: orderNumberRepo
         });
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
         // tslint:disable-next-line:no-floating-promises

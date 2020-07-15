@@ -141,12 +141,15 @@ placeOrderTransactionsRouter.post(
 
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
             const expires: Date = req.body.expires;
 
-            const seller = await sellerRepo.findById({ id: <string>req.body.seller.id });
+            const sellerService = new cinerino.chevre.service.Seller({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const seller = await sellerService.findById({ id: <string>req.body.seller.id });
 
             const passportValidator: cinerino.service.transaction.placeOrderInProgress.IPassportValidator =
                 (params) => {
@@ -225,7 +228,6 @@ placeOrderTransactionsRouter.post(
                 passportValidator: passportValidator
             })({
                 project: projectRepo,
-                seller: sellerRepo,
                 transaction: transactionRepo
             });
 
@@ -424,15 +426,6 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
     async (req, res, next) => {
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            // const project = await projectRepo.findById({ id: req.project.id });
-            // if (typeof project.settings?.mvtkReserve?.endpoint !== 'string') {
-            //     throw new cinerino.factory.errors.ServiceUnavailable('Project settings not found');
-            // }
-
-            // const paymentServiceUrl = await getMvtKReserveEndpoint({
-            //     project: { id: req.project.id },
-            //     paymentMethodType: cinerino.factory.paymentMethodType.MovieTicket
-            // });
 
             const action = await cinerino.service.offer.seatReservation.create({
                 project: req.project,
@@ -449,7 +442,6 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
                     auth: mvtkReserveAuthClient
                 }),
                 project: projectRepo,
-                seller: new cinerino.repository.Seller(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
@@ -724,7 +716,6 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
             const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
-            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
 
             const sendEmailMessage = req.body.sendEmailMessage === true;
@@ -764,28 +755,9 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 }
             };
 
-            // let confirmationNumber:
-            //     string | cinerino.service.transaction.placeOrderInProgress.IConfirmationNumberGenerator | undefined;
-
-            // const project = await projectRepo.findById({ id: req.project.id });
-            // const useReservationNumberAsConfirmationNumber = false;
-            // if (useReservationNumberAsConfirmationNumber) {
-            //     confirmationNumber = (params) => {
-            //         const firstOffer = params.acceptedOffers[0];
-
-            //         // COAに適合させるため、座席予約の場合、予約番号を確認番号として設定
-            //         if (firstOffer !== undefined
-            //             && firstOffer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
-            //             return String((<cinerino.factory.order.IReservation>firstOffer.itemOffered).reservationNumber);
-            //         } else {
-            //             return params.confirmationNumber;
-            //         }
-            //     };
-            // }
-
             const resultOrderParams: cinerino.service.transaction.placeOrderInProgress.IResultOrderParams = {
                 ...req.body.result?.order,
-                // confirmationNumber: confirmationNumber,
+                confirmationNumber: undefined,
                 orderDate: orderDate,
                 numItems: {
                     maxValue: NUM_ORDER_ITEMS_MAX_VALUE
@@ -808,8 +780,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 project: projectRepo,
                 transaction: transactionRepo,
                 confirmationNumber: confirmationNumberRepo,
-                orderNumber: orderNumberRepo,
-                seller: sellerRepo
+                orderNumber: orderNumberRepo
             });
 
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)

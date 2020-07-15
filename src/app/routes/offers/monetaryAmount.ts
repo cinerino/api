@@ -105,7 +105,6 @@ if (process.env.USE_MONEY_TRANSFER === '1') {
                 })({
                     action: new cinerino.repository.Action(mongoose.connection),
                     project: new cinerino.repository.Project(mongoose.connection),
-                    seller: new cinerino.repository.Seller(mongoose.connection),
                     transaction: new cinerino.repository.Transaction(mongoose.connection)
                 });
 

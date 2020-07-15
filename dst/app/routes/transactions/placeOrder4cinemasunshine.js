@@ -126,135 +126,158 @@ placeOrder4cinemasunshineRouter.patch('/:transactionId/actions/authorize/seatRes
 /**
  * 会員プログラムオファー承認アクション
  */
-placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/offer/programMembership', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (_, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO 実装
-        res.status(http_status_1.CREATED)
-            .json({});
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// placeOrder4cinemasunshineRouter.post(
+//     '/:transactionId/actions/authorize/offer/programMembership',
+//     permitScopes(['transactions']),
+//     validator,
+//     async (req, res, next) => {
+//         await rateLimit4transactionInProgress({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         await lockTransaction({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (_, res, next) => {
+//         try {
+// tslint:disable-next-line:no-suspicious-comment
+//             // TODO 実装
+//             res.status(CREATED)
+//                 .json({});
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 /**
  * 会員プログラムオファー承認アクション取消
  */
-placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/offer/programMembership/:actionId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (_, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO 実装
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// placeOrder4cinemasunshineRouter.delete(
+//     '/:transactionId/actions/authorize/offer/programMembership/:actionId',
+//     permitScopes(['transactions']),
+//     validator,
+//     async (req, res, next) => {
+//         await rateLimit4transactionInProgress({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         await lockTransaction({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (_, res, next) => {
+//         try {
+// tslint:disable-next-line:no-suspicious-comment
+//             // TODO 実装
+//             res.status(NO_CONTENT)
+//                 .end();
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 /**
  * 前売券決済承認
  */
-placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/mvtk', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
-    try {
-        const authorizeObject = {
-            typeOf: (typeof req.body.typeOf === 'string' && req.body.typeOf.length > 0)
-                ? req.body.typeOf
-                : cinerino.factory.paymentMethodType.MovieTicket,
-            seatInfoSyncIn: {
-                kgygishCd: (_a = req.body.seatInfoSyncIn) === null || _a === void 0 ? void 0 : _a.kgygishCd,
-                yykDvcTyp: (_b = req.body.seatInfoSyncIn) === null || _b === void 0 ? void 0 : _b.yykDvcTyp,
-                trkshFlg: (_c = req.body.seatInfoSyncIn) === null || _c === void 0 ? void 0 : _c.trkshFlg,
-                kgygishSstmZskyykNo: (_d = req.body.seatInfoSyncIn) === null || _d === void 0 ? void 0 : _d.kgygishSstmZskyykNo,
-                kgygishUsrZskyykNo: (_e = req.body.seatInfoSyncIn) === null || _e === void 0 ? void 0 : _e.kgygishUsrZskyykNo,
-                jeiDt: (_f = req.body.seatInfoSyncIn) === null || _f === void 0 ? void 0 : _f.jeiDt,
-                kijYmd: (_g = req.body.seatInfoSyncIn) === null || _g === void 0 ? void 0 : _g.kijYmd,
-                stCd: (_h = req.body.seatInfoSyncIn) === null || _h === void 0 ? void 0 : _h.stCd,
-                screnCd: (_j = req.body.seatInfoSyncIn) === null || _j === void 0 ? void 0 : _j.screnCd,
-                knyknrNoInfo: (_k = req.body.seatInfoSyncIn) === null || _k === void 0 ? void 0 : _k.knyknrNoInfo,
-                zskInfo: (_l = req.body.seatInfoSyncIn) === null || _l === void 0 ? void 0 : _l.zskInfo,
-                skhnCd: (_m = req.body.seatInfoSyncIn) === null || _m === void 0 ? void 0 : _m.skhnCd
-            }
-        };
-        const actions = yield cinerino.service.payment.advancedTicket.authorize({
-            project: req.project,
-            agentId: req.user.sub,
-            transactionId: req.params.transactionId,
-            authorizeObject: authorizeObject
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            paymentMethod: new cinerino.repository.PaymentMethod(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection)
-        });
-        res.status(http_status_1.CREATED)
-            .json({
-            // ムビチケ承認アクションが購入管理番号数分作成されるので、本来リストを返す必要があるが
-            // シネマサンシャインでは、承認取消時にバックエンドでは何も処理していないので、いったんこれで回避
-            id: actions[0].id
-        });
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// placeOrder4cinemasunshineRouter.post(
+//     '/:transactionId/actions/authorize/mvtk',
+//     permitScopes(['transactions']),
+//     validator,
+//     async (req, res, next) => {
+//         await rateLimit4transactionInProgress({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         await lockTransaction({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         try {
+//             const authorizeObject = {
+//                 typeOf: (typeof req.body.typeOf === 'string' && req.body.typeOf.length > 0)
+//                     ? req.body.typeOf
+//                     : cinerino.factory.paymentMethodType.MovieTicket,
+//                 seatInfoSyncIn: {
+//                     kgygishCd: req.body.seatInfoSyncIn?.kgygishCd,
+//                     yykDvcTyp: req.body.seatInfoSyncIn?.yykDvcTyp,
+//                     trkshFlg: req.body.seatInfoSyncIn?.trkshFlg,
+//                     kgygishSstmZskyykNo: req.body.seatInfoSyncIn?.kgygishSstmZskyykNo,
+//                     kgygishUsrZskyykNo: req.body.seatInfoSyncIn?.kgygishUsrZskyykNo,
+//                     jeiDt: req.body.seatInfoSyncIn?.jeiDt,
+//                     kijYmd: req.body.seatInfoSyncIn?.kijYmd,
+//                     stCd: req.body.seatInfoSyncIn?.stCd,
+//                     screnCd: req.body.seatInfoSyncIn?.screnCd,
+//                     knyknrNoInfo: req.body.seatInfoSyncIn?.knyknrNoInfo,
+//                     zskInfo: req.body.seatInfoSyncIn?.zskInfo,
+//                     skhnCd: req.body.seatInfoSyncIn?.skhnCd
+//                 }
+//             };
+//             const actions = await cinerino.service.payment.advancedTicket.authorize({
+//                 project: req.project,
+//                 agentId: req.user.sub,
+//                 transactionId: req.params.transactionId,
+//                 authorizeObject: authorizeObject
+//             })({
+//                 action: new cinerino.repository.Action(mongoose.connection),
+//                 paymentMethod: new cinerino.repository.PaymentMethod(mongoose.connection),
+//                 transaction: new cinerino.repository.Transaction(mongoose.connection)
+//             });
+//             res.status(CREATED)
+//                 .json({
+//                     // ムビチケ承認アクションが購入管理番号数分作成されるので、本来リストを返す必要があるが
+//                     // シネマサンシャインでは、承認取消時にバックエンドでは何も処理していないので、いったんこれで回避
+//                     id: actions[0].id
+//                 });
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 /**
  * ムビチケ取消
  */
-placeOrder4cinemasunshineRouter.delete('/:transactionId/actions/authorize/mvtk/:actionId', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield rateLimit4transactionInProgress_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield lockTransaction_1.default({
-        typeOf: cinerino.factory.transactionType.PlaceOrder,
-        id: req.params.transactionId
-    })(req, res, next);
-}), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        yield cinerino.service.payment.advancedTicket.voidTransaction({
-            agentId: req.user.sub,
-            transactionId: req.params.transactionId,
-            actionId: req.params.actionId
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection)
-        });
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// placeOrder4cinemasunshineRouter.delete(
+//     '/:transactionId/actions/authorize/mvtk/:actionId',
+//     permitScopes(['transactions']),
+//     validator,
+//     async (req, res, next) => {
+//         await rateLimit4transactionInProgress({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         await lockTransaction({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         try {
+//             await cinerino.service.payment.advancedTicket.voidTransaction({
+//                 agentId: req.user.sub,
+//                 transactionId: req.params.transactionId,
+//                 actionId: req.params.actionId
+//             })({
+//                 action: new cinerino.repository.Action(mongoose.connection),
+//                 transaction: new cinerino.repository.Transaction(mongoose.connection)
+//             });
+//             res.status(NO_CONTENT)
+//                 .end();
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 exports.default = placeOrder4cinemasunshineRouter;

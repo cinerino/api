@@ -107,7 +107,6 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const fromLocation = yield validateFromLocation(req);
         const transaction = yield cinerino.service.transaction.moneyTransfer.start({
@@ -128,7 +127,6 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
             // accountService: accountService,
             action: actionRepo,
             project: projectRepo,
-            seller: sellerRepo,
             transaction: transactionRepo
         });
         // tslint:disable-next-line:no-string-literal
