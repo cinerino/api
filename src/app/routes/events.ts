@@ -6,6 +6,7 @@ import { Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
 import { query } from 'express-validator';
+import { NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
 import permitScopes from '../middlewares/permitScopes';
@@ -130,6 +131,42 @@ eventsRouter.get(
 
             res.json(event);
         } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * イベント部分更新
+ */
+eventsRouter.patch(
+    '/:id',
+    permitScopes(['events.*', 'events.update']),
+    rateLimit,
+    validator,
+    async (req, res, next) => {
+        try {
+            const eventService = new cinerino.chevre.service.Event({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+
+            const event = await eventService.findById<cinerino.factory.chevre.eventType.ScreeningEvent>({ id: req.params.id });
+
+            await eventService.updatePartially<cinerino.factory.chevre.eventType.ScreeningEvent>({
+                id: event.id,
+                attributes: <any>{
+                    // ...event,
+                    typeOf: event.typeOf,
+                    // とりあえず限定された属性のみ更新を許可
+                    ...(typeof req.body.eventStatus === 'string') ? { eventStatus: req.body.eventStatus } : undefined
+                }
+            });
+
+            res.status(NO_CONTENT)
+                .end();
+        } catch (error) {
+            error = cinerino.errorHandler.handleChevreError(error);
             next(error);
         }
     }

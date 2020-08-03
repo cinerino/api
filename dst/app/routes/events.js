@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
+const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
@@ -113,6 +114,30 @@ eventsRouter.get('/:id', permitScopes_1.default(['events.*', 'events.read']), ra
         res.json(event);
     }
     catch (error) {
+        next(error);
+    }
+}));
+/**
+ * イベント部分更新
+ */
+eventsRouter.patch('/:id', permitScopes_1.default(['events.*', 'events.update']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const eventService = new cinerino.chevre.service.Event({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const event = yield eventService.findById({ id: req.params.id });
+        yield eventService.updatePartially({
+            id: event.id,
+            attributes: Object.assign({ 
+                // ...event,
+                typeOf: event.typeOf }, (typeof req.body.eventStatus === 'string') ? { eventStatus: req.body.eventStatus } : undefined)
+        });
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        error = cinerino.errorHandler.handleChevreError(error);
         next(error);
     }
 }));
