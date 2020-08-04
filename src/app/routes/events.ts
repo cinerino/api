@@ -83,7 +83,10 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const eventService = new cinerino.chevre.service.Event({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
 
             const searchConditions: cinerino.chevre.factory.event.screeningEvent.ISearchConditions = {
                 ...req.query,
@@ -93,12 +96,7 @@ eventsRouter.get(
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined
             };
 
-            const searchEventsResult = await cinerino.service.offer.searchEvents({
-                project: req.project,
-                conditions: searchConditions
-            })({
-                project: projectRepo
-            });
+            const searchEventsResult = await eventService.search(searchConditions);
 
             if (typeof searchEventsResult.totalCount === 'number') {
                 res.set('X-Total-Count', searchEventsResult.totalCount.toString());
