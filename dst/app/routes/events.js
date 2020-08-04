@@ -81,16 +81,14 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const eventService = new cinerino.chevre.service.Event({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined });
-        const searchEventsResult = yield cinerino.service.offer.searchEvents({
-            project: req.project,
-            conditions: searchConditions
-        })({
-            project: projectRepo
-        });
+        const searchEventsResult = yield eventService.search(searchConditions);
         if (typeof searchEventsResult.totalCount === 'number') {
             res.set('X-Total-Count', searchEventsResult.totalCount.toString());
         }
