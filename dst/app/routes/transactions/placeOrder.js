@@ -114,7 +114,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     try {
-        const now = new Date();
+        // const now = new Date();
         // WAITER有効設定であれば許可証をセット
         let passport;
         if (!WAITER_DISABLED) {
@@ -130,7 +130,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
                 secret: process.env.WAITER_SECRET
             };
         }
-        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+        // const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const expires = req.body.expires;
@@ -169,25 +169,26 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         const project = yield projectRepo.findById({ id: req.project.id });
         const useTransactionClientUser = project.settings !== undefined && project.settings.useTransactionClientUser === true;
         // 現在所有している会員プログラムを全て検索
-        const programMembershipOwnershipInfos = yield ownershipInfoRepo.search({
-            project: { id: { $eq: req.project.id } },
-            typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
-            ownedBy: { id: req.agent.id },
-            ownedFrom: now,
-            ownedThrough: now
-        });
+        // const programMembershipOwnershipInfos =
+        //     await ownershipInfoRepo.search({
+        //         project: { id: { $eq: req.project.id } },
+        //         typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
+        //         ownedBy: { id: req.agent.id },
+        //         ownedFrom: now,
+        //         ownedThrough: now
+        //     });
         const orderName = (typeof ((_a = req.body.object) === null || _a === void 0 ? void 0 : _a.name) === 'string') ? (_b = req.body.object) === null || _b === void 0 ? void 0 : _b.name : DEFAULT_ORDER_NAME;
         const transaction = yield cinerino.service.transaction.placeOrderInProgress.start({
             project: req.project,
             expires: expires,
-            agent: Object.assign(Object.assign(Object.assign({}, req.agent), { identifier: [
+            agent: Object.assign(Object.assign({}, req.agent), { identifier: [
                     ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
                     ...(Array.isArray((_c = req.body.agent) === null || _c === void 0 ? void 0 : _c.identifier))
                         ? req.body.agent.identifier.map((p) => {
                             return { name: String(p.name), value: String(p.value) };
                         })
                         : []
-                ] }), { memberOfs: programMembershipOwnershipInfos.map((o) => o.typeOfGood) }),
+                ] }),
             seller: req.body.seller,
             object: Object.assign(Object.assign({ passport: passport }, (useTransactionClientUser) ? { clientUser: req.user } : undefined), (typeof orderName === 'string') ? { name: orderName } : undefined),
             passportValidator: passportValidator

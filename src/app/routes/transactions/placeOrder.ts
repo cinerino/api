@@ -121,7 +121,7 @@ placeOrderTransactionsRouter.post(
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
-            const now = new Date();
+            // const now = new Date();
 
             // WAITER有効設定であれば許可証をセット
             let passport: cinerino.factory.transaction.placeOrder.IPassportBeforeStart | undefined;
@@ -139,7 +139,7 @@ placeOrderTransactionsRouter.post(
                 };
             }
 
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+            // const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
@@ -192,14 +192,14 @@ placeOrderTransactionsRouter.post(
                 project.settings !== undefined && (<any>project.settings).useTransactionClientUser === true;
 
             // 現在所有している会員プログラムを全て検索
-            const programMembershipOwnershipInfos =
-                await ownershipInfoRepo.search({
-                    project: { id: { $eq: req.project.id } },
-                    typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
-                    ownedBy: { id: req.agent.id },
-                    ownedFrom: now,
-                    ownedThrough: now
-                });
+            // const programMembershipOwnershipInfos =
+            //     await ownershipInfoRepo.search({
+            //         project: { id: { $eq: req.project.id } },
+            //         typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
+            //         ownedBy: { id: req.agent.id },
+            //         ownedFrom: now,
+            //         ownedThrough: now
+            //     });
 
             const orderName: string | undefined = (typeof req.body.object?.name === 'string') ? req.body.object?.name : DEFAULT_ORDER_NAME;
 
@@ -215,9 +215,9 @@ placeOrderTransactionsRouter.post(
                                 return { name: String(p.name), value: String(p.value) };
                             })
                             : []
-                    ],
+                    ]
                     // 所有メンバーシップを記録
-                    ...{ memberOfs: programMembershipOwnershipInfos.map((o) => o.typeOfGood) }
+                    // ...{ memberOfs: programMembershipOwnershipInfos.map((o) => o.typeOfGood) }
                 },
                 seller: req.body.seller,
                 object: {

@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 注文取引開始時の所有メンバーシップ検索を削除
+
 ### Deprecated
 
 ### Removed
