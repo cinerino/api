@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- メンバーシップサービス登録エンドポイントをDEFAULT_MEMBERSHIP_SERVICE_IDに対してのみ受け入れるように調整
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v5.22.0 - 2020-08-11
+
+### Changed
+
+- メンバーシップサービス登録エンドポイントをDEFAULT_MEMBERSHIP_SERVICE_IDに対してのみ受け入れるように調整
 
 ## v5.21.2 - 2020-08-08
 
