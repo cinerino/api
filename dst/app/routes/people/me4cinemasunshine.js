@@ -21,13 +21,34 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
+const DEFAULT_MEMBERSHIP_SERVICE_ID = process.env.DEFAULT_MEMBERSHIP_SERVICE_ID;
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const me4cinemasunshineRouter = express_1.Router();
 /**
  * メンバーシップ登録
  */
 me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.default(['people.ownershipInfos', 'people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const productId = req.body.programMembershipId;
+        if (typeof DEFAULT_MEMBERSHIP_SERVICE_ID !== 'string') {
+            throw new cinerino.factory.errors.ServiceUnavailable('DEFAULT_MEMBERSHIP_SERVICE_ID undefined');
+        }
+        const productId = DEFAULT_MEMBERSHIP_SERVICE_ID;
+        const productService = new cinerino.chevre.service.Product({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const membershipService = yield productService.findById({
+            id: productId
+        });
+        if (membershipService.project.id !== req.project.id) {
+            throw new cinerino.factory.errors.NotFound('MembershipService');
+        }
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const offers = yield cinerino.service.offer.product.search({
             project: { id: req.project.id },

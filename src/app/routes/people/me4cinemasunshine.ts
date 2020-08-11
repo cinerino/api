@@ -12,6 +12,16 @@ import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
+const DEFAULT_MEMBERSHIP_SERVICE_ID = process.env.DEFAULT_MEMBERSHIP_SERVICE_ID;
+
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+
 const me4cinemasunshineRouter = Router();
 
 /**
@@ -24,7 +34,22 @@ me4cinemasunshineRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const productId = <string>req.body.programMembershipId;
+            if (typeof DEFAULT_MEMBERSHIP_SERVICE_ID !== 'string') {
+                throw new cinerino.factory.errors.ServiceUnavailable('DEFAULT_MEMBERSHIP_SERVICE_ID undefined');
+            }
+            const productId = DEFAULT_MEMBERSHIP_SERVICE_ID;
+
+            const productService = new cinerino.chevre.service.Product({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+
+            const membershipService = await productService.findById({
+                id: productId
+            });
+            if (membershipService.project.id !== req.project.id) {
+                throw new cinerino.factory.errors.NotFound('MembershipService');
+            }
 
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
