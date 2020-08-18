@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- Waiter許可証バリデーションに販売者:*のパターンを追加
+
 ### Deprecated
 
 ### Removed
