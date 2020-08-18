@@ -161,8 +161,10 @@ placeOrderTransactionsRouter.post(
                     const newValidScope = (
                         newExplodedScopeStrings[0] === 'Transaction' && // スコープ接頭辞確認
                         newExplodedScopeStrings[1] === cinerino.factory.transactionType.PlaceOrder && // スコープ接頭辞確認
-                        // tslint:disable-next-line:no-magic-numbers
-                        newExplodedScopeStrings[2] === req.body.seller.id // 販売者識別子確認
+                        (
+                            // tslint:disable-next-line:no-magic-numbers
+                            newExplodedScopeStrings[2] === req.body.seller.id || newExplodedScopeStrings[2] === '*' // 販売者ID確認
+                        )
                     );
 
                     // スコープのフォーマットは、placeOrderTransaction.${sellerIdentifier}

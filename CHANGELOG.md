@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.23.0 - 2020-08-18
+
+### Changed
+
+- Waiter許可証バリデーションに販売者:*のパターンを追加
+
 ## v5.22.0 - 2020-08-11
 
 ### Changed
