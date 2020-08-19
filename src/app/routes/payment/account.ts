@@ -129,6 +129,7 @@ accountPaymentRouter.post<ParamsDictionary>(
                 project: req.project,
                 object: {
                     typeOf: cinerino.factory.paymentMethodType.Account,
+                    paymentMethod: cinerino.factory.paymentMethodType.Account,
                     amount: Number(req.body.object.amount),
                     currency: currency,
                     additionalProperty: (Array.isArray(req.body.object.additionalProperty))

@@ -175,7 +175,7 @@ movieTicketPaymentRouter.post<ParamsDictionary>(
     async (req, res, next) => {
         try {
             let paymentMethodType: cinerino.factory.paymentMethodType.MovieTicket | cinerino.factory.paymentMethodType.MGTicket
-                = req.body.object?.typeOf;
+                = req.body.object?.paymentMethod;
             if (typeof paymentMethodType !== 'string') {
                 paymentMethodType = cinerino.factory.paymentMethodType.MovieTicket;
             }
@@ -188,7 +188,8 @@ movieTicketPaymentRouter.post<ParamsDictionary>(
             const action = await cinerino.service.payment.movieTicket.authorize({
                 agent: { id: req.user.sub },
                 object: {
-                    typeOf: <any>paymentMethodType,
+                    typeOf: paymentMethodType,
+                    paymentMethod: paymentMethodType,
                     amount: 0,
                     additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                         ? (<any[]>req.body.object.additionalProperty).map((p: any) => {

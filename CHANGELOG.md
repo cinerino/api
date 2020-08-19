@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.24.0 - 2020-08-19
+
+### Changed
+
+- 決済承認アクションにobject.paymentMethodを追加
+
 ## v5.23.0 - 2020-08-18
 
 ### Changed

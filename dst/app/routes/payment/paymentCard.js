@@ -103,6 +103,7 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
 }), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -204,7 +205,7 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
         const currency = cinerino.factory.priceCurrency.JPY;
         const action = yield cinerino.service.payment.paymentCard.authorize({
             project: req.project,
-            object: Object.assign(Object.assign({ typeOf: cinerino.factory.paymentMethodType.PaymentCard, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+            object: Object.assign(Object.assign({ typeOf: cinerino.factory.paymentMethodType.PaymentCard, paymentMethod: (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.paymentMethod, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {
                         return { name: String(p.name), value: String(p.value) };
                     })
