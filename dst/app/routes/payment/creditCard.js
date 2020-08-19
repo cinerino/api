@@ -92,7 +92,7 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['transactions
         const action = yield cinerino.service.payment.creditCard.authorize({
             project: req.project,
             agent: { id: req.user.sub },
-            object: Object.assign(Object.assign({ typeOf: cinerino.factory.paymentMethodType.CreditCard, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+            object: Object.assign(Object.assign({ typeOf: cinerino.factory.paymentMethodType.CreditCard, paymentMethod: cinerino.factory.paymentMethodType.CreditCard, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {
                         return { name: String(p.name), value: String(p.value) };
                     })

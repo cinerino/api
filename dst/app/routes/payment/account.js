@@ -119,7 +119,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
         const currency = accountType;
         const action = yield cinerino.service.payment.account.authorize({
             project: req.project,
-            object: Object.assign(Object.assign(Object.assign({ typeOf: cinerino.factory.paymentMethodType.Account, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+            object: Object.assign(Object.assign(Object.assign({ typeOf: cinerino.factory.paymentMethodType.Account, paymentMethod: cinerino.factory.paymentMethodType.Account, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {
                         return { name: String(p.name), value: String(p.value) };
                     })
