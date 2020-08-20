@@ -21,6 +21,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- メンバーシッププログラム検索を削除
+
 ### Fixed
 
 ### Security
