@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - アクションコレクションインデックス調整
 - 決済承認アクションのinstrumentを決済サービスとして定義
 - 決済承認アクションのobject.typeOfを'Payment'に統一
+- 認可コードフローのクライアントが、アプリケーションクライアントとしてプロジェクトを検索できるように調整
 
 ### Deprecated
 
