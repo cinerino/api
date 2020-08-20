@@ -188,7 +188,8 @@ movieTicketPaymentRouter.post<ParamsDictionary>(
             const action = await cinerino.service.payment.movieTicket.authorize({
                 agent: { id: req.user.sub },
                 object: {
-                    typeOf: paymentMethodType,
+                    // typeOf: paymentMethodType,
+                    typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment,
                     paymentMethod: paymentMethodType,
                     amount: 0,
                     additionalProperty: (Array.isArray(req.body.object.additionalProperty))

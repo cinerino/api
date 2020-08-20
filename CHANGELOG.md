@@ -13,6 +13,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文取引確定時の決済承認リストが静的な決済方法管理に依存しないように調整
 - 注文取引確定時の決済承認リストが承認アクションのobject.typeOfに依存しないように調整
 - アクションコレクションインデックス調整
+- 決済承認アクションのinstrumentを決済サービスとして定義
+- 決済承認アクションのobject.typeOfを'Payment'に統一
 
 ### Deprecated
 

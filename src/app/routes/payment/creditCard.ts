@@ -103,7 +103,8 @@ creditCardPaymentRouter.post<ParamsDictionary>(
                 project: req.project,
                 agent: { id: req.user.sub },
                 object: {
-                    typeOf: cinerino.factory.paymentMethodType.CreditCard,
+                    // typeOf: cinerino.factory.paymentMethodType.CreditCard,
+                    typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment,
                     paymentMethod: cinerino.factory.paymentMethodType.CreditCard,
                     additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                         ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
