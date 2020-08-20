@@ -73,7 +73,7 @@ anyPaymentRouter.post('/authorize', permitScopes_1.default(['pos', 'payment.any.
     try {
         const action = yield cinerino.service.payment.any.authorize({
             agent: { id: req.user.sub },
-            object: Object.assign(Object.assign(Object.assign({}, req.body.object), { additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+            object: Object.assign(Object.assign(Object.assign({}, req.body.object), { typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {
                         return { name: String(p.name), value: String(p.value) };
                     })
