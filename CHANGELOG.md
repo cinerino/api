@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 決済承認アクションのinstrumentを決済アクションに連携
 - 認可コードフローのクライアントが、アプリケーションクライアントとしてプロジェクトを検索できるように調整
 - クレジットカード決済タスクを汎用決済タスクに変更
+- ムビチケ決済タスクを汎用決済タスクに変更
 
 ### Deprecated
 
