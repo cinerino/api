@@ -21,6 +21,7 @@ import deleteMember from './continuous/deleteMember/run';
 import givePointAward from './continuous/givePointAward/run';
 import moneyTransfer from './continuous/moneyTransfer/run';
 import orderProgramMembership from './continuous/orderProgramMembership/run';
+import pay from './continuous/pay/run';
 import payAccount from './continuous/payAccount/run';
 import payCreditCard from './continuous/payCreditCard/run';
 import payMovieTicket from './continuous/payMovieTicket/run';
@@ -62,6 +63,7 @@ export default async () => {
     await givePointAward({});
     await moneyTransfer({});
     await orderProgramMembership({});
+    await pay({});
     await payAccount({});
     await payCreditCard({});
     await payMovieTicket({});

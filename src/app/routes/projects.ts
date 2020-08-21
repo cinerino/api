@@ -14,6 +14,9 @@ import validator from '../middlewares/validator';
 import { RoleName } from '../iam';
 
 const RESOURCE_SERVER_IDENTIFIER = <string>process.env.RESOURCE_SERVER_IDENTIFIER;
+const TOKEN_ISSUERS_AS_ADMIN: string[] = (typeof process.env.TOKEN_ISSUERS_AS_ADMIN === 'string')
+    ? process.env.TOKEN_ISSUERS_AS_ADMIN.split(',')
+    : [];
 
 const projectsRouter = Router();
 
@@ -200,12 +203,21 @@ projectsRouter.get(
             const page = (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1;
 
             // 権限を持つプロジェクト検索
-            const searchCoinditions = {
-                'member.id': req.user.sub
-            };
+            let searchConditions: any;
+            if (TOKEN_ISSUERS_AS_ADMIN.includes(req.user.iss)) {
+                // 管理ユーザープールのクライアントであればreq.user.subとして検索
+                searchConditions = {
+                    'member.id': { $eq: req.user.sub }
+                };
+            } else {
+                // それ以外であればreq.user.client_idとして検索
+                searchConditions = {
+                    'member.id': { $eq: req.user.client_id }
+                };
+            }
 
             const projectMembers = await memberRepo.memberModel.find(
-                searchCoinditions,
+                searchConditions,
                 { project: 1 }
             )
                 .limit(limit)

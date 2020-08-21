@@ -165,7 +165,9 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
         });
         const action = yield cinerino.service.payment.movieTicket.authorize({
             agent: { id: req.user.sub },
-            object: Object.assign({ typeOf: paymentMethodType, paymentMethod: paymentMethodType, amount: 0, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+            object: Object.assign({ 
+                // typeOf: paymentMethodType,
+                typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment, paymentMethod: paymentMethodType, amount: 0, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {
                         return { name: String(p.name), value: String(p.value) };
                     })

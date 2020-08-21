@@ -226,7 +226,8 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
             const action = await cinerino.service.payment.paymentCard.authorize({
                 project: req.project,
                 object: {
-                    typeOf: cinerino.factory.paymentMethodType.PaymentCard,
+                    // typeOf: cinerino.factory.paymentMethodType.PaymentCard,
+                    typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment,
                     paymentMethod: req.body.object?.paymentMethod,
                     amount: Number(req.body.object.amount),
                     currency: currency,

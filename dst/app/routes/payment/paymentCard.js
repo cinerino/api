@@ -205,7 +205,9 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
         const currency = cinerino.factory.priceCurrency.JPY;
         const action = yield cinerino.service.payment.paymentCard.authorize({
             project: req.project,
-            object: Object.assign(Object.assign({ typeOf: cinerino.factory.paymentMethodType.PaymentCard, paymentMethod: (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.paymentMethod, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+            object: Object.assign(Object.assign({ 
+                // typeOf: cinerino.factory.paymentMethodType.PaymentCard,
+                typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment, paymentMethod: (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.paymentMethod, amount: Number(req.body.object.amount), currency: currency, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {
                         return { name: String(p.name), value: String(p.value) };
                     })

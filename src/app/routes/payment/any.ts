@@ -78,6 +78,7 @@ anyPaymentRouter.post<ParamsDictionary>(
                 agent: { id: req.user.sub },
                 object: {
                     ...req.body.object,
+                    // typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment,
                     additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                         ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
                             return { name: String(p.name), value: String(p.value) };

@@ -128,7 +128,8 @@ accountPaymentRouter.post<ParamsDictionary>(
             const action = await cinerino.service.payment.account.authorize({
                 project: req.project,
                 object: {
-                    typeOf: cinerino.factory.paymentMethodType.Account,
+                    // typeOf: cinerino.factory.paymentMethodType.Account,
+                    typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment,
                     paymentMethod: cinerino.factory.paymentMethodType.Account,
                     amount: Number(req.body.object.amount),
                     currency: currency,
