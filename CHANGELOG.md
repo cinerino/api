@@ -10,6 +10,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v5.26.0 - 2020-08-21
+
+### Changed
+
 - 注文取引確定時の決済承認リストが静的な決済方法管理に依存しないように調整
 - 注文取引確定時の決済承認リストが承認アクションのobject.typeOfに依存しないように調整
 - アクションコレクションインデックス調整
@@ -20,15 +32,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - クレジットカード決済タスクを汎用決済タスクに変更
 - ムビチケ決済タスクを汎用決済タスクに変更
 
-### Deprecated
-
 ### Removed
 
 - メンバーシッププログラム検索を削除
-
-### Fixed
-
-### Security
 
 ## v5.25.0 - 2020-08-19
 
