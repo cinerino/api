@@ -49,7 +49,9 @@ const run_34 = require("./continuous/sendOrder/run");
 const run_35 = require("./continuous/triggerWebhook/run");
 const run_36 = require("./continuous/unRegisterProgramMembership/run");
 const run_37 = require("./continuous/voidMoneyTransfer/run");
-const run_38 = require("./continuous/voidRegisterService/run");
+const run_38 = require("./continuous/voidPayment/run");
+const run_39 = require("./continuous/voidRegisterService/run");
+const USE_LEGACY_PAYMENT_TASKS = process.env.USE_LEGACY_PAYMENT_TASKS === '1';
 exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_1.default({});
     yield run_4.default({});
@@ -58,9 +60,6 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_5.default({});
     yield run_6.default({});
     yield run_7.default({});
-    yield run_8.default({});
-    yield run_9.default({});
-    yield run_10.default({});
     yield run_11.default({});
     yield run_12.default({});
     yield run_13.default({});
@@ -70,10 +69,6 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_17.default({});
     yield run_18.default({});
     yield run_19.default({});
-    yield run_20.default({});
-    yield run_21.default({});
-    yield run_22.default({});
-    yield run_23.default({});
     yield run_24.default({});
     yield run_25.default({});
     yield run_26.default({});
@@ -89,4 +84,14 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_36.default({});
     yield run_37.default({});
     yield run_38.default({});
+    yield run_39.default({});
+    if (USE_LEGACY_PAYMENT_TASKS) {
+        yield run_8.default({});
+        yield run_9.default({});
+        yield run_10.default({});
+        yield run_20.default({});
+        yield run_21.default({});
+        yield run_22.default({});
+        yield run_23.default({});
+    }
 });

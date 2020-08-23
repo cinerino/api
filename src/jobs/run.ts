@@ -40,7 +40,10 @@ import sendOrder from './continuous/sendOrder/run';
 import triggerWebhook from './continuous/triggerWebhook/run';
 import unRegisterProgramMembership from './continuous/unRegisterProgramMembership/run';
 import voidMoneyTransfer from './continuous/voidMoneyTransfer/run';
+import voidPayment from './continuous/voidPayment/run';
 import voidRegisterService from './continuous/voidRegisterService/run';
+
+const USE_LEGACY_PAYMENT_TASKS = process.env.USE_LEGACY_PAYMENT_TASKS === '1';
 
 export default async () => {
     await abortTasks({});
@@ -52,9 +55,6 @@ export default async () => {
     await onTransactionConfirmed({});
     await onTransactionExpired({});
 
-    await cancelAccount({});
-    await cancelCreditCard({});
-    await cancelPaymentCard({});
     await cancelReservation({});
     await cancelSeatReservation({});
     await confirmReservation({});
@@ -64,10 +64,6 @@ export default async () => {
     await moneyTransfer({});
     await orderProgramMembership({});
     await pay({});
-    await payAccount({});
-    await payCreditCard({});
-    await payMovieTicket({});
-    await payPaymentCard({});
     await placeOrder({});
     await refundAccount({});
     await refundCreditCard({});
@@ -82,5 +78,16 @@ export default async () => {
     await triggerWebhook({});
     await unRegisterProgramMembership({});
     await voidMoneyTransfer({});
+    await voidPayment({});
     await voidRegisterService({});
+
+    if (USE_LEGACY_PAYMENT_TASKS) {
+        await cancelAccount({});
+        await cancelCreditCard({});
+        await cancelPaymentCard({});
+        await payAccount({});
+        await payCreditCard({});
+        await payMovieTicket({});
+        await payPaymentCard({});
+    }
 };

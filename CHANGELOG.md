@@ -8,7 +8,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 汎用決済中止タスクを追加
+
 ### Changed
+
+- 口座決済タスクを汎用決済タスクに変更
+- ペイメントカード決済タスクを汎用決済タスクに変更
 
 ### Deprecated
 
