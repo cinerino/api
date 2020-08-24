@@ -27,6 +27,7 @@ import payCreditCard from './continuous/payCreditCard/run';
 import payMovieTicket from './continuous/payMovieTicket/run';
 import payPaymentCard from './continuous/payPaymentCard/run';
 import placeOrder from './continuous/placeOrder/run';
+import refund from './continuous/refund/run';
 import refundAccount from './continuous/refundAccount/run';
 import refundCreditCard from './continuous/refundCreditCard/run';
 import refundMovieTicket from './continuous/refundMovieTicket/run';
@@ -65,10 +66,7 @@ export default async () => {
     await orderProgramMembership({});
     await pay({});
     await placeOrder({});
-    await refundAccount({});
-    await refundCreditCard({});
-    await refundMovieTicket({});
-    await refundPaymentCard({});
+    await refund({});
     await registerProgramMembership({});
     await registerService({});
     await returnOrder({});
@@ -89,5 +87,9 @@ export default async () => {
         await payCreditCard({});
         await payMovieTicket({});
         await payPaymentCard({});
+        await refundAccount({});
+        await refundCreditCard({});
+        await refundMovieTicket({});
+        await refundPaymentCard({});
     }
 };

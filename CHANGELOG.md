@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - 汎用決済中止タスクを追加
+- 汎用返金タスクを追加
 
 ### Changed
 

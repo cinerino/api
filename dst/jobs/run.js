@@ -36,21 +36,22 @@ const run_21 = require("./continuous/payCreditCard/run");
 const run_22 = require("./continuous/payMovieTicket/run");
 const run_23 = require("./continuous/payPaymentCard/run");
 const run_24 = require("./continuous/placeOrder/run");
-const run_25 = require("./continuous/refundAccount/run");
-const run_26 = require("./continuous/refundCreditCard/run");
-const run_27 = require("./continuous/refundMovieTicket/run");
-const run_28 = require("./continuous/refundPaymentCard/run");
-const run_29 = require("./continuous/registerProgramMembership/run");
-const run_30 = require("./continuous/registerService/run");
-const run_31 = require("./continuous/returnOrder/run");
-const run_32 = require("./continuous/returnPointAward/run");
-const run_33 = require("./continuous/sendEmailMessage/run");
-const run_34 = require("./continuous/sendOrder/run");
-const run_35 = require("./continuous/triggerWebhook/run");
-const run_36 = require("./continuous/unRegisterProgramMembership/run");
-const run_37 = require("./continuous/voidMoneyTransfer/run");
-const run_38 = require("./continuous/voidPayment/run");
-const run_39 = require("./continuous/voidRegisterService/run");
+const run_25 = require("./continuous/refund/run");
+const run_26 = require("./continuous/refundAccount/run");
+const run_27 = require("./continuous/refundCreditCard/run");
+const run_28 = require("./continuous/refundMovieTicket/run");
+const run_29 = require("./continuous/refundPaymentCard/run");
+const run_30 = require("./continuous/registerProgramMembership/run");
+const run_31 = require("./continuous/registerService/run");
+const run_32 = require("./continuous/returnOrder/run");
+const run_33 = require("./continuous/returnPointAward/run");
+const run_34 = require("./continuous/sendEmailMessage/run");
+const run_35 = require("./continuous/sendOrder/run");
+const run_36 = require("./continuous/triggerWebhook/run");
+const run_37 = require("./continuous/unRegisterProgramMembership/run");
+const run_38 = require("./continuous/voidMoneyTransfer/run");
+const run_39 = require("./continuous/voidPayment/run");
+const run_40 = require("./continuous/voidRegisterService/run");
 const USE_LEGACY_PAYMENT_TASKS = process.env.USE_LEGACY_PAYMENT_TASKS === '1';
 exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_1.default({});
@@ -71,10 +72,6 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_19.default({});
     yield run_24.default({});
     yield run_25.default({});
-    yield run_26.default({});
-    yield run_27.default({});
-    yield run_28.default({});
-    yield run_29.default({});
     yield run_30.default({});
     yield run_31.default({});
     yield run_32.default({});
@@ -85,6 +82,7 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_37.default({});
     yield run_38.default({});
     yield run_39.default({});
+    yield run_40.default({});
     if (USE_LEGACY_PAYMENT_TASKS) {
         yield run_8.default({});
         yield run_9.default({});
@@ -93,5 +91,9 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
         yield run_21.default({});
         yield run_22.default({});
         yield run_23.default({});
+        yield run_26.default({});
+        yield run_27.default({});
+        yield run_28.default({});
+        yield run_29.default({});
     }
 });
