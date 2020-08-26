@@ -92,7 +92,7 @@ creditCardPaymentRouter.post<ParamsDictionary>(
             const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
 
             // 会員IDを強制的にログイン中の人物IDに変更
-            type ICreditCard4authorizeAction = cinerino.factory.action.authorize.paymentMethod.creditCard.ICreditCard;
+            type ICreditCard4authorizeAction = cinerino.factory.action.authorize.paymentMethod.any.ICreditCard;
             const memberId = (useUsernameAsGMOMemberId) ? <string>req.user.username : req.user.sub;
             const creditCard: ICreditCard4authorizeAction = {
                 ...req.body.object.creditCard,
@@ -103,7 +103,6 @@ creditCardPaymentRouter.post<ParamsDictionary>(
                 project: req.project,
                 agent: { id: req.user.sub },
                 object: {
-                    // typeOf: cinerino.factory.paymentMethodType.CreditCard,
                     typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment,
                     paymentMethod: cinerino.factory.paymentMethodType.CreditCard,
                     additionalProperty: (Array.isArray(req.body.object.additionalProperty))
