@@ -78,21 +78,6 @@ rateLimit_1.default, ...[
         .isEmpty()
         .withMessage(() => 'required')
         .isString(),
-    express_validator_1.body('settings.gmo.endpoint')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-        .isString(),
-    express_validator_1.body('settings.gmo.siteId')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-        .isString(),
-    express_validator_1.body('settings.gmo.sitePass')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-        .isString(),
     express_validator_1.body('settings.sendgridApiKey')
         .not()
         .isEmpty()
@@ -145,7 +130,7 @@ rateLimit_1.default, ...[
     }
 }));
 function createFromBody(params) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     return Object.assign({ id: params.id, typeOf: params.typeOf, logo: params.logo, name: params.name, parentOrganization: params.parentOrganization, settings: {
             cognito: {
                 adminUserPool: {
@@ -155,15 +140,10 @@ function createFromBody(params) {
                     id: (_f = (_e = (_d = params.settings) === null || _d === void 0 ? void 0 : _d.cognito) === null || _e === void 0 ? void 0 : _e.customerUserPool) === null || _f === void 0 ? void 0 : _f.id
                 }
             },
-            gmo: {
-                endpoint: (_h = (_g = params.settings) === null || _g === void 0 ? void 0 : _g.gmo) === null || _h === void 0 ? void 0 : _h.endpoint,
-                siteId: (_k = (_j = params.settings) === null || _j === void 0 ? void 0 : _j.gmo) === null || _k === void 0 ? void 0 : _k.siteId,
-                sitePass: (_m = (_l = params.settings) === null || _l === void 0 ? void 0 : _l.gmo) === null || _m === void 0 ? void 0 : _m.sitePass
-            },
             onOrderStatusChanged: {},
             codeExpiresInSeconds: 600,
-            sendgridApiKey: (_o = params.settings) === null || _o === void 0 ? void 0 : _o.sendgridApiKey,
-            transactionWebhookUrl: (_p = params.settings) === null || _p === void 0 ? void 0 : _p.transactionWebhookUrl,
+            sendgridApiKey: (_g = params.settings) === null || _g === void 0 ? void 0 : _g.sendgridApiKey,
+            transactionWebhookUrl: (_h = params.settings) === null || _h === void 0 ? void 0 : _h.transactionWebhookUrl,
             useUsernameAsGMOMemberId: false
         } }, {
         subscription: { identifier: 'Free' }
@@ -243,6 +223,7 @@ projectsRouter.patch('/:id', permitScopes_1.default(['projects.*', 'projects.wri
             // 機能改修で不要になった属性を削除
             $unset: {
                 'settings.chevre': 1,
+                'settings.gmo': 1,
                 'settings.mvtkReserve': 1,
                 'settings.pecorino': 1,
                 'settings.emailInformUpdateProgrammembership': 1,

@@ -71,7 +71,7 @@ accountPaymentRouter.post<ParamsDictionary>(
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
-            let fromAccount: cinerino.factory.action.authorize.paymentMethod.account.IFromAccount | undefined
+            let fromAccount: cinerino.factory.action.authorize.paymentMethod.any.IFromAccount | undefined
                 = req.body.object.fromAccount;
 
             // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
@@ -128,7 +128,6 @@ accountPaymentRouter.post<ParamsDictionary>(
             const action = await cinerino.service.payment.account.authorize({
                 project: req.project,
                 object: {
-                    // typeOf: cinerino.factory.paymentMethodType.Account,
                     typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment,
                     paymentMethod: cinerino.factory.paymentMethodType.Account,
                     amount: Number(req.body.object.amount),

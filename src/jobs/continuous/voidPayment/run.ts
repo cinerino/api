@@ -1,17 +1,9 @@
 /**
- * 口座返金実行
+ * 決済中止
  */
 import * as cinerino from '@cinerino/domain';
-import * as redis from 'redis';
 
 import { connectMongo } from '../../../connectMongo';
-
-const redisClient = redis.createClient({
-    port: Number(<string>process.env.REDIS_PORT),
-    host: <string>process.env.REDIS_HOST,
-    password: <string>process.env.REDIS_KEY,
-    tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
-});
 
 export default async (params: {
     project?: cinerino.factory.project.IProject;
@@ -34,10 +26,9 @@ export default async (params: {
             try {
                 await cinerino.service.task.executeByName({
                     project: params.project,
-                    name: cinerino.factory.taskName.RefundAccount
+                    name: cinerino.factory.taskName.VoidPayment
                 })({
-                    connection: connection,
-                    redisClient: redisClient
+                    connection: connection
                 });
             } catch (error) {
                 console.error(error);

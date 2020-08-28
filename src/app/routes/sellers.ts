@@ -3,11 +3,6 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
-// tslint:disable-next-line:no-implicit-dependencies
-// import { ParamsDictionary } from 'express-serve-static-core';
-// import { body } from 'express-validator';
-// import { CREATED, NO_CONTENT } from 'http-status';
-// import * as mongoose from 'mongoose';
 
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
@@ -22,76 +17,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 });
 
 const sellersRouter = Router();
-
-/**
- * 販売者作成
- */
-// sellersRouter.post(
-//     '',
-//     permitScopes(['sellers.*', 'sellers.write']),
-//     rateLimit,
-//     ...[
-//         body('typeOf')
-//             .not()
-//             .isEmpty()
-//             .withMessage((_, __) => 'required'),
-//         body('name.ja')
-//             .not()
-//             .isEmpty()
-//             .withMessage((_, __) => 'required'),
-//         body('name.en')
-//             .not()
-//             .isEmpty()
-//             .withMessage((_, __) => 'required'),
-//         body('parentOrganization.typeOf')
-//             .not()
-//             .isEmpty()
-//             .withMessage((_, __) => 'required'),
-//         body('parentOrganization.name.ja')
-//             .not()
-//             .isEmpty()
-//             .withMessage((_, __) => 'required'),
-//         body('parentOrganization.name.en')
-//             .not()
-//             .isEmpty()
-//             .withMessage((_, __) => 'required'),
-//         body('telephone')
-//             .not()
-//             .isEmpty()
-//             .withMessage((_, __) => 'required'),
-//         body('url')
-//             .not()
-//             .isEmpty()
-//             .withMessage((_, __) => 'required')
-//             .isURL(),
-//         body('paymentAccepted')
-//             .not()
-//             .isEmpty()
-//             .withMessage((_, __) => 'required')
-//             .isArray(),
-//         body('hasPOS')
-//             .isArray(),
-//         body('areaServed')
-//             .isArray()
-//     ],
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const attributes: cinerino.factory.seller.IAttributes<typeof req.body.typeOf> = {
-//                 ...req.body,
-//                 project: req.project
-//             };
-
-//             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-//             const seller = await sellerRepo.save({ attributes: attributes });
-
-//             res.status(CREATED)
-//                 .json(seller);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
 
 /**
  * 販売者検索
@@ -119,24 +44,6 @@ sellersRouter.get(
                 res.set('X-Total-Count', totalCount.toString());
             }
             res.json(data);
-
-            // const searchCoinditions: cinerino.factory.seller.ISearchConditions = {
-            //     ...req.query,
-            //     project: { id: { $eq: req.project.id } },
-            //     // tslint:disable-next-line:no-magic-numbers
-            //     limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-            //     page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
-            // };
-
-            // const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-            // const sellers = await sellerRepo.search(
-            //     searchCoinditions,
-            //     // 管理者以外にセキュアな情報を露出しないように
-            //     (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined
-            // );
-
-            // res.set('X-Total-Count', sellers.length.toString());
-            // res.json(sellers);
         } catch (error) {
             next(error);
         }
@@ -165,16 +72,6 @@ sellersRouter.get(
             });
 
             res.json(seller);
-
-            // const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-            // const seller = await sellerRepo.findById(
-            //     {
-            //         id: req.params.id
-            //     },
-            //     // 管理者以外にセキュアな情報を露出しないように
-            //     (!req.isAdmin) ? { 'paymentAccepted.gmoInfo.shopPass': 0 } : undefined
-            // );
-            // res.json(seller);
         } catch (error) {
             next(error);
         }

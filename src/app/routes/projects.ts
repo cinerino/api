@@ -74,21 +74,6 @@ projectsRouter.post(
             .isEmpty()
             .withMessage(() => 'required')
             .isString(),
-        body('settings.gmo.endpoint')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-            .isString(),
-        body('settings.gmo.siteId')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-            .isString(),
-        body('settings.gmo.sitePass')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-            .isString(),
         body('settings.sendgridApiKey')
             .not()
             .isEmpty()
@@ -165,11 +150,6 @@ function createFromBody(params: any): cinerino.factory.project.IProject {
                 customerUserPool: {
                     id: params.settings?.cognito?.customerUserPool?.id
                 }
-            },
-            gmo: {
-                endpoint: params.settings?.gmo?.endpoint,
-                siteId: params.settings?.gmo?.siteId,
-                sitePass: params.settings?.gmo?.sitePass
             },
             onOrderStatusChanged: {
             },
@@ -293,6 +273,7 @@ projectsRouter.patch(
                     // 機能改修で不要になった属性を削除
                     $unset: {
                         'settings.chevre': 1,
+                        'settings.gmo': 1,
                         'settings.mvtkReserve': 1,
                         'settings.pecorino': 1,
                         'settings.emailInformUpdateProgrammembership': 1,

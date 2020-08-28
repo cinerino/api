@@ -120,7 +120,7 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
-            let fromLocation: cinerino.factory.action.authorize.paymentMethod.paymentCard.IFromLocation | undefined
+            let fromLocation: cinerino.factory.action.authorize.paymentMethod.any.IFromLocation | undefined
                 = req.body.object.fromLocation;
 
             // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する

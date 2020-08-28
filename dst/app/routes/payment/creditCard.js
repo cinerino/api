@@ -92,9 +92,7 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['transactions
         const action = yield cinerino.service.payment.creditCard.authorize({
             project: req.project,
             agent: { id: req.user.sub },
-            object: Object.assign(Object.assign({ 
-                // typeOf: cinerino.factory.paymentMethodType.CreditCard,
-                typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment, paymentMethod: cinerino.factory.paymentMethodType.CreditCard, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+            object: Object.assign(Object.assign({ typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment, paymentMethod: cinerino.factory.paymentMethodType.CreditCard, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {
                         return { name: String(p.name), value: String(p.value) };
                     })
@@ -102,7 +100,6 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['transactions
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            project: projectRepo,
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED)
@@ -134,7 +131,6 @@ creditCardPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)

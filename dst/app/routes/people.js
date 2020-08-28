@@ -76,19 +76,22 @@ peopleRouter.get('/:id', permitScopes_1.default(['people.*', 'people.read']), ra
  * IDで削除
  */
 peopleRouter.delete('/:id', permitScopes_1.default(['people.*', 'people.delete']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined
-            || project.settings.cognito === undefined
-            || project.settings.gmo === undefined) {
+        if (((_a = project.settings) === null || _a === void 0 ? void 0 : _a.cognito) === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
         }
+        const credentials = yield cinerino.service.payment.creditCard.getPaymentServiceChannel({
+            project: { id: req.project.id },
+            paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
+        });
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
-            siteId: project.settings.gmo.siteId,
-            sitePass: project.settings.gmo.sitePass,
-            cardService: new cinerino.GMO.service.Card({ endpoint: project.settings.gmo.endpoint })
+            siteId: credentials.siteId,
+            sitePass: credentials.sitePass,
+            cardService: new cinerino.GMO.service.Card({ endpoint: credentials.endpoint })
         });
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const personRepo = new cinerino.repository.Person({
@@ -194,12 +197,11 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['people.*', 'peo
  * クレジットカード検索
  */
 peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['people.*', 'people.read']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined
-            || project.settings.gmo === undefined
-            || project.settings.cognito === undefined) {
+        if (((_b = project.settings) === null || _b === void 0 ? void 0 : _b.cognito) === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
         }
         const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
@@ -216,10 +218,14 @@ peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['peo
             }
             memberId = person.memberOf.membershipNumber;
         }
+        const credentials = yield cinerino.service.payment.creditCard.getPaymentServiceChannel({
+            project: { id: req.project.id },
+            paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
+        });
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
-            siteId: project.settings.gmo.siteId,
-            sitePass: project.settings.gmo.sitePass,
-            cardService: new cinerino.GMO.service.Card({ endpoint: project.settings.gmo.endpoint })
+            siteId: credentials.siteId,
+            sitePass: credentials.sitePass,
+            cardService: new cinerino.GMO.service.Card({ endpoint: credentials.endpoint })
         });
         const searchCardResults = yield creditCardRepo.search({ personId: memberId });
         res.json(searchCardResults);
@@ -232,12 +238,11 @@ peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['peo
  * 会員クレジットカード削除
  */
 peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.default(['people.*', 'people.creditCards.delete']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined
-            || project.settings.gmo === undefined
-            || project.settings.cognito === undefined) {
+        if (((_c = project.settings) === null || _c === void 0 ? void 0 : _c.cognito) === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
         }
         let memberId = req.params.id;
@@ -254,10 +259,14 @@ peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.d
             }
             memberId = person.memberOf.membershipNumber;
         }
+        const credentials = yield cinerino.service.payment.creditCard.getPaymentServiceChannel({
+            project: { id: req.project.id },
+            paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
+        });
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
-            siteId: project.settings.gmo.siteId,
-            sitePass: project.settings.gmo.sitePass,
-            cardService: new cinerino.GMO.service.Card({ endpoint: project.settings.gmo.endpoint })
+            siteId: credentials.siteId,
+            sitePass: credentials.sitePass,
+            cardService: new cinerino.GMO.service.Card({ endpoint: credentials.endpoint })
         });
         yield creditCardRepo.deleteBySequenceNumber({
             personId: memberId,
