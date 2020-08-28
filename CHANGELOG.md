@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v5.27.0 - 2020-08-28
+
+### Added
+
 - 汎用決済中止タスクを追加
 - 汎用返金タスクを追加
 
@@ -24,17 +38,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - プロジェクト設定からGMO情報を削除
 - 販売者の対応決済方法インターフェースの汎用性拡張
 
-### Deprecated
-
 ### Removed
 
 - 個別決済タスクを削除
 - 個別決済中止タスクを削除
 - 個別返金タスクを削除
-
-### Fixed
-
-### Security
 
 ## v5.26.0 - 2020-08-21
 
