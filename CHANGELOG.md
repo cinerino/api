@@ -9,8 +9,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - USE_CHEVRE_REFUND_CREDIT_CARD設定を追加
+- USE_CHEVRE_PAY_CREDIT_CARD設定を追加
 
 ### Changed
+
+- 決済承認処理をChevre決済に対応
+- 決済処理をChevre決済に対応
+- 決済中止処理をChevre決済に対応
 
 ### Deprecated
 
