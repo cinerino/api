@@ -99,7 +99,7 @@ eventsRouter.get(
             const searchEventsResult = await eventService.search(searchConditions);
 
             if (typeof searchEventsResult.totalCount === 'number') {
-                res.set('X-Total-Count', searchEventsResult.totalCount.toString());
+                // res.set('X-Total-Count', searchEventsResult.totalCount.toString());
             }
 
             res.json(searchEventsResult.data);
