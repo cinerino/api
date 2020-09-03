@@ -32,11 +32,12 @@ movieRouter.get(
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
-            const { totalCount, data } = await creativeWorkService.searchMovies({
+            const { data } = await creativeWorkService.searchMovies({
                 ...req.query,
                 project: { ids: [req.project.id] }
             });
-            res.set('X-Total-Count', totalCount.toString());
+
+            // res.set('X-Total-Count', totalCount.toString());
             res.json(data);
         } catch (error) {
             error = cinerino.errorHandler.handleChevreError(error);

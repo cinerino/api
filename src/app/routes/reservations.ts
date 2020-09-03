@@ -63,7 +63,7 @@ reservationsRouter.get(
                 project: { ids: [req.project.id] },
                 typeOf: cinerino.factory.chevre.reservationType.EventReservation
             });
-            // res.set('X-Total-Count', searchResult.totalCount.toString());
+
             res.json(searchResult.data);
         } catch (error) {
             error = cinerino.errorHandler.handleChevreError(error);
