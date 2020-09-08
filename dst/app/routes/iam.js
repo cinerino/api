@@ -15,12 +15,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express = require("express");
 const http_status_1 = require("http-status");
-const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const members_1 = require("./iam/members");
 const roles_1 = require("./iam/roles");
+const ADMIN_USER_POOL_ID = process.env.ADMIN_USER_POOL_ID;
 const iamRouter = express.Router();
 iamRouter.use('/members', members_1.default);
 iamRouter.use('/roles', roles_1.default);
@@ -40,14 +40,8 @@ iamRouter.get('/groups', permitScopes_1.default([]), rateLimit_1.default, valida
  */
 iamRouter.get('/users', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined
-            || project.settings.cognito === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
         const personRepo = new cinerino.repository.Person({
-            userPoolId: project.settings.cognito.adminUserPool.id
+            userPoolId: ADMIN_USER_POOL_ID
         });
         const users = yield personRepo.search({
             id: req.query.id,
@@ -68,14 +62,8 @@ iamRouter.get('/users', permitScopes_1.default([]), rateLimit_1.default, validat
  */
 iamRouter.get('/users/:id', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined
-            || project.settings.cognito === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
         const personRepo = new cinerino.repository.Person({
-            userPoolId: project.settings.cognito.adminUserPool.id
+            userPoolId: ADMIN_USER_POOL_ID
         });
         const user = yield personRepo.findById({
             userId: req.params.id
@@ -91,14 +79,8 @@ iamRouter.get('/users/:id', permitScopes_1.default([]), rateLimit_1.default, val
  */
 iamRouter.get('/users/:id/profile', permitScopes_1.default([]), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined
-            || project.settings.cognito === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
         const personRepo = new cinerino.repository.Person({
-            userPoolId: project.settings.cognito.adminUserPool.id
+            userPoolId: ADMIN_USER_POOL_ID
         });
         const person = yield personRepo.findById({
             userId: req.params.id
@@ -124,14 +106,8 @@ iamRouter.get('/users/:id/profile', permitScopes_1.default([]), rateLimit_1.defa
  */
 iamRouter.patch('/users/:id/profile', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined
-            || project.settings.cognito === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
         const personRepo = new cinerino.repository.Person({
-            userPoolId: project.settings.cognito.adminUserPool.id
+            userPoolId: ADMIN_USER_POOL_ID
         });
         const person = yield personRepo.findById({
             userId: req.params.id

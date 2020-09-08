@@ -17,6 +17,8 @@ import iamMeRouter from './members/me';
 
 import { RoleName } from '../../iam';
 
+const ADMIN_USER_POOL_ID = <string>process.env.ADMIN_USER_POOL_ID;
+
 const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
     apiVersion: 'latest',
     region: 'ap-northeast-1',
@@ -127,7 +129,7 @@ iamMembersRouter.post(
 
                 default:
                     // 管理者ロールの場合
-                    const adminUserPoolId = project.settings.cognito.adminUserPool.id;
+                    const adminUserPoolId = ADMIN_USER_POOL_ID;
 
                     switch (req.body.member.typeOf) {
                         case cinerino.factory.personType.Person:
@@ -380,13 +382,6 @@ iamMembersRouter.get(
     async (req, res, next) => {
         try {
             const memberRepo = new cinerino.repository.Member(mongoose.connection);
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined
-                || project.settings.cognito === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-            }
 
             const members = await memberRepo.search({
                 member: { id: { $eq: req.params.id } },
@@ -400,7 +395,7 @@ iamMembersRouter.get(
             const member = members[0].member;
 
             const personRepo = new cinerino.repository.Person({
-                userPoolId: project.settings.cognito.adminUserPool.id
+                userPoolId: ADMIN_USER_POOL_ID
             });
             const person = await personRepo.findById({
                 userId: member.id
@@ -437,13 +432,6 @@ iamMembersRouter.patch(
     async (req, res, next) => {
         try {
             const memberRepo = new cinerino.repository.Member(mongoose.connection);
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined
-                || project.settings.cognito === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-            }
 
             const members = await memberRepo.search({
                 member: { id: { $eq: req.params.id } },
@@ -457,7 +445,7 @@ iamMembersRouter.patch(
             const member = members[0].member;
 
             const personRepo = new cinerino.repository.Person({
-                userPoolId: project.settings.cognito.adminUserPool.id
+                userPoolId: ADMIN_USER_POOL_ID
             });
             const person = await personRepo.findById({
                 userId: member.id

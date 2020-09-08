@@ -13,6 +13,8 @@ import validator from '../middlewares/validator';
 
 import { RoleName } from '../iam';
 
+const ADMIN_USER_POOL_ID = <string>process.env.ADMIN_USER_POOL_ID;
+
 const RESOURCE_SERVER_IDENTIFIER = <string>process.env.RESOURCE_SERVER_IDENTIFIER;
 const TOKEN_ISSUERS_AS_ADMIN: string[] = (typeof process.env.TOKEN_ISSUERS_AS_ADMIN === 'string')
     ? process.env.TOKEN_ISSUERS_AS_ADMIN.split(',')
@@ -64,11 +66,6 @@ projectsRouter.post(
             .isEmpty()
             .withMessage(() => 'required')
             .isString(),
-        body('settings.cognito.adminUserPool.id')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-            .isString(),
         body('settings.cognito.customerUserPool.id')
             .not()
             .isEmpty()
@@ -95,10 +92,8 @@ projectsRouter.post(
 
             let member;
 
-            const adminUserPoolId = project.settings?.cognito?.adminUserPool.id;
-
             const personRepo = new cinerino.repository.Person({
-                userPoolId: <string>adminUserPoolId
+                userPoolId: ADMIN_USER_POOL_ID
             });
             const people = await personRepo.search({ id: req.user.sub });
             if (people[0].memberOf === undefined) {
@@ -144,9 +139,6 @@ function createFromBody(params: any): cinerino.factory.project.IProject {
         parentOrganization: params.parentOrganization,
         settings: {
             cognito: {
-                adminUserPool: {
-                    id: params.settings?.cognito?.adminUserPool?.id
-                },
                 customerUserPool: {
                     id: params.settings?.cognito?.customerUserPool?.id
                 }
@@ -238,7 +230,21 @@ projectsRouter.get(
                 : { settings: 0 };
             const project = await projectRepo.findById({ id: req.project.id }, projection);
 
-            res.json(project);
+            res.json({
+                ...project,
+                ...(project.settings !== undefined)
+                    ? {
+                        settings: {
+                            ...project.settings,
+                            cognito: {
+                                ...project.settings?.cognito,
+                                // 互換性維持対応として
+                                adminUserPool: { id: ADMIN_USER_POOL_ID }
+                            }
+                        }
+                    }
+                    : undefined
+            });
         } catch (error) {
             next(error);
         }
@@ -305,7 +311,14 @@ projectsRouter.get(
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
 
-            res.json(project.settings);
+            res.json({
+                ...project.settings,
+                cognito: {
+                    ...project.settings?.cognito,
+                    // 互換性維持対応として
+                    adminUserPool: { id: ADMIN_USER_POOL_ID }
+                }
+            });
         } catch (error) {
             next(error);
         }

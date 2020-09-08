@@ -13,6 +13,7 @@
 
 | Name                                     | Required | Value          | Purpose                                 |
 | ---------------------------------------- | -------- | -------------- | --------------------------------------- |
+| `ADMIN_USER_POOL_ID`                     | true     |                | Cognito admin user pool ID              |
 | `AWS_ACCESS_KEY_ID`                      | true     |                | AWS access key                          |
 | `AWS_SECRET_ACCESS_KEY`                  | true     |                | AWS secret access key                   |
 | `BASIC_AUTH_NAME`                        | false    |                | Basic authentication user name          |
