@@ -18,6 +18,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.28.0 - 2020-09-08
+
+### Added
+
+- USE_CHEVRE_REFUND_CREDIT_CARD設定を追加
+- USE_CHEVRE_PAY_CREDIT_CARD設定を追加
+- USE_CHEVRE_PAY_MOVIE_TICKET設定を追加
+
+### Changed
+
+- 決済承認処理をChevre決済に対応
+- 決済処理をChevre決済に対応
+- 決済中止処理をChevre決済に対応
+- Chevre返金処理をクレジットカード以外の決済方法に対応
+- オファーの適用ムビチケ条件の決済方法として、appliesToMovieTicket.serviceOutput.typeOfを参照するように変更
+- 注文取引確定時のムビチケ系統決済に対する検証処理を、利用可能なムビチケ系統決済方法タイプに対して動的に実行するように調整
+- プロジェクトごとの管理者ユーザープール管理を統合
+
 ## v5.27.0 - 2020-08-28
 
 ### Added

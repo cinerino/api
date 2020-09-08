@@ -22,6 +22,7 @@ const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
 const me_1 = require("./members/me");
 const iam_1 = require("../../iam");
+const ADMIN_USER_POOL_ID = process.env.ADMIN_USER_POOL_ID;
 const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
     apiVersion: 'latest',
     region: 'ap-northeast-1',
@@ -115,7 +116,7 @@ iamMembersRouter.post('', permitScopes_1.default(['iam.members.write']), rateLim
                 break;
             default:
                 // 管理者ロールの場合
-                const adminUserPoolId = project.settings.cognito.adminUserPool.id;
+                const adminUserPoolId = ADMIN_USER_POOL_ID;
                 switch (req.body.member.typeOf) {
                     case cinerino.factory.personType.Person:
                         // ロールを作成
@@ -309,12 +310,6 @@ iamMembersRouter.delete('/:id', permitScopes_1.default(['iam.members.write']), r
 iamMembersRouter.get('/:id/profile', permitScopes_1.default(['iam.members.profile.read']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined
-            || project.settings.cognito === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
         const members = yield memberRepo.search({
             member: { id: { $eq: req.params.id } },
             project: { id: { $eq: req.project.id } },
@@ -325,7 +320,7 @@ iamMembersRouter.get('/:id/profile', permitScopes_1.default(['iam.members.profil
         }
         const member = members[0].member;
         const personRepo = new cinerino.repository.Person({
-            userPoolId: project.settings.cognito.adminUserPool.id
+            userPoolId: ADMIN_USER_POOL_ID
         });
         const person = yield personRepo.findById({
             userId: member.id
@@ -352,12 +347,6 @@ iamMembersRouter.get('/:id/profile', permitScopes_1.default(['iam.members.profil
 iamMembersRouter.patch('/:id/profile', permitScopes_1.default(['iam.members.profile.write']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined
-            || project.settings.cognito === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
         const members = yield memberRepo.search({
             member: { id: { $eq: req.params.id } },
             project: { id: { $eq: req.project.id } },
@@ -368,7 +357,7 @@ iamMembersRouter.patch('/:id/profile', permitScopes_1.default(['iam.members.prof
         }
         const member = members[0].member;
         const personRepo = new cinerino.repository.Person({
-            userPoolId: project.settings.cognito.adminUserPool.id
+            userPoolId: ADMIN_USER_POOL_ID
         });
         const person = yield personRepo.findById({
             userId: member.id

@@ -18,6 +18,7 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const rateLimit_1 = require("../../../middlewares/rateLimit");
 const validator_1 = require("../../../middlewares/validator");
+const ADMIN_USER_POOL_ID = process.env.ADMIN_USER_POOL_ID;
 const iamMeRouter = express_1.Router();
 iamMeRouter.get('', permitScopes_1.default(['iam.members.me.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -39,12 +40,6 @@ iamMeRouter.get('', permitScopes_1.default(['iam.members.me.read']), rateLimit_1
 iamMeRouter.get('/profile', permitScopes_1.default(['iam.members.me.read']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        if (project.settings === undefined
-            || project.settings.cognito === undefined) {
-            throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-        }
         const members = yield memberRepo.search({
             member: { id: { $eq: req.user.sub } },
             project: { id: { $eq: req.project.id } },
@@ -55,7 +50,7 @@ iamMeRouter.get('/profile', permitScopes_1.default(['iam.members.me.read']), rat
         }
         const member = members[0].member;
         const personRepo = new cinerino.repository.Person({
-            userPoolId: project.settings.cognito.adminUserPool.id
+            userPoolId: ADMIN_USER_POOL_ID
         });
         const person = yield personRepo.findById({
             userId: member.id

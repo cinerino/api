@@ -164,6 +164,7 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
             paymentMethodType: paymentMethodType
         });
         const action = yield cinerino.service.payment.movieTicket.authorize({
+            project: req.project,
             agent: { id: req.user.sub },
             object: Object.assign({ 
                 // typeOf: paymentMethodType,

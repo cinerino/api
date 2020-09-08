@@ -90,7 +90,7 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined });
         const searchEventsResult = yield eventService.search(searchConditions);
         if (typeof searchEventsResult.totalCount === 'number') {
-            res.set('X-Total-Count', searchEventsResult.totalCount.toString());
+            // res.set('X-Total-Count', searchEventsResult.totalCount.toString());
         }
         res.json(searchEventsResult.data);
     }

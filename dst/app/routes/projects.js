@@ -21,6 +21,7 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const iam_1 = require("../iam");
+const ADMIN_USER_POOL_ID = process.env.ADMIN_USER_POOL_ID;
 const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
 const TOKEN_ISSUERS_AS_ADMIN = (typeof process.env.TOKEN_ISSUERS_AS_ADMIN === 'string')
     ? process.env.TOKEN_ISSUERS_AS_ADMIN.split(',')
@@ -68,11 +69,6 @@ rateLimit_1.default, ...[
         .isEmpty()
         .withMessage(() => 'required')
         .isString(),
-    express_validator_1.body('settings.cognito.adminUserPool.id')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-        .isString(),
     express_validator_1.body('settings.cognito.customerUserPool.id')
         .not()
         .isEmpty()
@@ -89,15 +85,13 @@ rateLimit_1.default, ...[
         .withMessage(() => 'required')
         .isString()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         let project = createFromBody(req.body);
         let member;
-        const adminUserPoolId = (_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.cognito) === null || _b === void 0 ? void 0 : _b.adminUserPool.id;
         const personRepo = new cinerino.repository.Person({
-            userPoolId: adminUserPoolId
+            userPoolId: ADMIN_USER_POOL_ID
         });
         const people = yield personRepo.search({ id: req.user.sub });
         if (people[0].memberOf === undefined) {
@@ -130,20 +124,17 @@ rateLimit_1.default, ...[
     }
 }));
 function createFromBody(params) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e;
     return Object.assign({ id: params.id, typeOf: params.typeOf, logo: params.logo, name: params.name, parentOrganization: params.parentOrganization, settings: {
             cognito: {
-                adminUserPool: {
-                    id: (_c = (_b = (_a = params.settings) === null || _a === void 0 ? void 0 : _a.cognito) === null || _b === void 0 ? void 0 : _b.adminUserPool) === null || _c === void 0 ? void 0 : _c.id
-                },
                 customerUserPool: {
-                    id: (_f = (_e = (_d = params.settings) === null || _d === void 0 ? void 0 : _d.cognito) === null || _e === void 0 ? void 0 : _e.customerUserPool) === null || _f === void 0 ? void 0 : _f.id
+                    id: (_c = (_b = (_a = params.settings) === null || _a === void 0 ? void 0 : _a.cognito) === null || _b === void 0 ? void 0 : _b.customerUserPool) === null || _c === void 0 ? void 0 : _c.id
                 }
             },
             onOrderStatusChanged: {},
             codeExpiresInSeconds: 600,
-            sendgridApiKey: (_g = params.settings) === null || _g === void 0 ? void 0 : _g.sendgridApiKey,
-            transactionWebhookUrl: (_h = params.settings) === null || _h === void 0 ? void 0 : _h.transactionWebhookUrl,
+            sendgridApiKey: (_d = params.settings) === null || _d === void 0 ? void 0 : _d.sendgridApiKey,
+            transactionWebhookUrl: (_e = params.settings) === null || _e === void 0 ? void 0 : _e.transactionWebhookUrl,
             useUsernameAsGMOMemberId: false
         } }, {
         subscription: { identifier: 'Free' }
@@ -196,13 +187,20 @@ rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, 
  * プロジェクト取得
  */
 projectsRouter.get('/:id', permitScopes_1.default(['projects.*', 'projects.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const projection = (req.memberPermissions.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/projects.settings.read`) >= 0)
             ? undefined
             : { settings: 0 };
         const project = yield projectRepo.findById({ id: req.project.id }, projection);
-        res.json(project);
+        res.json(Object.assign(Object.assign({}, project), (project.settings !== undefined)
+            ? {
+                settings: Object.assign(Object.assign({}, project.settings), { cognito: Object.assign(Object.assign({}, (_a = project.settings) === null || _a === void 0 ? void 0 : _a.cognito), { 
+                        // 互換性維持対応として
+                        adminUserPool: { id: ADMIN_USER_POOL_ID } }) })
+            }
+            : undefined));
     }
     catch (error) {
         next(error);
@@ -212,13 +210,13 @@ projectsRouter.get('/:id', permitScopes_1.default(['projects.*', 'projects.read'
  * プロジェクト更新
  */
 projectsRouter.patch('/:id', permitScopes_1.default(['projects.*', 'projects.write']), rateLimit_1.default, ...[], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d, _e, _f;
+    var _b, _c, _d, _e;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        yield projectRepo.projectModel.findOneAndUpdate({ _id: req.project.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ updatedAt: new Date() }, (typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined), (typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined), (typeof ((_c = req.body.settings) === null || _c === void 0 ? void 0 : _c.codeExpiresInSeconds) === 'number')
-            ? { 'settings.codeExpiresInSeconds': (_d = req.body.settings) === null || _d === void 0 ? void 0 : _d.codeExpiresInSeconds }
-            : undefined), (typeof ((_e = req.body.settings) === null || _e === void 0 ? void 0 : _e.transactionWebhookUrl) === 'string')
-            ? { 'settings.transactionWebhookUrl': (_f = req.body.settings) === null || _f === void 0 ? void 0 : _f.transactionWebhookUrl }
+        yield projectRepo.projectModel.findOneAndUpdate({ _id: req.project.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ updatedAt: new Date() }, (typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined), (typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined), (typeof ((_b = req.body.settings) === null || _b === void 0 ? void 0 : _b.codeExpiresInSeconds) === 'number')
+            ? { 'settings.codeExpiresInSeconds': (_c = req.body.settings) === null || _c === void 0 ? void 0 : _c.codeExpiresInSeconds }
+            : undefined), (typeof ((_d = req.body.settings) === null || _d === void 0 ? void 0 : _d.transactionWebhookUrl) === 'string')
+            ? { 'settings.transactionWebhookUrl': (_e = req.body.settings) === null || _e === void 0 ? void 0 : _e.transactionWebhookUrl }
             : undefined), { 
             // 機能改修で不要になった属性を削除
             $unset: {
@@ -242,10 +240,13 @@ projectsRouter.patch('/:id', permitScopes_1.default(['projects.*', 'projects.wri
  * プロジェクト設定取得
  */
 projectsRouter.get('/:id/settings', permitScopes_1.default(['projects.*', 'projects.settings.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _f;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        res.json(project.settings);
+        res.json(Object.assign(Object.assign({}, project.settings), { cognito: Object.assign(Object.assign({}, (_f = project.settings) === null || _f === void 0 ? void 0 : _f.cognito), { 
+                // 互換性維持対応として
+                adminUserPool: { id: ADMIN_USER_POOL_ID } }) }));
     }
     catch (error) {
         next(error);

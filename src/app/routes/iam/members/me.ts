@@ -9,6 +9,8 @@ import permitScopes from '../../../middlewares/permitScopes';
 import rateLimit from '../../../middlewares/rateLimit';
 import validator from '../../../middlewares/validator';
 
+const ADMIN_USER_POOL_ID = <string>process.env.ADMIN_USER_POOL_ID;
+
 const iamMeRouter = Router();
 
 iamMeRouter.get(
@@ -42,13 +44,6 @@ iamMeRouter.get(
     async (req, res, next) => {
         try {
             const memberRepo = new cinerino.repository.Member(mongoose.connection);
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
-            const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined
-                || project.settings.cognito === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
-            }
 
             const members = await memberRepo.search({
                 member: { id: { $eq: req.user.sub } },
@@ -62,7 +57,7 @@ iamMeRouter.get(
             const member = members[0].member;
 
             const personRepo = new cinerino.repository.Person({
-                userPoolId: project.settings.cognito.adminUserPool.id
+                userPoolId: ADMIN_USER_POOL_ID
             });
             const person = await personRepo.findById({
                 userId: member.id
