@@ -30,17 +30,17 @@ const run_15 = require("./continuous/orderProgramMembership/run");
 const run_16 = require("./continuous/pay/run");
 const run_17 = require("./continuous/placeOrder/run");
 const run_18 = require("./continuous/refund/run");
-const run_19 = require("./continuous/registerProgramMembership/run");
-const run_20 = require("./continuous/registerService/run");
-const run_21 = require("./continuous/returnOrder/run");
-const run_22 = require("./continuous/returnPointAward/run");
-const run_23 = require("./continuous/sendEmailMessage/run");
-const run_24 = require("./continuous/sendOrder/run");
-const run_25 = require("./continuous/triggerWebhook/run");
-const run_26 = require("./continuous/unRegisterProgramMembership/run");
-const run_27 = require("./continuous/voidMoneyTransfer/run");
-const run_28 = require("./continuous/voidPayment/run");
-const run_29 = require("./continuous/voidRegisterService/run");
+// import registerProgramMembership from './continuous/registerProgramMembership/run';
+const run_19 = require("./continuous/registerService/run");
+const run_20 = require("./continuous/returnOrder/run");
+const run_21 = require("./continuous/returnPointAward/run");
+const run_22 = require("./continuous/sendEmailMessage/run");
+const run_23 = require("./continuous/sendOrder/run");
+const run_24 = require("./continuous/triggerWebhook/run");
+const run_25 = require("./continuous/unRegisterProgramMembership/run");
+const run_26 = require("./continuous/voidMoneyTransfer/run");
+const run_27 = require("./continuous/voidPayment/run");
+const run_28 = require("./continuous/voidRegisterService/run");
 exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_1.default({});
     yield run_4.default({});
@@ -60,6 +60,8 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_16.default({});
     yield run_17.default({});
     yield run_18.default({});
+    // 動作に問題がないことを確認したら削除
+    // await registerProgramMembership({});
     yield run_19.default({});
     yield run_20.default({});
     yield run_21.default({});
@@ -70,5 +72,4 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_26.default({});
     yield run_27.default({});
     yield run_28.default({});
-    yield run_29.default({});
 });
