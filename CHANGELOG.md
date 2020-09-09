@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- ムビチケ認証処理をChevreへ移行
+
 ### Deprecated
 
 ### Removed

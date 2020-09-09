@@ -73,23 +73,27 @@ movieTicketPaymentRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            let paymentMethodType: cinerino.factory.paymentMethodType.MovieTicket | cinerino.factory.paymentMethodType.MGTicket
-                = req.body.typeOf;
+            let paymentMethodType: string = req.body.typeOf;
             if (typeof paymentMethodType !== 'string') {
                 paymentMethodType = cinerino.factory.paymentMethodType.MovieTicket;
             }
 
-            const paymentServiceUrl = await getMvtKReserveEndpoint({
-                project: { id: req.project.id },
-                paymentMethodType: paymentMethodType
+            const payService = new cinerino.chevre.service.transaction.Pay({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
             });
-
-            const action = await cinerino.service.payment.movieTicket.checkMovieTicket({
-                project: req.project,
-                typeOf: cinerino.factory.actionType.CheckAction,
+            const checkAction = await payService.check({
+                project: { id: req.project.id, typeOf: cinerino.chevre.factory.organizationType.Project },
+                typeOf: cinerino.chevre.factory.actionType.CheckAction,
                 agent: req.agent,
-                object: {
-                    ...req.body,
+                object: [{
+                    typeOf: cinerino.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
+                    paymentMethod: {
+                        typeOf: paymentMethodType,
+                        additionalProperty: [],
+                        name: paymentMethodType,
+                        paymentMethodId: '' // 使用されないので空でよし
+                    },
                     movieTickets: (Array.isArray(req.body.movieTickets))
                         ? (<any[]>req.body.movieTickets).map((m) => {
                             return {
@@ -98,17 +102,26 @@ movieTicketPaymentRouter.post(
                             };
                         })
                         : [],
-                    typeOf: paymentMethodType
-                }
-            })({
-                action: new cinerino.repository.Action(mongoose.connection),
-                project: new cinerino.repository.Project(mongoose.connection),
-                movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                    endpoint: paymentServiceUrl,
-                    auth: mvtkReserveAuthClient
-                }),
-                paymentMethod: new cinerino.repository.PaymentMethod(mongoose.connection)
+                    seller: req.body.seller
+                }]
             });
+
+            const action: cinerino.factory.action.check.paymentMethod.movieTicket.IAction = {
+                id: checkAction.id,
+                project: { id: req.project.id, typeOf: req.project.typeOf },
+                typeOf: cinerino.factory.actionType.CheckAction,
+                agent: req.agent,
+                object: {
+                    typeOf: paymentMethodType,
+                    movieTickets: (Array.isArray(checkAction.object[0]?.movieTickets)) ? checkAction.object[0]?.movieTickets : [],
+                    seller: checkAction.object[0]?.seller
+                },
+                actionStatus: checkAction.actionStatus,
+                startDate: checkAction.startDate,
+                endDate: checkAction.endDate,
+                result: checkAction.result
+            };
+
             res.status(CREATED)
                 .json(action);
         } catch (error) {
