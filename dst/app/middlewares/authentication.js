@@ -66,7 +66,7 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                         memberOf: programMembership
                     }
                     : {
-                        typeOf: cinerino.factory.creativeWorkType.WebApplication,
+                        typeOf: cinerino.factory.chevre.creativeWorkType.WebApplication,
                         id: user.sub,
                         identifier: identifier
                     };

@@ -61,7 +61,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                         memberOf: programMembership
                     }
                     : {
-                        typeOf: <any>cinerino.factory.creativeWorkType.WebApplication,
+                        typeOf: <any>cinerino.factory.chevre.creativeWorkType.WebApplication,
                         id: user.sub,
                         identifier: identifier
                     };

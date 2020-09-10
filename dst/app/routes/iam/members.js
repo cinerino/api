@@ -55,7 +55,7 @@ iamMembersRouter.post('', permitScopes_1.default(['iam.members.write']), rateLim
         .not()
         .isEmpty()
         .withMessage(() => 'required')
-        .isIn([cinerino.factory.personType.Person, cinerino.factory.creativeWorkType.WebApplication]),
+        .isIn([cinerino.factory.personType.Person, cinerino.factory.chevre.creativeWorkType.WebApplication]),
     express_validator_1.body('member.hasRole')
         .not()
         .isEmpty()
@@ -104,7 +104,7 @@ iamMembersRouter.post('', permitScopes_1.default(['iam.members.write']), rateLim
                         });
                     });
                 member = {
-                    typeOf: cinerino.factory.creativeWorkType.WebApplication,
+                    typeOf: cinerino.factory.chevre.creativeWorkType.WebApplication,
                     id: userPoolClient.ClientId,
                     name: userPoolClient.ClientName,
                     hasRole: [{
@@ -141,7 +141,7 @@ iamMembersRouter.post('', permitScopes_1.default(['iam.members.write']), rateLim
                             hasRole: roles
                         };
                         break;
-                    case cinerino.factory.creativeWorkType.WebApplication:
+                    case cinerino.factory.chevre.creativeWorkType.WebApplication:
                         // クライアント検索
                         userPoolClient =
                             yield new Promise((resolve, reject) => {
@@ -163,7 +163,7 @@ iamMembersRouter.post('', permitScopes_1.default(['iam.members.write']), rateLim
                                 });
                             });
                         member = {
-                            typeOf: cinerino.factory.creativeWorkType.WebApplication,
+                            typeOf: cinerino.factory.chevre.creativeWorkType.WebApplication,
                             id: userPoolClient.ClientId,
                             name: userPoolClient.ClientName,
                             hasRole: [{

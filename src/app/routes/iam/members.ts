@@ -58,7 +58,7 @@ iamMembersRouter.post(
             .not()
             .isEmpty()
             .withMessage(() => 'required')
-            .isIn([cinerino.factory.personType.Person, cinerino.factory.creativeWorkType.WebApplication]),
+            .isIn([cinerino.factory.personType.Person, cinerino.factory.chevre.creativeWorkType.WebApplication]),
         body('member.hasRole')
             .not()
             .isEmpty()
@@ -115,7 +115,7 @@ iamMembersRouter.post(
                         });
 
                     member = {
-                        typeOf: cinerino.factory.creativeWorkType.WebApplication,
+                        typeOf: cinerino.factory.chevre.creativeWorkType.WebApplication,
                         id: userPoolClient.ClientId,
                         name: userPoolClient.ClientName,
                         hasRole: [{
@@ -159,7 +159,7 @@ iamMembersRouter.post(
 
                             break;
 
-                        case cinerino.factory.creativeWorkType.WebApplication:
+                        case cinerino.factory.chevre.creativeWorkType.WebApplication:
                             // クライアント検索
                             userPoolClient =
                                 await new Promise<cinerino.AWS.CognitoIdentityServiceProvider.UserPoolClientType>((resolve, reject) => {
@@ -183,7 +183,7 @@ iamMembersRouter.post(
                                 });
 
                             member = {
-                                typeOf: cinerino.factory.creativeWorkType.WebApplication,
+                                typeOf: cinerino.factory.chevre.creativeWorkType.WebApplication,
                                 id: userPoolClient.ClientId,
                                 name: userPoolClient.ClientName,
                                 hasRole: [{

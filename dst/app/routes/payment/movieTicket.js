@@ -71,33 +71,51 @@ const movieTicketPaymentRouter = express_1.Router();
  * ムビチケ購入番号確認
  */
 movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
     try {
         let paymentMethodType = req.body.typeOf;
         if (typeof paymentMethodType !== 'string') {
             paymentMethodType = cinerino.factory.paymentMethodType.MovieTicket;
         }
-        const paymentServiceUrl = yield getMvtKReserveEndpoint({
-            project: { id: req.project.id },
-            paymentMethodType: paymentMethodType
+        const payService = new cinerino.chevre.service.transaction.Pay({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
         });
-        const action = yield cinerino.service.payment.movieTicket.checkMovieTicket({
-            project: req.project,
+        const checkAction = yield payService.check({
+            project: { id: req.project.id, typeOf: cinerino.chevre.factory.organizationType.Project },
+            typeOf: cinerino.chevre.factory.actionType.CheckAction,
+            agent: req.agent,
+            object: [{
+                    typeOf: cinerino.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
+                    paymentMethod: {
+                        typeOf: paymentMethodType,
+                        additionalProperty: [],
+                        name: paymentMethodType,
+                        paymentMethodId: '' // 使用されないので空でよし
+                    },
+                    movieTickets: (Array.isArray(req.body.movieTickets))
+                        ? req.body.movieTickets.map((m) => {
+                            return Object.assign(Object.assign({}, m), { typeOf: paymentMethodType });
+                        })
+                        : [],
+                    seller: req.body.seller
+                }]
+        });
+        const action = {
+            id: checkAction.id,
+            project: { id: req.project.id, typeOf: req.project.typeOf },
             typeOf: cinerino.factory.actionType.CheckAction,
             agent: req.agent,
-            object: Object.assign(Object.assign({}, req.body), { movieTickets: (Array.isArray(req.body.movieTickets))
-                    ? req.body.movieTickets.map((m) => {
-                        return Object.assign(Object.assign({}, m), { typeOf: paymentMethodType });
-                    })
-                    : [], typeOf: paymentMethodType })
-        })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
-            movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                endpoint: paymentServiceUrl,
-                auth: mvtkReserveAuthClient
-            }),
-            paymentMethod: new cinerino.repository.PaymentMethod(mongoose.connection)
-        });
+            object: {
+                typeOf: paymentMethodType,
+                movieTickets: (Array.isArray((_a = checkAction.object[0]) === null || _a === void 0 ? void 0 : _a.movieTickets)) ? (_b = checkAction.object[0]) === null || _b === void 0 ? void 0 : _b.movieTickets : [],
+                seller: (_c = checkAction.object[0]) === null || _c === void 0 ? void 0 : _c.seller
+            },
+            actionStatus: checkAction.actionStatus,
+            startDate: checkAction.startDate,
+            endDate: checkAction.endDate,
+            result: checkAction.result
+        };
         res.status(http_status_1.CREATED)
             .json(action);
     }
@@ -153,9 +171,9 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
         id: req.body.purpose.id
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _d;
     try {
-        let paymentMethodType = (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.paymentMethod;
+        let paymentMethodType = (_d = req.body.object) === null || _d === void 0 ? void 0 : _d.paymentMethod;
         if (typeof paymentMethodType !== 'string') {
             paymentMethodType = cinerino.factory.paymentMethodType.MovieTicket;
         }

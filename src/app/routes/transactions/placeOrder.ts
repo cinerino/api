@@ -64,7 +64,7 @@ placeOrderTransactionsRouter.post(
     (req, _, next) => {
         if (typeof req.body.sellerId === 'string') {
             req.body.seller = {
-                typeOf: cinerino.factory.organizationType.MovieTheater,
+                typeOf: cinerino.factory.chevre.organizationType.MovieTheater,
                 id: req.body.sellerId
             };
         }
