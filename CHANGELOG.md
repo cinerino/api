@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- ムビチケ認証処理をChevreへ移行
-- 旧メンバーシップ注文タスク(registerProgramMembership)を停止
-- @chevre/factoryと重複するインターフェースを最適化
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v5.29.0 - 2020-09-10
+
+### Changed
+
+- ムビチケ認証処理をChevreへ移行
+- 旧メンバーシップ注文タスク(registerProgramMembership)を停止
+- @chevre/factoryと重複するインターフェースを最適化
 
 ## v5.28.0 - 2020-09-08
 
