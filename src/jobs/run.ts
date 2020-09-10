@@ -21,7 +21,6 @@ import orderProgramMembership from './continuous/orderProgramMembership/run';
 import pay from './continuous/pay/run';
 import placeOrder from './continuous/placeOrder/run';
 import refund from './continuous/refund/run';
-// import registerProgramMembership from './continuous/registerProgramMembership/run';
 import registerService from './continuous/registerService/run';
 import returnOrder from './continuous/returnOrder/run';
 import returnPointAward from './continuous/returnPointAward/run';
@@ -54,8 +53,6 @@ export default async () => {
     await pay({});
     await placeOrder({});
     await refund({});
-    // 動作に問題がないことを確認したら削除
-    // await registerProgramMembership({});
     await registerService({});
     await returnOrder({});
     await returnPointAward({});

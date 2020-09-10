@@ -41,7 +41,7 @@ setProject.use((req, _, next) => __awaiter(void 0, void 0, void 0, function* () 
 }));
 // プロジェクト指定ルーティング配下については、すべてreq.projectを上書き
 setProject.use('/projects/:id', (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
-    req.project = { typeOf: cinerino.factory.organizationType.Project, id: req.params.id };
+    req.project = { typeOf: cinerino.factory.chevre.organizationType.Project, id: req.params.id };
     next();
 }));
 exports.default = setProject;

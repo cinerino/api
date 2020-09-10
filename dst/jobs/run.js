@@ -30,7 +30,6 @@ const run_15 = require("./continuous/orderProgramMembership/run");
 const run_16 = require("./continuous/pay/run");
 const run_17 = require("./continuous/placeOrder/run");
 const run_18 = require("./continuous/refund/run");
-// import registerProgramMembership from './continuous/registerProgramMembership/run';
 const run_19 = require("./continuous/registerService/run");
 const run_20 = require("./continuous/returnOrder/run");
 const run_21 = require("./continuous/returnPointAward/run");
@@ -60,8 +59,6 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     yield run_16.default({});
     yield run_17.default({});
     yield run_18.default({});
-    // 動作に問題がないことを確認したら削除
-    // await registerProgramMembership({});
     yield run_19.default({});
     yield run_20.default({});
     yield run_21.default({});

@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - ムビチケ認証処理をChevreへ移行
 - 旧メンバーシップ注文タスク(registerProgramMembership)を停止
+- @chevre/factoryと重複するインターフェースを最適化
 
 ### Deprecated
 

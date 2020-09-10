@@ -39,7 +39,7 @@ setProject.use(async (req, _, next) => {
 setProject.use(
     '/projects/:id',
     async (req, _, next) => {
-        req.project = { typeOf: cinerino.factory.organizationType.Project, id: req.params.id };
+        req.project = { typeOf: cinerino.factory.chevre.organizationType.Project, id: req.params.id };
 
         next();
     }
