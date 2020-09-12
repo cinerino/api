@@ -71,11 +71,6 @@ projectsRouter.post(
             .isEmpty()
             .withMessage(() => 'required')
             .isString(),
-        body('settings.sendgridApiKey')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-            .isString(),
         body('settings.transactionWebhookUrl')
             .not()
             .isEmpty()
@@ -146,9 +141,11 @@ function createFromBody(params: any): cinerino.factory.project.IProject {
             onOrderStatusChanged: {
             },
             codeExpiresInSeconds: 600,
-            sendgridApiKey: params.settings?.sendgridApiKey,
             transactionWebhookUrl: params.settings?.transactionWebhookUrl,
-            useUsernameAsGMOMemberId: false
+            useUsernameAsGMOMemberId: false,
+            ...(typeof params.settings?.sendgridApiKey === 'string' && params.settings.sendgridApiKey.length > 0)
+                ? { sendgridApiKey: params.settings.sendgridApiKey }
+                : undefined
         },
         ...{
             subscription: { identifier: 'Free' }
@@ -271,10 +268,13 @@ projectsRouter.patch(
                     ...(typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined,
                     ...(typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined,
                     ...(typeof req.body.settings?.codeExpiresInSeconds === 'number')
-                        ? { 'settings.codeExpiresInSeconds': req.body.settings?.codeExpiresInSeconds }
+                        ? { 'settings.codeExpiresInSeconds': req.body.settings.codeExpiresInSeconds }
                         : undefined,
                     ...(typeof req.body.settings?.transactionWebhookUrl === 'string')
-                        ? { 'settings.transactionWebhookUrl': req.body.settings?.transactionWebhookUrl }
+                        ? { 'settings.transactionWebhookUrl': req.body.settings.transactionWebhookUrl }
+                        : undefined,
+                    ...(typeof req.body.settings?.sendgridApiKey === 'string')
+                        ? { 'settings.sendgridApiKey': req.body.settings.sendgridApiKey }
                         : undefined,
                     // 機能改修で不要になった属性を削除
                     $unset: {

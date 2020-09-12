@@ -74,11 +74,6 @@ rateLimit_1.default, ...[
         .isEmpty()
         .withMessage(() => 'required')
         .isString(),
-    express_validator_1.body('settings.sendgridApiKey')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-        .isString(),
     express_validator_1.body('settings.transactionWebhookUrl')
         .not()
         .isEmpty()
@@ -125,18 +120,13 @@ rateLimit_1.default, ...[
 }));
 function createFromBody(params) {
     var _a, _b, _c, _d, _e;
-    return Object.assign({ id: params.id, typeOf: params.typeOf, logo: params.logo, name: params.name, parentOrganization: params.parentOrganization, settings: {
-            cognito: {
+    return Object.assign({ id: params.id, typeOf: params.typeOf, logo: params.logo, name: params.name, parentOrganization: params.parentOrganization, settings: Object.assign({ cognito: {
                 customerUserPool: {
                     id: (_c = (_b = (_a = params.settings) === null || _a === void 0 ? void 0 : _a.cognito) === null || _b === void 0 ? void 0 : _b.customerUserPool) === null || _c === void 0 ? void 0 : _c.id
                 }
-            },
-            onOrderStatusChanged: {},
-            codeExpiresInSeconds: 600,
-            sendgridApiKey: (_d = params.settings) === null || _d === void 0 ? void 0 : _d.sendgridApiKey,
-            transactionWebhookUrl: (_e = params.settings) === null || _e === void 0 ? void 0 : _e.transactionWebhookUrl,
-            useUsernameAsGMOMemberId: false
-        } }, {
+            }, onOrderStatusChanged: {}, codeExpiresInSeconds: 600, transactionWebhookUrl: (_d = params.settings) === null || _d === void 0 ? void 0 : _d.transactionWebhookUrl, useUsernameAsGMOMemberId: false }, (typeof ((_e = params.settings) === null || _e === void 0 ? void 0 : _e.sendgridApiKey) === 'string' && params.settings.sendgridApiKey.length > 0)
+            ? { sendgridApiKey: params.settings.sendgridApiKey }
+            : undefined) }, {
         subscription: { identifier: 'Free' }
     });
 }
@@ -210,13 +200,15 @@ projectsRouter.get('/:id', permitScopes_1.default(['projects.*', 'projects.read'
  * プロジェクト更新
  */
 projectsRouter.patch('/:id', permitScopes_1.default(['projects.*', 'projects.write']), rateLimit_1.default, ...[], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c, _d, _e;
+    var _b, _c, _d;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        yield projectRepo.projectModel.findOneAndUpdate({ _id: req.project.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ updatedAt: new Date() }, (typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined), (typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined), (typeof ((_b = req.body.settings) === null || _b === void 0 ? void 0 : _b.codeExpiresInSeconds) === 'number')
-            ? { 'settings.codeExpiresInSeconds': (_c = req.body.settings) === null || _c === void 0 ? void 0 : _c.codeExpiresInSeconds }
-            : undefined), (typeof ((_d = req.body.settings) === null || _d === void 0 ? void 0 : _d.transactionWebhookUrl) === 'string')
-            ? { 'settings.transactionWebhookUrl': (_e = req.body.settings) === null || _e === void 0 ? void 0 : _e.transactionWebhookUrl }
+        yield projectRepo.projectModel.findOneAndUpdate({ _id: req.project.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ updatedAt: new Date() }, (typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined), (typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined), (typeof ((_b = req.body.settings) === null || _b === void 0 ? void 0 : _b.codeExpiresInSeconds) === 'number')
+            ? { 'settings.codeExpiresInSeconds': req.body.settings.codeExpiresInSeconds }
+            : undefined), (typeof ((_c = req.body.settings) === null || _c === void 0 ? void 0 : _c.transactionWebhookUrl) === 'string')
+            ? { 'settings.transactionWebhookUrl': req.body.settings.transactionWebhookUrl }
+            : undefined), (typeof ((_d = req.body.settings) === null || _d === void 0 ? void 0 : _d.sendgridApiKey) === 'string')
+            ? { 'settings.sendgridApiKey': req.body.settings.sendgridApiKey }
             : undefined), { 
             // 機能改修で不要になった属性を削除
             $unset: {
@@ -240,11 +232,11 @@ projectsRouter.patch('/:id', permitScopes_1.default(['projects.*', 'projects.wri
  * プロジェクト設定取得
  */
 projectsRouter.get('/:id/settings', permitScopes_1.default(['projects.*', 'projects.settings.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f;
+    var _e;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        res.json(Object.assign(Object.assign({}, project.settings), { cognito: Object.assign(Object.assign({}, (_f = project.settings) === null || _f === void 0 ? void 0 : _f.cognito), { 
+        res.json(Object.assign(Object.assign({}, project.settings), { cognito: Object.assign(Object.assign({}, (_e = project.settings) === null || _e === void 0 ? void 0 : _e.cognito), { 
                 // 互換性維持対応として
                 adminUserPool: { id: ADMIN_USER_POOL_ID } }) }));
     }
