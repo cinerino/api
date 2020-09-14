@@ -135,7 +135,7 @@ peopleRouter.delete(
                         typeOf: cinerino.factory.actionType.UnRegisterAction,
                         agent: req.agent,
                         object: {
-                            ...o.typeOfGood,
+                            ...<any>o.typeOfGood,
                             member: [person]
                         }
                     };
@@ -196,7 +196,9 @@ peopleRouter.get<ParamsDictionary>(
     async (req, res, next) => {
         try {
             let ownershipInfos:
-                cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGoodWithDetail<typeof typeOfGood.typeOf>>[];
+                cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGoodWithDetail>[]
+                | cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>[];
+
             const searchConditions: cinerino.factory.ownershipInfo.ISearchConditions = {
                 ...req.query,
                 project: { id: { $eq: req.project.id } },
@@ -210,7 +212,7 @@ peopleRouter.get<ParamsDictionary>(
 
             const typeOfGood = <cinerino.factory.ownershipInfo.ITypeOfGoodSearchConditions>req.query.typeOfGood;
             switch (typeOfGood.typeOf) {
-                case cinerino.factory.ownershipInfo.AccountGoodType.Account:
+                case cinerino.factory.chevre.paymentMethodType.Account:
                     ownershipInfos = await cinerino.service.account.search({
                         project: req.project,
                         conditions: searchConditions

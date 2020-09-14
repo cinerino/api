@@ -76,8 +76,7 @@ accountPaymentRouter.post<ParamsDictionary>(
 
             // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
             if (typeof fromAccount === 'string') {
-                // tslint:disable-next-line:max-line-length
-                type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.ownershipInfo.AccountGoodType.Account>>;
+                type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
                 const accountOwnershipInfo = await cinerino.service.code.verifyToken<IPayload>({
                     project: req.project,
                     agent: req.agent,
@@ -85,7 +84,7 @@ accountPaymentRouter.post<ParamsDictionary>(
                     secret: <string>process.env.TOKEN_SECRET,
                     issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
                 })({ action: new cinerino.repository.Action(mongoose.connection) });
-                const account = accountOwnershipInfo.typeOfGood;
+                const account = <cinerino.factory.ownershipInfo.IAccount>accountOwnershipInfo.typeOfGood;
                 // if (account.accountType !== 'Coin') {
                 //     throw new cinerino.factory.errors.Argument('fromAccount', 'Invalid token');
                 // }
@@ -105,7 +104,7 @@ accountPaymentRouter.post<ParamsDictionary>(
                             ownedFrom: new Date(),
                             ownedThrough: new Date(),
                             typeOfGood: {
-                                typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                                typeOf: cinerino.factory.chevre.paymentMethodType.Account,
                                 accountType: fromAccount.accountType,
                                 accountNumber: fromAccount.accountNumber
                             }

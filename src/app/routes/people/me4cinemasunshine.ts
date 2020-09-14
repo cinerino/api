@@ -127,7 +127,7 @@ me4cinemasunshineRouter.put(
                         typeOf: cinerino.factory.actionType.UnRegisterAction,
                         agent: req.agent,
                         object: {
-                            ...o.typeOfGood,
+                            ...<any>o.typeOfGood,
                             member: [req.agent]
                         }
                     };

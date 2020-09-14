@@ -167,7 +167,7 @@ async function validateFromLocation(req: Request): Promise<cinerino.factory.tran
     // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
     if (typeof fromLocation === 'string') {
         // tslint:disable-next-line:max-line-length
-        type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.ownershipInfo.AccountGoodType.Account>>;
+        type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
         const accountOwnershipInfo = await cinerino.service.code.verifyToken<IPayload>({
             project: req.project,
             agent: req.agent,

@@ -168,7 +168,7 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['people.*', 'peo
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const typeOfGood = req.query.typeOfGood;
         switch (typeOfGood.typeOf) {
-            case cinerino.factory.ownershipInfo.AccountGoodType.Account:
+            case cinerino.factory.chevre.paymentMethodType.Account:
                 ownershipInfos = yield cinerino.service.account.search({
                     project: req.project,
                     conditions: searchConditions

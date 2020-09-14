@@ -58,7 +58,7 @@ ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const typeOfGood = req.query.typeOfGood;
         switch (typeOfGood.typeOf) {
-            case cinerino.factory.ownershipInfo.AccountGoodType.Account:
+            case cinerino.factory.chevre.paymentMethodType.Account:
                 ownershipInfos = yield cinerino.service.account.search({
                     project: req.project,
                     conditions: searchConditions
@@ -115,7 +115,9 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['people.me.*
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
-            yield reservationService.checkInScreeningEventReservations({ id: ownershipInfo.typeOfGood.id });
+            yield reservationService.checkInScreeningEventReservations({
+                id: ownershipInfo.typeOfGood.id
+            });
         }
         res.json({ code });
     }

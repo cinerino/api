@@ -481,7 +481,7 @@ function authorizePointAward(req) {
                                 sort: { ownedFrom: cinerino.factory.sortType.Ascending },
                                 limit: 1,
                                 typeOfGood: {
-                                    typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                                    typeOf: cinerino.factory.chevre.paymentMethodType.Account,
                                     accountType: membershipPointsEarnedUnitText
                                 },
                                 ownedBy: { id: req.agent.id },
@@ -493,7 +493,10 @@ function authorizePointAward(req) {
                             project: projectRepo
                         });
                         // 開設口座に絞る
-                        accountOwnershipInfos = accountOwnershipInfos.filter((o) => o.typeOfGood.status === cinerino.factory.pecorino.accountStatusType.Opened);
+                        accountOwnershipInfos = accountOwnershipInfos.filter((o) => {
+                            return o.typeOfGood.status
+                                === cinerino.factory.pecorino.accountStatusType.Opened;
+                        });
                         if (accountOwnershipInfos.length === 0) {
                             throw new cinerino.factory.errors.NotFound('accountOwnershipInfos');
                         }
@@ -503,6 +506,7 @@ function authorizePointAward(req) {
                                 typeOf: cinerino.factory.action.authorize.award.point.ObjectType.PointAward,
                                 amount: membershipPointsEarnedValue,
                                 toLocation: {
+                                    typeOf: cinerino.factory.chevre.paymentMethodType.Account,
                                     accountType: membershipPointsEarnedUnitText,
                                     accountNumber: toAccount.accountNumber
                                 },

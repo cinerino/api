@@ -32,7 +32,7 @@ function escapeRegExp(params: string) {
     return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
 }
 
-type EventReservationGoodType = cinerino.factory.ownershipInfo.IGood<cinerino.factory.chevre.reservationType.EventReservation>;
+type EventReservationGoodType = cinerino.factory.ownershipInfo.IReservation;
 
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
@@ -739,9 +739,7 @@ ordersRouter.post<ParamsDictionary>(
             }
 
             // 配送された所有権情報を注文に付加する
-            type IOwnershipInfo =
-                // tslint:disable-next-line:max-line-length
-                cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.ownershipInfo.IGoodType>>;
+            type IOwnershipInfo = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
             const ownershipInfos: IOwnershipInfo[] = (Array.isArray(sendOrderAction.result))
                 ? sendOrderAction.result
                 : (<any>sendOrderAction.result).ownershipInfos; // 旧型に対する互換性維持のため
