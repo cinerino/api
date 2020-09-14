@@ -25,7 +25,7 @@ creditCardsRouter.post(
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
 
-            const credentials = await cinerino.service.payment.creditCard.getPaymentServiceChannel({
+            const credentials = await cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
                 project: { id: req.project.id },
                 paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
             });
@@ -62,7 +62,7 @@ creditCardsRouter.get(
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
 
-            const credentials = await cinerino.service.payment.creditCard.getPaymentServiceChannel({
+            const credentials = await cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
                 project: { id: req.project.id },
                 paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
             });
@@ -96,7 +96,7 @@ creditCardsRouter.delete(
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
 
-            const credentials = await cinerino.service.payment.creditCard.getPaymentServiceChannel({
+            const credentials = await cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
                 project: { id: req.project.id },
                 paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
             });

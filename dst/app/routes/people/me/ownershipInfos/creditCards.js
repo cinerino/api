@@ -27,7 +27,7 @@ creditCardsRouter.post('', permitScopes_1.default(['people.me.*']), rateLimit_1.
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        const credentials = yield cinerino.service.payment.creditCard.getPaymentServiceChannel({
+        const credentials = yield cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
             project: { id: req.project.id },
             paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
         });
@@ -56,7 +56,7 @@ creditCardsRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_1.d
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        const credentials = yield cinerino.service.payment.creditCard.getPaymentServiceChannel({
+        const credentials = yield cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
             project: { id: req.project.id },
             paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
         });
@@ -81,7 +81,7 @@ creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['people.me.*']), r
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        const credentials = yield cinerino.service.payment.creditCard.getPaymentServiceChannel({
+        const credentials = yield cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
             project: { id: req.project.id },
             paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
         });

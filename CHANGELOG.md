@@ -18,6 +18,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- USE_CHEVRE_REFUND_CREDIT_CARD設定を削除
+- USE_CHEVRE_PAY_CREDIT_CARD設定を削除
+
 ### Fixed
 
 ### Security

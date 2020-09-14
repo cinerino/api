@@ -97,7 +97,7 @@ peopleRouter.delete(
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
 
-            const credentials = await cinerino.service.payment.creditCard.getPaymentServiceChannel({
+            const credentials = await cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
                 project: { id: req.project.id },
                 paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
             });
@@ -279,7 +279,7 @@ peopleRouter.get(
                 memberId = <string>person.memberOf.membershipNumber;
             }
 
-            const credentials = await cinerino.service.payment.creditCard.getPaymentServiceChannel({
+            const credentials = await cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
                 project: { id: req.project.id },
                 paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
             });
@@ -332,7 +332,7 @@ peopleRouter.delete(
                 memberId = <string>person.memberOf.membershipNumber;
             }
 
-            const credentials = await cinerino.service.payment.creditCard.getPaymentServiceChannel({
+            const credentials = await cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
                 project: { id: req.project.id },
                 paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
             });

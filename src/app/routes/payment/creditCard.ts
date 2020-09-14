@@ -99,7 +99,7 @@ creditCardPaymentRouter.post<ParamsDictionary>(
                 memberId: memberId
             };
 
-            const action = await cinerino.service.payment.creditCard.authorize({
+            const action = await cinerino.service.payment.chevre.authorize({
                 project: req.project,
                 agent: { id: req.user.sub },
                 object: {
@@ -155,8 +155,8 @@ creditCardPaymentRouter.put(
     },
     async (req, res, next) => {
         try {
-            await cinerino.service.payment.creditCard.voidTransaction({
-                project: { id: req.project.id },
+            await cinerino.service.payment.chevre.voidPayment({
+                project: { id: req.project.id, typeOf: req.project.typeOf },
                 agent: { id: req.user.sub },
                 id: req.params.actionId,
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
