@@ -34,13 +34,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials({
-    domain: process.env.MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.MVTK_RESERVE_CLIENT_ID,
-    clientSecret: process.env.MVTK_RESERVE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
 function getMvtKReserveEndpoint(params) {
     var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
@@ -177,11 +170,7 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
         if (typeof paymentMethodType !== 'string') {
             paymentMethodType = cinerino.factory.paymentMethodType.MovieTicket;
         }
-        const paymentServiceUrl = yield getMvtKReserveEndpoint({
-            project: { id: req.project.id },
-            paymentMethodType: paymentMethodType
-        });
-        const action = yield cinerino.service.payment.movieTicket.authorize({
+        const action = yield cinerino.service.payment.chevre.authorize({
             project: req.project,
             agent: { id: req.user.sub },
             object: Object.assign({ 
@@ -196,12 +185,7 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection),
-            movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                endpoint: paymentServiceUrl,
-                auth: mvtkReserveAuthClient
-            })
+            transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED)
             .json(action);
@@ -225,7 +209,8 @@ movieTicketPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield cinerino.service.payment.movieTicket.voidTransaction({
+        yield cinerino.service.payment.chevre.voidPayment({
+            project: { id: req.project.id, typeOf: req.project.typeOf },
             agent: { id: req.user.sub },
             id: req.params.actionId,
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }

@@ -46,14 +46,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 
-const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials({
-    domain: <string>process.env.MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.MVTK_RESERVE_CLIENT_ID,
-    clientSecret: <string>process.env.MVTK_RESERVE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
-
 // Cinemasunshine対応
 placeOrderTransactionsRouter.use(placeOrder4cinemasunshineRouter);
 
@@ -438,11 +430,6 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
                 transaction: { id: req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                    endpoint: '', // ムビチケ使用しないのでこれで問題ない
-                    // endpoint: paymentServiceUrl,
-                    auth: mvtkReserveAuthClient
-                }),
                 project: projectRepo,
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
