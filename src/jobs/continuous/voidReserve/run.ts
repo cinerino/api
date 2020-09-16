@@ -1,5 +1,5 @@
 /**
- * 座席仮予約キャンセル
+ * 予約中止
  */
 import * as cinerino from '@cinerino/domain';
 
@@ -26,7 +26,7 @@ export default async (params: {
             try {
                 await cinerino.service.task.executeByName({
                     project: params.project,
-                    name: cinerino.factory.taskName.CancelSeatReservation
+                    name: cinerino.factory.taskName.VoidReserve
                 })({
                     connection: connection
                 });

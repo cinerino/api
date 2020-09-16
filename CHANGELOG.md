@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - SendGrid設定に関して、プロセスレベルでの設定とプロジェクトレベルでの設定を両方有効化
 - 所有権インターフェースの汎用性拡張
 - Chevre転送取引へのignorePaymentCard指定を削除
+- CancelSeatReservationタスクをVoidReserveタスクに変更
 
 ### Deprecated
 

@@ -11,7 +11,6 @@ import onTransactionConfirmed from './continuous/onTransactionConfirmed/run';
 import onTransactionExpired from './continuous/onTransactionExpired/run';
 
 import cancelReservation from './continuous/cancelReservation/run';
-import cancelSeatReservation from './continuous/cancelSeatReservation/run';
 import confirmReservation from './continuous/confirmReservation/run';
 import createOrderReport from './continuous/createOrderReport/run';
 import deleteMember from './continuous/deleteMember/run';
@@ -31,6 +30,7 @@ import unRegisterProgramMembership from './continuous/unRegisterProgramMembershi
 import voidMoneyTransfer from './continuous/voidMoneyTransfer/run';
 import voidPayment from './continuous/voidPayment/run';
 import voidRegisterService from './continuous/voidRegisterService/run';
+import voidReserve from './continuous/voidReserve/run';
 
 export default async () => {
     await abortTasks({});
@@ -43,7 +43,6 @@ export default async () => {
     await onTransactionExpired({});
 
     await cancelReservation({});
-    await cancelSeatReservation({});
     await confirmReservation({});
     await createOrderReport({});
     await deleteMember({});
@@ -63,4 +62,5 @@ export default async () => {
     await voidMoneyTransfer({});
     await voidPayment({});
     await voidRegisterService({});
+    await voidReserve({});
 };

@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 座席仮予約キャンセル
+ * 予約中止
  */
 const cinerino = require("@cinerino/domain");
 const connectMongo_1 = require("../../../connectMongo");
@@ -27,7 +27,7 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             yield cinerino.service.task.executeByName({
                 project: params.project,
-                name: cinerino.factory.taskName.CancelSeatReservation
+                name: cinerino.factory.taskName.VoidReserve
             })({
                 connection: connection
             });
