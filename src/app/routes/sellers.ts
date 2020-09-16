@@ -41,7 +41,7 @@ sellersRouter.get(
             });
 
             if (typeof totalCount === 'number') {
-                res.set('X-Total-Count', totalCount.toString());
+                // res.set('X-Total-Count', totalCount.toString());
             }
             res.json(data);
         } catch (error) {
