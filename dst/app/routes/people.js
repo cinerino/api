@@ -83,7 +83,7 @@ peopleRouter.delete('/:id', permitScopes_1.default(['people.*', 'people.delete']
         if (((_a = project.settings) === null || _a === void 0 ? void 0 : _a.cognito) === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
         }
-        const credentials = yield cinerino.service.payment.creditCard.getPaymentServiceChannel({
+        const credentials = yield cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
             project: { id: req.project.id },
             paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
         });
@@ -168,7 +168,7 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['people.*', 'peo
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const typeOfGood = req.query.typeOfGood;
         switch (typeOfGood.typeOf) {
-            case cinerino.factory.ownershipInfo.AccountGoodType.Account:
+            case cinerino.factory.chevre.paymentMethodType.Account:
                 ownershipInfos = yield cinerino.service.account.search({
                     project: req.project,
                     conditions: searchConditions
@@ -218,7 +218,7 @@ peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['peo
             }
             memberId = person.memberOf.membershipNumber;
         }
-        const credentials = yield cinerino.service.payment.creditCard.getPaymentServiceChannel({
+        const credentials = yield cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
             project: { id: req.project.id },
             paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
         });
@@ -259,7 +259,7 @@ peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.d
             }
             memberId = person.memberOf.membershipNumber;
         }
-        const credentials = yield cinerino.service.payment.creditCard.getPaymentServiceChannel({
+        const credentials = yield cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
             project: { id: req.project.id },
             paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
         });

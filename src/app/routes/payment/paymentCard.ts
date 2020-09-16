@@ -125,8 +125,7 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
 
             // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
             if (typeof fromLocation === 'string') {
-                // tslint:disable-next-line:max-line-length
-                type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<any>>;
+                type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
                 const accountOwnershipInfo = await cinerino.service.code.verifyToken<IPayload>({
                     project: req.project,
                     agent: req.agent,
@@ -134,10 +133,10 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
                     secret: <string>process.env.TOKEN_SECRET,
                     issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
                 })({ action: new cinerino.repository.Action(mongoose.connection) });
-                const paymentCard = accountOwnershipInfo.typeOfGood;
+                const paymentCard = <cinerino.factory.ownershipInfo.IServiceOutput>accountOwnershipInfo.typeOfGood;
                 fromLocation = {
                     typeOf: paymentCard.typeOf,
-                    identifier: paymentCard.identifier
+                    identifier: <string>paymentCard.identifier
                 };
             } else {
                 const accessCode = fromLocation?.accessCode;

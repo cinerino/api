@@ -51,8 +51,8 @@ ownershipInfosRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            let ownershipInfos:
-                cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGoodWithDetail<typeof typeOfGood.typeOf>>[];
+            let ownershipInfos: cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGoodWithDetail>[]
+                | cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>[];
             const searchConditions: cinerino.factory.ownershipInfo.ISearchConditions = {
                 ...req.query,
                 project: { id: { $eq: req.project.id } },
@@ -66,7 +66,7 @@ ownershipInfosRouter.get(
 
             const typeOfGood = <cinerino.factory.ownershipInfo.ITypeOfGoodSearchConditions>req.query.typeOfGood;
             switch (typeOfGood.typeOf) {
-                case cinerino.factory.ownershipInfo.AccountGoodType.Account:
+                case cinerino.factory.chevre.paymentMethodType.Account:
                     ownershipInfos = await cinerino.service.account.search({
                         project: req.project,
                         conditions: searchConditions
@@ -139,7 +139,9 @@ ownershipInfosRouter.post(
                     endpoint: cinerino.credentials.chevre.endpoint,
                     auth: chevreAuthClient
                 });
-                await reservationService.checkInScreeningEventReservations({ id: ownershipInfo.typeOfGood.id });
+                await reservationService.checkInScreeningEventReservations({
+                    id: (<cinerino.factory.ownershipInfo.IReservation>ownershipInfo.typeOfGood).id
+                });
             }
 
             res.json({ code });

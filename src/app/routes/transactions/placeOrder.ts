@@ -46,14 +46,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 
-const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials({
-    domain: <string>process.env.MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.MVTK_RESERVE_CLIENT_ID,
-    clientSecret: <string>process.env.MVTK_RESERVE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
-
 // Cinemasunshine対応
 placeOrderTransactionsRouter.use(placeOrder4cinemasunshineRouter);
 
@@ -438,11 +430,6 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
                 transaction: { id: req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                    endpoint: '', // ムビチケ使用しないのでこれで問題ない
-                    // endpoint: paymentServiceUrl,
-                    auth: mvtkReserveAuthClient
-                }),
                 project: projectRepo,
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
@@ -563,7 +550,7 @@ export async function authorizePointAward(req: Request) {
         const givePointAwardParams: cinerino.factory.transaction.placeOrder.IGivePointAwardParams[] = [];
 
         for (const programMembership of programMemberships) {
-            const membershipServiceId = <string>programMembership.membershipFor?.id;
+            const membershipServiceId = <string>(<any>programMembership).membershipFor?.id;
             const membershipService = await productService.findById({ id: membershipServiceId });
 
             // 登録時の獲得ポイント
@@ -583,7 +570,7 @@ export async function authorizePointAward(req: Request) {
                             sort: { ownedFrom: cinerino.factory.sortType.Ascending },
                             limit: 1,
                             typeOfGood: {
-                                typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                                typeOf: cinerino.factory.chevre.paymentMethodType.Account,
                                 accountType: membershipPointsEarnedUnitText
                             },
                             ownedBy: { id: req.agent.id },
@@ -596,19 +583,21 @@ export async function authorizePointAward(req: Request) {
                     });
 
                     // 開設口座に絞る
-                    accountOwnershipInfos = accountOwnershipInfos.filter(
-                        (o) => o.typeOfGood.status === cinerino.factory.pecorino.accountStatusType.Opened
-                    );
+                    accountOwnershipInfos = accountOwnershipInfos.filter((o) => {
+                        return (<cinerino.factory.pecorino.account.IAccount>o.typeOfGood).status
+                            === cinerino.factory.pecorino.accountStatusType.Opened;
+                    });
                     if (accountOwnershipInfos.length === 0) {
                         throw new cinerino.factory.errors.NotFound('accountOwnershipInfos');
                     }
-                    const toAccount = accountOwnershipInfos[0].typeOfGood;
+                    const toAccount = <cinerino.factory.pecorino.account.IAccount>accountOwnershipInfos[0].typeOfGood;
 
                     givePointAwardParams.push({
                         object: {
                             typeOf: cinerino.factory.action.authorize.award.point.ObjectType.PointAward,
                             amount: membershipPointsEarnedValue,
                             toLocation: {
+                                typeOf: cinerino.factory.chevre.paymentMethodType.Account,
                                 accountType: membershipPointsEarnedUnitText,
                                 accountNumber: toAccount.accountNumber
                             },

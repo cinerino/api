@@ -40,8 +40,8 @@ ownershipInfosRouter.get(
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
 
             const typeOfGood = (req.query.typeOfGood !== undefined && req.query.typeOfGood !== null) ? req.query.typeOfGood : {};
-            let ownershipInfos:
-                cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGoodWithDetail<any>>[];
+            let ownershipInfos: cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGoodWithDetail>[]
+                | cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>[];
 
             const searchConditions: cinerino.factory.ownershipInfo.ISearchConditions = {
                 ...req.query,

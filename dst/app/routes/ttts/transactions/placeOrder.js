@@ -26,13 +26,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials({
-    domain: process.env.MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.MVTK_RESERVE_CLIENT_ID,
-    clientSecret: process.env.MVTK_RESERVE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
 /**
  * 座席仮予約
  */
@@ -77,10 +70,6 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                endpoint: '',
-                auth: mvtkReserveAuthClient
-            }),
             project: new cinerino.repository.Project(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });

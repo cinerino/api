@@ -28,14 +28,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 
-const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials({
-    domain: <string>process.env.MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.MVTK_RESERVE_CLIENT_ID,
-    clientSecret: <string>process.env.MVTK_RESERVE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
-
 export async function getMvtKReserveEndpoint(params: {
     project: { id: string };
     paymentMethodType: string;
@@ -193,12 +185,7 @@ movieTicketPaymentRouter.post<ParamsDictionary>(
                 paymentMethodType = cinerino.factory.paymentMethodType.MovieTicket;
             }
 
-            const paymentServiceUrl = await getMvtKReserveEndpoint({
-                project: { id: req.project.id },
-                paymentMethodType: paymentMethodType
-            });
-
-            const action = await cinerino.service.payment.movieTicket.authorize({
+            const action = await cinerino.service.payment.chevre.authorize({
                 project: req.project,
                 agent: { id: req.user.sub },
                 object: {
@@ -222,12 +209,7 @@ movieTicketPaymentRouter.post<ParamsDictionary>(
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                project: new cinerino.repository.Project(mongoose.connection),
-                transaction: new cinerino.repository.Transaction(mongoose.connection),
-                movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                    endpoint: paymentServiceUrl,
-                    auth: mvtkReserveAuthClient
-                })
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
             res.status(CREATED)
                 .json(action);
@@ -259,7 +241,8 @@ movieTicketPaymentRouter.put(
     },
     async (req, res, next) => {
         try {
-            await cinerino.service.payment.movieTicket.voidTransaction({
+            await cinerino.service.payment.chevre.voidPayment({
+                project: { id: req.project.id, typeOf: req.project.typeOf },
                 agent: { id: req.user.sub },
                 id: req.params.actionId,
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }

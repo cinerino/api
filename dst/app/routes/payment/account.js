@@ -101,7 +101,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
                         ownedFrom: new Date(),
                         ownedThrough: new Date(),
                         typeOfGood: {
-                            typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                            typeOf: cinerino.factory.chevre.paymentMethodType.Account,
                             accountType: fromAccount.accountType,
                             accountNumber: fromAccount.accountNumber
                         }

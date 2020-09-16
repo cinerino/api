@@ -47,13 +47,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-const mvtkReserveAuthClient = new cinerino.mvtkreserveapi.auth.ClientCredentials({
-    domain: process.env.MVTK_RESERVE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.MVTK_RESERVE_CLIENT_ID,
-    clientSecret: process.env.MVTK_RESERVE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
 // Cinemasunshine対応
 placeOrderTransactionsRouter.use(placeOrder4cinemasunshine_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions', 'pos']), 
@@ -363,11 +356,6 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
             transaction: { id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            movieTicket: new cinerino.repository.paymentMethod.MovieTicket({
-                endpoint: '',
-                // endpoint: paymentServiceUrl,
-                auth: mvtkReserveAuthClient
-            }),
             project: projectRepo,
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
@@ -481,7 +469,7 @@ function authorizePointAward(req) {
                                 sort: { ownedFrom: cinerino.factory.sortType.Ascending },
                                 limit: 1,
                                 typeOfGood: {
-                                    typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                                    typeOf: cinerino.factory.chevre.paymentMethodType.Account,
                                     accountType: membershipPointsEarnedUnitText
                                 },
                                 ownedBy: { id: req.agent.id },
@@ -493,7 +481,10 @@ function authorizePointAward(req) {
                             project: projectRepo
                         });
                         // 開設口座に絞る
-                        accountOwnershipInfos = accountOwnershipInfos.filter((o) => o.typeOfGood.status === cinerino.factory.pecorino.accountStatusType.Opened);
+                        accountOwnershipInfos = accountOwnershipInfos.filter((o) => {
+                            return o.typeOfGood.status
+                                === cinerino.factory.pecorino.accountStatusType.Opened;
+                        });
                         if (accountOwnershipInfos.length === 0) {
                             throw new cinerino.factory.errors.NotFound('accountOwnershipInfos');
                         }
@@ -503,6 +494,7 @@ function authorizePointAward(req) {
                                 typeOf: cinerino.factory.action.authorize.award.point.ObjectType.PointAward,
                                 amount: membershipPointsEarnedValue,
                                 toLocation: {
+                                    typeOf: cinerino.factory.chevre.paymentMethodType.Account,
                                     accountType: membershipPointsEarnedUnitText,
                                     accountNumber: toAccount.accountNumber
                                 },

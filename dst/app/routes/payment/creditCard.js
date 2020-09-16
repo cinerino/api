@@ -89,7 +89,7 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['transactions
         const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
         const memberId = (useUsernameAsGMOMemberId) ? req.user.username : req.user.sub;
         const creditCard = Object.assign(Object.assign({}, req.body.object.creditCard), { memberId: memberId });
-        const action = yield cinerino.service.payment.creditCard.authorize({
+        const action = yield cinerino.service.payment.chevre.authorize({
             project: req.project,
             agent: { id: req.user.sub },
             object: Object.assign(Object.assign({ typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment, paymentMethod: cinerino.factory.paymentMethodType.CreditCard, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
@@ -124,8 +124,8 @@ creditCardPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield cinerino.service.payment.creditCard.voidTransaction({
-            project: { id: req.project.id },
+        yield cinerino.service.payment.chevre.voidPayment({
+            project: { id: req.project.id, typeOf: req.project.typeOf },
             agent: { id: req.user.sub },
             id: req.params.actionId,
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }

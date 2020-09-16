@@ -12,8 +12,7 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-type IPayload =
-    cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.chevre.reservationType>>;
+type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
 
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
@@ -131,7 +130,7 @@ reservationsRouter.post(
             const ownershipInfo = await ownershipInfoRepo.findById({
                 id: payload.id
             });
-            const typeOfGood = ownershipInfo.typeOfGood;
+            const typeOfGood = <cinerino.factory.ownershipInfo.IReservation>ownershipInfo.typeOfGood;
             if (typeOfGood.typeOf !== cinerino.factory.chevre.reservationType.EventReservation) {
                 throw new cinerino.factory.errors.Argument('token', 'Not reservation');
             }
