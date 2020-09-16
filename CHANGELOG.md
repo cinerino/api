@@ -10,22 +10,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v5.30.0 - 2020-09-16
+
+### Changed
+
 - SendGrid設定に関して、プロセスレベルでの設定とプロジェクトレベルでの設定を両方有効化
 - 所有権インターフェースの汎用性拡張
 - Chevre転送取引へのignorePaymentCard指定を削除
 - CancelSeatReservationタスクをVoidReserveタスクに変更
-
-### Deprecated
 
 ### Removed
 
 - USE_CHEVRE_REFUND_CREDIT_CARD設定を削除
 - USE_CHEVRE_PAY_CREDIT_CARD設定を削除
 - USE_CHEVRE_PAY_MOVIE_TICKET設定を削除
-
-### Fixed
-
-### Security
 
 ## v5.29.0 - 2020-09-10
 
