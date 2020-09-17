@@ -34,10 +34,7 @@ sellersRouter.get('', permitScopes_1.default(['sellers.*', 'sellers.read', 'pos'
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
-        const { data, totalCount } = yield sellerService.search(Object.assign(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }), (!req.isAdmin) ? { $projection: { 'paymentAccepted.gmoInfo.shopPass': 0 } } : undefined));
-        if (typeof totalCount === 'number') {
-            // res.set('X-Total-Count', totalCount.toString());
-        }
+        const { data } = yield sellerService.search(Object.assign(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }), (!req.isAdmin) ? { $projection: { 'paymentAccepted.gmoInfo.shopPass': 0 } } : undefined));
         res.json(data);
     }
     catch (error) {

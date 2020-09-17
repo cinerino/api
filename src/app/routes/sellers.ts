@@ -33,16 +33,13 @@ sellersRouter.get(
                 auth: chevreAuthClient
             });
 
-            const { data, totalCount } = await sellerService.search({
+            const { data } = await sellerService.search({
                 ...req.query,
                 project: { id: { $eq: req.project.id } },
                 // 管理者以外にセキュアな情報を露出しないように
                 ...(!req.isAdmin) ? { $projection: { 'paymentAccepted.gmoInfo.shopPass': 0 } } : undefined
             });
 
-            if (typeof totalCount === 'number') {
-                // res.set('X-Total-Count', totalCount.toString());
-            }
             res.json(data);
         } catch (error) {
             next(error);
