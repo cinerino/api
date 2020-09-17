@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- プロジェクトにuseMyCreditCards設定を追加
+
 ### Changed
 
 - update @chevre/api-nodejs-client
