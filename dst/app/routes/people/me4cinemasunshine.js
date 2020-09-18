@@ -63,7 +63,10 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
         const acceptedOffer = offers[0];
         const task = yield cinerino.service.product.createOrderTask({
             project: { id: req.project.id },
-            agent: req.agent,
+            agent: Object.assign(Object.assign({}, req.agent), { additionalProperty: [
+                    ...(Array.isArray(req.agent.additionalProperty)) ? req.agent.additionalProperty : [],
+                    ...[{ name: 'firstMembership', value: '1' }]
+                ] }),
             object: {
                 typeOf: cinerino.factory.chevre.offerType.Offer,
                 id: String(acceptedOffer.id),

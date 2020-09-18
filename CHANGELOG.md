@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - ポイント口座での決済取引開始時のfromLocationのタイプをAccountに変更
 - 販売者検索からX-Total-Countを削除
 - メンバーシップ注文取引のcustomerを最適化
+- メンバーシップ注文タスクのagentを最適化
 
 ### Deprecated
 
