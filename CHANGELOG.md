@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 販売者検索からX-Total-Countを削除
 - メンバーシップ注文取引のcustomerを最適化
 - メンバーシップ注文タスクのagentを最適化
+- メンバーシップ注文タスクのagentの追加特性を注文取引に反映するように調整
 
 ### Deprecated
 
