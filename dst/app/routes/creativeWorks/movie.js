@@ -35,7 +35,6 @@ movieRouter.get('', permitScopes_1.default(['creativeWorks.*', 'creativeWorks.re
             auth: chevreAuthClient
         });
         const { data } = yield creativeWorkService.searchMovies(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] } }));
-        // res.set('X-Total-Count', totalCount.toString());
         res.json(data);
     }
     catch (error) {

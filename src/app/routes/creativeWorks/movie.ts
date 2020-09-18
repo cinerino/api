@@ -37,7 +37,6 @@ movieRouter.get(
                 project: { ids: [req.project.id] }
             });
 
-            // res.set('X-Total-Count', totalCount.toString());
             res.json(data);
         } catch (error) {
             error = cinerino.errorHandler.handleChevreError(error);

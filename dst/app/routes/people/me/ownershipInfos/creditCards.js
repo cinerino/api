@@ -19,6 +19,12 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../../../../middlewares/permitScopes");
 const rateLimit_1 = require("../../../../middlewares/rateLimit");
 const validator_1 = require("../../../../middlewares/validator");
+function checkUseMyCreditCards(project) {
+    var _a;
+    if (((_a = project.settings) === null || _a === void 0 ? void 0 : _a.useMyCreditCards) !== true) {
+        throw new cinerino.factory.errors.Forbidden('my credit cards service unavailable');
+    }
+}
 const creditCardsRouter = express_1.Router();
 /**
  * 会員クレジットカード追加
@@ -27,6 +33,7 @@ creditCardsRouter.post('', permitScopes_1.default(['people.me.*']), rateLimit_1.
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
+        checkUseMyCreditCards(project);
         const credentials = yield cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
             project: { id: req.project.id },
             paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
@@ -56,6 +63,7 @@ creditCardsRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_1.d
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
+        checkUseMyCreditCards(project);
         const credentials = yield cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
             project: { id: req.project.id },
             paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
@@ -81,6 +89,7 @@ creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['people.me.*']), r
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
+        checkUseMyCreditCards(project);
         const credentials = yield cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
             project: { id: req.project.id },
             paymentMethodType: cinerino.factory.paymentMethodType.CreditCard

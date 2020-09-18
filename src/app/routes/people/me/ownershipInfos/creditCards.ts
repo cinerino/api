@@ -10,6 +10,12 @@ import permitScopes from '../../../../middlewares/permitScopes';
 import rateLimit from '../../../../middlewares/rateLimit';
 import validator from '../../../../middlewares/validator';
 
+function checkUseMyCreditCards(project: cinerino.factory.project.IProject) {
+    if ((<any>project.settings)?.useMyCreditCards !== true) {
+        throw new cinerino.factory.errors.Forbidden('my credit cards service unavailable');
+    }
+}
+
 const creditCardsRouter = Router();
 
 /**
@@ -24,6 +30,8 @@ creditCardsRouter.post(
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
+
+            checkUseMyCreditCards(project);
 
             const credentials = await cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
                 project: { id: req.project.id },
@@ -62,6 +70,8 @@ creditCardsRouter.get(
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
 
+            checkUseMyCreditCards(project);
+
             const credentials = await cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
                 project: { id: req.project.id },
                 paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
@@ -95,6 +105,8 @@ creditCardsRouter.delete(
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
+
+            checkUseMyCreditCards(project);
 
             const credentials = await cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
                 project: { id: req.project.id },
