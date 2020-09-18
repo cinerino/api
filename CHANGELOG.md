@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v5.31.0 - 2020-09-18
+
+### Added
+
 - プロジェクトにuseMyCreditCards設定を追加
 
 ### Changed
@@ -20,14 +34,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - メンバーシップ注文取引のcustomerを最適化
 - メンバーシップ注文タスクのagentを最適化
 - メンバーシップ注文タスクのagentの追加特性を注文取引に反映するように調整
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## v5.30.0 - 2020-09-16
 
