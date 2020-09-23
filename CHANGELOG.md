@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- update @motionpicture/coa-service
-- COA予約承認処理をMGチケットに対応
-- 口座決済返金時のtoocationのタイプをAccountに変更
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v5.32.0 - 2020-09-23
+
+### Changed
+
+- update @motionpicture/coa-service
+- COA予約承認処理をMGチケットに対応
+- 口座決済返金時のtoocationのタイプをAccountに変更
 
 ## v5.31.0 - 2020-09-18
 
