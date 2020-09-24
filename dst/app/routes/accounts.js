@@ -160,7 +160,7 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['accounts.t
             object: {
                 amount: (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.amount,
                 toLocation: {
-                    typeOf: cinerino.factory.pecorino.account.TypeOf.Account,
+                    typeOf: cinerino.factory.chevre.paymentMethodType.Account,
                     accountType: (typeof ((_c = (_b = req.body.object) === null || _b === void 0 ? void 0 : _b.toLocation) === null || _c === void 0 ? void 0 : _c.accountType) === 'string')
                         ? (_e = (_d = req.body.object) === null || _d === void 0 ? void 0 : _d.toLocation) === null || _e === void 0 ? void 0 : _e.accountType : 'Point',
                     accountNumber: (_g = (_f = req.body.object) === null || _f === void 0 ? void 0 : _f.toLocation) === null || _g === void 0 ? void 0 : _g.accountNumber
