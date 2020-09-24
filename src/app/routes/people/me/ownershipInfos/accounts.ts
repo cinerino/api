@@ -118,7 +118,6 @@ accountsRouter.put(
                 ownedBy: {
                     id: req.user.sub
                 },
-                accountType: req.params.accountType,
                 accountNumber: req.params.accountNumber
             })({
                 ownershipInfo: ownershipInfoRepo,

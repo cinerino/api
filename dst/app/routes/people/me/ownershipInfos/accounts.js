@@ -108,7 +108,6 @@ accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(
             ownedBy: {
                 id: req.user.sub
             },
-            accountType: req.params.accountType,
             accountNumber: req.params.accountNumber
         })({
             ownershipInfo: ownershipInfoRepo,

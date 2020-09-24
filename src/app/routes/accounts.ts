@@ -181,7 +181,7 @@ accountsRouter.post(
                 object: {
                     amount: req.body.object?.amount,
                     toLocation: {
-                        typeOf: cinerino.factory.pecorino.account.TypeOf.Account,
+                        typeOf: cinerino.factory.chevre.paymentMethodType.Account,
                         accountType: (typeof req.body.object?.toLocation?.accountType === 'string')
                             ? req.body.object?.toLocation?.accountType
                             : 'Point',
