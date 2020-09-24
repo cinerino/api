@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- update @chevre/api-nodejs-client
-- update @pecorino/api-nodejs-client
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v5.33.0 - 2020-09-24
+
+### Changed
+
+- update @chevre/api-nodejs-client
+- update @pecorino/api-nodejs-client
 
 ## v5.32.0 - 2020-09-23
 
