@@ -182,7 +182,8 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
                     : [], movieTickets: req.body.object.movieTickets.map((o) => {
                     return Object.assign(Object.assign({}, o), { typeOf: paymentMethodType });
                 }) }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined),
-            purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
+            purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id },
+            paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.MovieTicket
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)

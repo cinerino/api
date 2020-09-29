@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - update @cinerino/domain
+- Chevre決済サービスを口座決済に対応
 
 ### Deprecated
 
