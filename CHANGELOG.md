@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - update @cinerino/domain
 - Chevre決済サービスを口座決済に対応
+- 所有権のownedByを最適化
 
 ### Deprecated
 
