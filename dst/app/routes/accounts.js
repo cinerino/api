@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.deposit = void 0;
 /**
  * 口座ルーター
  */
@@ -18,18 +19,19 @@ const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const ioredis = require("ioredis");
+const moment = require("moment");
 const mongoose = require("mongoose");
 // import * as redis from '../../redis';
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-// const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
-//     domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
-//     clientId: <string>process.env.PECORINO_CLIENT_ID,
-//     clientSecret: <string>process.env.PECORINO_CLIENT_SECRET,
-//     scopes: [],
-//     state: ''
-// });
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const accountsRouter = express_1.Router();
 /**
  * 管理者として口座開設
@@ -151,23 +153,35 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['accounts.t
         .isEmpty()
         .withMessage(() => 'required')
 ], validator_1.default, depositAccountRateLimiet, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        yield cinerino.service.account.deposit({
+        const fromLocation = Object.assign(Object.assign({ typeOf: cinerino.factory.personType.Person, name: (req.user.username !== undefined) ? req.user.username : req.user.sub }, req.body.agent), { id: req.user.sub });
+        const toLocation = {
+            typeOf: cinerino.factory.chevre.paymentMethodType.Account,
+            // accountType: (typeof req.body.object?.toLocation?.accountType === 'string')
+            //     ? req.body.object?.toLocation?.accountType
+            //     : 'Point',
+            // accountNumber: req.body.object?.toLocation?.accountNumber
+            identifier: (_b = (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.toLocation) === null || _b === void 0 ? void 0 : _b.accountNumber
+        };
+        const recipient = Object.assign({ typeOf: cinerino.factory.personType.Person }, req.body.recipient);
+        const amount = Number((_c = req.body.object) === null || _c === void 0 ? void 0 : _c.amount);
+        const description = (typeof ((_d = req.body.object) === null || _d === void 0 ? void 0 : _d.description) === 'string') ? req.body.object.description : '入金';
+        yield deposit({
             project: req.project,
-            agent: Object.assign(Object.assign({ typeOf: cinerino.factory.personType.Person, name: (req.user.username !== undefined) ? req.user.username : req.user.sub }, req.body.agent), { id: req.user.sub }),
+            agent: fromLocation,
             object: {
-                amount: (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.amount,
-                toLocation: {
-                    typeOf: cinerino.factory.chevre.paymentMethodType.Account,
-                    accountType: (typeof ((_c = (_b = req.body.object) === null || _b === void 0 ? void 0 : _b.toLocation) === null || _c === void 0 ? void 0 : _c.accountType) === 'string')
-                        ? (_e = (_d = req.body.object) === null || _d === void 0 ? void 0 : _d.toLocation) === null || _e === void 0 ? void 0 : _e.accountType : 'Point',
-                    accountNumber: (_g = (_f = req.body.object) === null || _f === void 0 ? void 0 : _f.toLocation) === null || _g === void 0 ? void 0 : _g.accountNumber
+                amount: {
+                    typeOf: 'MonetaryAmount',
+                    currency: '',
+                    value: amount
                 },
-                description: (typeof req.body.object.description === 'string') ? req.body.object.description : '入金'
+                fromLocation: fromLocation,
+                toLocation: toLocation,
+                description: description
             },
-            recipient: Object.assign({ typeOf: cinerino.factory.personType.Person }, req.body.recipient)
+            recipient: recipient
         })({
             project: projectRepo
         });
@@ -178,4 +192,49 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['accounts.t
         next(error);
     }
 }));
+function deposit(params) {
+    return (repos) => __awaiter(this, void 0, void 0, function* () {
+        try {
+            const project = yield repos.project.findById({ id: params.project.id });
+            const transactionNumberService = new cinerino.chevre.service.TransactionNumber({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const { transactionNumber } = yield transactionNumberService.publish({
+                project: { id: project.id }
+            });
+            // Chevreで入金
+            const moneyTransferService = new cinerino.chevre.service.transaction.MoneyTransfer({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            yield moneyTransferService.start({
+                transactionNumber: transactionNumber,
+                project: { typeOf: project.typeOf, id: project.id },
+                typeOf: cinerino.chevre.factory.transactionType.MoneyTransfer,
+                agent: params.agent,
+                expires: moment()
+                    .add(1, 'minutes')
+                    .toDate(),
+                object: {
+                    amount: params.object.amount,
+                    fromLocation: params.object.fromLocation,
+                    toLocation: params.object.toLocation,
+                    description: params.object.description,
+                    pendingTransaction: {
+                        typeOf: cinerino.factory.pecorino.transactionType.Deposit,
+                        id: '' // 空でok
+                    }
+                },
+                recipient: params.recipient
+            });
+            yield moneyTransferService.confirm({ transactionNumber: transactionNumber });
+        }
+        catch (error) {
+            error = cinerino.errorHandler.handleChevreError(error);
+            throw error;
+        }
+    });
+}
+exports.deposit = deposit;
 exports.default = accountsRouter;

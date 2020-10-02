@@ -34,6 +34,11 @@ accountPaymentRouter.post<ParamsDictionary>(
         body('object')
             .not()
             .isEmpty(),
+        body('object.paymentMethod')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isString(),
         body('object.amount')
             .not()
             .isEmpty()
@@ -74,6 +79,8 @@ accountPaymentRouter.post<ParamsDictionary>(
             let fromAccount: cinerino.factory.action.authorize.paymentMethod.any.IFromAccount | undefined
                 = req.body.object.fromAccount;
 
+            const paymentMethodType: string = req.body.object?.paymentMethod;
+
             // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
             if (typeof fromAccount === 'string') {
                 type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
@@ -104,8 +111,8 @@ accountPaymentRouter.post<ParamsDictionary>(
                             ownedFrom: new Date(),
                             ownedThrough: new Date(),
                             typeOfGood: {
-                                typeOf: cinerino.factory.chevre.paymentMethodType.Account,
-                                accountType: fromAccount.accountType,
+                                typeOf: paymentMethodType,
+                                // accountType: fromAccount.accountType,
                                 accountNumber: fromAccount.accountNumber
                             }
                         });
@@ -121,7 +128,7 @@ accountPaymentRouter.post<ParamsDictionary>(
                 agent: { id: req.user.sub },
                 object: {
                     typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment,
-                    paymentMethod: cinerino.factory.paymentMethodType.Account,
+                    paymentMethod: paymentMethodType,
                     additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                         ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
                             return { name: String(p.name), value: String(p.value) };

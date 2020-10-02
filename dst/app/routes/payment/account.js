@@ -35,6 +35,11 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
     express_validator_1.body('object')
         .not()
         .isEmpty(),
+    express_validator_1.body('object.paymentMethod')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString(),
     express_validator_1.body('object.amount')
         .not()
         .isEmpty()
@@ -68,8 +73,10 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
 }), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         let fromAccount = req.body.object.fromAccount;
+        const paymentMethodType = (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.paymentMethod;
         // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
         if (typeof fromAccount === 'string') {
             const accountOwnershipInfo = yield cinerino.service.code.verifyToken({
@@ -101,8 +108,8 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
                         ownedFrom: new Date(),
                         ownedThrough: new Date(),
                         typeOfGood: {
-                            typeOf: cinerino.factory.chevre.paymentMethodType.Account,
-                            accountType: fromAccount.accountType,
+                            typeOf: paymentMethodType,
+                            // accountType: fromAccount.accountType,
                             accountNumber: fromAccount.accountNumber
                         }
                     });
@@ -115,7 +122,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
         const action = yield cinerino.service.payment.chevre.authorize({
             project: req.project,
             agent: { id: req.user.sub },
-            object: Object.assign(Object.assign(Object.assign({ typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment, paymentMethod: cinerino.factory.paymentMethodType.Account, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+            object: Object.assign(Object.assign(Object.assign({ typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment, paymentMethod: paymentMethodType, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {
                         return { name: String(p.name), value: String(p.value) };
                     })
