@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 所有権のownedByを最適化
 - 所有権のacquiredFromを最適化
 - 注文を最適化
+- 注文アイテムとしてのCOA予約生成処理を仮予約時に移動
 
 ### Deprecated
 
