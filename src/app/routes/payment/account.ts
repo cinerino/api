@@ -34,6 +34,11 @@ accountPaymentRouter.post<ParamsDictionary>(
         body('object')
             .not()
             .isEmpty(),
+        body('object.paymentMethod')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isString(),
         body('object.amount')
             .not()
             .isEmpty()
@@ -74,6 +79,8 @@ accountPaymentRouter.post<ParamsDictionary>(
             let fromAccount: cinerino.factory.action.authorize.paymentMethod.any.IFromAccount | undefined
                 = req.body.object.fromAccount;
 
+            const paymentMethodType: string = req.body.object?.paymentMethod;
+
             // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
             if (typeof fromAccount === 'string') {
                 type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
@@ -104,8 +111,8 @@ accountPaymentRouter.post<ParamsDictionary>(
                             ownedFrom: new Date(),
                             ownedThrough: new Date(),
                             typeOfGood: {
-                                typeOf: cinerino.factory.chevre.paymentMethodType.Account,
-                                accountType: fromAccount.accountType,
+                                typeOf: paymentMethodType,
+                                // accountType: fromAccount.accountType,
                                 accountNumber: fromAccount.accountNumber
                             }
                         });
@@ -116,36 +123,30 @@ accountPaymentRouter.post<ParamsDictionary>(
                 }
             }
 
-            const accountType = fromAccount?.accountType;
-
-            const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-
-            const currency = accountType;
-
-            const action = await cinerino.service.payment.account.authorize({
+            const action = await cinerino.service.payment.chevre.authorize({
                 project: req.project,
+                agent: { id: req.user.sub },
                 object: {
                     typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment,
-                    paymentMethod: cinerino.factory.paymentMethodType.Account,
-                    amount: Number(req.body.object.amount),
-                    currency: currency,
+                    paymentMethod: paymentMethodType,
                     additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                         ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
                             return { name: String(p.name), value: String(p.value) };
                         })
                         : [],
+                    amount: Number(req.body.object.amount),
+                    accountId: fromAccount?.accountNumber,
                     ...(typeof req.body.object.name === 'string') ? { name: <string>req.body.object.name } : undefined,
-                    ...(typeof req.body.object.notes === 'string') ? { notes: <string>req.body.object.notes } : undefined,
-                    ...(fromAccount !== undefined) ? { fromAccount } : {}
+                    ...(typeof req.body.object.notes === 'string') ? { description: <string>req.body.object.notes } : undefined,
+                    ...(typeof req.body.object.description === 'string')
+                        ? { description: <string>req.body.object.description }
+                        : undefined
                 },
-                agent: { id: req.user.sub },
-                purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
+                purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id },
+                paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.Account
             })({
-                action: actionRepo,
-                project: projectRepo,
-                transaction: transactionRepo
+                action: new cinerino.repository.Action(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
             res.status(CREATED)
@@ -178,14 +179,13 @@ accountPaymentRouter.put(
     },
     async (req, res, next) => {
         try {
-            await cinerino.service.payment.account.voidTransaction({
-                project: req.project,
-                id: req.params.actionId,
+            await cinerino.service.payment.chevre.voidPayment({
+                project: { id: req.project.id, typeOf: req.project.typeOf },
                 agent: { id: req.user.sub },
+                id: req.params.actionId,
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                project: new cinerino.repository.Project(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 

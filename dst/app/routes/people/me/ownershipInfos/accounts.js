@@ -105,6 +105,7 @@ accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         yield cinerino.service.account.close({
             project: req.project,
+            typeOf: cinerino.factory.chevre.paymentMethodType.Account,
             ownedBy: {
                 id: req.user.sub
             },
@@ -132,7 +133,8 @@ accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default(['people.me.
             ownedBy: {
                 id: req.user.sub
             },
-            conditions: req.query
+            conditions: req.query,
+            typeOfGood: { typeOf: cinerino.factory.chevre.paymentMethodType.Account }
         })({
             ownershipInfo: ownershipInfoRepo,
             project: projectRepo

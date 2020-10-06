@@ -18,6 +18,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.34.0 - 2020-10-06
+
+### Changed
+
+- update @cinerino/domain
+- Chevre決済サービスを口座決済に対応
+- 所有権のownedByを最適化
+- 所有権のacquiredFromを最適化
+- 注文を最適化
+- 注文アイテムとしてのCOA予約生成処理を仮予約時に移動
+- 注文アイテムとしてのCOA予約を最適化
+- 予約オファー承認アクションを最適化
+
 ## v5.33.0 - 2020-09-24
 
 ### Changed

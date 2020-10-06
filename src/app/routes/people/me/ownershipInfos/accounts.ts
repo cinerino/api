@@ -115,6 +115,7 @@ accountsRouter.put(
 
             await cinerino.service.account.close({
                 project: req.project,
+                typeOf: cinerino.factory.chevre.paymentMethodType.Account,
                 ownedBy: {
                     id: req.user.sub
                 },
@@ -149,7 +150,8 @@ accountsRouter.get(
                 ownedBy: {
                     id: req.user.sub
                 },
-                conditions: req.query
+                conditions: req.query,
+                typeOfGood: { typeOf: cinerino.factory.chevre.paymentMethodType.Account }
             })({
                 ownershipInfo: ownershipInfoRepo,
                 project: projectRepo

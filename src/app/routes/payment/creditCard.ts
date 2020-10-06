@@ -116,7 +116,8 @@ creditCardPaymentRouter.post<ParamsDictionary>(
                     ...(typeof req.body.object.name === 'string') ? { name: <string>req.body.object.name } : undefined,
                     ...(typeof req.body.object.orderId === 'string') ? { orderId: <string>req.body.object.orderId } : undefined
                 },
-                purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
+                purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id },
+                paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.CreditCard
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
