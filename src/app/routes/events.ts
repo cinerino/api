@@ -180,7 +180,10 @@ eventsRouter.patch<ParamsDictionary>(
                             numberOfTried: 0,
                             executionResults: [],
                             data: {
-                                actionAttributes: s
+                                actionAttributes: {
+                                    ...s,
+                                    agent: req.agent
+                                }
                             }
                         };
                     });
