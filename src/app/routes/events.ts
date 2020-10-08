@@ -182,7 +182,8 @@ eventsRouter.patch<ParamsDictionary>(
                             data: {
                                 actionAttributes: {
                                     ...s,
-                                    agent: req.agent
+                                    agent: req.agent,
+                                    typeOf: cinerino.factory.actionType.SendAction
                                 }
                             }
                         };

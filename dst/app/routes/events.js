@@ -149,7 +149,7 @@ eventsRouter.patch('/:id', permitScopes_1.default(['events.*', 'events.update'])
                     numberOfTried: 0,
                     executionResults: [],
                     data: {
-                        actionAttributes: Object.assign(Object.assign({}, s), { agent: req.agent })
+                        actionAttributes: Object.assign(Object.assign({}, s), { agent: req.agent, typeOf: cinerino.factory.actionType.SendAction })
                     }
                 };
             });
