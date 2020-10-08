@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- イベント更新サービスに、更新後アクションの指定を実装
-
 ### Changed
 
 ### Deprecated
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v5.35.0 - 2020-10-08
+
+### Added
+
+- イベント更新サービスに、更新後アクションの指定を実装
 
 ## v5.34.0 - 2020-10-06
 
