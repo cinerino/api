@@ -115,7 +115,13 @@ eventsRouter.get('/:id', permitScopes_1.default(['events.*', 'events.read']), ra
 /**
  * イベント部分更新
  */
-eventsRouter.patch('/:id', permitScopes_1.default(['events.*', 'events.update']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+// tslint:disable-next-line:use-default-type-parameter
+eventsRouter.patch('/:id', permitScopes_1.default(['events.*', 'events.update']), rateLimit_1.default, ...[
+    express_validator_1.body('onUpdated.sendEmailMessage')
+        .optional()
+        .isArray({ max: 50 })
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const eventService = new cinerino.chevre.service.Event({
             endpoint: cinerino.credentials.chevre.endpoint,
@@ -128,6 +134,27 @@ eventsRouter.patch('/:id', permitScopes_1.default(['events.*', 'events.update'])
                 // ...event,
                 typeOf: event.typeOf }, (typeof req.body.eventStatus === 'string') ? { eventStatus: req.body.eventStatus } : undefined)
         });
+        // onUpdatedオプションを実装
+        const sendEmailMessage = (_a = req.body.onUpdated) === null || _a === void 0 ? void 0 : _a.sendEmailMessage;
+        if (Array.isArray(sendEmailMessage) && sendEmailMessage.length > 0) {
+            const taskRepo = new cinerino.repository.Task(mongoose.connection);
+            const runsAt = new Date();
+            const taskAttributes = sendEmailMessage.map((s) => {
+                return {
+                    project: { typeOf: req.project.typeOf, id: req.project.id },
+                    name: cinerino.factory.taskName.SendEmailMessage,
+                    status: cinerino.factory.taskStatus.Ready,
+                    runsAt: runsAt,
+                    remainingNumberOfTries: 3,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        actionAttributes: Object.assign(Object.assign({}, s), { agent: req.agent, typeOf: cinerino.factory.actionType.SendAction })
+                    }
+                };
+            });
+            yield taskRepo.saveMany(taskAttributes);
+        }
         res.status(http_status_1.NO_CONTENT)
             .end();
     }

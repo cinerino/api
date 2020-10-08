@@ -5,7 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
-import { query } from 'express-validator';
+import { body, query } from 'express-validator';
 import { NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
@@ -133,10 +133,16 @@ eventsRouter.get(
 /**
  * イベント部分更新
  */
-eventsRouter.patch(
+// tslint:disable-next-line:use-default-type-parameter
+eventsRouter.patch<ParamsDictionary>(
     '/:id',
     permitScopes(['events.*', 'events.update']),
     rateLimit,
+    ...[
+        body('onUpdated.sendEmailMessage')
+            .optional()
+            .isArray({ max: 50 })
+    ],
     validator,
     async (req, res, next) => {
         try {
@@ -156,6 +162,35 @@ eventsRouter.patch(
                     ...(typeof req.body.eventStatus === 'string') ? { eventStatus: req.body.eventStatus } : undefined
                 }
             });
+
+            // onUpdatedオプションを実装
+            const sendEmailMessage: cinerino.factory.action.transfer.send.message.email.IAttributes[]
+                = req.body.onUpdated?.sendEmailMessage;
+            if (Array.isArray(sendEmailMessage) && sendEmailMessage.length > 0) {
+                const taskRepo = new cinerino.repository.Task(mongoose.connection);
+                const runsAt = new Date();
+                const taskAttributes: cinerino.factory.task.IAttributes<cinerino.factory.taskName.SendEmailMessage>[]
+                    = sendEmailMessage.map((s) => {
+                        return {
+                            project: { typeOf: req.project.typeOf, id: req.project.id },
+                            name: cinerino.factory.taskName.SendEmailMessage,
+                            status: cinerino.factory.taskStatus.Ready,
+                            runsAt: runsAt,
+                            remainingNumberOfTries: 3,
+                            numberOfTried: 0,
+                            executionResults: [],
+                            data: {
+                                actionAttributes: {
+                                    ...s,
+                                    agent: req.agent,
+                                    typeOf: cinerino.factory.actionType.SendAction
+                                }
+                            }
+                        };
+                    });
+
+                await taskRepo.saveMany(taskAttributes);
+            }
 
             res.status(NO_CONTENT)
                 .end();
