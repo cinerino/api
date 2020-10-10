@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 販売者の決済情報が不要に露出しないように調整
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v5.35.1 - 2020-10-10
+
+### Changed
+
+- 販売者の決済情報が不要に露出しないように調整
 
 ## v5.35.0 - 2020-10-08
 
