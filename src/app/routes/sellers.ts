@@ -114,7 +114,12 @@ function addLocation(params: cinerino.factory.chevre.seller.ISeller): cinerino.f
 
     const branchCode = params.additionalProperty?.find((p) => p.name === 'branchCode')?.value;
     if (typeof branchCode === 'string') {
-        seller.location = { project: seller.project, typeOf: cinerino.factory.chevre.placeType.MovieTheater, branchCode };
+        seller.location = {
+            project: seller.project,
+            typeOf: cinerino.factory.chevre.placeType.MovieTheater,
+            branchCode,
+            name: seller.name
+        };
     }
 
     return seller;

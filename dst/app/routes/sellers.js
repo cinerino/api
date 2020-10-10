@@ -91,7 +91,12 @@ function addLocation(params) {
     const seller = Object.assign({}, params);
     const branchCode = (_b = (_a = params.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === 'branchCode')) === null || _b === void 0 ? void 0 : _b.value;
     if (typeof branchCode === 'string') {
-        seller.location = { project: seller.project, typeOf: cinerino.factory.chevre.placeType.MovieTheater, branchCode };
+        seller.location = {
+            project: seller.project,
+            typeOf: cinerino.factory.chevre.placeType.MovieTheater,
+            branchCode,
+            name: seller.name
+        };
     }
     return seller;
 }
