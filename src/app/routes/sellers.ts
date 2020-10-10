@@ -64,7 +64,7 @@ sellersRouter.get(
                     : undefined
             });
 
-            res.json(data);
+            res.json(data.map(addLocation));
         } catch (error) {
             next(error);
         }
@@ -99,11 +99,25 @@ sellersRouter.get(
                     : undefined
             });
 
-            res.json(seller);
+            res.json(addLocation(seller));
         } catch (error) {
             next(error);
         }
     }
 );
+
+/**
+ * ssktsへの互換性維持対応として、location属性を自動保管
+ */
+function addLocation(params: cinerino.factory.chevre.seller.ISeller): cinerino.factory.chevre.seller.ISeller {
+    const seller: cinerino.factory.chevre.seller.ISeller = { ...params };
+
+    const branchCode = params.additionalProperty?.find((p) => p.name === 'branchCode')?.value;
+    if (typeof branchCode === 'string') {
+        seller.location = { project: seller.project, typeOf: cinerino.factory.chevre.placeType.MovieTheater, branchCode };
+    }
+
+    return seller;
+}
 
 export default sellersRouter;

@@ -54,7 +54,7 @@ sellersRouter.get('', permitScopes_1.default(['sellers.*', 'sellers.read', 'pos'
                 }
             }
             : undefined));
-        res.json(data);
+        res.json(data.map(addLocation));
     }
     catch (error) {
         next(error);
@@ -77,10 +77,22 @@ sellersRouter.get('/:id', permitScopes_1.default(['sellers.*', 'sellers.read']),
                 }
             }
             : undefined));
-        res.json(seller);
+        res.json(addLocation(seller));
     }
     catch (error) {
         next(error);
     }
 }));
+/**
+ * ssktsへの互換性維持対応として、location属性を自動保管
+ */
+function addLocation(params) {
+    var _a, _b;
+    const seller = Object.assign({}, params);
+    const branchCode = (_b = (_a = params.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === 'branchCode')) === null || _b === void 0 ? void 0 : _b.value;
+    if (typeof branchCode === 'string') {
+        seller.location = { project: seller.project, typeOf: cinerino.factory.chevre.placeType.MovieTheater, branchCode };
+    }
+    return seller;
+}
 exports.default = sellersRouter;

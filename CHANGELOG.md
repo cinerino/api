@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - 販売者検索においてlocation.branchCodesをadditionalPropertyに自動変換するように調整
+- 販売者検索においてlocation属性を自動保管するように調整(ssktsへの互換性維持対応として)
 
 ### Deprecated
 
