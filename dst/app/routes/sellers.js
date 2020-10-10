@@ -34,7 +34,14 @@ sellersRouter.get('', permitScopes_1.default(['sellers.*', 'sellers.read', 'pos'
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
-        const { data } = yield sellerService.search(Object.assign(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }), (!req.isAdmin) ? { $projection: { 'paymentAccepted.gmoInfo.shopPass': 0 } } : undefined));
+        const { data } = yield sellerService.search(Object.assign(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }), (!req.isAdmin)
+            ? {
+                $projection: {
+                    'paymentAccepted.gmoInfo.shopPass': 0,
+                    'paymentAccepted.movieTicketInfo': 0
+                }
+            }
+            : undefined));
         res.json(data);
     }
     catch (error) {
@@ -50,100 +57,18 @@ sellersRouter.get('/:id', permitScopes_1.default(['sellers.*', 'sellers.read']),
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
-        const seller = yield sellerService.findById(Object.assign({ id: req.params.id }, (!req.isAdmin) ? { $projection: { 'paymentAccepted.gmoInfo.shopPass': 0 } } : undefined));
+        const seller = yield sellerService.findById(Object.assign({ id: req.params.id }, (!req.isAdmin)
+            ? {
+                $projection: {
+                    'paymentAccepted.gmoInfo.shopPass': 0,
+                    'paymentAccepted.movieTicketInfo': 0
+                }
+            }
+            : undefined));
         res.json(seller);
     }
     catch (error) {
         next(error);
     }
 }));
-/**
- * 販売者更新
- */
-// tslint:disable-next-line:use-default-type-parameter
-// sellersRouter.put<ParamsDictionary>(
-//     '/:id',
-//     permitScopes(['sellers.*', 'sellers.write']),
-//     rateLimit,
-//     ...[
-//         body('typeOf')
-//             .not()
-//             .isEmpty()
-//             .withMessage((_, __) => 'required'),
-//         body('name.ja')
-//             .not()
-//             .isEmpty()
-//             .withMessage((_, __) => 'required'),
-//         body('name.en')
-//             .not()
-//             .isEmpty()
-//             .withMessage((_, __) => 'required'),
-//         body('parentOrganization.typeOf')
-//             .not()
-//             .isEmpty()
-//             .withMessage((_, __) => 'required'),
-//         body('parentOrganization.name.ja')
-//             .not()
-//             .isEmpty()
-//             .withMessage((_, __) => 'required'),
-//         body('parentOrganization.name.en')
-//             .not()
-//             .isEmpty()
-//             .withMessage((_, __) => 'required'),
-//         body('telephone')
-//             .not()
-//             .isEmpty()
-//             .withMessage((_, __) => 'required'),
-//         body('url')
-//             .not()
-//             .isEmpty()
-//             .withMessage((_, __) => 'required')
-//             .isURL(),
-//         body('paymentAccepted')
-//             .not()
-//             .isEmpty()
-//             .withMessage((_, __) => 'required')
-//             .isArray(),
-//         body('hasPOS')
-//             .isArray(),
-//         body('areaServed')
-//             .isArray()
-//     ],
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const attributes: cinerino.factory.seller.IAttributes<typeof req.body.typeOf> = {
-//                 ...req.body,
-//                 project: req.project
-//             };
-//             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-//             await sellerRepo.save({ id: req.params.id, attributes: attributes });
-//             res.status(NO_CONTENT)
-//                 .end();
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
-/**
- * 販売者削除
- */
-// sellersRouter.delete(
-//     '/:id',
-//     permitScopes(['sellers.*', 'sellers.write']),
-//     rateLimit,
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
-//             await sellerRepo.deleteById({
-//                 id: req.params.id
-//             });
-//             res.status(NO_CONTENT)
-//                 .end();
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
 exports.default = sellersRouter;
