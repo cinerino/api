@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 販売者検索においてlocation.branchCodesをadditionalPropertyに自動変換するように調整
+
 ### Deprecated
 
 ### Removed
