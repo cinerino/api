@@ -102,12 +102,9 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
                 .withMessage((_, __) => 'required')
         ]
         : []
-], validator_1.default, 
-// tslint:disable-next-line:max-func-body-length
-(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     try {
-        // const now = new Date();
         // WAITER有効設定であれば許可証をセット
         let passport;
         if (!WAITER_DISABLED) {
@@ -123,7 +120,6 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
                 secret: process.env.WAITER_SECRET
             };
         }
-        // const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const expires = req.body.expires;
@@ -132,45 +128,9 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
             auth: chevreAuthClient
         });
         const seller = yield sellerService.findById({ id: req.body.seller.id });
-        const passportValidator = (params) => {
-            // 許可証発行者確認
-            const validIssuer = params.passport.iss === process.env.WAITER_PASSPORT_ISSUER;
-            // スコープのフォーマットは、Transaction:PlaceOrder:${sellerId}
-            const newExplodedScopeStrings = params.passport.scope.split(':');
-            const newValidScope = (newExplodedScopeStrings[0] === 'Transaction' && // スコープ接頭辞確認
-                newExplodedScopeStrings[1] === cinerino.factory.transactionType.PlaceOrder && // スコープ接頭辞確認
-                (
-                // tslint:disable-next-line:no-magic-numbers
-                newExplodedScopeStrings[2] === req.body.seller.id || newExplodedScopeStrings[2] === '*' // 販売者ID確認
-                ));
-            // スコープのフォーマットは、placeOrderTransaction.${sellerIdentifier}
-            // cinemasunshine対応
-            const oldExplodedScopeStrings = params.passport.scope.split('.');
-            const oldValidScope = (oldExplodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
-                oldExplodedScopeStrings[1] === seller.identifier // 販売者識別子確認
-            );
-            // スコープスタイルは新旧どちらか一方有効であれok
-            const validScope = newValidScope || oldValidScope;
-            // クライアントの有効性
-            let validClient = true;
-            if (req.user.client_id !== undefined) {
-                if (Array.isArray(params.passport.aud) && params.passport.aud.indexOf(req.user.client_id) < 0) {
-                    validClient = false;
-                }
-            }
-            return validIssuer && validScope && validClient;
-        };
+        const passportValidator = createPassportValidator(seller, req.user.client_id);
         const project = yield projectRepo.findById({ id: req.project.id });
         const useTransactionClientUser = project.settings !== undefined && project.settings.useTransactionClientUser === true;
-        // 現在所有している会員プログラムを全て検索
-        // const programMembershipOwnershipInfos =
-        //     await ownershipInfoRepo.search({
-        //         project: { id: { $eq: req.project.id } },
-        //         typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
-        //         ownedBy: { id: req.agent.id },
-        //         ownedFrom: now,
-        //         ownedThrough: now
-        //     });
         const orderName = (typeof ((_a = req.body.object) === null || _a === void 0 ? void 0 : _a.name) === 'string') ? (_b = req.body.object) === null || _b === void 0 ? void 0 : _b.name : DEFAULT_ORDER_NAME;
         const transaction = yield cinerino.service.transaction.placeOrderInProgress.start({
             project: req.project,
@@ -185,7 +145,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
                 ] }),
             seller: req.body.seller,
             object: Object.assign(Object.assign({ passport: passport }, (useTransactionClientUser) ? { clientUser: req.user } : undefined), (typeof orderName === 'string') ? { name: orderName } : undefined),
-            passportValidator: passportValidator
+            passportValidator
         })({
             project: projectRepo,
             transaction: transactionRepo
@@ -199,6 +159,41 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         next(error);
     }
 }));
+function createPassportValidator(seller, clientId) {
+    return (params) => {
+        var _a;
+        // 許可証発行者確認
+        const validIssuer = params.passport.iss === process.env.WAITER_PASSPORT_ISSUER;
+        // スコープのフォーマットは、Transaction:PlaceOrder:${sellerId}
+        const newExplodedScopeStrings = params.passport.scope.split(':');
+        const newValidScope = (newExplodedScopeStrings[0] === 'Transaction' && // スコープ接頭辞確認
+            newExplodedScopeStrings[1] === cinerino.factory.transactionType.PlaceOrder && // スコープ接頭辞確認
+            (
+            // tslint:disable-next-line:no-magic-numbers
+            newExplodedScopeStrings[2] === seller.id || newExplodedScopeStrings[2] === '*' // 販売者ID確認
+            ));
+        // 追加特性に登録されたwaiterScopeでもok
+        const validScopesByAdditionalProperty = (_a = seller.additionalProperty) === null || _a === void 0 ? void 0 : _a.filter((p) => p.name === 'waiterScope').map((p) => p.value);
+        const isValidByAdditionalProperty = (Array.isArray(validScopesByAdditionalProperty))
+            ? validScopesByAdditionalProperty === null || validScopesByAdditionalProperty === void 0 ? void 0 : validScopesByAdditionalProperty.includes(params.passport.scope) : false;
+        // スコープのフォーマットは、placeOrderTransaction.${sellerIdentifier}
+        // cinemasunshine対応
+        const oldExplodedScopeStrings = params.passport.scope.split('.');
+        const oldValidScope = (oldExplodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
+            oldExplodedScopeStrings[1] === seller.identifier // 販売者識別子確認
+        );
+        // スコープスタイルは新旧どちらか一方有効であれok
+        const validScope = newValidScope || isValidByAdditionalProperty || oldValidScope;
+        // クライアントの有効性
+        let validClient = true;
+        if (typeof clientId === 'string') {
+            if (Array.isArray(params.passport.aud) && params.passport.aud.indexOf(clientId) < 0) {
+                validClient = false;
+            }
+        }
+        return validIssuer && validScope && validClient;
+    };
+}
 /**
  * 購入者情報を変更する
  */
