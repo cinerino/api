@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 販売者検索においてlocation.branchCodesをadditionalPropertyに自動変換するように調整
-- 販売者検索においてlocation属性を自動保管するように調整(ssktsへの互換性維持対応として)
-- 許可証の有効条件に販売者の追加特性を採用
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v5.36.0 - 2020-10-12
+
+### Changed
+
+- 販売者検索においてlocation.branchCodesをadditionalPropertyに自動変換するように調整
+- 販売者検索においてlocation属性を自動保管するように調整(ssktsへの互換性維持対応として)
+- 許可証の有効条件に販売者の追加特性を採用
 
 ## v5.35.1 - 2020-10-10
 
