@@ -193,7 +193,7 @@ function createPassportValidator(
 
         // スコープのフォーマットは、Transaction:PlaceOrder:${sellerId}
         const newExplodedScopeStrings = params.passport.scope.split(':');
-        const newValidScope = (
+        const isNewValidScope = (
             newExplodedScopeStrings[0] === 'Transaction' && // スコープ接頭辞確認
             newExplodedScopeStrings[1] === cinerino.factory.transactionType.PlaceOrder && // スコープ接頭辞確認
             (
@@ -209,16 +209,8 @@ function createPassportValidator(
             ? validScopesByAdditionalProperty?.includes(params.passport.scope)
             : false;
 
-        // スコープのフォーマットは、placeOrderTransaction.${sellerIdentifier}
-        // cinemasunshine対応
-        const oldExplodedScopeStrings = params.passport.scope.split('.');
-        const oldValidScope = (
-            oldExplodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
-            oldExplodedScopeStrings[1] === seller.identifier // 販売者識別子確認
-        );
-
-        // スコープスタイルは新旧どちらか一方有効であれok
-        const validScope = newValidScope || isValidByAdditionalProperty || oldValidScope;
+        // スコープスタイルはどちらか一方有効であれok
+        const validScope = isNewValidScope || isValidByAdditionalProperty;
 
         // クライアントの有効性
         let validClient = true;
