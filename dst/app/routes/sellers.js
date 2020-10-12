@@ -24,16 +24,28 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
+const USE_LEGACY_SELLERS_SEARCH = process.env.USE_LEGACY_SELLERS_SEARCH === '1';
 const sellersRouter = express_1.Router();
 /**
  * 販売者検索
  */
 sellersRouter.get('', permitScopes_1.default(['sellers.*', 'sellers.read', 'pos']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const sellerService = new cinerino.chevre.service.Seller({
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
+        if (!USE_LEGACY_SELLERS_SEARCH) {
+            // location.branchCodesをadditionalPropertyに自動変換
+            const locationBranchCodes = (_a = req.query.location) === null || _a === void 0 ? void 0 : _a.branchCodes;
+            if (Array.isArray(locationBranchCodes)) {
+                req.query.additionalProperty = Object.assign(Object.assign({}, req.query.additionalProperty), { $in: locationBranchCodes.map((branchCode) => {
+                        return { name: 'branchCode', value: String(branchCode) };
+                    }) });
+                req.query.location.branchCodes = undefined;
+            }
+        }
         const { data } = yield sellerService.search(Object.assign(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }), (!req.isAdmin)
             ? {
                 $projection: {
@@ -42,7 +54,7 @@ sellersRouter.get('', permitScopes_1.default(['sellers.*', 'sellers.read', 'pos'
                 }
             }
             : undefined));
-        res.json(data);
+        res.json(data.map(addLocation));
     }
     catch (error) {
         next(error);
@@ -65,10 +77,27 @@ sellersRouter.get('/:id', permitScopes_1.default(['sellers.*', 'sellers.read']),
                 }
             }
             : undefined));
-        res.json(seller);
+        res.json(addLocation(seller));
     }
     catch (error) {
         next(error);
     }
 }));
+/**
+ * ssktsへの互換性維持対応として、location属性を自動保管
+ */
+function addLocation(params) {
+    var _a, _b;
+    const seller = Object.assign({}, params);
+    const branchCode = (_b = (_a = params.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === 'branchCode')) === null || _b === void 0 ? void 0 : _b.value;
+    if (typeof branchCode === 'string') {
+        seller.location = {
+            project: seller.project,
+            typeOf: cinerino.factory.chevre.placeType.MovieTheater,
+            branchCode,
+            name: seller.name
+        };
+    }
+    return seller;
+}
 exports.default = sellersRouter;

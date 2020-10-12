@@ -16,6 +16,8 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 
+const USE_LEGACY_SELLERS_SEARCH = process.env.USE_LEGACY_SELLERS_SEARCH === '1';
+
 const sellersRouter = Router();
 
 /**
@@ -33,6 +35,21 @@ sellersRouter.get(
                 auth: chevreAuthClient
             });
 
+            if (!USE_LEGACY_SELLERS_SEARCH) {
+                // location.branchCodesをadditionalPropertyに自動変換
+                const locationBranchCodes = req.query.location?.branchCodes;
+                if (Array.isArray(locationBranchCodes)) {
+                    req.query.additionalProperty = {
+                        ...req.query.additionalProperty,
+                        $in: locationBranchCodes.map((branchCode: any) => {
+                            return { name: 'branchCode', value: String(branchCode) };
+                        })
+                    };
+
+                    req.query.location.branchCodes = undefined;
+                }
+            }
+
             const { data } = await sellerService.search({
                 ...req.query,
                 project: { id: { $eq: req.project.id } },
@@ -47,7 +64,7 @@ sellersRouter.get(
                     : undefined
             });
 
-            res.json(data);
+            res.json(data.map(addLocation));
         } catch (error) {
             next(error);
         }
@@ -82,11 +99,30 @@ sellersRouter.get(
                     : undefined
             });
 
-            res.json(seller);
+            res.json(addLocation(seller));
         } catch (error) {
             next(error);
         }
     }
 );
+
+/**
+ * ssktsへの互換性維持対応として、location属性を自動保管
+ */
+function addLocation(params: cinerino.factory.chevre.seller.ISeller): cinerino.factory.chevre.seller.ISeller {
+    const seller: cinerino.factory.chevre.seller.ISeller = { ...params };
+
+    const branchCode = params.additionalProperty?.find((p) => p.name === 'branchCode')?.value;
+    if (typeof branchCode === 'string') {
+        seller.location = {
+            project: seller.project,
+            typeOf: cinerino.factory.chevre.placeType.MovieTheater,
+            branchCode,
+            name: seller.name
+        };
+    }
+
+    return seller;
+}
 
 export default sellersRouter;
