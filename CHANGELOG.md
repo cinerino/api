@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 許可証の有効条件から販売者identifierを削除
+- update @cinerino/domain
+
 ### Deprecated
 
 ### Removed

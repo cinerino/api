@@ -16,8 +16,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 
-const USE_LEGACY_SELLERS_SEARCH = process.env.USE_LEGACY_SELLERS_SEARCH === '1';
-
 const sellersRouter = Router();
 
 /**
@@ -35,19 +33,17 @@ sellersRouter.get(
                 auth: chevreAuthClient
             });
 
-            if (!USE_LEGACY_SELLERS_SEARCH) {
-                // location.branchCodesをadditionalPropertyに自動変換
-                const locationBranchCodes = req.query.location?.branchCodes;
-                if (Array.isArray(locationBranchCodes)) {
-                    req.query.additionalProperty = {
-                        ...req.query.additionalProperty,
-                        $in: locationBranchCodes.map((branchCode: any) => {
-                            return { name: 'branchCode', value: String(branchCode) };
-                        })
-                    };
+            // location.branchCodesをadditionalPropertyに自動変換
+            const locationBranchCodes = req.query.location?.branchCodes;
+            if (Array.isArray(locationBranchCodes)) {
+                req.query.additionalProperty = {
+                    ...req.query.additionalProperty,
+                    $in: locationBranchCodes.map((branchCode: any) => {
+                        return { name: 'branchCode', value: String(branchCode) };
+                    })
+                };
 
-                    req.query.location.branchCodes = undefined;
-                }
+                req.query.location.branchCodes = undefined;
             }
 
             const { data } = await sellerService.search({

@@ -16,6 +16,6 @@ paymentRouter.use('/any', anyPaymentRouter);
 paymentRouter.use(`/${cinerino.factory.chevre.service.paymentService.PaymentServiceType.Account}`, accountPaymentRouter);
 paymentRouter.use(`/${cinerino.factory.chevre.service.paymentService.PaymentServiceType.CreditCard}`, creditCardPaymentRouter);
 paymentRouter.use(`/${cinerino.factory.chevre.service.paymentService.PaymentServiceType.MovieTicket}`, movieTicketPaymentRouter);
-paymentRouter.use(`/${cinerino.factory.paymentMethodType.PaymentCard}`, paymentCardPaymentRouter);
+paymentRouter.use(`/${cinerino.factory.chevre.service.paymentService.PaymentServiceType.PaymentCard}`, paymentCardPaymentRouter);
 
 export default paymentRouter;
