@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.36.2 - 2020-10-14
+
+### Changed
+
+- ttts専用paymentNoをorder.identifierから削除
+
 ## v5.36.1 - 2020-10-12
 
 ### Changed
