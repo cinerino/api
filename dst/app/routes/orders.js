@@ -24,6 +24,7 @@ const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const connectMongo_1 = require("../../connectMongo");
 const redis = require("../../redis");
+const DEFAULT_CODE_EXPIRES_IN_SECONDS = 600;
 const USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER = process.env.USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER === '1';
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
@@ -605,9 +606,14 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
 ], validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const now = new Date();
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const project = yield projectRepo.findById({ id: req.project.id });
+        const expiresInSeconds = (typeof ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.codeExpiresInSeconds) === 'number')
+            ? project.settings.codeExpiresInSeconds
+            : DEFAULT_CODE_EXPIRES_IN_SECONDS;
         const customer = req.body.customer;
         if (customer.email !== undefined && customer.telephone !== undefined) {
             throw new cinerino.factory.errors.Argument('customer');
@@ -666,11 +672,11 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
                             recipient: req.agent,
                             object: ownershipInfo,
                             purpose: {},
-                            validFrom: now
+                            validFrom: now,
+                            expiresInSeconds: expiresInSeconds
                         })({
                             action: actionRepo,
-                            code: codeRepo,
-                            project: projectRepo
+                            code: codeRepo
                         });
                         reservation.reservedTicket.ticketToken = authorization.code;
                         offer.itemOffered = reservation;

@@ -14,6 +14,8 @@ import accountsRouter from './ownershipInfos/accounts';
 import creditCardsRouter from './ownershipInfos/creditCards';
 import reservationsRouter from './ownershipInfos/reservations';
 
+const DEFAULT_CODE_EXPIRES_IN_SECONDS = 600;
+
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -109,6 +111,8 @@ ownershipInfosRouter.post(
     validator,
     async (req, res, next) => {
         try {
+            const now = new Date();
+
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const codeRepo = new cinerino.repository.Code(mongoose.connection);
@@ -119,17 +123,22 @@ ownershipInfosRouter.post(
                 throw new cinerino.factory.errors.Unauthorized();
             }
 
+            const project = await projectRepo.findById({ id: req.project.id });
+            const expiresInSeconds = (typeof project.settings?.codeExpiresInSeconds === 'number')
+                ? project.settings.codeExpiresInSeconds
+                : DEFAULT_CODE_EXPIRES_IN_SECONDS;
+
             const authorization = await cinerino.service.code.publish({
                 project: req.project,
                 agent: req.agent,
                 recipient: req.agent,
                 object: ownershipInfo,
                 purpose: {},
-                validFrom: new Date()
+                validFrom: now,
+                expiresInSeconds: expiresInSeconds
             })({
                 action: actionRepo,
-                code: codeRepo,
-                project: projectRepo
+                code: codeRepo
             });
             const code = authorization.code;
 
