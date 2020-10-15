@@ -74,6 +74,7 @@ ownershipInfosRouter.post('/tokens', permitScopes_1.default(['tokens']), rateLim
     try {
         const codeRepo = new cinerino.repository.Code(mongoose.connection);
         const token = yield cinerino.service.code.getToken({
+            project: req.project,
             code: req.body.code,
             secret: process.env.TOKEN_SECRET,
             issuer: process.env.RESOURCE_SERVER_IDENTIFIER,

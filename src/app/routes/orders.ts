@@ -5,7 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
-import { body, query } from 'express-validator';
+import { body, oneOf, query } from 'express-validator';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
@@ -701,7 +701,25 @@ ordersRouter.post<ParamsDictionary>(
         body('customer')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
+            .withMessage(() => 'required'),
+        oneOf([
+            [
+                body('customer.email')
+                    .not()
+                    .isEmpty()
+                    .isString()
+            ],
+            [
+                body('customer.telephone')
+                    .not()
+                    .isEmpty()
+                    .isString()
+            ]
+        ]),
+        body('expiresInSeconds')
+            .optional()
+            .isInt({ min: 0, max: 259200 }) // とりあえずmax 3 days
+            .toInt()
     ],
     validator,
     // tslint:disable-next-line:max-func-body-length
@@ -712,14 +730,14 @@ ordersRouter.post<ParamsDictionary>(
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
             const project = await projectRepo.findById({ id: req.project.id });
-            const expiresInSeconds = (typeof project.settings?.codeExpiresInSeconds === 'number')
-                ? project.settings.codeExpiresInSeconds
-                : DEFAULT_CODE_EXPIRES_IN_SECONDS;
+            const expiresInSeconds: number = (typeof req.body.expiresInSeconds === 'number')
+                ? Number(req.body.expiresInSeconds)
+                : (typeof project.settings?.codeExpiresInSeconds === 'number')
+                    ? project.settings.codeExpiresInSeconds
+                    : DEFAULT_CODE_EXPIRES_IN_SECONDS;
 
             const customer = req.body.customer;
-            if (customer.email !== undefined && customer.telephone !== undefined) {
-                throw new cinerino.factory.errors.Argument('customer');
-            }
+
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const codeRepo = new cinerino.repository.Code(mongoose.connection);
@@ -735,20 +753,21 @@ ordersRouter.post<ParamsDictionary>(
 
             // 配送サービスに問い合わせて、注文から所有権を検索
             const actionsOnOrder = await actionRepo.searchByOrderNumber({ orderNumber: order.orderNumber });
-            const sendOrderAction = <cinerino.factory.action.transfer.send.order.IAction>actionsOnOrder
+            const sendOrderAction = <cinerino.factory.action.transfer.send.order.IAction | undefined>actionsOnOrder
                 .filter((a) => a.typeOf === cinerino.factory.actionType.SendAction)
                 .filter((a) => a.object.typeOf === 'Order')
                 .find((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus);
             // まだ配送済でない場合
-            if (sendOrderAction === undefined || sendOrderAction.result === undefined) {
+            const sendOrderActionResult = sendOrderAction?.result;
+            if (!Array.isArray(sendOrderActionResult)) {
                 throw new cinerino.factory.errors.Argument('orderNumber', 'Not delivered yet');
             }
 
             // 配送された所有権情報を注文に付加する
             type IOwnershipInfo = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
-            const ownershipInfos: IOwnershipInfo[] = (Array.isArray(sendOrderAction.result))
-                ? sendOrderAction.result
-                : (<any>sendOrderAction.result).ownershipInfos; // 旧型に対する互換性維持のため
+            const ownershipInfos: IOwnershipInfo[] = (Array.isArray(sendOrderActionResult))
+                ? sendOrderActionResult
+                : [];
             const reservationIds = ownershipInfos
                 .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
                 .map((o) => <string>(<EventReservationGoodType>o.typeOfGood).id);
@@ -762,8 +781,27 @@ ordersRouter.post<ParamsDictionary>(
                 typeOf: cinerino.factory.chevre.reservationType.EventReservation,
                 ids: reservationIds
             });
+
+            // コード発行対象の所有権を検索
+            const ownershipInfos2authorize = ownershipInfos
+                // ひとまずEventReservationのみ
+                .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation);
+
             // 所有権に対してコード発行
-            order.acceptedOffers = await Promise.all(order.acceptedOffers.map(async (offer) => {
+            const authorizations = await cinerino.service.code.publish({
+                project: req.project,
+                agent: req.agent,
+                recipient: req.agent,
+                object: ownershipInfos2authorize,
+                purpose: {},
+                validFrom: now,
+                expiresInSeconds: expiresInSeconds
+            })({
+                action: actionRepo,
+                code: codeRepo
+            });
+
+            order.acceptedOffers = order.acceptedOffers.map((offer) => {
                 const itemOffered = offer.itemOffered;
                 if (itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
                     // 実際の予約データで置き換え
@@ -773,31 +811,35 @@ ordersRouter.post<ParamsDictionary>(
 
                     if (reservation !== undefined) {
                         // 所有権コード情報を追加
-                        const ownershipInfo = ownershipInfos
-                            .filter((o) => o.typeOfGood.typeOf === reservation.typeOf)
-                            .find((o) => (<EventReservationGoodType>o.typeOfGood).id === reservation.id);
-                        if (ownershipInfo !== undefined) {
-                            const authorization = await cinerino.service.code.publish({
-                                project: req.project,
-                                agent: req.agent,
-                                recipient: req.agent,
-                                object: ownershipInfo,
-                                purpose: {},
-                                validFrom: now,
-                                expiresInSeconds: expiresInSeconds
-                            })({
-                                action: actionRepo,
-                                code: codeRepo
-                            });
+                        // const ownershipInfo = ownershipInfos
+                        //     .filter((o) => o.typeOfGood.typeOf === reservation.typeOf)
+                        //     .find((o) => (<EventReservationGoodType>o.typeOfGood).id === reservation.id);
+                        // if (ownershipInfo !== undefined) {
+                        // }
+                        // const authorization = await cinerino.service.code.publish({
+                        //     project: req.project,
+                        //     agent: req.agent,
+                        //     recipient: req.agent,
+                        //     object: ownershipInfo,
+                        //     purpose: {},
+                        //     validFrom: now,
+                        //     expiresInSeconds: expiresInSeconds
+                        // })({
+                        //     action: actionRepo,
+                        //     code: codeRepo
+                        // });
 
+                        const authorization = authorizations.find((a) => a.object.typeOfGood?.id === reservation.id);
+                        if (typeof authorization?.code === 'string') {
                             reservation.reservedTicket.ticketToken = authorization.code;
-                            offer.itemOffered = reservation;
                         }
+
+                        offer.itemOffered = reservation;
                     }
                 }
 
                 return offer;
-            }));
+            });
 
             // 予約番号でChevreチェックイン
             let reservationNumbers = ownershipInfos

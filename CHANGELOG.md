@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - update @cinerino/domain
+- 注文に対するコード発行時に、複数コード発行を1アクションで実行するように調整
 
 ### Deprecated
 

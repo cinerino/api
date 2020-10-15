@@ -103,11 +103,11 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['people.me.*
         const expiresInSeconds = (typeof ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.codeExpiresInSeconds) === 'number')
             ? project.settings.codeExpiresInSeconds
             : DEFAULT_CODE_EXPIRES_IN_SECONDS;
-        const authorization = yield cinerino.service.code.publish({
+        const authorizations = yield cinerino.service.code.publish({
             project: req.project,
             agent: req.agent,
             recipient: req.agent,
-            object: ownershipInfo,
+            object: [ownershipInfo],
             purpose: {},
             validFrom: now,
             expiresInSeconds: expiresInSeconds
@@ -115,7 +115,7 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['people.me.*
             action: actionRepo,
             code: codeRepo
         });
-        const code = authorization.code;
+        const code = authorizations[0].code;
         // 座席予約に対する所有権であれば、Chevreでチェックイン
         if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
             const reservationService = new cinerino.chevre.service.Reservation({

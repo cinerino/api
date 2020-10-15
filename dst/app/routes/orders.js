@@ -602,7 +602,25 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
     express_validator_1.body('customer')
         .not()
         .isEmpty()
-        .withMessage((_, __) => 'required')
+        .withMessage(() => 'required'),
+    express_validator_1.oneOf([
+        [
+            express_validator_1.body('customer.email')
+                .not()
+                .isEmpty()
+                .isString()
+        ],
+        [
+            express_validator_1.body('customer.telephone')
+                .not()
+                .isEmpty()
+                .isString()
+        ]
+    ]),
+    express_validator_1.body('expiresInSeconds')
+        .optional()
+        .isInt({ min: 0, max: 259200 }) // とりあえずmax 3 days
+        .toInt()
 ], validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -611,13 +629,12 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
         const now = new Date();
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        const expiresInSeconds = (typeof ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.codeExpiresInSeconds) === 'number')
-            ? project.settings.codeExpiresInSeconds
-            : DEFAULT_CODE_EXPIRES_IN_SECONDS;
+        const expiresInSeconds = (typeof req.body.expiresInSeconds === 'number')
+            ? Number(req.body.expiresInSeconds)
+            : (typeof ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.codeExpiresInSeconds) === 'number')
+                ? project.settings.codeExpiresInSeconds
+                : DEFAULT_CODE_EXPIRES_IN_SECONDS;
         const customer = req.body.customer;
-        if (customer.email !== undefined && customer.telephone !== undefined) {
-            throw new cinerino.factory.errors.Argument('customer');
-        }
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const codeRepo = new cinerino.repository.Code(mongoose.connection);
@@ -636,12 +653,13 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
             .filter((a) => a.object.typeOf === 'Order')
             .find((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus);
         // まだ配送済でない場合
-        if (sendOrderAction === undefined || sendOrderAction.result === undefined) {
+        const sendOrderActionResult = sendOrderAction === null || sendOrderAction === void 0 ? void 0 : sendOrderAction.result;
+        if (!Array.isArray(sendOrderActionResult)) {
             throw new cinerino.factory.errors.Argument('orderNumber', 'Not delivered yet');
         }
-        const ownershipInfos = (Array.isArray(sendOrderAction.result))
-            ? sendOrderAction.result
-            : sendOrderAction.result.ownershipInfos; // 旧型に対する互換性維持のため
+        const ownershipInfos = (Array.isArray(sendOrderActionResult))
+            ? sendOrderActionResult
+            : [];
         const reservationIds = ownershipInfos
             .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
             .map((o) => o.typeOfGood.id);
@@ -654,37 +672,56 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
             typeOf: cinerino.factory.chevre.reservationType.EventReservation,
             ids: reservationIds
         });
+        // コード発行対象の所有権を検索
+        const ownershipInfos2authorize = ownershipInfos
+            // ひとまずEventReservationのみ
+            .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation);
         // 所有権に対してコード発行
-        order.acceptedOffers = yield Promise.all(order.acceptedOffers.map((offer) => __awaiter(void 0, void 0, void 0, function* () {
+        const authorizations = yield cinerino.service.code.publish({
+            project: req.project,
+            agent: req.agent,
+            recipient: req.agent,
+            object: ownershipInfos2authorize,
+            purpose: {},
+            validFrom: now,
+            expiresInSeconds: expiresInSeconds
+        })({
+            action: actionRepo,
+            code: codeRepo
+        });
+        order.acceptedOffers = order.acceptedOffers.map((offer) => {
             const itemOffered = offer.itemOffered;
             if (itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
                 // 実際の予約データで置き換え
                 const reservation = searchReservationsResult.data.find((r) => r.id === itemOffered.id);
                 if (reservation !== undefined) {
                     // 所有権コード情報を追加
-                    const ownershipInfo = ownershipInfos
-                        .filter((o) => o.typeOfGood.typeOf === reservation.typeOf)
-                        .find((o) => o.typeOfGood.id === reservation.id);
-                    if (ownershipInfo !== undefined) {
-                        const authorization = yield cinerino.service.code.publish({
-                            project: req.project,
-                            agent: req.agent,
-                            recipient: req.agent,
-                            object: ownershipInfo,
-                            purpose: {},
-                            validFrom: now,
-                            expiresInSeconds: expiresInSeconds
-                        })({
-                            action: actionRepo,
-                            code: codeRepo
-                        });
+                    // const ownershipInfo = ownershipInfos
+                    //     .filter((o) => o.typeOfGood.typeOf === reservation.typeOf)
+                    //     .find((o) => (<EventReservationGoodType>o.typeOfGood).id === reservation.id);
+                    // if (ownershipInfo !== undefined) {
+                    // }
+                    // const authorization = await cinerino.service.code.publish({
+                    //     project: req.project,
+                    //     agent: req.agent,
+                    //     recipient: req.agent,
+                    //     object: ownershipInfo,
+                    //     purpose: {},
+                    //     validFrom: now,
+                    //     expiresInSeconds: expiresInSeconds
+                    // })({
+                    //     action: actionRepo,
+                    //     code: codeRepo
+                    // });
+                    const authorization = authorizations.find((a) => { var _a; return ((_a = a.object.typeOfGood) === null || _a === void 0 ? void 0 : _a.id) === reservation.id; });
+                    if (typeof (authorization === null || authorization === void 0 ? void 0 : authorization.code) === 'string') {
                         reservation.reservedTicket.ticketToken = authorization.code;
-                        offer.itemOffered = reservation;
                     }
+                    offer.itemOffered = reservation;
                 }
             }
             return offer;
-        })));
+        });
         // 予約番号でChevreチェックイン
         let reservationNumbers = ownershipInfos
             .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)

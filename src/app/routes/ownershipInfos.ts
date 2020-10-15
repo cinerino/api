@@ -94,6 +94,7 @@ ownershipInfosRouter.post(
             const codeRepo = new cinerino.repository.Code(mongoose.connection);
 
             const token = await cinerino.service.code.getToken({
+                project: req.project,
                 code: req.body.code,
                 secret: <string>process.env.TOKEN_SECRET,
                 issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER,
