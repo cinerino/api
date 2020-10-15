@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.36.3 - 2020-10-15
+
+### Changed
+
+- order.identifier.paymentNoにconfirmationNumberを設定
+
 ## v5.36.2 - 2020-10-14
 
 ### Changed
