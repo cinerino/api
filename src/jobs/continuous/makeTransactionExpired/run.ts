@@ -36,7 +36,7 @@ export default async (params: {
                             .add(-3, 'days')
                             .toDate()
                     },
-                    status: cinerino.factory.transactionStatusType.Expired,
+                    status: { $in: [cinerino.factory.transactionStatusType.Canceled, cinerino.factory.transactionStatusType.Expired] },
                     tasksExportationStatus: cinerino.factory.transactionTasksExportationStatus.Exported
                 })
                     .exec();

@@ -36,7 +36,7 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
                         .add(-3, 'days')
                         .toDate()
                 },
-                status: cinerino.factory.transactionStatusType.Expired,
+                status: { $in: [cinerino.factory.transactionStatusType.Canceled, cinerino.factory.transactionStatusType.Expired] },
                 tasksExportationStatus: cinerino.factory.transactionTasksExportationStatus.Exported
             })
                 .exec();
