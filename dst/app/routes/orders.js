@@ -25,6 +25,7 @@ const validator_1 = require("../middlewares/validator");
 const connectMongo_1 = require("../../connectMongo");
 const redis = require("../../redis");
 const DEFAULT_CODE_EXPIRES_IN_SECONDS = 600;
+const TOKEN_EXPIRES_IN = 1800;
 const USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER = process.env.USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER === '1';
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
@@ -536,6 +537,25 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['orders.*
     }
 }));
 /**
+ * コードから注文に対するアクセストークンを発行する
+ */
+ordersRouter.post('/tokens', permitScopes_1.default(['tokens']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const codeRepo = new cinerino.repository.Code(mongoose.connection);
+        const token = yield cinerino.service.code.getToken({
+            project: req.project,
+            code: req.body.code,
+            secret: process.env.TOKEN_SECRET,
+            issuer: process.env.RESOURCE_SERVER_IDENTIFIER,
+            expiresIn: TOKEN_EXPIRES_IN
+        })({ code: codeRepo });
+        res.json({ token });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
  * 注文取得
  */
 ordersRouter.get('/:orderNumber', permitScopes_1.default(['orders.*', 'orders.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -629,11 +649,14 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
         const now = new Date();
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        const expiresInSeconds = (typeof req.body.expiresInSeconds === 'number')
-            ? Number(req.body.expiresInSeconds)
-            : (typeof ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.codeExpiresInSeconds) === 'number')
-                ? project.settings.codeExpiresInSeconds
-                : DEFAULT_CODE_EXPIRES_IN_SECONDS;
+        // const expiresInSeconds: number = (typeof req.body.expiresInSeconds === 'number')
+        //     ? Number(req.body.expiresInSeconds)
+        //     : (typeof project.settings?.codeExpiresInSeconds === 'number')
+        //         ? project.settings.codeExpiresInSeconds
+        //         : DEFAULT_CODE_EXPIRES_IN_SECONDS;
+        const expiresInSeconds = (typeof ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.codeExpiresInSeconds) === 'number')
+            ? project.settings.codeExpiresInSeconds
+            : DEFAULT_CODE_EXPIRES_IN_SECONDS;
         const customer = req.body.customer;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
@@ -749,6 +772,94 @@ ordersRouter.get('/:orderNumber/actions', permitScopes_1.default(['orders.*', 'o
             sort: req.query.sort
         });
         res.json(actions);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 確認番号で注文に対してコードを発行する
+ */
+// tslint:disable-next-line:use-default-type-parameter
+ordersRouter.post('/:orderNumber/authorize', permitScopes_1.default(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, ...[
+    express_validator_1.body('customer')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required'),
+    express_validator_1.oneOf([
+        [
+            express_validator_1.body('customer.email')
+                .not()
+                .isEmpty()
+                .isString()
+        ],
+        [
+            express_validator_1.body('customer.telephone')
+                .not()
+                .isEmpty()
+                .isString()
+        ]
+    ]),
+    express_validator_1.body('expiresInSeconds')
+        .optional()
+        .isInt({ min: 0, max: 259200 }) // とりあえずmax 3 days
+        .toInt()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const now = new Date();
+        const expiresInSeconds = (typeof req.body.expiresInSeconds === 'number')
+            ? Number(req.body.expiresInSeconds)
+            : DEFAULT_CODE_EXPIRES_IN_SECONDS;
+        const customer = req.body.customer;
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        const codeRepo = new cinerino.repository.Code(mongoose.connection);
+        const order = yield orderRepo.findByOrderNumber({ orderNumber: req.params.orderNumber });
+        if (order.customer.email !== customer.email && order.customer.telephone !== customer.telephone) {
+            throw new cinerino.factory.errors.Argument('customer');
+        }
+        const authorizationObject = {
+            project: order.project,
+            typeOf: order.typeOf,
+            seller: order.seller,
+            customer: order.customer,
+            confirmationNumber: order.confirmationNumber,
+            orderNumber: order.orderNumber,
+            price: order.price,
+            priceCurrency: order.priceCurrency,
+            orderDate: moment(order.orderDate)
+                .toDate()
+        };
+        // 注文に対してコード発行
+        const authorizations = yield cinerino.service.code.publish({
+            project: req.project,
+            agent: req.agent,
+            recipient: req.agent,
+            object: [authorizationObject],
+            purpose: {},
+            validFrom: now,
+            expiresInSeconds: expiresInSeconds
+        })({
+            action: actionRepo,
+            code: codeRepo
+        });
+        // 予約番号でChevreチェックイン
+        const reservationService = new cinerino.chevre.service.Reservation({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        let reservationNumbers = order.acceptedOffers
+            .filter((o) => o.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
+            .map((o) => o.itemOffered.reservationNumber);
+        reservationNumbers = [...new Set(reservationNumbers)];
+        yield Promise.all(reservationNumbers.map((reservationNumber) => __awaiter(void 0, void 0, void 0, function* () {
+            yield reservationService.checkInScreeningEventReservations({
+                reservationNumber: reservationNumber
+            });
+        })));
+        res.json({
+            code: authorizations[0].code
+        });
     }
     catch (error) {
         next(error);

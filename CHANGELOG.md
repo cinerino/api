@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - カテゴリーコード検索を追加
+- 注文承認サービスを追加
 
 ### Changed
 
