@@ -2,11 +2,9 @@
  * 取引期限監視
  */
 import * as cinerino from '@cinerino/domain';
-import * as createDebug from 'debug';
+import * as moment from 'moment';
 
 import { connectMongo } from '../../../connectMongo';
-
-const debug = createDebug('cinerino-api');
 
 export default async (params: {
     project?: cinerino.factory.project.IProject;
@@ -28,8 +26,20 @@ export default async (params: {
             count += 1;
 
             try {
-                debug('transaction expiring...');
                 await transactionRepo.makeExpired({ project: params.project });
+
+                // 過去の不要な期限切れ取引を削除する
+                await transactionRepo.transactionModel.deleteMany({
+                    startDate: {
+                        $lt: moment()
+                            // tslint:disable-next-line:no-magic-numbers
+                            .add(-3, 'days')
+                            .toDate()
+                    },
+                    status: cinerino.factory.transactionStatusType.Expired,
+                    tasksExportationStatus: cinerino.factory.transactionTasksExportationStatus.Exported
+                })
+                    .exec();
             } catch (error) {
                 console.error(error);
             }
