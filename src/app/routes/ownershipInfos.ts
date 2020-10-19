@@ -13,7 +13,7 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-const TOKEN_EXPIRES_IN = 1800;
+import { TOKEN_EXPIRES_IN } from './tokens';
 
 const ownershipInfosRouter = Router();
 
@@ -83,6 +83,7 @@ ownershipInfosRouter.get(
 
 /**
  * コードから所有権に対するアクセストークンを発行する
+ * @deprecated Use /tokens
  */
 ownershipInfosRouter.post(
     '/tokens',

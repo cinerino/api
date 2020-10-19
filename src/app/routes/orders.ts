@@ -19,7 +19,6 @@ import { connectMongo } from '../../connectMongo';
 import * as redis from '../../redis';
 
 const DEFAULT_CODE_EXPIRES_IN_SECONDS = 600;
-const TOKEN_EXPIRES_IN = 1800;
 const USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER = process.env.USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER === '1';
 
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
@@ -614,33 +613,6 @@ ordersRouter.post(
 );
 
 /**
- * コードから注文に対するアクセストークンを発行する
- */
-ordersRouter.post(
-    '/tokens',
-    permitScopes(['tokens']),
-    rateLimit,
-    validator,
-    async (req, res, next) => {
-        try {
-            const codeRepo = new cinerino.repository.Code(mongoose.connection);
-
-            const token = await cinerino.service.code.getToken({
-                project: req.project,
-                code: req.body.code,
-                secret: <string>process.env.TOKEN_SECRET,
-                issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER,
-                expiresIn: TOKEN_EXPIRES_IN
-            })({ code: codeRepo });
-
-            res.json({ token });
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
  * 注文取得
  */
 ordersRouter.get(
@@ -841,25 +813,6 @@ ordersRouter.post<ParamsDictionary>(
                     );
 
                     if (reservation !== undefined) {
-                        // 所有権コード情報を追加
-                        // const ownershipInfo = ownershipInfos
-                        //     .filter((o) => o.typeOfGood.typeOf === reservation.typeOf)
-                        //     .find((o) => (<EventReservationGoodType>o.typeOfGood).id === reservation.id);
-                        // if (ownershipInfo !== undefined) {
-                        // }
-                        // const authorization = await cinerino.service.code.publish({
-                        //     project: req.project,
-                        //     agent: req.agent,
-                        //     recipient: req.agent,
-                        //     object: ownershipInfo,
-                        //     purpose: {},
-                        //     validFrom: now,
-                        //     expiresInSeconds: expiresInSeconds
-                        // })({
-                        //     action: actionRepo,
-                        //     code: codeRepo
-                        // });
-
                         const authorization = authorizations.find((a) => a.object.typeOfGood?.id === reservation.id);
                         if (typeof authorization?.code === 'string') {
                             reservation.reservedTicket.ticketToken = authorization.code;
@@ -964,25 +917,25 @@ ordersRouter.post<ParamsDictionary>(
                 throw new cinerino.factory.errors.Argument('customer');
             }
 
-            const authorizationObject: cinerino.factory.order.ISimpleOrder = {
-                project: order.project,
-                typeOf: order.typeOf,
-                seller: order.seller,
-                customer: order.customer,
-                confirmationNumber: order.confirmationNumber,
-                orderNumber: order.orderNumber,
-                price: order.price,
-                priceCurrency: order.priceCurrency,
-                orderDate: moment(order.orderDate)
-                    .toDate()
-            };
+            // const authorizationObject: cinerino.factory.order.ISimpleOrder = {
+            //     project: order.project,
+            //     typeOf: order.typeOf,
+            //     seller: order.seller,
+            //     customer: order.customer,
+            //     confirmationNumber: order.confirmationNumber,
+            //     orderNumber: order.orderNumber,
+            //     price: order.price,
+            //     priceCurrency: order.priceCurrency,
+            //     orderDate: moment(order.orderDate)
+            //         .toDate()
+            // };
 
             // 注文に対してコード発行
             const authorizations = await cinerino.service.code.publish({
                 project: req.project,
                 agent: req.agent,
                 recipient: req.agent,
-                object: [authorizationObject],
+                object: [order],
                 purpose: {},
                 validFrom: now,
                 expiresInSeconds: expiresInSeconds
