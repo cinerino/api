@@ -145,16 +145,17 @@ reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitSc
     express_validator_1.body('token')
         .not()
         .isEmpty()
-        .withMessage((_, __) => 'required')
+        .withMessage(() => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const payload = yield cinerino.service.code.verifyToken({
             project: req.project,
             agent: req.agent,
             token: req.body.token,
             secret: process.env.TOKEN_SECRET,
             issuer: [process.env.RESOURCE_SERVER_IDENTIFIER]
-        })({ action: new cinerino.repository.Action(mongoose.connection) });
+        })({ action: actionRepo });
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         // 所有権検索
         const ownershipInfo = yield ownershipInfoRepo.findById({
@@ -173,7 +174,33 @@ reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitSc
             id: typeOfGood.id
         });
         // 入場
-        yield reservationService.attendScreeningEvent(reservation);
+        // 予約使用アクションを追加
+        const actionAttributes = {
+            project: { typeOf: cinerino.factory.chevre.organizationType.Project, id: req.project.id },
+            typeOf: cinerino.factory.actionType.UseAction,
+            agent: req.agent,
+            instrument: {
+                token: req.body.token
+            },
+            object: [reservation]
+            // purpose: params.purpose
+        };
+        const action = yield actionRepo.start(actionAttributes);
+        try {
+            yield reservationService.attendScreeningEvent({ id: reservation.id });
+        }
+        catch (error) {
+            // actionにエラー結果を追加
+            try {
+                const actionError = Object.assign(Object.assign({}, error), { message: error.message, name: error.name });
+                yield actionRepo.giveUp({ typeOf: actionAttributes.typeOf, id: action.id, error: actionError });
+            }
+            catch (__) {
+                // 失敗したら仕方ない
+            }
+            throw error;
+        }
+        yield actionRepo.complete({ typeOf: action.typeOf, id: action.id, result: {} });
         res.json(Object.assign(Object.assign({}, ownershipInfo), { typeOfGood: reservation }));
     }
     catch (error) {

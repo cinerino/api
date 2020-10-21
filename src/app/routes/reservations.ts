@@ -182,11 +182,13 @@ reservationsRouter.post(
         body('token')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
+            .withMessage(() => 'required')
     ],
     validator,
     async (req, res, next) => {
         try {
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
+
             const payload =
                 await cinerino.service.code.verifyToken<IPayload>({
                     project: req.project,
@@ -194,7 +196,7 @@ reservationsRouter.post(
                     token: req.body.token,
                     secret: <string>process.env.TOKEN_SECRET,
                     issuer: [<string>process.env.RESOURCE_SERVER_IDENTIFIER]
-                })({ action: new cinerino.repository.Action(mongoose.connection) });
+                })({ action: actionRepo });
 
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
 
@@ -217,7 +219,34 @@ reservationsRouter.post(
             });
 
             // 入場
-            await reservationService.attendScreeningEvent(reservation);
+            // 予約使用アクションを追加
+            const actionAttributes: cinerino.factory.action.IAttributes<cinerino.factory.actionType.UseAction, any, any> = {
+                project: { typeOf: cinerino.factory.chevre.organizationType.Project, id: req.project.id },
+                typeOf: cinerino.factory.actionType.UseAction,
+                agent: req.agent,
+                instrument: {
+                    token: req.body.token
+                },
+                object: [reservation]
+                // purpose: params.purpose
+            };
+            const action = await actionRepo.start(actionAttributes);
+
+            try {
+                await reservationService.attendScreeningEvent({ id: reservation.id });
+            } catch (error) {
+                // actionにエラー結果を追加
+                try {
+                    const actionError = { ...error, message: error.message, name: error.name };
+                    await actionRepo.giveUp({ typeOf: actionAttributes.typeOf, id: action.id, error: actionError });
+                } catch (__) {
+                    // 失敗したら仕方ない
+                }
+
+                throw error;
+            }
+
+            await actionRepo.complete({ typeOf: action.typeOf, id: action.id, result: {} });
 
             res.json({ ...ownershipInfo, typeOfGood: reservation });
         } catch (error) {

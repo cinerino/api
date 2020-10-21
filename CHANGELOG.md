@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文に対するコード発行時に、複数コード発行を1アクションで実行するように調整
 - アクション検索条件拡張
 - 取引期限監視調整
+- トークンでの予約照会時に予約使用アクションを追加
 
 ### Deprecated
 
