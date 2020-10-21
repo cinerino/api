@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - アクション検索条件拡張
 - 取引期限監視調整
 - トークンでの予約照会時に予約使用アクションを追加
+- 所有権トークンチェックアクション検索を、予約使用アクション検索に変更
 
 ### Deprecated
 
