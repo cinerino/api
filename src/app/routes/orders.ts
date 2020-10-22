@@ -747,11 +747,7 @@ ordersRouter.post<ParamsDictionary>(
                     .isEmpty()
                     .isString()
             ]
-        ]),
-        body('expiresInSeconds')
-            .optional()
-            .isInt({ min: 0, max: 259200 }) // とりあえずmax 3 days
-            .toInt()
+        ])
     ],
     validator,
     // tslint:disable-next-line:max-func-body-length
@@ -901,25 +897,21 @@ ordersRouter.post<ParamsDictionary>(
     permitScopes(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
     rateLimit,
     ...[
-        body('customer')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
         oneOf([
             [
-                body('customer.email')
+                body('object.customer.email')
                     .not()
                     .isEmpty()
                     .isString()
             ],
             [
-                body('customer.telephone')
+                body('object.customer.telephone')
                     .not()
                     .isEmpty()
                     .isString()
             ]
         ]),
-        body('expiresInSeconds')
+        body('result.expiresInSeconds')
             .optional()
             .isInt({ min: 0, max: CODE_EXPIRES_IN_SECONDS_MAXIMUM })
             .toInt()
@@ -929,19 +921,20 @@ ordersRouter.post<ParamsDictionary>(
         try {
             const now = new Date();
 
-            const expiresInSeconds: number = (typeof req.body.expiresInSeconds === 'number')
-                ? Number(req.body.expiresInSeconds)
+            const expiresInSeconds: number = (typeof req.body.result?.expiresInSeconds === 'number')
+                ? Number(req.body.result.expiresInSeconds)
                 : CODE_EXPIRES_IN_SECONDS_DEFAULT;
 
-            const customer = req.body.customer;
+            const email = req.body.object?.customer?.email;
+            const telephone = req.body.object?.customer?.telephone;
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const codeRepo = new cinerino.repository.Code(mongoose.connection);
 
             const order = await orderRepo.findByOrderNumber({ orderNumber: req.params.orderNumber });
-            if (order.customer.email !== customer.email && order.customer.telephone !== customer.telephone) {
-                throw new cinerino.factory.errors.Argument('customer');
+            if (order.customer.email !== email && order.customer.telephone !== telephone) {
+                throw new cinerino.factory.errors.NotFound('Order', 'No orders matched');
             }
 
             // const authorizationObject: cinerino.factory.order.ISimpleOrder = {

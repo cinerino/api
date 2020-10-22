@@ -649,11 +649,7 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
                 .isEmpty()
                 .isString()
         ]
-    ]),
-    express_validator_1.body('expiresInSeconds')
-        .optional()
-        .isInt({ min: 0, max: 259200 }) // とりあえずmax 3 days
-        .toInt()
+    ])
 ], validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -772,41 +768,39 @@ ordersRouter.get('/:orderNumber/actions', permitScopes_1.default(['orders.*', 'o
  */
 // tslint:disable-next-line:use-default-type-parameter
 ordersRouter.post('/:orderNumber/authorize', permitScopes_1.default(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, ...[
-    express_validator_1.body('customer')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required'),
     express_validator_1.oneOf([
         [
-            express_validator_1.body('customer.email')
+            express_validator_1.body('object.customer.email')
                 .not()
                 .isEmpty()
                 .isString()
         ],
         [
-            express_validator_1.body('customer.telephone')
+            express_validator_1.body('object.customer.telephone')
                 .not()
                 .isEmpty()
                 .isString()
         ]
     ]),
-    express_validator_1.body('expiresInSeconds')
+    express_validator_1.body('result.expiresInSeconds')
         .optional()
         .isInt({ min: 0, max: CODE_EXPIRES_IN_SECONDS_MAXIMUM })
         .toInt()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _d, _e, _f, _g, _h;
     try {
         const now = new Date();
-        const expiresInSeconds = (typeof req.body.expiresInSeconds === 'number')
-            ? Number(req.body.expiresInSeconds)
+        const expiresInSeconds = (typeof ((_d = req.body.result) === null || _d === void 0 ? void 0 : _d.expiresInSeconds) === 'number')
+            ? Number(req.body.result.expiresInSeconds)
             : CODE_EXPIRES_IN_SECONDS_DEFAULT;
-        const customer = req.body.customer;
+        const email = (_f = (_e = req.body.object) === null || _e === void 0 ? void 0 : _e.customer) === null || _f === void 0 ? void 0 : _f.email;
+        const telephone = (_h = (_g = req.body.object) === null || _g === void 0 ? void 0 : _g.customer) === null || _h === void 0 ? void 0 : _h.telephone;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const codeRepo = new cinerino.repository.Code(mongoose.connection);
         const order = yield orderRepo.findByOrderNumber({ orderNumber: req.params.orderNumber });
-        if (order.customer.email !== customer.email && order.customer.telephone !== customer.telephone) {
-            throw new cinerino.factory.errors.Argument('customer');
+        if (order.customer.email !== email && order.customer.telephone !== telephone) {
+            throw new cinerino.factory.errors.NotFound('Order', 'No orders matched');
         }
         // const authorizationObject: cinerino.factory.order.ISimpleOrder = {
         //     project: order.project,
