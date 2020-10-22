@@ -471,17 +471,42 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['orders.*
     express_validator_1.body('confirmationNumber')
         .not()
         .isEmpty()
-        .withMessage((_, __) => 'required'),
-    express_validator_1.body('customer')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required')
+        .withMessage(() => 'required'),
+    express_validator_1.oneOf([
+        // confirmationNumberと、以下どれか1つ、の組み合わせで照会可能
+        [
+            express_validator_1.body('customer.email')
+                .not()
+                .isEmpty()
+                .isString()
+        ],
+        [
+            express_validator_1.body('customer.telephone')
+                .not()
+                .isEmpty()
+                .isString()
+        ],
+        [
+            express_validator_1.body('orderNumber')
+                .not()
+                .isEmpty()
+                .isString()
+        ]
+    ])
+    // body('customer')
+    //     .not()
+    //     .isEmpty()
+    //     .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     try {
-        const customer = req.body.customer;
-        if (customer.email !== undefined && customer.telephone !== undefined) {
-            throw new cinerino.factory.errors.Argument('customer');
-        }
+        // const customer = req.body.customer;
+        // if (customer.email !== undefined && customer.telephone !== undefined) {
+        //     throw new cinerino.factory.errors.Argument('customer');
+        // }
+        const email = (_a = req.body.customer) === null || _a === void 0 ? void 0 : _a.email;
+        const telephone = (_b = req.body.customer) === null || _b === void 0 ? void 0 : _b.telephone;
+        const orderNumber = req.body.orderNumber;
         // 個人情報完全一致で検索する
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const orderDateThrough = (req.query.orderDateThrough instanceof Date)
@@ -499,18 +524,19 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['orders.*
                     .add(-3, 'months') // とりあえず直近3カ月をデフォルト動作に設定
                     .toDate();
         const orders = yield orderRepo.search({
-            limit: 1,
+            limit: 100,
             sort: { orderDate: cinerino.factory.sortType.Descending },
             project: { id: { $eq: req.project.id } },
             confirmationNumbers: [req.body.confirmationNumber],
             customer: {
-                email: (customer.email !== undefined)
-                    ? `^${escapeRegExp(customer.email)}$`
+                email: (typeof email === 'string')
+                    ? `^${escapeRegExp(email)}$`
                     : undefined,
-                telephone: (customer.telephone !== undefined)
-                    ? `^${escapeRegExp(customer.telephone)}$`
+                telephone: (typeof telephone === 'string')
+                    ? `^${escapeRegExp(telephone)}$`
                     : undefined
             },
+            orderNumbers: (typeof orderNumber === 'string') ? [orderNumber] : undefined,
             orderDateFrom: orderDateFrom,
             orderDateThrough: orderDateThrough
         });
@@ -624,7 +650,7 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
 ], validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _c;
     try {
         const now = new Date();
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -634,7 +660,7 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
         //     : (typeof project.settings?.codeExpiresInSeconds === 'number')
         //         ? project.settings.codeExpiresInSeconds
         //         : DEFAULT_CODE_EXPIRES_IN_SECONDS;
-        const expiresInSeconds = (typeof ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.codeExpiresInSeconds) === 'number')
+        const expiresInSeconds = (typeof ((_c = project.settings) === null || _c === void 0 ? void 0 : _c.codeExpiresInSeconds) === 'number')
             ? project.settings.codeExpiresInSeconds
             : DEFAULT_CODE_EXPIRES_IN_SECONDS;
         const customer = req.body.customer;

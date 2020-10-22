@@ -542,19 +542,43 @@ ordersRouter.post(
         body('confirmationNumber')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required'),
-        body('customer')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required')
+            .withMessage(() => 'required'),
+        oneOf([
+            // confirmationNumberと、以下どれか1つ、の組み合わせで照会可能
+            [
+                body('customer.email')
+                    .not()
+                    .isEmpty()
+                    .isString()
+            ],
+            [
+                body('customer.telephone')
+                    .not()
+                    .isEmpty()
+                    .isString()
+            ],
+            [
+                body('orderNumber')
+                    .not()
+                    .isEmpty()
+                    .isString()
+            ]
+        ])
+        // body('customer')
+        //     .not()
+        //     .isEmpty()
+        //     .withMessage((_, __) => 'required')
     ],
     validator,
     async (req, res, next) => {
         try {
-            const customer = req.body.customer;
-            if (customer.email !== undefined && customer.telephone !== undefined) {
-                throw new cinerino.factory.errors.Argument('customer');
-            }
+            // const customer = req.body.customer;
+            // if (customer.email !== undefined && customer.telephone !== undefined) {
+            //     throw new cinerino.factory.errors.Argument('customer');
+            // }
+            const email = req.body.customer?.email;
+            const telephone = req.body.customer?.telephone;
+            const orderNumber = req.body.orderNumber;
 
             // 個人情報完全一致で検索する
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
@@ -575,18 +599,19 @@ ordersRouter.post(
                         .toDate();
 
             const orders = await orderRepo.search({
-                limit: 1,
+                limit: 100,
                 sort: { orderDate: cinerino.factory.sortType.Descending },
                 project: { id: { $eq: req.project.id } },
                 confirmationNumbers: [<string>req.body.confirmationNumber],
                 customer: {
-                    email: (customer.email !== undefined)
-                        ? `^${escapeRegExp(customer.email)}$`
+                    email: (typeof email === 'string')
+                        ? `^${escapeRegExp(email)}$`
                         : undefined,
-                    telephone: (customer.telephone !== undefined)
-                        ? `^${escapeRegExp(customer.telephone)}$`
+                    telephone: (typeof telephone === 'string')
+                        ? `^${escapeRegExp(telephone)}$`
                         : undefined
                 },
+                orderNumbers: (typeof orderNumber === 'string') ? [orderNumber] : undefined,
                 orderDateFrom: orderDateFrom,
                 orderDateThrough: orderDateThrough
             });

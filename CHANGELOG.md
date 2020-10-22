@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 取引期限監視調整
 - 予約入場時に予約使用アクションを生成するように調整
 - 所有権トークンチェックアクション検索を、予約使用アクション検索に変更
+- 確認番号での注文照会パラメータを拡張(注文番号との組み合わせを追加)
 
 ### Deprecated
 
