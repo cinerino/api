@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 予約入場時に予約使用アクションを生成するように調整
 - 所有権トークンチェックアクション検索を、予約使用アクション検索に変更
 - 確認番号での注文照会パラメータを拡張(注文番号との組み合わせを追加)
+- COAでの予約処理において、ムビチケあるいはMGを利用した予約かどうかの判定を、mvtkAppPriceからmvtkNumに変更
 
 ### Deprecated
 
