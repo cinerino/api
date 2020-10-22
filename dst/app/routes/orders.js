@@ -24,7 +24,14 @@ const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const connectMongo_1 = require("../../connectMongo");
 const redis = require("../../redis");
-const DEFAULT_CODE_EXPIRES_IN_SECONDS = 600;
+const CODE_EXPIRES_IN_SECONDS_DEFAULT = (typeof process.env.CODE_EXPIRES_IN_SECONDS_DEFAULT === 'string')
+    ? Number(process.env.CODE_EXPIRES_IN_SECONDS_DEFAULT)
+    // tslint:disable-next-line:no-magic-numbers
+    : 600;
+const CODE_EXPIRES_IN_SECONDS_MAXIMUM = (typeof process.env.CODE_EXPIRES_IN_SECONDS_MAXIMUM === 'string')
+    ? Number(process.env.CODE_EXPIRES_IN_SECONDS_MAXIMUM)
+    // tslint:disable-next-line:no-magic-numbers
+    : 600;
 const USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER = process.env.USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER === '1';
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
@@ -655,14 +662,9 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
         const now = new Date();
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        // const expiresInSeconds: number = (typeof req.body.expiresInSeconds === 'number')
-        //     ? Number(req.body.expiresInSeconds)
-        //     : (typeof project.settings?.codeExpiresInSeconds === 'number')
-        //         ? project.settings.codeExpiresInSeconds
-        //         : DEFAULT_CODE_EXPIRES_IN_SECONDS;
         const expiresInSeconds = (typeof ((_c = project.settings) === null || _c === void 0 ? void 0 : _c.codeExpiresInSeconds) === 'number')
             ? project.settings.codeExpiresInSeconds
-            : DEFAULT_CODE_EXPIRES_IN_SECONDS;
+            : CODE_EXPIRES_IN_SECONDS_DEFAULT;
         const customer = req.body.customer;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
@@ -790,14 +792,14 @@ ordersRouter.post('/:orderNumber/authorize', permitScopes_1.default(['orders.*',
     ]),
     express_validator_1.body('expiresInSeconds')
         .optional()
-        .isInt({ min: 0, max: 259200 }) // とりあえずmax 3 days
+        .isInt({ min: 0, max: CODE_EXPIRES_IN_SECONDS_MAXIMUM })
         .toInt()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const now = new Date();
         const expiresInSeconds = (typeof req.body.expiresInSeconds === 'number')
             ? Number(req.body.expiresInSeconds)
-            : DEFAULT_CODE_EXPIRES_IN_SECONDS;
+            : CODE_EXPIRES_IN_SECONDS_DEFAULT;
         const customer = req.body.customer;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);

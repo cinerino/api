@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文承認サービスを追加
 - トークンルーターを追加
 - 予約使用サービスを追加
+- CODE_EXPIRES_IN_SECONDS_DEFAULT設定を追加
+- CODE_EXPIRES_IN_SECONDS_MAXIMUM設定を追加
 
 ### Changed
 

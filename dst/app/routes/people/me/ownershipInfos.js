@@ -22,7 +22,10 @@ const validator_1 = require("../../../middlewares/validator");
 const accounts_1 = require("./ownershipInfos/accounts");
 const creditCards_1 = require("./ownershipInfos/creditCards");
 const reservations_1 = require("./ownershipInfos/reservations");
-const DEFAULT_CODE_EXPIRES_IN_SECONDS = 600;
+const CODE_EXPIRES_IN_SECONDS_DEFAULT = (typeof process.env.CODE_EXPIRES_IN_SECONDS_DEFAULT === 'string')
+    ? Number(process.env.CODE_EXPIRES_IN_SECONDS_DEFAULT)
+    // tslint:disable-next-line:no-magic-numbers
+    : 600;
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -102,7 +105,7 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['people.me.*
         const project = yield projectRepo.findById({ id: req.project.id });
         const expiresInSeconds = (typeof ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.codeExpiresInSeconds) === 'number')
             ? project.settings.codeExpiresInSeconds
-            : DEFAULT_CODE_EXPIRES_IN_SECONDS;
+            : CODE_EXPIRES_IN_SECONDS_DEFAULT;
         const authorizations = yield cinerino.service.code.publish({
             project: req.project,
             agent: req.agent,
