@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - カテゴリーコード検索を追加
 - 注文承認サービスを追加
 - トークンルーターを追加
+- 予約使用サービスを追加
 
 ### Changed
 

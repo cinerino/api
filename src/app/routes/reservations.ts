@@ -107,12 +107,12 @@ reservationsRouter.post(
     permitScopes(['reservations.read', 'reservations.findByToken']),
     rateLimit,
     ...[
-        body('token')
+        body('instrument.token')
             .not()
             .isEmpty()
             .withMessage(() => 'required')
             .isString(),
-        body('id')
+        body('object.id')
             .not()
             .isEmpty()
             .withMessage(() => 'required')
@@ -121,7 +121,8 @@ reservationsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const token = <string>req.body.token;
+            const token = <string>req.body.instrument?.token;
+            const reservationId = <string>req.body.object?.id;
 
             const payload = await cinerino.service.code.verifyToken<IPayload>({
                 project: req.project,
@@ -140,7 +141,7 @@ reservationsRouter.post(
 
                     const acceptedOffer = order.acceptedOffers.find((offer) => {
                         return offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation
-                            && (<cinerino.factory.order.IReservation>offer.itemOffered).id === req.body.id;
+                            && (<cinerino.factory.order.IReservation>offer.itemOffered).id === reservationId;
                     });
                     if (acceptedOffer === undefined) {
                         throw new cinerino.factory.errors.NotFound('AcceptedOffer');

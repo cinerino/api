@@ -86,19 +86,21 @@ reservationsRouter.get('/download', permitScopes_1.default([]), rateLimit_1.defa
  * トークンで予約を使用する
  */
 reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 'reservations.findByToken']), rateLimit_1.default, ...[
-    express_validator_1.body('token')
+    express_validator_1.body('instrument.token')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
         .isString(),
-    express_validator_1.body('id')
+    express_validator_1.body('object.id')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
         .isString()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     try {
-        const token = req.body.token;
+        const token = (_a = req.body.instrument) === null || _a === void 0 ? void 0 : _a.token;
+        const reservationId = (_b = req.body.object) === null || _b === void 0 ? void 0 : _b.id;
         const payload = yield cinerino.service.code.verifyToken({
             project: req.project,
             agent: req.agent,
@@ -113,7 +115,7 @@ reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 're
                 const order = yield orderRepo.findByOrderNumber({ orderNumber: payload.orderNumber });
                 const acceptedOffer = order.acceptedOffers.find((offer) => {
                     return offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation
-                        && offer.itemOffered.id === req.body.id;
+                        && offer.itemOffered.id === reservationId;
                 });
                 if (acceptedOffer === undefined) {
                     throw new cinerino.factory.errors.NotFound('AcceptedOffer');
