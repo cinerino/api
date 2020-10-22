@@ -207,16 +207,18 @@ reservationsRouter.post(
                 throw new cinerino.factory.errors.Argument('token', 'Not reservation');
             }
 
-            const useAction = await useReservation({
+            await useReservation({
                 project: { id: req.project.id },
                 agent: req.agent,
                 object: { id: <string>typeOfGood.id },
                 instrument: { token: req.body.token }
             })({ action: actionRepo });
 
-            const reservation = useAction.object[0];
+            // const reservation = useAction.object[0];
 
-            res.json({ ...ownershipInfo, typeOfGood: reservation });
+            // レスポンスをフロントアプリ側で使用していなかったので削除
+            // res.json({ ...ownershipInfo, typeOfGood: reservation });
+            res.json({});
         } catch (error) {
             error = cinerino.errorHandler.handleChevreError(error);
             next(error);

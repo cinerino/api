@@ -166,14 +166,16 @@ reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitSc
         if (typeOfGood.typeOf !== cinerino.factory.chevre.reservationType.EventReservation) {
             throw new cinerino.factory.errors.Argument('token', 'Not reservation');
         }
-        const useAction = yield useReservation({
+        yield useReservation({
             project: { id: req.project.id },
             agent: req.agent,
             object: { id: typeOfGood.id },
             instrument: { token: req.body.token }
         })({ action: actionRepo });
-        const reservation = useAction.object[0];
-        res.json(Object.assign(Object.assign({}, ownershipInfo), { typeOfGood: reservation }));
+        // const reservation = useAction.object[0];
+        // レスポンスをフロントアプリ側で使用していなかったので削除
+        // res.json({ ...ownershipInfo, typeOfGood: reservation });
+        res.json({});
     }
     catch (error) {
         error = cinerino.errorHandler.handleChevreError(error);
