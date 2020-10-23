@@ -249,7 +249,7 @@ ordersRouter.post(
         body('orderNumber')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
+            .withMessage(() => 'required')
     ],
     validator,
     async (req, res, next) => {
@@ -261,6 +261,7 @@ ordersRouter.post(
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
             const orderNumber = <string>req.body.orderNumber;
+            const confirmationNumber = <string>req.body.confirmationNumber;
 
             // 注文検索
             const orders = await orderRepo.search({
@@ -272,13 +273,43 @@ ordersRouter.post(
 
             // 注文未作成であれば作成
             if (order === undefined) {
-                // 注文取引検索
-                const placeOrderTransactions = await transactionRepo.search<cinerino.factory.transactionType.PlaceOrder>({
-                    limit: 1,
-                    typeOf: cinerino.factory.transactionType.PlaceOrder,
-                    result: { order: { orderNumbers: [orderNumber] } }
-                });
-                const placeOrderTransaction = placeOrderTransactions.shift();
+                let placeOrderTransaction:
+                    cinerino.factory.transaction.ITransaction<cinerino.factory.transactionType.PlaceOrder> | undefined;
+
+                if (req.isAdmin) {
+                    // 注文取引検索
+                    const placeOrderTransactions = await transactionRepo.search<cinerino.factory.transactionType.PlaceOrder>({
+                        limit: 1,
+                        project: { id: { $eq: req.project.id } },
+                        typeOf: cinerino.factory.transactionType.PlaceOrder,
+                        statuses: [cinerino.factory.transactionStatusType.Confirmed],
+                        result: { order: { orderNumbers: [orderNumber] } }
+                    });
+                    placeOrderTransaction = placeOrderTransactions.shift();
+                } else {
+                    // 注文番号と確認番号で、注文取引を検索
+                    if (typeof confirmationNumber !== 'string' || confirmationNumber.length === 0) {
+                        throw new cinerino.factory.errors.ArgumentNull('confirmationNumber');
+                    }
+
+                    // 注文取引検索
+                    const placeOrderTransactions = await transactionRepo.search<cinerino.factory.transactionType.PlaceOrder>({
+                        limit: 1,
+                        project: { id: { $eq: req.project.id } },
+                        typeOf: cinerino.factory.transactionType.PlaceOrder,
+                        statuses: [cinerino.factory.transactionStatusType.Confirmed],
+                        result: {
+                            order: {
+                                orderNumbers: [orderNumber],
+                                ...{
+                                    confirmationNumber: { $eq: confirmationNumber }
+                                }
+                            }
+                        }
+                    });
+                    placeOrderTransaction = placeOrderTransactions.shift();
+                }
+
                 if (placeOrderTransaction === undefined) {
                     throw new cinerino.factory.errors.NotFound('Transaction');
                 }
@@ -300,8 +331,8 @@ ordersRouter.post(
                     transaction: transactionRepo
                 });
 
-                order =
-                    (<cinerino.factory.transaction.IResult<cinerino.factory.transactionType.PlaceOrder>>placeOrderTransaction.result).order;
+                // tslint:disable-next-line:max-line-length
+                order = transactionResult.order;
             }
 
             res.json(order);
