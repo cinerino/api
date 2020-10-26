@@ -246,7 +246,7 @@ ordersRouter.post(
     permitScopes(['orders.*', 'orders.create']),
     rateLimit,
     ...[
-        body('orderNumber')
+        body('object.orderNumber')
             .not()
             .isEmpty()
             .withMessage(() => 'required')
@@ -260,8 +260,8 @@ ordersRouter.post(
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
-            const orderNumber = <string>req.body.orderNumber;
-            const confirmationNumber = <string>req.body.confirmationNumber;
+            const orderNumber = <string>req.body.object?.orderNumber;
+            const confirmationNumber = <string>req.body.object?.confirmationNumber;
 
             // 注文検索
             const orders = await orderRepo.search({
@@ -269,7 +269,7 @@ ordersRouter.post(
                 project: { id: { $eq: req.project.id } },
                 orderNumbers: [orderNumber]
             });
-            let order = orders.shift();
+            const order = orders.shift();
 
             // 注文未作成であれば作成
             if (order === undefined) {
@@ -320,6 +320,7 @@ ordersRouter.post(
                     object: transactionResult.order,
                     potentialActions: {},
                     project: placeOrderTransaction.project,
+                    purpose: { typeOf: placeOrderTransaction.typeOf, id: placeOrderTransaction.id },
                     typeOf: cinerino.factory.actionType.OrderAction
                 };
 
@@ -330,12 +331,9 @@ ordersRouter.post(
                     task: taskRepo,
                     transaction: transactionRepo
                 });
-
-                // tslint:disable-next-line:max-line-length
-                order = transactionResult.order;
             }
 
-            res.json(order);
+            res.json({});
         } catch (error) {
             next(error);
         }

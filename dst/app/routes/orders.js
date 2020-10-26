@@ -216,26 +216,27 @@ ordersRouter.get('/findByIdentifier', permitScopes_1.default(['orders.*', 'order
  * 注文作成
  */
 ordersRouter.post('', permitScopes_1.default(['orders.*', 'orders.create']), rateLimit_1.default, ...[
-    express_validator_1.body('orderNumber')
+    express_validator_1.body('object.orderNumber')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        const orderNumber = req.body.orderNumber;
-        const confirmationNumber = req.body.confirmationNumber;
+        const orderNumber = (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.orderNumber;
+        const confirmationNumber = (_b = req.body.object) === null || _b === void 0 ? void 0 : _b.confirmationNumber;
         // 注文検索
         const orders = yield orderRepo.search({
             limit: 1,
             project: { id: { $eq: req.project.id } },
             orderNumbers: [orderNumber]
         });
-        let order = orders.shift();
+        const order = orders.shift();
         // 注文未作成であれば作成
         if (order === undefined) {
             let placeOrderTransaction;
@@ -278,6 +279,7 @@ ordersRouter.post('', permitScopes_1.default(['orders.*', 'orders.create']), rat
                 object: transactionResult.order,
                 potentialActions: {},
                 project: placeOrderTransaction.project,
+                purpose: { typeOf: placeOrderTransaction.typeOf, id: placeOrderTransaction.id },
                 typeOf: cinerino.factory.actionType.OrderAction
             };
             yield cinerino.service.order.placeOrder(orderActionAttributes)({
@@ -287,10 +289,8 @@ ordersRouter.post('', permitScopes_1.default(['orders.*', 'orders.create']), rat
                 task: taskRepo,
                 transaction: transactionRepo
             });
-            // tslint:disable-next-line:max-line-length
-            order = transactionResult.order;
         }
-        res.json(order);
+        res.json({});
     }
     catch (error) {
         next(error);
@@ -530,14 +530,14 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['orders.*
     //     .isEmpty()
     //     .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _c, _d;
     try {
         // const customer = req.body.customer;
         // if (customer.email !== undefined && customer.telephone !== undefined) {
         //     throw new cinerino.factory.errors.Argument('customer');
         // }
-        const email = (_a = req.body.customer) === null || _a === void 0 ? void 0 : _a.email;
-        const telephone = (_b = req.body.customer) === null || _b === void 0 ? void 0 : _b.telephone;
+        const email = (_c = req.body.customer) === null || _c === void 0 ? void 0 : _c.email;
+        const telephone = (_d = req.body.customer) === null || _d === void 0 ? void 0 : _d.telephone;
         const orderNumber = req.body.orderNumber;
         // 個人情報完全一致で検索する
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
@@ -678,12 +678,12 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
 ], validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c;
+    var _e;
     try {
         const now = new Date();
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        const expiresInSeconds = (typeof ((_c = project.settings) === null || _c === void 0 ? void 0 : _c.codeExpiresInSeconds) === 'number')
+        const expiresInSeconds = (typeof ((_e = project.settings) === null || _e === void 0 ? void 0 : _e.codeExpiresInSeconds) === 'number')
             ? project.settings.codeExpiresInSeconds
             : CODE_EXPIRES_IN_SECONDS_DEFAULT;
         const customer = req.body.customer;
@@ -812,14 +812,14 @@ ordersRouter.post('/:orderNumber/authorize', permitScopes_1.default(['orders.*',
         .isInt({ min: 0, max: CODE_EXPIRES_IN_SECONDS_MAXIMUM })
         .toInt()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d, _e, _f, _g, _h;
+    var _f, _g, _h, _j, _k;
     try {
         const now = new Date();
-        const expiresInSeconds = (typeof ((_d = req.body.result) === null || _d === void 0 ? void 0 : _d.expiresInSeconds) === 'number')
+        const expiresInSeconds = (typeof ((_f = req.body.result) === null || _f === void 0 ? void 0 : _f.expiresInSeconds) === 'number')
             ? Number(req.body.result.expiresInSeconds)
             : CODE_EXPIRES_IN_SECONDS_DEFAULT;
-        const email = (_f = (_e = req.body.object) === null || _e === void 0 ? void 0 : _e.customer) === null || _f === void 0 ? void 0 : _f.email;
-        const telephone = (_h = (_g = req.body.object) === null || _g === void 0 ? void 0 : _g.customer) === null || _h === void 0 ? void 0 : _h.telephone;
+        const email = (_h = (_g = req.body.object) === null || _g === void 0 ? void 0 : _g.customer) === null || _h === void 0 ? void 0 : _h.email;
+        const telephone = (_k = (_j = req.body.object) === null || _j === void 0 ? void 0 : _j.customer) === null || _k === void 0 ? void 0 : _k.telephone;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const codeRepo = new cinerino.repository.Code(mongoose.connection);
