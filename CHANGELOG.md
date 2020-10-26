@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v5.37.0 - 2020-10-26
+
+### Added
+
 - カテゴリーコード検索を追加
 - 注文承認サービスを追加
 - トークンルーターを追加
@@ -27,14 +41,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 確認番号での注文照会パラメータを拡張(注文番号との組み合わせを追加)
 - COAでの予約処理において、ムビチケあるいはMGを利用した予約かどうかの判定を、mvtkAppPriceからmvtkNumに変更
 - 注文作成をcustomerロールでも実行可能に拡張
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## v5.36.3 - 2020-10-15
 
