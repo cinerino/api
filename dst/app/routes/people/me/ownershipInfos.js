@@ -22,6 +22,10 @@ const validator_1 = require("../../../middlewares/validator");
 const accounts_1 = require("./ownershipInfos/accounts");
 const creditCards_1 = require("./ownershipInfos/creditCards");
 const reservations_1 = require("./ownershipInfos/reservations");
+const CODE_EXPIRES_IN_SECONDS_DEFAULT = (typeof process.env.CODE_EXPIRES_IN_SECONDS_DEFAULT === 'string')
+    ? Number(process.env.CODE_EXPIRES_IN_SECONDS_DEFAULT)
+    // tslint:disable-next-line:no-magic-numbers
+    : 600;
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -87,7 +91,9 @@ ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_
  * 所有権に対して認可コードを発行する
  */
 ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
+        const now = new Date();
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const codeRepo = new cinerino.repository.Code(mongoose.connection);
@@ -96,19 +102,23 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['people.me.*
         if (ownershipInfo.ownedBy.id !== req.user.sub) {
             throw new cinerino.factory.errors.Unauthorized();
         }
-        const authorization = yield cinerino.service.code.publish({
+        const project = yield projectRepo.findById({ id: req.project.id });
+        const expiresInSeconds = (typeof ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.codeExpiresInSeconds) === 'number')
+            ? project.settings.codeExpiresInSeconds
+            : CODE_EXPIRES_IN_SECONDS_DEFAULT;
+        const authorizations = yield cinerino.service.code.publish({
             project: req.project,
             agent: req.agent,
             recipient: req.agent,
-            object: ownershipInfo,
+            object: [ownershipInfo],
             purpose: {},
-            validFrom: new Date()
+            validFrom: now,
+            expiresInSeconds: expiresInSeconds
         })({
             action: actionRepo,
-            code: codeRepo,
-            project: projectRepo
+            code: codeRepo
         });
-        const code = authorization.code;
+        const code = authorizations[0].code;
         // 座席予約に対する所有権であれば、Chevreでチェックイン
         if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
             const reservationService = new cinerino.chevre.service.Reservation({

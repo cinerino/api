@@ -18,6 +18,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.37.0 - 2020-10-26
+
+### Added
+
+- カテゴリーコード検索を追加
+- 注文承認サービスを追加
+- トークンルーターを追加
+- 予約使用サービスを追加
+- CODE_EXPIRES_IN_SECONDS_DEFAULT設定を追加
+- CODE_EXPIRES_IN_SECONDS_MAXIMUM設定を追加
+
+### Changed
+
+- update @cinerino/domain
+- 注文に対するコード発行時に、複数コード発行を1アクションで実行するように調整
+- アクション検索条件拡張
+- 取引期限監視調整
+- 予約入場時に予約使用アクションを生成するように調整
+- トークンでの予約照会のレスポンスを削除
+- 所有権トークンチェックアクション検索を、予約使用アクション検索に変更
+- 確認番号での注文照会パラメータを拡張(注文番号との組み合わせを追加)
+- COAでの予約処理において、ムビチケあるいはMGを利用した予約かどうかの判定を、mvtkAppPriceからmvtkNumに変更
+- 注文作成をcustomerロールでも実行可能に拡張
+
 ## v5.36.3 - 2020-10-15
 
 ### Changed

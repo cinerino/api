@@ -13,9 +13,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * 取引期限監視
  */
 const cinerino = require("@cinerino/domain");
-const createDebug = require("debug");
+const moment = require("moment");
 const connectMongo_1 = require("../../../connectMongo");
-const debug = createDebug('cinerino-api');
 exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     let count = 0;
@@ -28,8 +27,19 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
         }
         count += 1;
         try {
-            debug('transaction expiring...');
             yield transactionRepo.makeExpired({ project: params.project });
+            // 過去の不要な期限切れ取引を削除する
+            yield transactionRepo.transactionModel.deleteMany({
+                startDate: {
+                    $lt: moment()
+                        // tslint:disable-next-line:no-magic-numbers
+                        .add(-3, 'days')
+                        .toDate()
+                },
+                status: { $in: [cinerino.factory.transactionStatusType.Canceled, cinerino.factory.transactionStatusType.Expired] },
+                tasksExportationStatus: cinerino.factory.transactionTasksExportationStatus.Exported
+            })
+                .exec();
         }
         catch (error) {
             console.error(error);

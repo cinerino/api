@@ -5,7 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
-import { body, query } from 'express-validator';
+import { body, oneOf, query } from 'express-validator';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
@@ -18,6 +18,14 @@ import validator from '../middlewares/validator';
 import { connectMongo } from '../../connectMongo';
 import * as redis from '../../redis';
 
+const CODE_EXPIRES_IN_SECONDS_DEFAULT = (typeof process.env.CODE_EXPIRES_IN_SECONDS_DEFAULT === 'string')
+    ? Number(process.env.CODE_EXPIRES_IN_SECONDS_DEFAULT)
+    // tslint:disable-next-line:no-magic-numbers
+    : 600;
+const CODE_EXPIRES_IN_SECONDS_MAXIMUM = (typeof process.env.CODE_EXPIRES_IN_SECONDS_MAXIMUM === 'string')
+    ? Number(process.env.CODE_EXPIRES_IN_SECONDS_MAXIMUM)
+    // tslint:disable-next-line:no-magic-numbers
+    : 600;
 const USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER = process.env.USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER === '1';
 
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
@@ -238,10 +246,10 @@ ordersRouter.post(
     permitScopes(['orders.*', 'orders.create']),
     rateLimit,
     ...[
-        body('orderNumber')
+        body('object.orderNumber')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
+            .withMessage(() => 'required')
     ],
     validator,
     async (req, res, next) => {
@@ -252,7 +260,8 @@ ordersRouter.post(
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
-            const orderNumber = <string>req.body.orderNumber;
+            const orderNumber = <string>req.body.object?.orderNumber;
+            const confirmationNumber = <string>req.body.object?.confirmationNumber;
 
             // 注文検索
             const orders = await orderRepo.search({
@@ -260,17 +269,47 @@ ordersRouter.post(
                 project: { id: { $eq: req.project.id } },
                 orderNumbers: [orderNumber]
             });
-            let order = orders.shift();
+            const order = orders.shift();
 
             // 注文未作成であれば作成
             if (order === undefined) {
-                // 注文取引検索
-                const placeOrderTransactions = await transactionRepo.search<cinerino.factory.transactionType.PlaceOrder>({
-                    limit: 1,
-                    typeOf: cinerino.factory.transactionType.PlaceOrder,
-                    result: { order: { orderNumbers: [orderNumber] } }
-                });
-                const placeOrderTransaction = placeOrderTransactions.shift();
+                let placeOrderTransaction:
+                    cinerino.factory.transaction.ITransaction<cinerino.factory.transactionType.PlaceOrder> | undefined;
+
+                if (req.isAdmin) {
+                    // 注文取引検索
+                    const placeOrderTransactions = await transactionRepo.search<cinerino.factory.transactionType.PlaceOrder>({
+                        limit: 1,
+                        project: { id: { $eq: req.project.id } },
+                        typeOf: cinerino.factory.transactionType.PlaceOrder,
+                        statuses: [cinerino.factory.transactionStatusType.Confirmed],
+                        result: { order: { orderNumbers: [orderNumber] } }
+                    });
+                    placeOrderTransaction = placeOrderTransactions.shift();
+                } else {
+                    // 注文番号と確認番号で、注文取引を検索
+                    if (typeof confirmationNumber !== 'string' || confirmationNumber.length === 0) {
+                        throw new cinerino.factory.errors.ArgumentNull('confirmationNumber');
+                    }
+
+                    // 注文取引検索
+                    const placeOrderTransactions = await transactionRepo.search<cinerino.factory.transactionType.PlaceOrder>({
+                        limit: 1,
+                        project: { id: { $eq: req.project.id } },
+                        typeOf: cinerino.factory.transactionType.PlaceOrder,
+                        statuses: [cinerino.factory.transactionStatusType.Confirmed],
+                        result: {
+                            order: {
+                                orderNumbers: [orderNumber],
+                                ...{
+                                    confirmationNumber: { $eq: confirmationNumber }
+                                }
+                            }
+                        }
+                    });
+                    placeOrderTransaction = placeOrderTransactions.shift();
+                }
+
                 if (placeOrderTransaction === undefined) {
                     throw new cinerino.factory.errors.NotFound('Transaction');
                 }
@@ -281,6 +320,7 @@ ordersRouter.post(
                     object: transactionResult.order,
                     potentialActions: {},
                     project: placeOrderTransaction.project,
+                    purpose: { typeOf: placeOrderTransaction.typeOf, id: placeOrderTransaction.id },
                     typeOf: cinerino.factory.actionType.OrderAction
                 };
 
@@ -291,12 +331,9 @@ ordersRouter.post(
                     task: taskRepo,
                     transaction: transactionRepo
                 });
-
-                order =
-                    (<cinerino.factory.transaction.IResult<cinerino.factory.transactionType.PlaceOrder>>placeOrderTransaction.result).order;
             }
 
-            res.json(order);
+            res.json({});
         } catch (error) {
             next(error);
         }
@@ -541,19 +578,43 @@ ordersRouter.post(
         body('confirmationNumber')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required'),
-        body('customer')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required')
+            .withMessage(() => 'required'),
+        oneOf([
+            // confirmationNumberと、以下どれか1つ、の組み合わせで照会可能
+            [
+                body('customer.email')
+                    .not()
+                    .isEmpty()
+                    .isString()
+            ],
+            [
+                body('customer.telephone')
+                    .not()
+                    .isEmpty()
+                    .isString()
+            ],
+            [
+                body('orderNumber')
+                    .not()
+                    .isEmpty()
+                    .isString()
+            ]
+        ])
+        // body('customer')
+        //     .not()
+        //     .isEmpty()
+        //     .withMessage((_, __) => 'required')
     ],
     validator,
     async (req, res, next) => {
         try {
-            const customer = req.body.customer;
-            if (customer.email !== undefined && customer.telephone !== undefined) {
-                throw new cinerino.factory.errors.Argument('customer');
-            }
+            // const customer = req.body.customer;
+            // if (customer.email !== undefined && customer.telephone !== undefined) {
+            //     throw new cinerino.factory.errors.Argument('customer');
+            // }
+            const email = req.body.customer?.email;
+            const telephone = req.body.customer?.telephone;
+            const orderNumber = req.body.orderNumber;
 
             // 個人情報完全一致で検索する
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
@@ -574,18 +635,19 @@ ordersRouter.post(
                         .toDate();
 
             const orders = await orderRepo.search({
-                limit: 1,
+                limit: 100,
                 sort: { orderDate: cinerino.factory.sortType.Descending },
                 project: { id: { $eq: req.project.id } },
                 confirmationNumbers: [<string>req.body.confirmationNumber],
                 customer: {
-                    email: (customer.email !== undefined)
-                        ? `^${escapeRegExp(customer.email)}$`
+                    email: (typeof email === 'string')
+                        ? `^${escapeRegExp(email)}$`
                         : undefined,
-                    telephone: (customer.telephone !== undefined)
-                        ? `^${escapeRegExp(customer.telephone)}$`
+                    telephone: (typeof telephone === 'string')
+                        ? `^${escapeRegExp(telephone)}$`
                         : undefined
                 },
+                orderNumbers: (typeof orderNumber === 'string') ? [orderNumber] : undefined,
                 orderDateFrom: orderDateFrom,
                 orderDateThrough: orderDateThrough
             });
@@ -700,7 +762,21 @@ ordersRouter.post<ParamsDictionary>(
         body('customer')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
+            .withMessage(() => 'required'),
+        oneOf([
+            [
+                body('customer.email')
+                    .not()
+                    .isEmpty()
+                    .isString()
+            ],
+            [
+                body('customer.telephone')
+                    .not()
+                    .isEmpty()
+                    .isString()
+            ]
+        ])
     ],
     validator,
     // tslint:disable-next-line:max-func-body-length
@@ -710,10 +786,13 @@ ordersRouter.post<ParamsDictionary>(
 
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
+            const project = await projectRepo.findById({ id: req.project.id });
+            const expiresInSeconds: number = (typeof project.settings?.codeExpiresInSeconds === 'number')
+                ? project.settings.codeExpiresInSeconds
+                : CODE_EXPIRES_IN_SECONDS_DEFAULT;
+
             const customer = req.body.customer;
-            if (customer.email !== undefined && customer.telephone !== undefined) {
-                throw new cinerino.factory.errors.Argument('customer');
-            }
+
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const codeRepo = new cinerino.repository.Code(mongoose.connection);
@@ -729,20 +808,21 @@ ordersRouter.post<ParamsDictionary>(
 
             // 配送サービスに問い合わせて、注文から所有権を検索
             const actionsOnOrder = await actionRepo.searchByOrderNumber({ orderNumber: order.orderNumber });
-            const sendOrderAction = <cinerino.factory.action.transfer.send.order.IAction>actionsOnOrder
+            const sendOrderAction = <cinerino.factory.action.transfer.send.order.IAction | undefined>actionsOnOrder
                 .filter((a) => a.typeOf === cinerino.factory.actionType.SendAction)
                 .filter((a) => a.object.typeOf === 'Order')
                 .find((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus);
             // まだ配送済でない場合
-            if (sendOrderAction === undefined || sendOrderAction.result === undefined) {
+            const sendOrderActionResult = sendOrderAction?.result;
+            if (!Array.isArray(sendOrderActionResult)) {
                 throw new cinerino.factory.errors.Argument('orderNumber', 'Not delivered yet');
             }
 
             // 配送された所有権情報を注文に付加する
             type IOwnershipInfo = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
-            const ownershipInfos: IOwnershipInfo[] = (Array.isArray(sendOrderAction.result))
-                ? sendOrderAction.result
-                : (<any>sendOrderAction.result).ownershipInfos; // 旧型に対する互換性維持のため
+            const ownershipInfos: IOwnershipInfo[] = (Array.isArray(sendOrderActionResult))
+                ? sendOrderActionResult
+                : [];
             const reservationIds = ownershipInfos
                 .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
                 .map((o) => <string>(<EventReservationGoodType>o.typeOfGood).id);
@@ -756,8 +836,27 @@ ordersRouter.post<ParamsDictionary>(
                 typeOf: cinerino.factory.chevre.reservationType.EventReservation,
                 ids: reservationIds
             });
+
+            // コード発行対象の所有権を検索
+            const ownershipInfos2authorize = ownershipInfos
+                // ひとまずEventReservationのみ
+                .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation);
+
             // 所有権に対してコード発行
-            order.acceptedOffers = await Promise.all(order.acceptedOffers.map(async (offer) => {
+            const authorizations = await cinerino.service.code.publish({
+                project: req.project,
+                agent: req.agent,
+                recipient: req.agent,
+                object: ownershipInfos2authorize,
+                purpose: {},
+                validFrom: now,
+                expiresInSeconds: expiresInSeconds
+            })({
+                action: actionRepo,
+                code: codeRepo
+            });
+
+            order.acceptedOffers = order.acceptedOffers.map((offer) => {
                 const itemOffered = offer.itemOffered;
                 if (itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
                     // 実際の予約データで置き換え
@@ -766,32 +865,17 @@ ordersRouter.post<ParamsDictionary>(
                     );
 
                     if (reservation !== undefined) {
-                        // 所有権コード情報を追加
-                        const ownershipInfo = ownershipInfos
-                            .filter((o) => o.typeOfGood.typeOf === reservation.typeOf)
-                            .find((o) => (<EventReservationGoodType>o.typeOfGood).id === reservation.id);
-                        if (ownershipInfo !== undefined) {
-                            const authorization = await cinerino.service.code.publish({
-                                project: req.project,
-                                agent: req.agent,
-                                recipient: req.agent,
-                                object: ownershipInfo,
-                                purpose: {},
-                                validFrom: now
-                            })({
-                                action: actionRepo,
-                                code: codeRepo,
-                                project: projectRepo
-                            });
-
+                        const authorization = authorizations.find((a) => a.object.typeOfGood?.id === reservation.id);
+                        if (typeof authorization?.code === 'string') {
                             reservation.reservedTicket.ticketToken = authorization.code;
-                            offer.itemOffered = reservation;
                         }
+
+                        offer.itemOffered = reservation;
                     }
                 }
 
                 return offer;
-            }));
+            });
 
             // 予約番号でChevreチェックイン
             let reservationNumbers = ownershipInfos
@@ -827,6 +911,106 @@ ordersRouter.get(
                 sort: req.query.sort
             });
             res.json(actions);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 確認番号で注文に対してコードを発行する
+ */
+// tslint:disable-next-line:use-default-type-parameter
+ordersRouter.post<ParamsDictionary>(
+    '/:orderNumber/authorize',
+    permitScopes(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
+    rateLimit,
+    ...[
+        oneOf([
+            [
+                body('object.customer.email')
+                    .not()
+                    .isEmpty()
+                    .isString()
+            ],
+            [
+                body('object.customer.telephone')
+                    .not()
+                    .isEmpty()
+                    .isString()
+            ]
+        ]),
+        body('result.expiresInSeconds')
+            .optional()
+            .isInt({ min: 0, max: CODE_EXPIRES_IN_SECONDS_MAXIMUM })
+            .toInt()
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            const now = new Date();
+
+            const expiresInSeconds: number = (typeof req.body.result?.expiresInSeconds === 'number')
+                ? Number(req.body.result.expiresInSeconds)
+                : CODE_EXPIRES_IN_SECONDS_DEFAULT;
+
+            const email = req.body.object?.customer?.email;
+            const telephone = req.body.object?.customer?.telephone;
+
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+            const codeRepo = new cinerino.repository.Code(mongoose.connection);
+
+            const order = await orderRepo.findByOrderNumber({ orderNumber: req.params.orderNumber });
+            if (order.customer.email !== email && order.customer.telephone !== telephone) {
+                throw new cinerino.factory.errors.NotFound('Order', 'No orders matched');
+            }
+
+            // const authorizationObject: cinerino.factory.order.ISimpleOrder = {
+            //     project: order.project,
+            //     typeOf: order.typeOf,
+            //     seller: order.seller,
+            //     customer: order.customer,
+            //     confirmationNumber: order.confirmationNumber,
+            //     orderNumber: order.orderNumber,
+            //     price: order.price,
+            //     priceCurrency: order.priceCurrency,
+            //     orderDate: moment(order.orderDate)
+            //         .toDate()
+            // };
+
+            // 注文に対してコード発行
+            const authorizations = await cinerino.service.code.publish({
+                project: req.project,
+                agent: req.agent,
+                recipient: req.agent,
+                object: [order],
+                purpose: {},
+                validFrom: now,
+                expiresInSeconds: expiresInSeconds
+            })({
+                action: actionRepo,
+                code: codeRepo
+            });
+
+            // 予約番号でChevreチェックイン
+            const reservationService = new cinerino.chevre.service.Reservation({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            let reservationNumbers = order.acceptedOffers
+                .filter((o) => o.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
+                .map((o) => (<EventReservationGoodType>o.itemOffered).reservationNumber);
+            reservationNumbers = [...new Set(reservationNumbers)];
+            await Promise.all(reservationNumbers.map(async (reservationNumber) => {
+                await reservationService.checkInScreeningEventReservations({
+                    reservationNumber: reservationNumber
+                });
+            }));
+
+            res.json({
+                code: authorizations[0].code
+            });
         } catch (error) {
             next(error);
         }

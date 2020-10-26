@@ -83,22 +83,80 @@ reservationsRouter.get('/download', permitScopes_1.default([]), rateLimit_1.defa
     }
 }));
 /**
+ * トークンで予約を使用する
+ */
+reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 'reservations.findByToken']), rateLimit_1.default, ...[
+    express_validator_1.body('instrument.token')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString(),
+    express_validator_1.body('object.id')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    try {
+        const token = (_a = req.body.instrument) === null || _a === void 0 ? void 0 : _a.token;
+        const reservationId = (_b = req.body.object) === null || _b === void 0 ? void 0 : _b.id;
+        const payload = yield cinerino.service.code.verifyToken({
+            project: req.project,
+            agent: req.agent,
+            token: token,
+            secret: process.env.TOKEN_SECRET,
+            issuer: [process.env.RESOURCE_SERVER_IDENTIFIER]
+        })({});
+        switch (payload.typeOf) {
+            case 'Order':
+                const orderRepo = new cinerino.repository.Order(mongoose.connection);
+                // 注文検索
+                const order = yield orderRepo.findByOrderNumber({ orderNumber: payload.orderNumber });
+                const acceptedOffer = order.acceptedOffers.find((offer) => {
+                    return offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation
+                        && offer.itemOffered.id === reservationId;
+                });
+                if (acceptedOffer === undefined) {
+                    throw new cinerino.factory.errors.NotFound('AcceptedOffer');
+                }
+                yield useReservation({
+                    project: { id: req.project.id },
+                    agent: req.agent,
+                    object: { id: acceptedOffer.itemOffered.id },
+                    instrument: { token }
+                })({ action: new cinerino.repository.Action(mongoose.connection) });
+                res.status(http_status_1.NO_CONTENT)
+                    .end();
+                break;
+            default:
+                throw new cinerino.factory.errors.NotImplemented(`Payload type ${payload.typeOf} not implemented`);
+        }
+    }
+    catch (error) {
+        error = cinerino.errorHandler.handleChevreError(error);
+        next(error);
+    }
+}));
+/**
  * トークンで予約照会
+ * @deprecated Use /reservations/use
  */
 reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitScopes_1.default(['reservations.read', 'reservations.findByToken']), rateLimit_1.default, ...[
     express_validator_1.body('token')
         .not()
         .isEmpty()
-        .withMessage((_, __) => 'required')
+        .withMessage(() => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const payload = yield cinerino.service.code.verifyToken({
             project: req.project,
             agent: req.agent,
             token: req.body.token,
             secret: process.env.TOKEN_SECRET,
             issuer: [process.env.RESOURCE_SERVER_IDENTIFIER]
-        })({ action: new cinerino.repository.Action(mongoose.connection) });
+        })({ action: actionRepo });
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         // 所有権検索
         const ownershipInfo = yield ownershipInfoRepo.findById({
@@ -108,23 +166,60 @@ reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitSc
         if (typeOfGood.typeOf !== cinerino.factory.chevre.reservationType.EventReservation) {
             throw new cinerino.factory.errors.Argument('token', 'Not reservation');
         }
-        // 予約検索
-        const reservationService = new cinerino.chevre.service.Reservation({
-            endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
-        });
-        const reservation = yield reservationService.findById({
-            id: typeOfGood.id
-        });
-        // 入場
-        yield reservationService.attendScreeningEvent(reservation);
-        res.json(Object.assign(Object.assign({}, ownershipInfo), { typeOfGood: reservation }));
+        yield useReservation({
+            project: { id: req.project.id },
+            agent: req.agent,
+            object: { id: typeOfGood.id },
+            instrument: { token: req.body.token }
+        })({ action: actionRepo });
+        // const reservation = useAction.object[0];
+        // レスポンスをフロントアプリ側で使用していなかったので削除
+        // res.json({ ...ownershipInfo, typeOfGood: reservation });
+        res.json({});
     }
     catch (error) {
         error = cinerino.errorHandler.handleChevreError(error);
         next(error);
     }
 }));
+function useReservation(params) {
+    return (repos) => __awaiter(this, void 0, void 0, function* () {
+        // 予約検索
+        const reservationService = new cinerino.chevre.service.Reservation({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const reservation = yield reservationService.findById({
+            id: params.object.id
+        });
+        // 入場
+        // 予約使用アクションを追加
+        const actionAttributes = {
+            project: { typeOf: cinerino.factory.chevre.organizationType.Project, id: params.project.id },
+            typeOf: cinerino.factory.actionType.UseAction,
+            agent: params.agent,
+            instrument: params.instrument,
+            object: [reservation]
+            // purpose: params.purpose
+        };
+        const action = yield repos.action.start(actionAttributes);
+        try {
+            yield reservationService.attendScreeningEvent({ id: reservation.id });
+        }
+        catch (error) {
+            // actionにエラー結果を追加
+            try {
+                const actionError = Object.assign(Object.assign({}, error), { message: error.message, name: error.name });
+                yield repos.action.giveUp({ typeOf: actionAttributes.typeOf, id: action.id, error: actionError });
+            }
+            catch (__) {
+                // 失敗したら仕方ない
+            }
+            throw error;
+        }
+        return repos.action.complete({ typeOf: action.typeOf, id: action.id, result: {} });
+    });
+}
 /**
  * 予約取消
  */
@@ -175,11 +270,12 @@ reservationsRouter.put('/checkedIn', permitScopes_1.default(['reservations.findB
  */
 reservationsRouter.put('/:id/attended', permitScopes_1.default(['reservations.findByToken']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const reservationService = new cinerino.chevre.service.Reservation({
-            endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
-        });
-        yield reservationService.attendScreeningEvent({ id: req.params.id });
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        yield useReservation({
+            project: { id: req.project.id },
+            agent: req.agent,
+            object: { id: req.params.id }
+        })({ action: actionRepo });
         res.status(http_status_1.NO_CONTENT)
             .end();
     }

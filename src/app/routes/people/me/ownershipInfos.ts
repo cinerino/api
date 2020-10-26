@@ -14,6 +14,11 @@ import accountsRouter from './ownershipInfos/accounts';
 import creditCardsRouter from './ownershipInfos/creditCards';
 import reservationsRouter from './ownershipInfos/reservations';
 
+const CODE_EXPIRES_IN_SECONDS_DEFAULT = (typeof process.env.CODE_EXPIRES_IN_SECONDS_DEFAULT === 'string')
+    ? Number(process.env.CODE_EXPIRES_IN_SECONDS_DEFAULT)
+    // tslint:disable-next-line:no-magic-numbers
+    : 600;
+
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -109,6 +114,8 @@ ownershipInfosRouter.post(
     validator,
     async (req, res, next) => {
         try {
+            const now = new Date();
+
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const codeRepo = new cinerino.repository.Code(mongoose.connection);
@@ -119,19 +126,24 @@ ownershipInfosRouter.post(
                 throw new cinerino.factory.errors.Unauthorized();
             }
 
-            const authorization = await cinerino.service.code.publish({
+            const project = await projectRepo.findById({ id: req.project.id });
+            const expiresInSeconds = (typeof project.settings?.codeExpiresInSeconds === 'number')
+                ? project.settings.codeExpiresInSeconds
+                : CODE_EXPIRES_IN_SECONDS_DEFAULT;
+
+            const authorizations = await cinerino.service.code.publish({
                 project: req.project,
                 agent: req.agent,
                 recipient: req.agent,
-                object: ownershipInfo,
+                object: [ownershipInfo],
                 purpose: {},
-                validFrom: new Date()
+                validFrom: now,
+                expiresInSeconds: expiresInSeconds
             })({
                 action: actionRepo,
-                code: codeRepo,
-                project: projectRepo
+                code: codeRepo
             });
-            const code = authorization.code;
+            const code = authorizations[0].code;
 
             // 座席予約に対する所有権であれば、Chevreでチェックイン
             if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {

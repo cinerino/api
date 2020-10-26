@@ -13,7 +13,9 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-const TOKEN_EXPIRES_IN = 1800;
+import { TOKEN_EXPIRES_IN } from './tokens';
+
+const USE_CHECK_TOKEN_ACTIONS = process.env.USE_CHECK_TOKEN_ACTIONS === '1';
 
 const ownershipInfosRouter = Router();
 
@@ -83,6 +85,7 @@ ownershipInfosRouter.get(
 
 /**
  * コードから所有権に対するアクセストークンを発行する
+ * @deprecated Use /tokens
  */
 ownershipInfosRouter.post(
     '/tokens',
@@ -94,6 +97,7 @@ ownershipInfosRouter.post(
             const codeRepo = new cinerino.repository.Code(mongoose.connection);
 
             const token = await cinerino.service.code.getToken({
+                project: req.project,
                 code: req.body.code,
                 secret: <string>process.env.TOKEN_SECRET,
                 issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER,
@@ -131,33 +135,67 @@ ownershipInfosRouter.get<ParamsDictionary>(
             const now = new Date();
             const ownershipInfoId = req.params.id;
 
-            const searchConditions: cinerino.factory.action.ISearchConditions<cinerino.factory.actionType.CheckAction> = {
-                // ページング未実装、いったん100限定でも要件は十分満たされるか
-                // tslint:disable-next-line:no-magic-numbers
-                limit: 100,
-                sort: { startDate: cinerino.factory.sortType.Descending },
-                typeOf: cinerino.factory.actionType.CheckAction,
-                result: {
-                    typeOf: { $in: ['OwnershipInfo'] },
-                    id: { $in: [ownershipInfoId] }
-                },
-                startFrom: (req.query.startFrom instanceof Date)
-                    ? req.query.startFrom
-                    : moment(now)
-                        // とりあえずデフォルト直近1カ月(おそらくこれで十分)
-                        // tslint:disable-next-line:no-magic-numbers
-                        .add(-3, 'months')
-                        .toDate(),
-                startThrough: (req.query.startThrough instanceof Date)
-                    ? req.query.startThrough
-                    : now
-            };
-
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
 
-            const actions = await actionRepo.search(searchConditions);
+            if (USE_CHECK_TOKEN_ACTIONS) {
+                const searchConditions: cinerino.factory.action.ISearchConditions<cinerino.factory.actionType.CheckAction> = {
+                    // ページング未実装、いったん100限定でも要件は十分満たされるか
+                    // tslint:disable-next-line:no-magic-numbers
+                    limit: 100,
+                    sort: { startDate: cinerino.factory.sortType.Descending },
+                    typeOf: cinerino.factory.actionType.CheckAction,
+                    result: {
+                        typeOf: { $in: ['OwnershipInfo'] },
+                        id: { $in: [ownershipInfoId] }
+                    },
+                    startFrom: (req.query.startFrom instanceof Date)
+                        ? req.query.startFrom
+                        : moment(now)
+                            // とりあえずデフォルト直近1カ月(おそらくこれで十分)
+                            // tslint:disable-next-line:no-magic-numbers
+                            .add(-3, 'months')
+                            .toDate(),
+                    startThrough: (req.query.startThrough instanceof Date)
+                        ? req.query.startThrough
+                        : now
+                };
 
-            res.json(actions);
+                const actions = await actionRepo.search(searchConditions);
+
+                res.json(actions);
+            } else {
+                //  所有権を検索
+                const ownershipInfo = await ownershipInfoRepo.findById({ id: ownershipInfoId });
+                const reservation = <cinerino.factory.ownershipInfo.IReservation>ownershipInfo.typeOfGood;
+
+                // 予約使用アクションを検索
+                const searchConditions: cinerino.factory.action.ISearchConditions<cinerino.factory.actionType.UseAction> = {
+                    // ページング未実装、いったん100限定でも要件は十分満たされるか
+                    // tslint:disable-next-line:no-magic-numbers
+                    limit: 100,
+                    sort: { startDate: cinerino.factory.sortType.Descending },
+                    typeOf: cinerino.factory.actionType.UseAction,
+                    object: {
+                        typeOf: { $in: [reservation.typeOf] },
+                        id: { $in: [String(reservation.id)] }
+                    },
+                    startFrom: (req.query.startFrom instanceof Date)
+                        ? req.query.startFrom
+                        : moment(now)
+                            // とりあえずデフォルト直近1カ月(おそらくこれで十分)
+                            // tslint:disable-next-line:no-magic-numbers
+                            .add(-3, 'months')
+                            .toDate(),
+                    startThrough: (req.query.startThrough instanceof Date)
+                        ? req.query.startThrough
+                        : now
+                };
+
+                const actions = await actionRepo.search(searchConditions);
+
+                res.json(actions);
+            }
         } catch (error) {
             next(error);
         }
