@@ -15,8 +15,6 @@ import validator from '../middlewares/validator';
 
 import { TOKEN_EXPIRES_IN } from './tokens';
 
-const USE_CHECK_TOKEN_ACTIONS = process.env.USE_CHECK_TOKEN_ACTIONS === '1';
-
 const ownershipInfosRouter = Router();
 
 /**
@@ -138,64 +136,36 @@ ownershipInfosRouter.get<ParamsDictionary>(
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
 
-            if (USE_CHECK_TOKEN_ACTIONS) {
-                const searchConditions: cinerino.factory.action.ISearchConditions<cinerino.factory.actionType.CheckAction> = {
-                    // ページング未実装、いったん100限定でも要件は十分満たされるか
-                    // tslint:disable-next-line:no-magic-numbers
-                    limit: 100,
-                    sort: { startDate: cinerino.factory.sortType.Descending },
-                    typeOf: cinerino.factory.actionType.CheckAction,
-                    result: {
-                        typeOf: { $in: ['OwnershipInfo'] },
-                        id: { $in: [ownershipInfoId] }
-                    },
-                    startFrom: (req.query.startFrom instanceof Date)
-                        ? req.query.startFrom
-                        : moment(now)
-                            // とりあえずデフォルト直近1カ月(おそらくこれで十分)
-                            // tslint:disable-next-line:no-magic-numbers
-                            .add(-3, 'months')
-                            .toDate(),
-                    startThrough: (req.query.startThrough instanceof Date)
-                        ? req.query.startThrough
-                        : now
-                };
+            //  所有権を検索
+            const ownershipInfo = await ownershipInfoRepo.findById({ id: ownershipInfoId });
+            const reservation = <cinerino.factory.ownershipInfo.IReservation>ownershipInfo.typeOfGood;
 
-                const actions = await actionRepo.search(searchConditions);
+            // 予約使用アクションを検索
+            const searchConditions: cinerino.factory.action.ISearchConditions<cinerino.factory.actionType.UseAction> = {
+                // ページング未実装、いったん100限定でも要件は十分満たされるか
+                // tslint:disable-next-line:no-magic-numbers
+                limit: 100,
+                sort: { startDate: cinerino.factory.sortType.Descending },
+                typeOf: cinerino.factory.actionType.UseAction,
+                object: {
+                    typeOf: { $in: [reservation.typeOf] },
+                    id: { $in: [String(reservation.id)] }
+                },
+                startFrom: (req.query.startFrom instanceof Date)
+                    ? req.query.startFrom
+                    : moment(now)
+                        // とりあえずデフォルト直近1カ月(おそらくこれで十分)
+                        // tslint:disable-next-line:no-magic-numbers
+                        .add(-3, 'months')
+                        .toDate(),
+                startThrough: (req.query.startThrough instanceof Date)
+                    ? req.query.startThrough
+                    : now
+            };
 
-                res.json(actions);
-            } else {
-                //  所有権を検索
-                const ownershipInfo = await ownershipInfoRepo.findById({ id: ownershipInfoId });
-                const reservation = <cinerino.factory.ownershipInfo.IReservation>ownershipInfo.typeOfGood;
+            const actions = await actionRepo.search(searchConditions);
 
-                // 予約使用アクションを検索
-                const searchConditions: cinerino.factory.action.ISearchConditions<cinerino.factory.actionType.UseAction> = {
-                    // ページング未実装、いったん100限定でも要件は十分満たされるか
-                    // tslint:disable-next-line:no-magic-numbers
-                    limit: 100,
-                    sort: { startDate: cinerino.factory.sortType.Descending },
-                    typeOf: cinerino.factory.actionType.UseAction,
-                    object: {
-                        typeOf: { $in: [reservation.typeOf] },
-                        id: { $in: [String(reservation.id)] }
-                    },
-                    startFrom: (req.query.startFrom instanceof Date)
-                        ? req.query.startFrom
-                        : moment(now)
-                            // とりあえずデフォルト直近1カ月(おそらくこれで十分)
-                            // tslint:disable-next-line:no-magic-numbers
-                            .add(-3, 'months')
-                            .toDate(),
-                    startThrough: (req.query.startThrough instanceof Date)
-                        ? req.query.startThrough
-                        : now
-                };
-
-                const actions = await actionRepo.search(searchConditions);
-
-                res.json(actions);
-            }
+            res.json(actions);
         } catch (error) {
             next(error);
         }
