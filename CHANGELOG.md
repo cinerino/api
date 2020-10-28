@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- USE_DEPRECATED_RESERVATION_CHECKIN設定を追加
+
 ### Deprecated
 
 ### Removed
