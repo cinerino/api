@@ -5,7 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
-import { body, oneOf, query } from 'express-validator';
+import { body, CustomValidator, oneOf, query } from 'express-validator';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
@@ -51,7 +51,10 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 });
 const ordersRouter = Router();
 
-// const isNotAdmin: CustomValidator = (_, { req }) => !req.isAdmin;
+/**
+ * 管理者でないかどうかの判定を担うカスタムバリデータ
+ */
+const isNotAdmin: CustomValidator = (__, { req }) => !req.isAdmin;
 
 /**
  * 注文検索
@@ -249,6 +252,21 @@ ordersRouter.post(
         body('object.orderNumber')
             .not()
             .isEmpty()
+            .withMessage(() => 'required'),
+        body('object.confirmationNumber')
+            .if(isNotAdmin)
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required'),
+        body('purpose.typeOf')
+            .if(isNotAdmin)
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required'),
+        body('purpose.id')
+            .if(isNotAdmin)
+            .not()
+            .isEmpty()
             .withMessage(() => 'required')
     ],
     validator,
@@ -261,7 +279,6 @@ ordersRouter.post(
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
             const orderNumber = <string>req.body.object?.orderNumber;
-            const confirmationNumber = <string>req.body.object?.confirmationNumber;
 
             // 注文検索
             const orders = await orderRepo.search({
@@ -287,27 +304,40 @@ ordersRouter.post(
                     });
                     placeOrderTransaction = placeOrderTransactions.shift();
                 } else {
+                    const confirmationNumber = <string>req.body.object?.confirmationNumber;
+                    const purposeTypeOf = <cinerino.factory.transactionType.PlaceOrder>req.body.purpose?.typeOf;
+                    const purposeId = <string>req.body.purpose?.id;
                     // 注文番号と確認番号で、注文取引を検索
-                    if (typeof confirmationNumber !== 'string' || confirmationNumber.length === 0) {
-                        throw new cinerino.factory.errors.ArgumentNull('confirmationNumber');
-                    }
+                    // if (typeof confirmationNumber !== 'string' || confirmationNumber.length === 0) {
+                    //     throw new cinerino.factory.errors.ArgumentNull('confirmationNumber');
+                    // }
+
+                    // 取引IDで検索
+                    placeOrderTransaction = await transactionRepo.findById<cinerino.factory.transactionType.PlaceOrder>({
+                        typeOf: purposeTypeOf,
+                        id: purposeId
+                    });
 
                     // 注文取引検索
-                    const placeOrderTransactions = await transactionRepo.search<cinerino.factory.transactionType.PlaceOrder>({
-                        limit: 1,
-                        project: { id: { $eq: req.project.id } },
-                        typeOf: cinerino.factory.transactionType.PlaceOrder,
-                        statuses: [cinerino.factory.transactionStatusType.Confirmed],
-                        result: {
-                            order: {
-                                orderNumbers: [orderNumber],
-                                ...{
-                                    confirmationNumber: { $eq: confirmationNumber }
-                                }
-                            }
-                        }
-                    });
-                    placeOrderTransaction = placeOrderTransactions.shift();
+                    // const placeOrderTransactions = await transactionRepo.search<cinerino.factory.transactionType.PlaceOrder>({
+                    //     limit: 1,
+                    //     project: { id: { $eq: req.project.id } },
+                    //     typeOf: cinerino.factory.transactionType.PlaceOrder,
+                    //     statuses: [cinerino.factory.transactionStatusType.Confirmed],
+                    //     result: {
+                    //         order: {
+                    //             orderNumbers: [orderNumber],
+                    //             ...{
+                    //                 confirmationNumber: { $eq: confirmationNumber }
+                    //             }
+                    //         }
+                    //     }
+                    // });
+                    // placeOrderTransaction = placeOrderTransactions.shift();
+                    if (placeOrderTransaction.result?.order.orderNumber !== orderNumber
+                        || placeOrderTransaction.result?.order.confirmationNumber !== confirmationNumber) {
+                        throw new cinerino.factory.errors.NotFound('Transaction', 'No transactions matched');
+                    }
                 }
 
                 if (placeOrderTransaction === undefined) {

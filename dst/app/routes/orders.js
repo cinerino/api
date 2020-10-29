@@ -51,7 +51,10 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 const ordersRouter = express_1.Router();
-// const isNotAdmin: CustomValidator = (_, { req }) => !req.isAdmin;
+/**
+ * 管理者でないかどうかの判定を担うカスタムバリデータ
+ */
+const isNotAdmin = (__, { req }) => !req.isAdmin;
 /**
  * 注文検索
  */
@@ -219,9 +222,24 @@ ordersRouter.post('', permitScopes_1.default(['orders.*', 'orders.create']), rat
     express_validator_1.body('object.orderNumber')
         .not()
         .isEmpty()
+        .withMessage(() => 'required'),
+    express_validator_1.body('object.confirmationNumber')
+        .if(isNotAdmin)
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required'),
+    express_validator_1.body('purpose.typeOf')
+        .if(isNotAdmin)
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required'),
+    express_validator_1.body('purpose.id')
+        .if(isNotAdmin)
+        .not()
+        .isEmpty()
         .withMessage(() => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c, _d, _e, _f;
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
@@ -229,7 +247,6 @@ ordersRouter.post('', permitScopes_1.default(['orders.*', 'orders.create']), rat
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const orderNumber = (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.orderNumber;
-        const confirmationNumber = (_b = req.body.object) === null || _b === void 0 ? void 0 : _b.confirmationNumber;
         // 注文検索
         const orders = yield orderRepo.search({
             limit: 1,
@@ -252,23 +269,38 @@ ordersRouter.post('', permitScopes_1.default(['orders.*', 'orders.create']), rat
                 placeOrderTransaction = placeOrderTransactions.shift();
             }
             else {
+                const confirmationNumber = (_b = req.body.object) === null || _b === void 0 ? void 0 : _b.confirmationNumber;
+                const purposeTypeOf = (_c = req.body.purpose) === null || _c === void 0 ? void 0 : _c.typeOf;
+                const purposeId = (_d = req.body.purpose) === null || _d === void 0 ? void 0 : _d.id;
                 // 注文番号と確認番号で、注文取引を検索
-                if (typeof confirmationNumber !== 'string' || confirmationNumber.length === 0) {
-                    throw new cinerino.factory.errors.ArgumentNull('confirmationNumber');
-                }
-                // 注文取引検索
-                const placeOrderTransactions = yield transactionRepo.search({
-                    limit: 1,
-                    project: { id: { $eq: req.project.id } },
-                    typeOf: cinerino.factory.transactionType.PlaceOrder,
-                    statuses: [cinerino.factory.transactionStatusType.Confirmed],
-                    result: {
-                        order: Object.assign({ orderNumbers: [orderNumber] }, {
-                            confirmationNumber: { $eq: confirmationNumber }
-                        })
-                    }
+                // if (typeof confirmationNumber !== 'string' || confirmationNumber.length === 0) {
+                //     throw new cinerino.factory.errors.ArgumentNull('confirmationNumber');
+                // }
+                // 取引IDで検索
+                placeOrderTransaction = yield transactionRepo.findById({
+                    typeOf: purposeTypeOf,
+                    id: purposeId
                 });
-                placeOrderTransaction = placeOrderTransactions.shift();
+                // 注文取引検索
+                // const placeOrderTransactions = await transactionRepo.search<cinerino.factory.transactionType.PlaceOrder>({
+                //     limit: 1,
+                //     project: { id: { $eq: req.project.id } },
+                //     typeOf: cinerino.factory.transactionType.PlaceOrder,
+                //     statuses: [cinerino.factory.transactionStatusType.Confirmed],
+                //     result: {
+                //         order: {
+                //             orderNumbers: [orderNumber],
+                //             ...{
+                //                 confirmationNumber: { $eq: confirmationNumber }
+                //             }
+                //         }
+                //     }
+                // });
+                // placeOrderTransaction = placeOrderTransactions.shift();
+                if (((_e = placeOrderTransaction.result) === null || _e === void 0 ? void 0 : _e.order.orderNumber) !== orderNumber
+                    || ((_f = placeOrderTransaction.result) === null || _f === void 0 ? void 0 : _f.order.confirmationNumber) !== confirmationNumber) {
+                    throw new cinerino.factory.errors.NotFound('Transaction', 'No transactions matched');
+                }
             }
             if (placeOrderTransaction === undefined) {
                 throw new cinerino.factory.errors.NotFound('Transaction');
@@ -530,14 +562,14 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['orders.*
     //     .isEmpty()
     //     .withMessage((_, __) => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d;
+    var _g, _h;
     try {
         // const customer = req.body.customer;
         // if (customer.email !== undefined && customer.telephone !== undefined) {
         //     throw new cinerino.factory.errors.Argument('customer');
         // }
-        const email = (_c = req.body.customer) === null || _c === void 0 ? void 0 : _c.email;
-        const telephone = (_d = req.body.customer) === null || _d === void 0 ? void 0 : _d.telephone;
+        const email = (_g = req.body.customer) === null || _g === void 0 ? void 0 : _g.email;
+        const telephone = (_h = req.body.customer) === null || _h === void 0 ? void 0 : _h.telephone;
         const orderNumber = req.body.orderNumber;
         // 個人情報完全一致で検索する
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
@@ -678,12 +710,12 @@ ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.defau
 ], validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e;
+    var _j;
     try {
         const now = new Date();
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        const expiresInSeconds = (typeof ((_e = project.settings) === null || _e === void 0 ? void 0 : _e.codeExpiresInSeconds) === 'number')
+        const expiresInSeconds = (typeof ((_j = project.settings) === null || _j === void 0 ? void 0 : _j.codeExpiresInSeconds) === 'number')
             ? project.settings.codeExpiresInSeconds
             : CODE_EXPIRES_IN_SECONDS_DEFAULT;
         const customer = req.body.customer;
@@ -812,14 +844,14 @@ ordersRouter.post('/:orderNumber/authorize', permitScopes_1.default(['orders.*',
         .isInt({ min: 0, max: CODE_EXPIRES_IN_SECONDS_MAXIMUM })
         .toInt()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f, _g, _h, _j, _k;
+    var _k, _l, _m, _o, _p;
     try {
         const now = new Date();
-        const expiresInSeconds = (typeof ((_f = req.body.result) === null || _f === void 0 ? void 0 : _f.expiresInSeconds) === 'number')
+        const expiresInSeconds = (typeof ((_k = req.body.result) === null || _k === void 0 ? void 0 : _k.expiresInSeconds) === 'number')
             ? Number(req.body.result.expiresInSeconds)
             : CODE_EXPIRES_IN_SECONDS_DEFAULT;
-        const email = (_h = (_g = req.body.object) === null || _g === void 0 ? void 0 : _g.customer) === null || _h === void 0 ? void 0 : _h.email;
-        const telephone = (_k = (_j = req.body.object) === null || _j === void 0 ? void 0 : _j.customer) === null || _k === void 0 ? void 0 : _k.telephone;
+        const email = (_m = (_l = req.body.object) === null || _l === void 0 ? void 0 : _l.customer) === null || _m === void 0 ? void 0 : _m.email;
+        const telephone = (_p = (_o = req.body.object) === null || _o === void 0 ? void 0 : _o.customer) === null || _p === void 0 ? void 0 : _p.telephone;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const codeRepo = new cinerino.repository.Code(mongoose.connection);
