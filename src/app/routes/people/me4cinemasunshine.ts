@@ -44,7 +44,7 @@ me4cinemasunshineRouter.put(
                 auth: chevreAuthClient
             });
 
-            const membershipService = await productService.findById({
+            const membershipService = <cinerino.factory.chevre.product.IProduct>await productService.findById({
                 id: productId
             });
             if (membershipService.project.id !== req.project.id) {

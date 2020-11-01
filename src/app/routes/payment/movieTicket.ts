@@ -28,31 +28,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 
-export async function getMvtKReserveEndpoint(params: {
-    project: { id: string };
-    paymentMethodType: string;
-}): Promise<string> {
-    // Chevreからサービスエンドポイントを取得する
-    const projectService = new cinerino.chevre.service.Project({
-        endpoint: cinerino.credentials.chevre.endpoint,
-        auth: chevreAuthClient
-    });
-    const chevreProject = await projectService.findById({ id: params.project.id });
-    const paymentServiceSetting = chevreProject.settings?.paymentServices?.find((s) => {
-        return s.typeOf === cinerino.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket
-            && s.serviceOutput?.typeOf === params.paymentMethodType;
-    });
-    if (paymentServiceSetting === undefined) {
-        throw new cinerino.factory.errors.NotFound('PaymentService');
-    }
-    const paymentServiceUrl = paymentServiceSetting.availableChannel?.serviceUrl;
-    if (typeof paymentServiceUrl !== 'string') {
-        throw new cinerino.factory.errors.NotFound('paymentService.availableChannel.serviceUrl');
-    }
-
-    return paymentServiceUrl;
-}
-
 const movieTicketPaymentRouter = Router();
 
 /**

@@ -16,7 +16,6 @@ import rateLimit from '../../middlewares/rateLimit';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
-// import { getMvtKReserveEndpoint } from '../payment/movieTicket';
 import placeOrder4cinemasunshineRouter from './placeOrder4cinemasunshine';
 
 import { connectMongo } from '../../../connectMongo';

@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMvtKReserveEndpoint = void 0;
 /**
  * ムビチケ決済ルーター
  */
@@ -34,31 +33,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-function getMvtKReserveEndpoint(params) {
-    var _a, _b, _c;
-    return __awaiter(this, void 0, void 0, function* () {
-        // Chevreからサービスエンドポイントを取得する
-        const projectService = new cinerino.chevre.service.Project({
-            endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
-        });
-        const chevreProject = yield projectService.findById({ id: params.project.id });
-        const paymentServiceSetting = (_b = (_a = chevreProject.settings) === null || _a === void 0 ? void 0 : _a.paymentServices) === null || _b === void 0 ? void 0 : _b.find((s) => {
-            var _a;
-            return s.typeOf === cinerino.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket
-                && ((_a = s.serviceOutput) === null || _a === void 0 ? void 0 : _a.typeOf) === params.paymentMethodType;
-        });
-        if (paymentServiceSetting === undefined) {
-            throw new cinerino.factory.errors.NotFound('PaymentService');
-        }
-        const paymentServiceUrl = (_c = paymentServiceSetting.availableChannel) === null || _c === void 0 ? void 0 : _c.serviceUrl;
-        if (typeof paymentServiceUrl !== 'string') {
-            throw new cinerino.factory.errors.NotFound('paymentService.availableChannel.serviceUrl');
-        }
-        return paymentServiceUrl;
-    });
-}
-exports.getMvtKReserveEndpoint = getMvtKReserveEndpoint;
 const movieTicketPaymentRouter = express_1.Router();
 /**
  * ムビチケ購入番号確認
