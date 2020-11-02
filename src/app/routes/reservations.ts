@@ -12,8 +12,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-const USE_DEPRECATED_RESERVATION_CHECKIN = process.env.USE_DEPRECATED_RESERVATION_CHECKIN === '1';
-
 type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
 
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
@@ -318,59 +316,5 @@ reservationsRouter.put(
         }
     }
 );
-
-if (USE_DEPRECATED_RESERVATION_CHECKIN) {
-    /**
-     * 発券
-     * @deprecated 動作確認できたら削除
-     */
-    reservationsRouter.put(
-        '/checkedIn',
-        permitScopes(['reservations.findByToken']),
-        validator,
-        async (req, res, next) => {
-            try {
-                const reservationService = new cinerino.chevre.service.Reservation({
-                    endpoint: cinerino.credentials.chevre.endpoint,
-                    auth: chevreAuthClient
-                });
-                await reservationService.checkInScreeningEventReservations(req.body);
-
-                res.status(NO_CONTENT)
-                    .end();
-            } catch (error) {
-                error = cinerino.errorHandler.handleChevreError(error);
-                next(error);
-            }
-        }
-    );
-
-    /**
-     * 入場
-     * @deprecated 動作確認できたら削除
-     */
-    reservationsRouter.put(
-        '/:id/attended',
-        permitScopes(['reservations.findByToken']),
-        validator,
-        async (req, res, next) => {
-            try {
-                const actionRepo = new cinerino.repository.Action(mongoose.connection);
-
-                await useReservation({
-                    project: { id: req.project.id },
-                    agent: req.agent,
-                    object: { id: req.params.id }
-                })({ action: actionRepo });
-
-                res.status(NO_CONTENT)
-                    .end();
-            } catch (error) {
-                error = cinerino.errorHandler.handleChevreError(error);
-                next(error);
-            }
-        }
-    );
-}
 
 export default reservationsRouter;

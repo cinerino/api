@@ -10,7 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- USE_DEPRECATED_RESERVATION_CHECKIN設定を追加
 - USE_CHECK_TOKEN_ACTIONS設定を削除
 - 所有権トークンでの予約使用時にトークンチェックアクションを生成しないように調整
 - 非管理者による注文作成時に、purpose.idの指定を確認するように調整
@@ -19,6 +18,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Deprecated
 
 ### Removed
+
+- 予約発券を削除
+- 予約入場を削除
 
 ### Fixed
 

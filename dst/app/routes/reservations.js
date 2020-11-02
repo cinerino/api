@@ -21,7 +21,6 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const USE_DEPRECATED_RESERVATION_CHECKIN = process.env.USE_DEPRECATED_RESERVATION_CHECKIN === '1';
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -248,45 +247,4 @@ reservationsRouter.put('/cancel', permitScopes_1.default(['reservations.*', 'res
         next(error);
     }
 }));
-if (USE_DEPRECATED_RESERVATION_CHECKIN) {
-    /**
-     * 発券
-     * @deprecated 動作確認できたら削除
-     */
-    reservationsRouter.put('/checkedIn', permitScopes_1.default(['reservations.findByToken']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        try {
-            const reservationService = new cinerino.chevre.service.Reservation({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
-            });
-            yield reservationService.checkInScreeningEventReservations(req.body);
-            res.status(http_status_1.NO_CONTENT)
-                .end();
-        }
-        catch (error) {
-            error = cinerino.errorHandler.handleChevreError(error);
-            next(error);
-        }
-    }));
-    /**
-     * 入場
-     * @deprecated 動作確認できたら削除
-     */
-    reservationsRouter.put('/:id/attended', permitScopes_1.default(['reservations.findByToken']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        try {
-            const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            yield useReservation({
-                project: { id: req.project.id },
-                agent: req.agent,
-                object: { id: req.params.id }
-            })({ action: actionRepo });
-            res.status(http_status_1.NO_CONTENT)
-                .end();
-        }
-        catch (error) {
-            error = cinerino.errorHandler.handleChevreError(error);
-            next(error);
-        }
-    }));
-}
 exports.default = reservationsRouter;
