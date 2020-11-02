@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 所有権トークンでの予約使用時にトークンチェックアクションを生成しないように調整
 - 非管理者による注文作成時に、purpose.idの指定を確認するように調整
 - 外部決済サービス認証情報をプロダクト検索から取得するように調整
+- プロジェクトからsubscriptionを削除
 
 ### Deprecated
 

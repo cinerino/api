@@ -120,15 +120,20 @@ rateLimit_1.default, ...[
 }));
 function createFromBody(params) {
     var _a, _b, _c, _d, _e;
-    return Object.assign({ id: params.id, typeOf: params.typeOf, logo: params.logo, name: params.name, parentOrganization: params.parentOrganization, settings: Object.assign({ cognito: {
+    return {
+        id: params.id,
+        typeOf: params.typeOf,
+        logo: params.logo,
+        name: params.name,
+        parentOrganization: params.parentOrganization,
+        settings: Object.assign({ cognito: {
                 customerUserPool: {
                     id: (_c = (_b = (_a = params.settings) === null || _a === void 0 ? void 0 : _a.cognito) === null || _b === void 0 ? void 0 : _b.customerUserPool) === null || _c === void 0 ? void 0 : _c.id
                 }
             }, onOrderStatusChanged: {}, codeExpiresInSeconds: 600, transactionWebhookUrl: (_d = params.settings) === null || _d === void 0 ? void 0 : _d.transactionWebhookUrl, useUsernameAsGMOMemberId: false }, (typeof ((_e = params.settings) === null || _e === void 0 ? void 0 : _e.sendgridApiKey) === 'string' && params.settings.sendgridApiKey.length > 0)
             ? { sendgridApiKey: params.settings.sendgridApiKey }
-            : undefined) }, {
-        subscription: { identifier: 'Free' }
-    });
+            : undefined)
+    };
 }
 /**
  * プロジェクト検索
