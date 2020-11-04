@@ -18,6 +18,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.38.0 - 2020-11-04
+
+### Added
+
+- 予約使用アクション検索を追加
+
+### Changed
+
+- USE_CHECK_TOKEN_ACTIONS設定を削除
+- 所有権トークンでの予約使用時にトークンチェックアクションを生成しないように調整
+- 非管理者による注文作成時に、purpose.idの指定を確認するように調整
+- 外部決済サービス認証情報をプロダクト検索から取得するように調整
+- プロジェクトからsubscriptionを削除
+- ownershipInfos.actions.checkToken.readスコープをreservations.readに変更
+
+### Deprecated
+
+- 所有権に対するトークン検証アクション検索を非推奨化
+
+### Removed
+
+- 予約発券を削除
+- 予約入場を削除
+
 ## v5.37.0 - 2020-10-26
 
 ### Added

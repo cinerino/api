@@ -156,7 +156,7 @@ reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitSc
             token: req.body.token,
             secret: process.env.TOKEN_SECRET,
             issuer: [process.env.RESOURCE_SERVER_IDENTIFIER]
-        })({ action: actionRepo });
+        })({});
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         // 所有権検索
         const ownershipInfo = yield ownershipInfoRepo.findById({
@@ -221,6 +221,50 @@ function useReservation(params) {
     });
 }
 /**
+ * 予約に対する使用アクションを検索する
+ */
+// tslint:disable-next-line:use-default-type-parameter
+reservationsRouter.get('/:id/actions/use', permitScopes_1.default(['reservations.read']), rateLimit_1.default, ...[
+    express_validator_1.query('startFrom')
+        .optional()
+        .isISO8601()
+        .toDate(),
+    express_validator_1.query('startThrough')
+        .optional()
+        .isISO8601()
+        .toDate()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // const now = new Date();
+        const reservationId = req.params.id;
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        // 予約使用アクションを検索
+        const searchConditions = {
+            // ページング未実装、いったん100限定でも要件は十分満たされるか
+            // tslint:disable-next-line:no-magic-numbers
+            limit: 100,
+            sort: { startDate: cinerino.factory.sortType.Descending },
+            project: { id: { $eq: req.project.id } },
+            typeOf: cinerino.factory.actionType.UseAction,
+            object: {
+                typeOf: { $in: [cinerino.factory.chevre.reservationType.EventReservation] },
+                id: { $in: [reservationId] }
+            },
+            startFrom: (req.query.startFrom instanceof Date)
+                ? req.query.startFrom
+                : undefined,
+            startThrough: (req.query.startThrough instanceof Date)
+                ? req.query.startThrough
+                : undefined
+        };
+        const actions = yield actionRepo.search(searchConditions);
+        res.json(actions);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
  * 予約取消
  */
 reservationsRouter.put('/cancel', permitScopes_1.default(['reservations.*', 'reservations.cancel']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -239,43 +283,6 @@ reservationsRouter.put('/cancel', permitScopes_1.default(['reservations.*', 'res
             object: Object.assign({}, req.body.object),
             potentialActions: Object.assign({}, req.body.potentialActions)
         });
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        error = cinerino.errorHandler.handleChevreError(error);
-        next(error);
-    }
-}));
-/**
- * 発券
- */
-reservationsRouter.put('/checkedIn', permitScopes_1.default(['reservations.findByToken']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const reservationService = new cinerino.chevre.service.Reservation({
-            endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
-        });
-        yield reservationService.checkInScreeningEventReservations(req.body);
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        error = cinerino.errorHandler.handleChevreError(error);
-        next(error);
-    }
-}));
-/**
- * 入場
- */
-reservationsRouter.put('/:id/attended', permitScopes_1.default(['reservations.findByToken']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        yield useReservation({
-            project: { id: req.project.id },
-            agent: req.agent,
-            object: { id: req.params.id }
-        })({ action: actionRepo });
         res.status(http_status_1.NO_CONTENT)
             .end();
     }

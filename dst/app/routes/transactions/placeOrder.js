@@ -24,7 +24,6 @@ const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
-// import { getMvtKReserveEndpoint } from '../payment/movieTicket';
 const placeOrder4cinemasunshine_1 = require("./placeOrder4cinemasunshine");
 const connectMongo_1 = require("../../../connectMongo");
 const redis = require("../../../redis");

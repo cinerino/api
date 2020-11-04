@@ -146,9 +146,6 @@ function createFromBody(params: any): cinerino.factory.project.IProject {
             ...(typeof params.settings?.sendgridApiKey === 'string' && params.settings.sendgridApiKey.length > 0)
                 ? { sendgridApiKey: params.settings.sendgridApiKey }
                 : undefined
-        },
-        ...{
-            subscription: { identifier: 'Free' }
         }
     };
 }
