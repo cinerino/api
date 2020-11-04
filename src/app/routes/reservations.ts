@@ -3,6 +3,8 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+// tslint:disable-next-line:no-implicit-dependencies
+import { ParamsDictionary } from 'express-serve-static-core';
 import { body, query } from 'express-validator';
 import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
@@ -277,6 +279,61 @@ function useReservation(params: {
         return repos.action.complete({ typeOf: action.typeOf, id: action.id, result: {} });
     };
 }
+
+/**
+ * 予約に対する使用アクションを検索する
+ */
+// tslint:disable-next-line:use-default-type-parameter
+reservationsRouter.get<ParamsDictionary>(
+    '/:id/actions/use',
+    permitScopes(['reservations.read']),
+    rateLimit,
+    ...[
+        query('startFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('startThrough')
+            .optional()
+            .isISO8601()
+            .toDate()
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            // const now = new Date();
+            const reservationId = req.params.id;
+
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
+
+            // 予約使用アクションを検索
+            const searchConditions: cinerino.factory.action.ISearchConditions<cinerino.factory.actionType.UseAction> = {
+                // ページング未実装、いったん100限定でも要件は十分満たされるか
+                // tslint:disable-next-line:no-magic-numbers
+                limit: 100,
+                sort: { startDate: cinerino.factory.sortType.Descending },
+                project: { id: { $eq: req.project.id } },
+                typeOf: cinerino.factory.actionType.UseAction,
+                object: {
+                    typeOf: { $in: [cinerino.factory.chevre.reservationType.EventReservation] },
+                    id: { $in: [reservationId] }
+                },
+                startFrom: (req.query.startFrom instanceof Date)
+                    ? req.query.startFrom
+                    : undefined,
+                startThrough: (req.query.startThrough instanceof Date)
+                    ? req.query.startThrough
+                    : undefined
+            };
+
+            const actions = await actionRepo.search(searchConditions);
+
+            res.json(actions);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 
 /**
  * 予約取消

@@ -89,6 +89,7 @@ ownershipInfosRouter.post('/tokens', permitScopes_1.default(['tokens']), rateLim
 }));
 /**
  * 所有権に対するトークン検証アクションを検索する
+ * @deprecated Use GET /reservations/:id/actions/use
  */
 // tslint:disable-next-line:use-default-type-parameter
 ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['ownershipInfos.actions.checkToken.read']), rateLimit_1.default, ...[

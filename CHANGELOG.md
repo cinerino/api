@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 予約使用アクション検索を追加
+
 ### Changed
 
 - USE_CHECK_TOKEN_ACTIONS設定を削除
