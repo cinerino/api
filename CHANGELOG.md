@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v5.38.0 - 2020-11-04
+
+### Added
+
 - 予約使用アクション検索を追加
 
 ### Changed
@@ -27,10 +41,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 予約発券を削除
 - 予約入場を削除
-
-### Fixed
-
-### Security
 
 ## v5.37.0 - 2020-10-26
 
