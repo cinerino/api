@@ -116,7 +116,7 @@ ownershipInfosRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 ownershipInfosRouter.get<ParamsDictionary>(
     '/:id/actions/checkToken',
-    permitScopes(['ownershipInfos.actions.checkToken.read']),
+    permitScopes(['reservations.read']),
     rateLimit,
     ...[
         query('startFrom')

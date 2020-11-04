@@ -92,7 +92,7 @@ ownershipInfosRouter.post('/tokens', permitScopes_1.default(['tokens']), rateLim
  * @deprecated Use GET /reservations/:id/actions/use
  */
 // tslint:disable-next-line:use-default-type-parameter
-ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['ownershipInfos.actions.checkToken.read']), rateLimit_1.default, ...[
+ownershipInfosRouter.get('/:id/actions/checkToken', permitScopes_1.default(['reservations.read']), rateLimit_1.default, ...[
     express_validator_1.query('startFrom')
         .optional()
         .isISO8601()
