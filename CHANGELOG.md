@@ -10,20 +10,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v5.39.0 - 2020-11-05
+
+### Changed
+
 - update @chevre/api-nodejs-client
 - update @motionpicture/gmo-service
 - update @pecorino/api-nodejs-client
 - update mongoose
 
-### Deprecated
-
 ### Removed
 
 - 管理者としての口座開設サービスを削除
-
-### Fixed
-
-### Security
 
 ## v5.38.0 - 2020-11-04
 
