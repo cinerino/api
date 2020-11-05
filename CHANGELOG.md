@@ -10,9 +10,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- update @chevre/api-nodejs-client
+- update @motionpicture/gmo-service
+- update @pecorino/api-nodejs-client
+- update mongoose
+
 ### Deprecated
 
 ### Removed
+
+- 管理者としての口座開設サービスを削除
 
 ### Fixed
 

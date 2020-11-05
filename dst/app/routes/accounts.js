@@ -23,7 +23,7 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 // import * as redis from '../../redis';
 const permitScopes_1 = require("../middlewares/permitScopes");
-const rateLimit_1 = require("../middlewares/rateLimit");
+// import rateLimit from '../middlewares/rateLimit';
 const validator_1 = require("../middlewares/validator");
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
@@ -36,30 +36,36 @@ const accountsRouter = express_1.Router();
 /**
  * 管理者として口座開設
  */
-accountsRouter.post('', permitScopes_1.default(['accounts.*', 'accounts.write']), ...[
-    express_validator_1.body('accountType', 'invalid accountType')
-        .not()
-        .isEmpty(),
-    express_validator_1.body('name', 'invalid name')
-        .not()
-        .isEmpty()
-], rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const account = yield cinerino.service.account.openWithoutOwnershipInfo({
-            project: req.project,
-            accountType: req.body.accountType,
-            name: req.body.name
-        })({
-            // accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
-            project: new cinerino.repository.Project(mongoose.connection)
-        });
-        res.status(http_status_1.CREATED)
-            .json(account);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// accountsRouter.post(
+//     '',
+//     permitScopes(['accounts.*', 'accounts.write']),
+//     ...[
+//         body('accountType', 'invalid accountType')
+//             .not()
+//             .isEmpty(),
+//         body('name', 'invalid name')
+//             .not()
+//             .isEmpty()
+//     ],
+//     rateLimit,
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             const account = await cinerino.service.account.openWithoutOwnershipInfo({
+//                 project: req.project,
+//                 accountType: req.body.accountType,
+//                 name: req.body.name
+//             })({
+//                 // accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
+//                 project: new cinerino.repository.Project(mongoose.connection)
+//             });
+//             res.status(CREATED)
+//                 .json(account);
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 /**
  * 管理者として口座解約
  */
