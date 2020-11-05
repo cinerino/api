@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@cinerino/domain": "10.6.0-alpha.0",
+    "@cinerino/domain": "^10.6.0",
     "@motionpicture/express-middleware": "^0.1.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
@@ -23,7 +23,7 @@
     "ioredis": "^3.2.2",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.26",
-    "mongoose": "^5.9.20",
+    "mongoose": "^5.10.12",
     "qs": "^6.8.0",
     "redis": "^2.8.0",
     "serve-favicon": "^2.5.0"
@@ -42,12 +42,13 @@
     "@types/ioredis": "^3.2.23",
     "@types/mocha": "^5.2.7",
     "@types/moment-timezone": "^0.5.12",
-    "@types/mongoose": "^5.7.28",
+    "@types/mongoose": "^5.7.37",
     "@types/nock": "^9.3.1",
     "@types/node": "^8.10.53",
     "@types/power-assert": "^1.5.0",
     "@types/qs": "^6.5.3",
     "@types/redis": "^2.8.13",
+    "@types/request-promise-native": "^1.0.17",
     "@types/serve-favicon": "^2.5.0",
     "@types/sinon": "^4.3.3",
     "@types/supertest": "^2.0.8",
@@ -97,5 +98,5 @@
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
-  "version": "5.38.0"
+  "version": "5.39.0"
 }

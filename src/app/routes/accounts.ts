@@ -5,7 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import * as middlewares from '@motionpicture/express-middleware';
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { CREATED, NO_CONTENT } from 'http-status';
+import { NO_CONTENT } from 'http-status';
 import * as ioredis from 'ioredis';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
@@ -13,7 +13,7 @@ import * as mongoose from 'mongoose';
 // import * as redis from '../../redis';
 
 import permitScopes from '../middlewares/permitScopes';
-import rateLimit from '../middlewares/rateLimit';
+// import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
@@ -29,37 +29,37 @@ const accountsRouter = Router();
 /**
  * 管理者として口座開設
  */
-accountsRouter.post(
-    '',
-    permitScopes(['accounts.*', 'accounts.write']),
-    ...[
-        body('accountType', 'invalid accountType')
-            .not()
-            .isEmpty(),
-        body('name', 'invalid name')
-            .not()
-            .isEmpty()
-    ],
-    rateLimit,
-    validator,
-    async (req, res, next) => {
-        try {
-            const account = await cinerino.service.account.openWithoutOwnershipInfo({
-                project: req.project,
-                accountType: req.body.accountType,
-                name: req.body.name
-            })({
-                // accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
-                project: new cinerino.repository.Project(mongoose.connection)
-            });
+// accountsRouter.post(
+//     '',
+//     permitScopes(['accounts.*', 'accounts.write']),
+//     ...[
+//         body('accountType', 'invalid accountType')
+//             .not()
+//             .isEmpty(),
+//         body('name', 'invalid name')
+//             .not()
+//             .isEmpty()
+//     ],
+//     rateLimit,
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             const account = await cinerino.service.account.openWithoutOwnershipInfo({
+//                 project: req.project,
+//                 accountType: req.body.accountType,
+//                 name: req.body.name
+//             })({
+//                 // accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
+//                 project: new cinerino.repository.Project(mongoose.connection)
+//             });
 
-            res.status(CREATED)
-                .json(account);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
+//             res.status(CREATED)
+//                 .json(account);
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 
 /**
  * 管理者として口座解約
