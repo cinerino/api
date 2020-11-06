@@ -15,6 +15,8 @@ import validator from '../../../../middlewares/validator';
 
 import * as redis from '../../../../../redis';
 
+const USE_MONEY_TRANFER_AMOUNT_AS_NUMBER = process.env.USE_MONEY_TRANFER_AMOUNT_AS_NUMBER === '1';
+
 const accountsRouter = Router();
 
 /**
@@ -145,7 +147,7 @@ accountsRouter.get(
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
-            const actions = await cinerino.service.account.searchMoneyTransferActions({
+            let actions = await cinerino.service.account.searchMoneyTransferActions({
                 project: req.project,
                 ownedBy: {
                     id: req.user.sub
@@ -156,6 +158,29 @@ accountsRouter.get(
                 ownershipInfo: ownershipInfoRepo,
                 project: projectRepo
             });
+
+            // 互換性維持対応
+            if (USE_MONEY_TRANFER_AMOUNT_AS_NUMBER) {
+                actions = actions.map((a) => {
+                    return {
+                        ...a,
+                        amount: (typeof a.amount === 'number') ? a.amount : Number(a.amount?.value)
+                    };
+                });
+            } else {
+                actions = actions.map((a) => {
+                    return {
+                        ...a,
+                        amount: (typeof a.amount === 'number')
+                            ? {
+                                typeOf: 'MonetaryAmount',
+                                currency: 'Point', // 旧データはPointしかないのでこれで十分
+                                value: a.amount
+                            }
+                            : a.amount
+                    };
+                });
+            }
 
             res.json(actions);
         } catch (error) {
