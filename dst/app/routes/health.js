@@ -17,12 +17,17 @@ const mongoose = require("mongoose");
 const healthRouter = express.Router();
 const createDebug = require("debug");
 const http_status_1 = require("http-status");
+const connectMongo_1 = require("../../connectMongo");
 const redis = require("../../redis");
 const debug = createDebug('cinerino-api:router');
 // 接続確認をあきらめる時間(ミリ秒)
 const TIMEOUT_GIVE_UP_CHECKING_IN_MILLISECONDS = 3000;
 healthRouter.get('', (_, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     try {
+        if (typeof ((_b = (_a = mongoose.connection) === null || _a === void 0 ? void 0 : _a.db) === null || _b === void 0 ? void 0 : _b.admin) !== 'function') {
+            yield connectMongo_1.connectMongo({ defaultConnection: true });
+        }
         yield mongoose.connection.db.admin()
             .ping();
         yield new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {

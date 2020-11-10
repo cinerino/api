@@ -9,6 +9,7 @@ const healthRouter = express.Router();
 import * as createDebug from 'debug';
 import { OK } from 'http-status';
 
+import { connectMongo } from '../../connectMongo';
 import * as redis from '../../redis';
 
 const debug = createDebug('cinerino-api:router');
@@ -19,8 +20,13 @@ healthRouter.get(
     '',
     async (_, res, next) => {
         try {
+            if (typeof mongoose.connection?.db?.admin !== 'function') {
+                await connectMongo({ defaultConnection: true });
+            }
+
             await mongoose.connection.db.admin()
                 .ping();
+
             await new Promise(async (resolve, reject) => {
                 let givenUpChecking = false;
 
