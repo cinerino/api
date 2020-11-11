@@ -22,6 +22,7 @@ const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
+const redis = require("../../../redis");
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -140,10 +141,21 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _d;
     try {
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+        const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
         let paymentMethodType = (_d = req.body.object) === null || _d === void 0 ? void 0 : _d.paymentMethod;
         if (typeof paymentMethodType !== 'string') {
             paymentMethodType = cinerino.factory.paymentMethodType.MovieTicket;
         }
+        // 注文確認番号を発行
+        yield cinerino.service.transaction.placeOrderInProgress.publishConfirmationNumberIfNotExist({
+            id: req.body.purpose.id,
+            object: { orderDate: new Date() }
+        })({
+            confirmationNumber: confirmationNumberRepo,
+            transaction: transactionRepo
+        });
         const action = yield cinerino.service.payment.chevre.authorize({
             project: req.project,
             agent: { id: req.user.sub },
@@ -159,8 +171,8 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id },
             paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.MovieTicket
         })({
-            action: new cinerino.repository.Action(mongoose.connection),
-            transaction: new cinerino.repository.Transaction(mongoose.connection)
+            action: actionRepo,
+            transaction: transactionRepo
         });
         res.status(http_status_1.CREATED)
             .json(action);

@@ -15,6 +15,8 @@ import rateLimit from '../../middlewares/rateLimit';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
+import * as redis from '../../../redis';
+
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -154,11 +156,24 @@ movieTicketPaymentRouter.post<ParamsDictionary>(
     },
     async (req, res, next) => {
         try {
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+            const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
+
             let paymentMethodType: cinerino.factory.paymentMethodType.MovieTicket | cinerino.factory.paymentMethodType.MGTicket
                 = req.body.object?.paymentMethod;
             if (typeof paymentMethodType !== 'string') {
                 paymentMethodType = cinerino.factory.paymentMethodType.MovieTicket;
             }
+
+            // 注文確認番号を発行(MovieTicket着券に連携するため)
+            await cinerino.service.transaction.placeOrderInProgress.publishConfirmationNumberIfNotExist({
+                id: <string>req.body.purpose.id,
+                object: { orderDate: new Date() }
+            })({
+                confirmationNumber: confirmationNumberRepo,
+                transaction: transactionRepo
+            });
 
             const action = await cinerino.service.payment.chevre.authorize({
                 project: req.project,
@@ -184,9 +199,10 @@ movieTicketPaymentRouter.post<ParamsDictionary>(
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id },
                 paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.MovieTicket
             })({
-                action: new cinerino.repository.Action(mongoose.connection),
-                transaction: new cinerino.repository.Transaction(mongoose.connection)
+                action: actionRepo,
+                transaction: transactionRepo
             });
+
             res.status(CREATED)
                 .json(action);
         } catch (error) {
