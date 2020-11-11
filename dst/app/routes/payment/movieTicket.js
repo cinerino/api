@@ -148,7 +148,7 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
         if (typeof paymentMethodType !== 'string') {
             paymentMethodType = cinerino.factory.paymentMethodType.MovieTicket;
         }
-        // 注文確認番号を発行
+        // 注文確認番号を発行(MovieTicket着券に連携するため)
         yield cinerino.service.transaction.placeOrderInProgress.publishConfirmationNumberIfNotExist({
             id: req.body.purpose.id,
             object: { orderDate: new Date() }
