@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - ヘルスチェックを調整
 - 注文取引確定時の確認番号カスタム指定を削除
+- update @chevre/api-nodejs-client
 
 ### Deprecated
 
