@@ -117,7 +117,6 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
             let fromLocation: cinerino.factory.action.authorize.paymentMethod.any.IFromLocation | undefined
@@ -220,30 +219,26 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
             //     }
             // }
 
-            const currency = cinerino.factory.priceCurrency.JPY;
-
-            const action = await cinerino.service.payment.paymentCard.authorize({
+            const action = await cinerino.service.payment.chevre.authorize({
                 project: req.project,
+                agent: { id: req.user.sub },
                 object: {
-                    // typeOf: cinerino.factory.paymentMethodType.PaymentCard,
                     typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment,
                     paymentMethod: req.body.object?.paymentMethod,
-                    amount: Number(req.body.object.amount),
-                    currency: currency,
                     additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                         ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
                             return { name: String(p.name), value: String(p.value) };
                         })
                         : [],
+                    amount: Number(req.body.object.amount),
+                    accountId: fromLocation.identifier,
                     ...(typeof req.body.object.name === 'string') ? { name: <string>req.body.object.name } : undefined,
-                    ...(fromLocation !== undefined) ? { fromLocation } : {}
-                    // ...(toLocation !== undefined) ? { toLocation } : {}
+                    ...(typeof req.body.object.description === 'string') ? { description: <string>req.body.object.description } : undefined
                 },
-                agent: { id: req.user.sub },
-                purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
+                purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id },
+                paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.PaymentCard
             })({
                 action: actionRepo,
-                project: projectRepo,
                 transaction: transactionRepo
             });
 
@@ -277,14 +272,13 @@ paymentCardPaymentRouter.put(
     },
     async (req, res, next) => {
         try {
-            await cinerino.service.payment.paymentCard.voidTransaction({
-                project: req.project,
-                id: req.params.actionId,
+            await cinerino.service.payment.chevre.voidPayment({
+                project: { id: req.project.id, typeOf: req.project.typeOf },
                 agent: { id: req.user.sub },
+                id: req.params.actionId,
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                project: new cinerino.repository.Project(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
