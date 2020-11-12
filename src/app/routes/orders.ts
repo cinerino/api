@@ -673,11 +673,12 @@ ordersRouter.post(
                 throw new cinerino.factory.errors.NotFound('Order');
             }
 
-            if (USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER) {
-                res.json(orders);
-            } else {
-                res.json(orders[0]);
-            }
+            res.json(orders);
+            // if (USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER) {
+            //     res.json(orders);
+            // } else {
+            //     res.json(orders[0]);
+            // }
         } catch (error) {
             next(error);
         }

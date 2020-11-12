@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - MovieTicket系統決済の場合、決済承認前に注文の確認番号を発行するように調整
 - アクション検索条件拡張
 - ペイメントカード決済処理をChevre決済取引に統合
+- 確認番号での注文照会レスポンスをArrayに変更
 
 ### Deprecated
 
