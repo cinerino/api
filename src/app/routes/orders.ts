@@ -510,15 +510,15 @@ ordersRouter.post(
         body('theaterCode')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required'),
+            .withMessage(() => 'theaterCode required'),
         body('confirmationNumber')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required'),
+            .withMessage(() => 'confirmationNumber required'),
         body('telephone')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
+            .withMessage(() => 'telephone required')
     ],
     validator,
     async (req, res, next) => {
@@ -526,14 +526,12 @@ ordersRouter.post(
             const phoneUtil = PhoneNumberUtil.getInstance();
             const phoneNumber = phoneUtil.parse(<string>req.body.telephone, 'JP');
             if (!phoneUtil.isValidNumber(phoneNumber)) {
-                next(new cinerino.factory.errors.Argument('telephone', 'Invalid phone number format'));
-
-                return;
+                throw new cinerino.factory.errors.Argument('telephone', 'Invalid phone number format');
             }
 
             const key = {
                 theaterCode: <string>req.body.theaterCode,
-                reservationNumber: Number(<string>req.body.confirmationNumber),
+                reservationNumber: <string>req.body.confirmationNumber,
                 telephone: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
             };
 
@@ -541,31 +539,27 @@ ordersRouter.post(
 
             // 劇場枝番号、予約番号、個人情報完全一致で検索する
             const orders = await orderRepo.search({
-                limit: 1,
+                limit: 100,
                 sort: { orderDate: cinerino.factory.sortType.Descending },
+                project: { id: { $eq: req.project.id } },
                 customer: { telephone: `^${escapeRegExp(key.telephone)}$` },
                 acceptedOffers: {
                     itemOffered: {
-                        reservationFor: { superEvent: { location: { branchCodes: [key.theaterCode] } } },
-                        reservationNumbers: [key.reservationNumber.toString()]
+                        reservationFor: { superEvent: { location: { branchCodes: [String(key.theaterCode)] } } },
+                        reservationNumbers: [String(key.reservationNumber)]
                     }
                 }
             });
 
-            if (orders.length <= 1) {
-                const order = orders.shift();
-                if (order === undefined) {
-                    // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
-                    throw new cinerino.factory.errors.NotFound('Order');
-                }
+            if (orders.length < 1) {
+                // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
+                throw new cinerino.factory.errors.NotFound('Order');
+            }
 
-                res.json(order);
+            if (USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER) {
+                res.json(orders);
             } else {
-                if (USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER) {
-                    res.json(orders);
-                } else {
-                    res.json(orders[0]);
-                }
+                res.json(orders[0]);
             }
         } catch (error) {
             next(error);
@@ -630,18 +624,10 @@ ordersRouter.post(
                     .isString()
             ]
         ])
-        // body('customer')
-        //     .not()
-        //     .isEmpty()
-        //     .withMessage((_, __) => 'required')
     ],
     validator,
     async (req, res, next) => {
         try {
-            // const customer = req.body.customer;
-            // if (customer.email !== undefined && customer.telephone !== undefined) {
-            //     throw new cinerino.factory.errors.Argument('customer');
-            // }
             const email = req.body.customer?.email;
             const telephone = req.body.customer?.telephone;
             const orderNumber = req.body.orderNumber;
@@ -682,20 +668,15 @@ ordersRouter.post(
                 orderDateThrough: orderDateThrough
             });
 
-            if (orders.length <= 1) {
-                const order = orders.shift();
-                if (order === undefined) {
-                    // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
-                    throw new cinerino.factory.errors.NotFound('Order');
-                }
+            if (orders.length < 1) {
+                // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
+                throw new cinerino.factory.errors.NotFound('Order');
+            }
 
-                res.json(order);
+            if (USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER) {
+                res.json(orders);
             } else {
-                if (USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER) {
-                    res.json(orders);
-                } else {
-                    res.json(orders[0]);
-                }
+                res.json(orders[0]);
             }
         } catch (error) {
             next(error);
