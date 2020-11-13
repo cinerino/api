@@ -46,7 +46,7 @@ paymentCardPaymentRouter.post('/check', permitScopes_1.default(['transactions'])
         const searchPaymentCardResult = yield serviceOutputService.search({
             limit: 1,
             page: 1,
-            project: { typeOf: 'Project', id: req.project.id },
+            project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: { $eq: req.body.object.typeOf },
             identifier: { $eq: req.body.object.identifier },
             accessCode: { $eq: req.body.object.accessCode }
@@ -134,7 +134,7 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
                 const searchPaymentCardResult = yield serviceOutputService.search({
                     limit: 1,
                     page: 1,
-                    project: { typeOf: 'Project', id: req.project.id },
+                    project: { typeOf: req.project.typeOf, id: req.project.id },
                     typeOf: { $eq: fromLocation === null || fromLocation === void 0 ? void 0 : fromLocation.typeOf },
                     identifier: { $eq: fromLocation === null || fromLocation === void 0 ? void 0 : fromLocation.identifier },
                     accessCode: { $eq: accessCode }

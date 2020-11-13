@@ -188,7 +188,7 @@ async function validateFromLocation(req: Request): Promise<cinerino.factory.tran
             const searchPaymentCardResult = await serviceOutputService.search({
                 limit: 1,
                 page: 1,
-                project: { typeOf: 'Project', id: req.project.id },
+                project: { typeOf: req.project.typeOf, id: req.project.id },
                 typeOf: { $eq: fromLocation?.typeOf },
                 identifier: { $eq: fromLocation?.identifier },
                 accessCode: { $eq: accessCode }
