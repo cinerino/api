@@ -143,7 +143,7 @@ accountPaymentRouter.post<ParamsDictionary>(
                         : undefined
                 },
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id },
-                paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.Account
+                paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.PaymentCard
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
