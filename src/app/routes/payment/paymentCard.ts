@@ -47,7 +47,7 @@ paymentCardPaymentRouter.post(
             const searchPaymentCardResult = await serviceOutputService.search({
                 limit: 1,
                 page: 1,
-                project: { typeOf: 'Project', id: req.project.id },
+                project: { typeOf: req.project.typeOf, id: req.project.id },
                 typeOf: { $eq: req.body.object.typeOf },
                 identifier: { $eq: req.body.object.identifier },
                 accessCode: { $eq: req.body.object.accessCode }
@@ -148,7 +148,7 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
                     const searchPaymentCardResult = await serviceOutputService.search({
                         limit: 1,
                         page: 1,
-                        project: { typeOf: 'Project', id: req.project.id },
+                        project: { typeOf: req.project.typeOf, id: req.project.id },
                         typeOf: { $eq: fromLocation?.typeOf },
                         identifier: { $eq: fromLocation?.identifier },
                         accessCode: { $eq: accessCode }

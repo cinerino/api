@@ -130,7 +130,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
                 ? { description: req.body.object.description }
                 : undefined),
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id },
-            paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.Account
+            paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.PaymentCard
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
