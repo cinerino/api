@@ -31,9 +31,6 @@ accountPaymentRouter.post<ParamsDictionary>(
     permitScopes(['transactions']),
     rateLimit,
     ...[
-        body('object')
-            .not()
-            .isEmpty(),
         body('object.paymentMethod')
             .not()
             .isEmpty()
@@ -42,7 +39,7 @@ accountPaymentRouter.post<ParamsDictionary>(
         body('object.amount')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
+            .withMessage(() => 'required')
             .isInt(),
         body('object.additionalProperty')
             .optional()
@@ -92,9 +89,6 @@ accountPaymentRouter.post<ParamsDictionary>(
                     issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
                 })({ action: new cinerino.repository.Action(mongoose.connection) });
                 const account = <cinerino.factory.ownershipInfo.IAccount>accountOwnershipInfo.typeOfGood;
-                // if (account.accountType !== 'Coin') {
-                //     throw new cinerino.factory.errors.Argument('fromAccount', 'Invalid token');
-                // }
                 fromAccount = account;
             } else {
                 // 口座情報がトークンでない、かつ、APIユーザーが管理者でない場合、許可されるリクエストかどうか確認
@@ -112,7 +106,6 @@ accountPaymentRouter.post<ParamsDictionary>(
                             ownedThrough: new Date(),
                             typeOfGood: {
                                 typeOf: paymentMethodType,
-                                // accountType: fromAccount.accountType,
                                 accountNumber: fromAccount.accountNumber
                             }
                         });

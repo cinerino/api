@@ -75,14 +75,33 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
     '/authorize',
     permitScopes(['transactions']),
     rateLimit,
+    // 互換性維持のため
+    (req, _, next) => {
+        if (req.body.object === undefined || req.body.object === null) {
+            req.body.object = {};
+        }
+        if (typeof req.body.object.notes === 'string') {
+            req.body.object.description = req.body.object.notes;
+        }
+        if (typeof req.body.object?.fromAccount?.accountNumber === 'string') {
+            if (req.body.object.fromLocation === undefined || req.body.object.fromLocation === null) {
+                req.body.object.fromLocation = {};
+            }
+            req.body.object.fromLocation.identifier = req.body.object.fromAccount.accountNumber;
+        }
+
+        next();
+    },
     ...[
-        body('object')
+        body('object.paymentMethod')
             .not()
-            .isEmpty(),
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isString(),
         body('object.amount')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required')
+            .withMessage(() => 'required')
             .isInt(),
         body('object.additionalProperty')
             .optional()
@@ -119,119 +138,94 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
-            let fromLocation: cinerino.factory.action.authorize.paymentMethod.any.IFromLocation | undefined
-                = req.body.object.fromLocation;
+            let paymentCard: cinerino.factory.action.authorize.paymentMethod.any.IPaymentCard | undefined;
+
+            const paymentMethodType: string = req.body.object?.paymentMethod;
 
             // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
-            if (typeof fromLocation === 'string') {
+            if (typeof req.body.object?.fromLocation === 'string') {
                 type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
                 const accountOwnershipInfo = await cinerino.service.code.verifyToken<IPayload>({
                     project: req.project,
                     agent: req.agent,
-                    token: fromLocation,
+                    token: req.body.object.fromLocation,
                     secret: <string>process.env.TOKEN_SECRET,
                     issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
                 })({ action: new cinerino.repository.Action(mongoose.connection) });
-                const paymentCard = <cinerino.factory.ownershipInfo.IServiceOutput>accountOwnershipInfo.typeOfGood;
-                fromLocation = {
-                    typeOf: paymentCard.typeOf,
-                    identifier: <string>paymentCard.identifier
+                const typeOfGood = <cinerino.factory.ownershipInfo.IServiceOutput>accountOwnershipInfo.typeOfGood;
+                paymentCard = {
+                    typeOf: typeOfGood.typeOf,
+                    identifier: <string>typeOfGood.identifier
                 };
             } else {
-                const accessCode = fromLocation?.accessCode;
-                if (typeof accessCode === 'string') {
-                    // アクセスコード情報があれば、認証
-                    const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
-                        endpoint: cinerino.credentials.chevre.endpoint,
-                        auth: chevreAuthClient
-                    });
-                    const searchPaymentCardResult = await serviceOutputService.search({
-                        limit: 1,
-                        page: 1,
-                        project: { typeOf: req.project.typeOf, id: req.project.id },
-                        typeOf: { $eq: fromLocation?.typeOf },
-                        identifier: { $eq: fromLocation?.identifier },
-                        accessCode: { $eq: accessCode }
-                    });
-                    if (searchPaymentCardResult.data.length === 0) {
-                        throw new cinerino.factory.errors.NotFound('PaymentCard');
+                const accessCode = req.body.object?.fromLocation?.accessCode;
+                const accountIdentifier = req.body.object?.fromLocation?.identifier;
+
+                if (typeof accountIdentifier === 'string') {
+                    if (typeof accessCode === 'string') {
+                        // アクセスコード情報があれば、認証
+                        const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
+                            endpoint: cinerino.credentials.chevre.endpoint,
+                            auth: chevreAuthClient
+                        });
+                        const searchPaymentCardResult = await serviceOutputService.search({
+                            limit: 1,
+                            page: 1,
+                            project: { typeOf: req.project.typeOf, id: req.project.id },
+                            typeOf: { $eq: paymentMethodType },
+                            identifier: { $eq: accountIdentifier },
+                            accessCode: { $eq: accessCode }
+                        });
+                        if (searchPaymentCardResult.data.length === 0) {
+                            throw new cinerino.factory.errors.NotFound('PaymentCard');
+                        }
+                        const paymetCard = searchPaymentCardResult.data.shift();
+                        paymentCard = {
+                            typeOf: paymetCard.typeOf,
+                            identifier: paymetCard.identifier
+                        };
+                    } else {
+                        // アクセスコード情報なし、かつ、会員の場合、所有権を確認
+                        if (typeof req.user.username === 'string') {
+                            // 口座に所有権があるかどうか確認
+                            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+                            const count = await ownershipInfoRepo.count({
+                                limit: 1,
+                                ownedBy: { id: req.user.sub },
+                                ownedFrom: new Date(),
+                                ownedThrough: new Date(),
+                                typeOfGood: {
+                                    typeOf: paymentMethodType,
+                                    accountNumber: accountIdentifier
+                                }
+                            });
+                            if (count === 0) {
+                                throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
+                            }
+
+                            paymentCard = { typeOf: paymentMethodType, identifier: accountIdentifier };
+                        }
                     }
-                    const paymetCard = searchPaymentCardResult.data.shift();
-                    fromLocation = {
-                        typeOf: paymetCard.typeOf,
-                        identifier: paymetCard.identifier
-                    };
-                } else {
-                    fromLocation = undefined;
-                    // アクセスコード情報なし、かつ、会員の場合、所有権を確認
-                    // 口座に所有権があるかどうか確認
-                    // const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-                    // const count = await ownershipInfoRepo.count<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
-                    //     limit: 1,
-                    //     ownedBy: { id: req.user.sub },
-                    //     ownedFrom: new Date(),
-                    //     ownedThrough: new Date(),
-                    //     typeOfGood: {
-                    //         typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
-                    //         accountType: fromLocation.accountType,
-                    //         accountNumber: fromLocation.accountNumber
-                    //     }
-                    // });
-                    // if (count === 0) {
-                    //     throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
-                    // }
                 }
             }
 
-            if (fromLocation === undefined) {
-                // 入金処理は禁止
+            if (paymentCard === undefined) {
                 throw new cinerino.factory.errors.ArgumentNull('From Location');
             }
-
-            // 注文取引、かつ、toAccount未指定の場合、販売者の口座を検索して、toAccountにセット
-            // if (toLocation === undefined) {
-            //     const transaction = await transactionRepo.findById({
-            //         typeOf: req.body.purpose.typeOf,
-            //         id: <string>req.body.purpose.id
-            //     });
-
-            //     if (transaction.typeOf === cinerino.factory.transactionType.PlaceOrder) {
-            //         const seller = await sellerRepo.findById({
-            //             id: transaction.seller.id
-            //         });
-
-            //         if (seller.paymentAccepted === undefined) {
-            //             throw new cinerino.factory.errors.Argument('object', 'Account payment not accepted');
-            //         }
-            //         const accountPaymentsAccepted =
-            //             <cinerino.factory.seller.IPaymentAccepted<cinerino.factory.paymentMethodType.PaymentCard>[]>
-            //             seller.paymentAccepted.filter((a) => a.paymentMethodType === cinerino.factory.paymentMethodType.PaymentCard);
-            //         const paymentAccepted = accountPaymentsAccepted.find((a) => a.accountType === accountType);
-            //         // tslint:disable-next-line:no-single-line-block-comment
-            //         /* istanbul ignore if */
-            //         if (paymentAccepted === undefined) {
-            //             throw new cinerino.factory.errors.Argument('object', `${accountType} payment not accepted`);
-            //         }
-            //         toLocation = {
-            //             accountNumber: paymentAccepted.accountNumber,
-            //             accountType: paymentAccepted.accountType
-            //         };
-            //     }
-            // }
 
             const action = await cinerino.service.payment.chevre.authorize({
                 project: req.project,
                 agent: { id: req.user.sub },
                 object: {
                     typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment,
-                    paymentMethod: req.body.object?.paymentMethod,
+                    paymentMethod: paymentMethodType,
                     additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                         ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
                             return { name: String(p.name), value: String(p.value) };
                         })
                         : [],
                     amount: Number(req.body.object.amount),
-                    accountId: fromLocation.identifier,
+                    accountId: paymentCard.identifier,
                     ...(typeof req.body.object.name === 'string') ? { name: <string>req.body.object.name } : undefined,
                     ...(typeof req.body.object.description === 'string') ? { description: <string>req.body.object.description } : undefined
                 },

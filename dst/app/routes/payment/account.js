@@ -32,9 +32,6 @@ const accountPaymentRouter = express_1.Router();
  */
 // tslint:disable-next-line:use-default-type-parameter
 accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions']), rateLimit_1.default, ...[
-    express_validator_1.body('object')
-        .not()
-        .isEmpty(),
     express_validator_1.body('object.paymentMethod')
         .not()
         .isEmpty()
@@ -43,7 +40,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
     express_validator_1.body('object.amount')
         .not()
         .isEmpty()
-        .withMessage((_, __) => 'required')
+        .withMessage(() => 'required')
         .isInt(),
     express_validator_1.body('object.additionalProperty')
         .optional()
@@ -87,9 +84,6 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
                 issuer: process.env.RESOURCE_SERVER_IDENTIFIER
             })({ action: new cinerino.repository.Action(mongoose.connection) });
             const account = accountOwnershipInfo.typeOfGood;
-            // if (account.accountType !== 'Coin') {
-            //     throw new cinerino.factory.errors.Argument('fromAccount', 'Invalid token');
-            // }
             fromAccount = account;
         }
         else {
@@ -109,7 +103,6 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
                         ownedThrough: new Date(),
                         typeOfGood: {
                             typeOf: paymentMethodType,
-                            // accountType: fromAccount.accountType,
                             accountNumber: fromAccount.accountNumber
                         }
                     });
