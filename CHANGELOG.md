@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - Account決済ルーターをPaymentCard決済ルーターに統合
+- プロダクトオファー承認時のアクセスコード指定を4桁の数字で固定
 
 ### Deprecated
 
