@@ -56,6 +56,18 @@ ownershipInfosRouter.get(
     validator,
     async (req, res, next) => {
         try {
+            const productService = new cinerino.chevre.service.Product({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const searchPaymentCardProductsResult = await productService.search({
+                limit: 100,
+                project: { id: { $eq: req.project.id } },
+                typeOf: { $eq: cinerino.factory.chevre.product.ProductType.PaymentCard }
+            });
+            const paymentCardProducts = searchPaymentCardProductsResult.data;
+            const paymentCardOutputTypes = [...new Set(paymentCardProducts.map((p) => String(p.serviceOutput?.typeOf)))];
+
             let ownershipInfos: cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGoodWithDetail>[]
                 | cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>[];
             const searchConditions: cinerino.factory.ownershipInfo.ISearchConditions = {
@@ -70,8 +82,8 @@ ownershipInfosRouter.get(
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
             const typeOfGood = <cinerino.factory.ownershipInfo.ITypeOfGoodSearchConditions>req.query.typeOfGood;
-            switch (typeOfGood.typeOf) {
-                case cinerino.factory.chevre.paymentMethodType.Account:
+            switch (true) {
+                case paymentCardOutputTypes.includes(String(typeOfGood.typeOf)):
                     ownershipInfos = await cinerino.service.account.search({
                         project: req.project,
                         conditions: searchConditions
@@ -82,7 +94,7 @@ ownershipInfosRouter.get(
 
                     break;
 
-                case cinerino.factory.chevre.reservationType.EventReservation:
+                case cinerino.factory.chevre.reservationType.EventReservation === typeOfGood.typeOf:
                     ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(<any>{
                         ...searchConditions,
                         project: { typeOf: req.project.typeOf, id: req.project.id }

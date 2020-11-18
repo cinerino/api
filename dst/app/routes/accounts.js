@@ -159,21 +159,31 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['accounts.t
         .isEmpty()
         .withMessage(() => 'required')
 ], validator_1.default, depositAccountRateLimiet, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     try {
+        // ひとつ目のペイメントカードプロダクトを検索
+        const productService = new cinerino.chevre.service.Product({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const searchProductsResult = yield productService.search({
+            limit: 1,
+            project: { id: { $eq: req.project.id } },
+            typeOf: { $eq: cinerino.factory.chevre.product.ProductType.PaymentCard }
+        });
+        const product = searchProductsResult.data.shift();
+        if (product === undefined) {
+            throw new cinerino.factory.errors.NotFound('Product');
+        }
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const fromLocation = Object.assign(Object.assign({ typeOf: cinerino.factory.personType.Person, name: (req.user.username !== undefined) ? req.user.username : req.user.sub }, req.body.agent), { id: req.user.sub });
         const toLocation = {
-            typeOf: cinerino.factory.chevre.paymentMethodType.Account,
-            // accountType: (typeof req.body.object?.toLocation?.accountType === 'string')
-            //     ? req.body.object?.toLocation?.accountType
-            //     : 'Point',
-            // accountNumber: req.body.object?.toLocation?.accountNumber
-            identifier: (_b = (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.toLocation) === null || _b === void 0 ? void 0 : _b.accountNumber
+            typeOf: String((_a = product.serviceOutput) === null || _a === void 0 ? void 0 : _a.typeOf),
+            identifier: (_c = (_b = req.body.object) === null || _b === void 0 ? void 0 : _b.toLocation) === null || _c === void 0 ? void 0 : _c.accountNumber
         };
         const recipient = Object.assign({ typeOf: cinerino.factory.personType.Person }, req.body.recipient);
-        const amount = Number((_c = req.body.object) === null || _c === void 0 ? void 0 : _c.amount);
-        const description = (typeof ((_d = req.body.object) === null || _d === void 0 ? void 0 : _d.description) === 'string') ? req.body.object.description : '入金';
+        const amount = Number((_d = req.body.object) === null || _d === void 0 ? void 0 : _d.amount);
+        const description = (typeof ((_e = req.body.object) === null || _e === void 0 ? void 0 : _e.description) === 'string') ? req.body.object.description : '入金';
         yield deposit({
             project: req.project,
             agent: fromLocation,

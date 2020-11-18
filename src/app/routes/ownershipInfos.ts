@@ -52,24 +52,6 @@ ownershipInfosRouter.get(
             };
 
             switch (typeOfGood.typeOf) {
-                // case cinerino.factory.ownershipInfo.AccountGoodType.Account:
-                //     ownershipInfos = await cinerino.service.account.search({
-                //         project: req.project,
-                //         conditions: searchConditions
-                //     })({
-                //         ownershipInfo: ownershipInfoRepo,
-                //         project: projectRepo
-                //     });
-
-                //     break;
-
-                // case cinerino.factory.chevre.reservationType.EventReservation:
-                //     ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(searchConditions)({
-                //         ownershipInfo: ownershipInfoRepo,
-                //         project: projectRepo
-                //     });
-                //     break;
-
                 default:
                     ownershipInfos = await ownershipInfoRepo.search(searchConditions);
             }

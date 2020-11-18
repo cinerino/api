@@ -20,6 +20,13 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const peopleRouter = express_1.Router();
 /**
  * 会員検索
@@ -160,6 +167,17 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['people.*', 'peo
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const productService = new cinerino.chevre.service.Product({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const searchPaymentCardProductsResult = yield productService.search({
+            limit: 100,
+            project: { id: { $eq: req.project.id } },
+            typeOf: { $eq: cinerino.factory.chevre.product.ProductType.PaymentCard }
+        });
+        const paymentCardProducts = searchPaymentCardProductsResult.data;
+        const paymentCardOutputTypes = [...new Set(paymentCardProducts.map((p) => { var _a; return String((_a = p.serviceOutput) === null || _a === void 0 ? void 0 : _a.typeOf); }))];
         let ownershipInfos;
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
@@ -167,8 +185,8 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['people.*', 'peo
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const typeOfGood = req.query.typeOfGood;
-        switch (typeOfGood.typeOf) {
-            case cinerino.factory.chevre.paymentMethodType.Account:
+        switch (true) {
+            case paymentCardOutputTypes.includes(String(typeOfGood.typeOf)):
                 ownershipInfos = yield cinerino.service.account.search({
                     project: req.project,
                     conditions: searchConditions
@@ -177,7 +195,7 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['people.*', 'peo
                     project: projectRepo
                 });
                 break;
-            case cinerino.factory.chevre.reservationType.EventReservation:
+            case cinerino.factory.chevre.reservationType.EventReservation === typeOfGood.typeOf:
                 ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(Object.assign(Object.assign({}, searchConditions), { project: { typeOf: req.project.typeOf, id: req.project.id } }))({
                     ownershipInfo: ownershipInfoRepo,
                     project: projectRepo
