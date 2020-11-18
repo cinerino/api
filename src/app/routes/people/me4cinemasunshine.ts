@@ -5,6 +5,7 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
+import { body } from 'express-validator';
 import { ACCEPTED } from 'http-status';
 import * as mongoose from 'mongoose';
 
@@ -13,6 +14,11 @@ import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
 const DEFAULT_MEMBERSHIP_SERVICE_ID = process.env.DEFAULT_MEMBERSHIP_SERVICE_ID;
+
+const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
+    ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
+    // tslint:disable-next-line:no-magic-numbers
+    : 256;
 
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
@@ -31,6 +37,27 @@ me4cinemasunshineRouter.put(
     '/ownershipInfos/programMembership/register',
     permitScopes(['people.ownershipInfos', 'people.me.*']),
     rateLimit,
+    ...[
+        body('agent.additionalProperty')
+            .optional()
+            .isArray({ max: 10 }),
+        body('agent.additionalProperty.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        body('agent.additionalProperty.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        body('sellerId')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+    ],
     validator,
     async (req, res, next) => {
         try {
@@ -38,10 +65,26 @@ me4cinemasunshineRouter.put(
                 throw new cinerino.factory.errors.ServiceUnavailable('DEFAULT_MEMBERSHIP_SERVICE_ID undefined');
             }
             const productId = DEFAULT_MEMBERSHIP_SERVICE_ID;
+            const sellerId = String(req.body.sellerId);
 
             const productService = new cinerino.chevre.service.Product({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
+            });
+            const sellerService = new cinerino.chevre.service.Seller({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+
+            const seller = await sellerService.findById({
+                id: sellerId,
+                // 管理者以外にセキュアな情報を露出しないように
+                ...{
+                    $projection: {
+                        'paymentAccepted.gmoInfo.shopPass': 0,
+                        'paymentAccepted.movieTicketInfo': 0
+                    }
+                }
             });
 
             const membershipService = <cinerino.factory.chevre.product.IProduct>await productService.findById({
@@ -56,7 +99,7 @@ me4cinemasunshineRouter.put(
             const offers = await cinerino.service.offer.product.search({
                 project: { id: req.project.id },
                 itemOffered: { id: productId },
-                seller: { id: req.body.sellerId },
+                seller: { id: String(seller.id) },
                 availableAt: { id: req.user.client_id }
             })({ project: projectRepo });
 
@@ -73,6 +116,11 @@ me4cinemasunshineRouter.put(
                     ...req.agent,
                     additionalProperty: [
                         ...(Array.isArray(req.agent.additionalProperty)) ? req.agent.additionalProperty : [],
+                        ...(Array.isArray(req.body.agent?.additionalProperty))
+                            ? (<any[]>req.body.agent.additionalProperty).map((p: any) => {
+                                return { name: String(p.name), value: String(p.value) };
+                            })
+                            : [],
                         ...[{ name: 'firstMembership', value: '1' }]
                     ]
                 },
@@ -81,8 +129,8 @@ me4cinemasunshineRouter.put(
                     id: String(acceptedOffer.id),
                     itemOffered: { id: productId },
                     seller: {
-                        typeOf: req.body.sellerType,
-                        id: req.body.sellerId
+                        typeOf: seller.typeOf,
+                        id: String(seller.id)
                     }
                 },
                 location: { id: req.user.client_id }
