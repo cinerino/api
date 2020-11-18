@@ -5,7 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
-import { body } from 'express-validator';
+import { body, query } from 'express-validator';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as mongoose from 'mongoose';
 
@@ -101,9 +101,10 @@ accountsRouter.post<ParamsDictionary>(
         }
     }
 );
+
 /**
  * 口座解約
- * 口座の状態を変更するだけで、所有口座リストから削除はしない
+ * 口座の状態を変更するだけで、所有権は変更しない
  */
 accountsRouter.put(
     '/:accountType/:accountNumber/close',
@@ -117,10 +118,7 @@ accountsRouter.put(
 
             await cinerino.service.account.close({
                 project: req.project,
-                typeOf: cinerino.factory.chevre.paymentMethodType.Account,
-                ownedBy: {
-                    id: req.user.sub
-                },
+                ownedBy: { id: req.user.sub },
                 accountNumber: req.params.accountNumber
             })({
                 ownershipInfo: ownershipInfoRepo,
@@ -134,6 +132,7 @@ accountsRouter.put(
         }
     }
 );
+
 /**
  * 口座取引履歴検索
  */
@@ -141,6 +140,13 @@ accountsRouter.get(
     '/actions/moneyTransfer',
     permitScopes(['people.me.*']),
     rateLimit,
+    ...[
+        query('accountNumber')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isString()
+    ],
     validator,
     async (req, res, next) => {
         try {
@@ -149,11 +155,9 @@ accountsRouter.get(
 
             let actions = await cinerino.service.account.searchMoneyTransferActions({
                 project: req.project,
-                ownedBy: {
-                    id: req.user.sub
-                },
+                ownedBy: { id: req.user.sub },
                 conditions: req.query,
-                typeOfGood: { typeOf: cinerino.factory.chevre.paymentMethodType.Account }
+                typeOfGood: { accountNumber: String(req.query.accountNumber) }
             })({
                 ownershipInfo: ownershipInfoRepo,
                 project: projectRepo
@@ -188,4 +192,5 @@ accountsRouter.get(
         }
     }
 );
+
 export default accountsRouter;

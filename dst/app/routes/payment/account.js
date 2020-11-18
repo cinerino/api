@@ -103,7 +103,7 @@ accountPaymentRouter.post('/authorize', permitScopes_1.default(['transactions'])
                         ownedThrough: new Date(),
                         typeOfGood: {
                             typeOf: paymentMethodType,
-                            accountNumber: fromAccount.accountNumber
+                            accountNumber: { $eq: fromAccount.accountNumber }
                         }
                     });
                     if (count === 0) {

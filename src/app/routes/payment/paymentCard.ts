@@ -196,7 +196,7 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
                                 ownedThrough: new Date(),
                                 typeOfGood: {
                                     typeOf: paymentMethodType,
-                                    accountNumber: accountIdentifier
+                                    accountNumber: { $eq: accountIdentifier }
                                 }
                             });
                             if (count === 0) {

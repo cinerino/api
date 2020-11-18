@@ -98,7 +98,7 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
 }));
 /**
  * 口座解約
- * 口座の状態を変更するだけで、所有口座リストから削除はしない
+ * 口座の状態を変更するだけで、所有権は変更しない
  */
 accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(['people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -106,10 +106,7 @@ accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         yield cinerino.service.account.close({
             project: req.project,
-            typeOf: cinerino.factory.chevre.paymentMethodType.Account,
-            ownedBy: {
-                id: req.user.sub
-            },
+            ownedBy: { id: req.user.sub },
             accountNumber: req.params.accountNumber
         })({
             ownershipInfo: ownershipInfoRepo,
@@ -125,17 +122,21 @@ accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(
 /**
  * 口座取引履歴検索
  */
-accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default(['people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default(['people.me.*']), rateLimit_1.default, ...[
+    express_validator_1.query('accountNumber')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+        .isString()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         let actions = yield cinerino.service.account.searchMoneyTransferActions({
             project: req.project,
-            ownedBy: {
-                id: req.user.sub
-            },
+            ownedBy: { id: req.user.sub },
             conditions: req.query,
-            typeOfGood: { typeOf: cinerino.factory.chevre.paymentMethodType.Account }
+            typeOfGood: { accountNumber: String(req.query.accountNumber) }
         })({
             ownershipInfo: ownershipInfoRepo,
             project: projectRepo

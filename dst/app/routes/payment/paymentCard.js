@@ -182,7 +182,7 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
                             ownedThrough: new Date(),
                             typeOfGood: {
                                 typeOf: paymentMethodType,
-                                accountNumber: accountIdentifier
+                                accountNumber: { $eq: accountIdentifier }
                             }
                         });
                         if (count === 0) {
