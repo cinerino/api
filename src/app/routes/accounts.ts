@@ -89,7 +89,7 @@ const accountsRouter = Router();
 // );
 
 // tslint:disable-next-line:no-magic-numbers
-const UNIT_IN_SECONDS = 1;
+const UNIT_IN_SECONDS = 5;
 
 // tslint:disable-next-line:no-magic-numbers
 const THRESHOLD = 1;

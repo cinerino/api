@@ -92,7 +92,7 @@ const accountsRouter = express_1.Router();
 //     }
 // );
 // tslint:disable-next-line:no-magic-numbers
-const UNIT_IN_SECONDS = 1;
+const UNIT_IN_SECONDS = 5;
 // tslint:disable-next-line:no-magic-numbers
 const THRESHOLD = 1;
 const redisClient = new ioredis({
