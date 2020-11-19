@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - ペイメントカードに対する所有権検索時に、ペイメントカードタイプを動的に検索するように調整
 - sskts専用メンバーシップ登録時に、agent.additionalPropertyを指定できるように調整
 - ssktsポイント入金のレート制限を調整
+- 返品ポリシーのmerchantReturnDaysを注文返品取引に適用
 
 ### Deprecated
 
