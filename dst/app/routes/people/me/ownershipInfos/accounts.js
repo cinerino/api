@@ -21,7 +21,6 @@ const permitScopes_1 = require("../../../../middlewares/permitScopes");
 const rateLimit_1 = require("../../../../middlewares/rateLimit");
 const validator_1 = require("../../../../middlewares/validator");
 const redis = require("../../../../../redis");
-const USE_MONEY_TRANFER_AMOUNT_AS_NUMBER = process.env.USE_MONEY_TRANFER_AMOUNT_AS_NUMBER === '1';
 const accountsRouter = express_1.Router();
 /**
  * 口座開設
@@ -142,23 +141,24 @@ accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default(['people.me.
             project: projectRepo
         });
         // 互換性維持対応
-        if (USE_MONEY_TRANFER_AMOUNT_AS_NUMBER) {
-            actions = actions.map((a) => {
-                var _a;
-                return Object.assign(Object.assign({}, a), { amount: (typeof a.amount === 'number') ? a.amount : Number((_a = a.amount) === null || _a === void 0 ? void 0 : _a.value) });
-            });
-        }
-        else {
-            actions = actions.map((a) => {
-                return Object.assign(Object.assign({}, a), { amount: (typeof a.amount === 'number')
-                        ? {
-                            typeOf: 'MonetaryAmount',
-                            currency: 'Point',
-                            value: a.amount
-                        }
-                        : a.amount });
-            });
-        }
+        // if (USE_MONEY_TRANFER_AMOUNT_AS_NUMBER) {
+        //     actions = actions.map((a) => {
+        //         return {
+        //             ...a,
+        //             amount: (typeof a.amount === 'number') ? a.amount : Number(a.amount?.value)
+        //         };
+        //     });
+        // } else {
+        // }
+        actions = actions.map((a) => {
+            return Object.assign(Object.assign({}, a), { amount: (typeof a.amount === 'number')
+                    ? {
+                        typeOf: 'MonetaryAmount',
+                        currency: 'Point',
+                        value: a.amount
+                    }
+                    : a.amount });
+        });
         res.json(actions);
     }
     catch (error) {
