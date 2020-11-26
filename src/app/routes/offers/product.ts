@@ -24,6 +24,9 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
 
 const productOffersRouter = Router();
 
+// アクセスコートは4桁の数字で固定
+const accessCodeMustBe = /^[0-9]{4}$/;
+
 // tslint:disable-next-line:use-default-type-parameter
 productOffersRouter.post<ParamsDictionary>(
     '/authorize',
@@ -49,7 +52,15 @@ productOffersRouter.post<ParamsDictionary>(
         body('object.*.itemOffered.serviceOutput.accessCode')
             .not()
             .isEmpty()
-            .withMessage(() => 'required'),
+            .withMessage(() => 'required')
+            .isString()
+            .custom((value) => {
+                if (!accessCodeMustBe.test(value)) {
+                    throw new Error('accessCode must be 4 digits of number');
+                }
+
+                return true;
+            }),
         body('object.*.itemOffered.serviceOutput.additionalProperty')
             .optional()
             .isArray({ max: 10 }),

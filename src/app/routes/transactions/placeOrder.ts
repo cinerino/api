@@ -523,14 +523,13 @@ export async function authorizePointAward(req: Request) {
     });
 
     // 所有メンバーシップを検索
-    const programMembershipOwnershipInfos =
-        await ownershipInfoRepo.search({
-            project: { id: { $eq: req.project.id } },
-            typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
-            ownedBy: { id: req.agent.id },
-            ownedFrom: now,
-            ownedThrough: now
-        });
+    const programMembershipOwnershipInfos = await ownershipInfoRepo.search({
+        project: { id: { $eq: req.project.id } },
+        typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
+        ownedBy: { id: req.agent.id },
+        ownedFrom: now,
+        ownedThrough: now
+    });
 
     const programMemberships = programMembershipOwnershipInfos.map((o) => o.typeOfGood);
 
@@ -550,43 +549,20 @@ export async function authorizePointAward(req: Request) {
                 const membershipPointsEarnedUnitText = (<any>membershipServiceOutput).membershipPointsEarned?.unitText;
 
                 if (typeof membershipPointsEarnedValue === 'number' && typeof membershipPointsEarnedUnitText === 'string') {
-                    // 所有口座を検索
-                    // 最も古い所有口座をデフォルト口座として扱う使用なので、ソート条件はこの通り
-                    let accountOwnershipInfos = await cinerino.service.account.search({
-                        project: { typeOf: req.project.typeOf, id: req.project.id },
-                        conditions: {
-                            sort: { ownedFrom: cinerino.factory.sortType.Ascending },
-                            limit: 1,
-                            typeOfGood: {
-                                typeOf: cinerino.factory.chevre.paymentMethodType.Account,
-                                accountType: membershipPointsEarnedUnitText
-                            },
-                            ownedBy: { id: req.agent.id },
-                            ownedFrom: now,
-                            ownedThrough: now
-                        }
-                    })({
-                        ownershipInfo: ownershipInfoRepo,
-                        project: projectRepo
-                    });
-
-                    // 開設口座に絞る
-                    accountOwnershipInfos = accountOwnershipInfos.filter((o) => {
-                        return (<cinerino.factory.pecorino.account.IAccount>o.typeOfGood).status
-                            === cinerino.factory.pecorino.accountStatusType.Opened;
-                    });
-                    if (accountOwnershipInfos.length === 0) {
-                        throw new cinerino.factory.errors.NotFound('accountOwnershipInfos');
-                    }
-                    const toAccount = <cinerino.factory.pecorino.account.IAccount>accountOwnershipInfos[0].typeOfGood;
+                    const toAccount = await cinerino.service.account.findAccount({
+                        customer: { id: req.agent.id },
+                        project: { id: req.project.id },
+                        now: now,
+                        accountType: membershipPointsEarnedUnitText
+                    })({ project: projectRepo, ownershipInfo: ownershipInfoRepo });
 
                     givePointAwardParams.push({
                         object: {
                             typeOf: cinerino.factory.action.authorize.award.point.ObjectType.PointAward,
                             amount: membershipPointsEarnedValue,
                             toLocation: {
-                                typeOf: cinerino.factory.chevre.paymentMethodType.Account,
-                                accountType: membershipPointsEarnedUnitText,
+                                typeOf: toAccount.typeOf,
+                                accountType: toAccount.accountType,
                                 accountNumber: toAccount.accountNumber
                             },
                             description: (typeof notes === 'string') ? notes : String(membershipPointsEarnedName)

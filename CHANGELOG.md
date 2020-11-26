@@ -18,6 +18,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.42.0 - 2020-11-26
+
+### Changed
+
+- Account決済ルーターをPaymentCard決済ルーターに統合
+- プロダクトオファー承認時のアクセスコード指定を4桁の数字で固定
+- 所有権検索条件拡張
+- ペイメントカードに対する所有権検索時に、ペイメントカードタイプを動的に検索するように調整
+- sskts専用メンバーシップ登録時に、agent.additionalPropertyを指定できるように調整
+- ssktsポイント入金のレート制限を調整
+- 返品ポリシーのmerchantReturnDaysを注文返品取引に適用
+
 ## v5.41.0 - 2020-11-17
 
 ### Changed

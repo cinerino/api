@@ -89,7 +89,7 @@ const accountsRouter = Router();
 // );
 
 // tslint:disable-next-line:no-magic-numbers
-const UNIT_IN_SECONDS = 1;
+const UNIT_IN_SECONDS = 5;
 
 // tslint:disable-next-line:no-magic-numbers
 const THRESHOLD = 1;
@@ -169,6 +169,21 @@ accountsRouter.post(
     depositAccountRateLimiet,
     async (req, res, next) => {
         try {
+            // ひとつ目のペイメントカードプロダクトを検索
+            const productService = new cinerino.chevre.service.Product({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const searchProductsResult = await productService.search({
+                limit: 1,
+                project: { id: { $eq: req.project.id } },
+                typeOf: { $eq: cinerino.factory.chevre.product.ProductType.PaymentCard }
+            });
+            const product = searchProductsResult.data.shift();
+            if (product === undefined) {
+                throw new cinerino.factory.errors.NotFound('Product');
+            }
+
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
             const fromLocation: cinerino.chevre.factory.transaction.moneyTransfer.IFromLocation = {
@@ -179,11 +194,7 @@ accountsRouter.post(
             };
 
             const toLocation: cinerino.chevre.factory.transaction.moneyTransfer.IToLocation = {
-                typeOf: cinerino.factory.chevre.paymentMethodType.Account,
-                // accountType: (typeof req.body.object?.toLocation?.accountType === 'string')
-                //     ? req.body.object?.toLocation?.accountType
-                //     : 'Point',
-                // accountNumber: req.body.object?.toLocation?.accountNumber
+                typeOf: String(product.serviceOutput?.typeOf),
                 identifier: req.body.object?.toLocation?.accountNumber
             };
 

@@ -449,41 +449,19 @@ function authorizePointAward(req) {
                     const membershipPointsEarnedValue = (_c = membershipServiceOutput.membershipPointsEarned) === null || _c === void 0 ? void 0 : _c.value;
                     const membershipPointsEarnedUnitText = (_d = membershipServiceOutput.membershipPointsEarned) === null || _d === void 0 ? void 0 : _d.unitText;
                     if (typeof membershipPointsEarnedValue === 'number' && typeof membershipPointsEarnedUnitText === 'string') {
-                        // 所有口座を検索
-                        // 最も古い所有口座をデフォルト口座として扱う使用なので、ソート条件はこの通り
-                        let accountOwnershipInfos = yield cinerino.service.account.search({
-                            project: { typeOf: req.project.typeOf, id: req.project.id },
-                            conditions: {
-                                sort: { ownedFrom: cinerino.factory.sortType.Ascending },
-                                limit: 1,
-                                typeOfGood: {
-                                    typeOf: cinerino.factory.chevre.paymentMethodType.Account,
-                                    accountType: membershipPointsEarnedUnitText
-                                },
-                                ownedBy: { id: req.agent.id },
-                                ownedFrom: now,
-                                ownedThrough: now
-                            }
-                        })({
-                            ownershipInfo: ownershipInfoRepo,
-                            project: projectRepo
-                        });
-                        // 開設口座に絞る
-                        accountOwnershipInfos = accountOwnershipInfos.filter((o) => {
-                            return o.typeOfGood.status
-                                === cinerino.factory.pecorino.accountStatusType.Opened;
-                        });
-                        if (accountOwnershipInfos.length === 0) {
-                            throw new cinerino.factory.errors.NotFound('accountOwnershipInfos');
-                        }
-                        const toAccount = accountOwnershipInfos[0].typeOfGood;
+                        const toAccount = yield cinerino.service.account.findAccount({
+                            customer: { id: req.agent.id },
+                            project: { id: req.project.id },
+                            now: now,
+                            accountType: membershipPointsEarnedUnitText
+                        })({ project: projectRepo, ownershipInfo: ownershipInfoRepo });
                         givePointAwardParams.push({
                             object: {
                                 typeOf: cinerino.factory.action.authorize.award.point.ObjectType.PointAward,
                                 amount: membershipPointsEarnedValue,
                                 toLocation: {
-                                    typeOf: cinerino.factory.chevre.paymentMethodType.Account,
-                                    accountType: membershipPointsEarnedUnitText,
+                                    typeOf: toAccount.typeOf,
+                                    accountType: toAccount.accountType,
                                     accountNumber: toAccount.accountNumber
                                 },
                                 description: (typeof notes === 'string') ? notes : String(membershipPointsEarnedName)

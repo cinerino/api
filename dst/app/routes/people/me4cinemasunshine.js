@@ -16,12 +16,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
+const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
 const DEFAULT_MEMBERSHIP_SERVICE_ID = process.env.DEFAULT_MEMBERSHIP_SERVICE_ID;
+const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
+    ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
+    // tslint:disable-next-line:no-magic-numbers
+    : 256;
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -33,16 +38,48 @@ const me4cinemasunshineRouter = express_1.Router();
 /**
  * メンバーシップ登録
  */
-me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.default(['people.ownershipInfos', 'people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.default(['people.ownershipInfos', 'people.me.*']), rateLimit_1.default, ...[
+    express_validator_1.body('agent.additionalProperty')
+        .optional()
+        .isArray({ max: 10 }),
+    express_validator_1.body('agent.additionalProperty.*.name')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.body('agent.additionalProperty.*.value')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.body('sellerId')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         if (typeof DEFAULT_MEMBERSHIP_SERVICE_ID !== 'string') {
             throw new cinerino.factory.errors.ServiceUnavailable('DEFAULT_MEMBERSHIP_SERVICE_ID undefined');
         }
         const productId = DEFAULT_MEMBERSHIP_SERVICE_ID;
+        const sellerId = String(req.body.sellerId);
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
+        const sellerService = new cinerino.chevre.service.Seller({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const seller = yield sellerService.findById(Object.assign({ id: sellerId }, {
+            $projection: {
+                'paymentAccepted.gmoInfo.shopPass': 0,
+                'paymentAccepted.movieTicketInfo': 0
+            }
+        }));
         const membershipService = yield productService.findById({
             id: productId
         });
@@ -53,7 +90,7 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
         const offers = yield cinerino.service.offer.product.search({
             project: { id: req.project.id },
             itemOffered: { id: productId },
-            seller: { id: req.body.sellerId },
+            seller: { id: String(seller.id) },
             availableAt: { id: req.user.client_id }
         })({ project: projectRepo });
         if (offers.length === 0) {
@@ -65,6 +102,11 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
             project: { id: req.project.id },
             agent: Object.assign(Object.assign({}, req.agent), { additionalProperty: [
                     ...(Array.isArray(req.agent.additionalProperty)) ? req.agent.additionalProperty : [],
+                    ...(Array.isArray((_a = req.body.agent) === null || _a === void 0 ? void 0 : _a.additionalProperty))
+                        ? req.body.agent.additionalProperty.map((p) => {
+                            return { name: String(p.name), value: String(p.value) };
+                        })
+                        : [],
                     ...[{ name: 'firstMembership', value: '1' }]
                 ] }),
             object: {
@@ -72,8 +114,8 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
                 id: String(acceptedOffer.id),
                 itemOffered: { id: productId },
                 seller: {
-                    typeOf: req.body.sellerType,
-                    id: req.body.sellerId
+                    typeOf: seller.typeOf,
+                    id: String(seller.id)
                 }
             },
             location: { id: req.user.client_id }
