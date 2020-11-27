@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- USE_LEGACY_AUTHORIZE_ORDER設定を追加
+
 ### Changed
 
 ### Deprecated
