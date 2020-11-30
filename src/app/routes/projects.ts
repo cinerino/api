@@ -140,7 +140,6 @@ function createFromBody(params: any): cinerino.factory.project.IProject {
             },
             onOrderStatusChanged: {
             },
-            codeExpiresInSeconds: 600,
             transactionWebhookUrl: params.settings?.transactionWebhookUrl,
             useUsernameAsGMOMemberId: false,
             ...(typeof params.settings?.sendgridApiKey === 'string' && params.settings.sendgridApiKey.length > 0)
@@ -264,9 +263,6 @@ projectsRouter.patch(
                     updatedAt: new Date(),
                     ...(typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined,
                     ...(typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined,
-                    ...(typeof req.body.settings?.codeExpiresInSeconds === 'number')
-                        ? { 'settings.codeExpiresInSeconds': req.body.settings.codeExpiresInSeconds }
-                        : undefined,
                     ...(typeof req.body.settings?.transactionWebhookUrl === 'string')
                         ? { 'settings.transactionWebhookUrl': req.body.settings.transactionWebhookUrl }
                         : undefined,
@@ -276,6 +272,7 @@ projectsRouter.patch(
                     // 機能改修で不要になった属性を削除
                     $unset: {
                         'settings.chevre': 1,
+                        'settings.codeExpiresInSeconds': 1,
                         'settings.gmo': 1,
                         'settings.mvtkReserve': 1,
                         'settings.pecorino': 1,
