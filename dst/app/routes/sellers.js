@@ -43,14 +43,7 @@ sellersRouter.get('', permitScopes_1.default(['sellers.*', 'sellers.read', 'pos'
                 }) });
             req.query.location.branchCodes = undefined;
         }
-        const { data } = yield sellerService.search(Object.assign(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }), (!req.isAdmin)
-            ? {
-                $projection: {
-                    'paymentAccepted.gmoInfo.shopPass': 0,
-                    'paymentAccepted.movieTicketInfo': 0
-                }
-            }
-            : undefined));
+        const { data } = yield sellerService.search(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }));
         res.json(data.map(addLocation));
     }
     catch (error) {
@@ -66,14 +59,7 @@ sellersRouter.get('/:id', permitScopes_1.default(['sellers.*', 'sellers.read']),
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
-        const seller = yield sellerService.findById(Object.assign({ id: req.params.id }, (!req.isAdmin)
-            ? {
-                $projection: {
-                    'paymentAccepted.gmoInfo.shopPass': 0,
-                    'paymentAccepted.movieTicketInfo': 0
-                }
-            }
-            : undefined));
+        const seller = yield sellerService.findById({ id: req.params.id });
         res.json(addLocation(seller));
     }
     catch (error) {

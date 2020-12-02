@@ -48,16 +48,7 @@ sellersRouter.get(
 
             const { data } = await sellerService.search({
                 ...req.query,
-                project: { id: { $eq: req.project.id } },
-                // 管理者以外にセキュアな情報を露出しないように
-                ...(!req.isAdmin)
-                    ? {
-                        $projection: {
-                            'paymentAccepted.gmoInfo.shopPass': 0,
-                            'paymentAccepted.movieTicketInfo': 0
-                        }
-                    }
-                    : undefined
+                project: { id: { $eq: req.project.id } }
             });
 
             res.json(data.map(addLocation));
@@ -82,18 +73,7 @@ sellersRouter.get(
                 auth: chevreAuthClient
             });
 
-            const seller = await sellerService.findById({
-                id: req.params.id,
-                // 管理者以外にセキュアな情報を露出しないように
-                ...(!req.isAdmin)
-                    ? {
-                        $projection: {
-                            'paymentAccepted.gmoInfo.shopPass': 0,
-                            'paymentAccepted.movieTicketInfo': 0
-                        }
-                    }
-                    : undefined
-            });
+            const seller = await sellerService.findById({ id: req.params.id });
 
             res.json(addLocation(seller));
         } catch (error) {

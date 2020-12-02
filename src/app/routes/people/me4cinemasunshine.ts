@@ -76,16 +76,7 @@ me4cinemasunshineRouter.put(
                 auth: chevreAuthClient
             });
 
-            const seller = await sellerService.findById({
-                id: sellerId,
-                // 管理者以外にセキュアな情報を露出しないように
-                ...{
-                    $projection: {
-                        'paymentAccepted.gmoInfo.shopPass': 0,
-                        'paymentAccepted.movieTicketInfo': 0
-                    }
-                }
-            });
+            const seller = await sellerService.findById({ id: sellerId });
 
             const membershipService = <cinerino.factory.chevre.product.IProduct>await productService.findById({
                 id: productId
