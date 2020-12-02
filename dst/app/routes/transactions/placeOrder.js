@@ -52,10 +52,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
 // Cinemasunshine互換性維持のため
 (req, _, next) => {
     if (typeof req.body.sellerId === 'string') {
-        req.body.seller = {
-            typeOf: cinerino.factory.chevre.organizationType.MovieTheater,
-            id: req.body.sellerId
-        };
+        req.body.seller = { id: req.body.sellerId };
     }
     if (typeof req.body.passportToken === 'string') {
         req.body.object = {
@@ -85,10 +82,6 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         .isEmpty()
         .isString()
         .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.body('seller.typeOf')
-        .not()
-        .isEmpty()
-        .withMessage((_, __) => 'required'),
     express_validator_1.body('seller.id')
         .not()
         .isEmpty()
@@ -102,7 +95,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         ]
         : []
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     try {
         // WAITER有効設定であれば許可証をセット
         let passport;
@@ -129,14 +122,14 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         const seller = yield sellerService.findById({ id: req.body.seller.id });
         const passportValidator = createPassportValidator(seller, req.user.client_id);
         const project = yield projectRepo.findById({ id: req.project.id });
-        const useTransactionClientUser = project.settings !== undefined && project.settings.useTransactionClientUser === true;
-        const orderName = (typeof ((_a = req.body.object) === null || _a === void 0 ? void 0 : _a.name) === 'string') ? (_b = req.body.object) === null || _b === void 0 ? void 0 : _b.name : DEFAULT_ORDER_NAME;
+        const useTransactionClientUser = ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.useTransactionClientUser) === true;
+        const orderName = (typeof ((_b = req.body.object) === null || _b === void 0 ? void 0 : _b.name) === 'string') ? (_c = req.body.object) === null || _c === void 0 ? void 0 : _c.name : DEFAULT_ORDER_NAME;
         const transaction = yield cinerino.service.transaction.placeOrderInProgress.start({
             project: req.project,
             expires: expires,
             agent: Object.assign(Object.assign({}, req.agent), { identifier: [
                     ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
-                    ...(Array.isArray((_c = req.body.agent) === null || _c === void 0 ? void 0 : _c.identifier))
+                    ...(Array.isArray((_d = req.body.agent) === null || _d === void 0 ? void 0 : _d.identifier))
                         ? req.body.agent.identifier.map((p) => {
                             return { name: String(p.name), value: String(p.value) };
                         })
@@ -548,7 +541,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
 }), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
+    var _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
     try {
         const orderDate = new Date();
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
@@ -566,14 +559,14 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             }
             email.template = String(req.body.emailTemplate);
         }
-        const potentialActions = Object.assign(Object.assign({}, req.body.potentialActions), { order: Object.assign(Object.assign({}, (_d = req.body.potentialActions) === null || _d === void 0 ? void 0 : _d.order), { potentialActions: Object.assign(Object.assign({}, (_f = (_e = req.body.potentialActions) === null || _e === void 0 ? void 0 : _e.order) === null || _f === void 0 ? void 0 : _f.potentialActions), { sendOrder: Object.assign(Object.assign({}, (_j = (_h = (_g = req.body.potentialActions) === null || _g === void 0 ? void 0 : _g.order) === null || _h === void 0 ? void 0 : _h.potentialActions) === null || _j === void 0 ? void 0 : _j.sendOrder), { potentialActions: Object.assign(Object.assign({}, (_o = (_m = (_l = (_k = req.body.potentialActions) === null || _k === void 0 ? void 0 : _k.order) === null || _l === void 0 ? void 0 : _l.potentialActions) === null || _m === void 0 ? void 0 : _m.sendOrder) === null || _o === void 0 ? void 0 : _o.potentialActions), { sendEmailMessage: [
+        const potentialActions = Object.assign(Object.assign({}, req.body.potentialActions), { order: Object.assign(Object.assign({}, (_e = req.body.potentialActions) === null || _e === void 0 ? void 0 : _e.order), { potentialActions: Object.assign(Object.assign({}, (_g = (_f = req.body.potentialActions) === null || _f === void 0 ? void 0 : _f.order) === null || _g === void 0 ? void 0 : _g.potentialActions), { sendOrder: Object.assign(Object.assign({}, (_k = (_j = (_h = req.body.potentialActions) === null || _h === void 0 ? void 0 : _h.order) === null || _j === void 0 ? void 0 : _j.potentialActions) === null || _k === void 0 ? void 0 : _k.sendOrder), { potentialActions: Object.assign(Object.assign({}, (_p = (_o = (_m = (_l = req.body.potentialActions) === null || _l === void 0 ? void 0 : _l.order) === null || _m === void 0 ? void 0 : _m.potentialActions) === null || _o === void 0 ? void 0 : _o.sendOrder) === null || _p === void 0 ? void 0 : _p.potentialActions), { sendEmailMessage: [
                                 // tslint:disable-next-line:max-line-length
-                                ...(Array.isArray((_t = (_s = (_r = (_q = (_p = req.body.potentialActions) === null || _p === void 0 ? void 0 : _p.order) === null || _q === void 0 ? void 0 : _q.potentialActions) === null || _r === void 0 ? void 0 : _r.sendOrder) === null || _s === void 0 ? void 0 : _s.potentialActions) === null || _t === void 0 ? void 0 : _t.sendEmailMessage))
+                                ...(Array.isArray((_u = (_t = (_s = (_r = (_q = req.body.potentialActions) === null || _q === void 0 ? void 0 : _q.order) === null || _r === void 0 ? void 0 : _r.potentialActions) === null || _s === void 0 ? void 0 : _s.sendOrder) === null || _t === void 0 ? void 0 : _t.potentialActions) === null || _u === void 0 ? void 0 : _u.sendEmailMessage))
                                     // tslint:disable-next-line:max-line-length
-                                    ? (_y = (_x = (_w = (_v = (_u = req.body.potentialActions) === null || _u === void 0 ? void 0 : _u.order) === null || _v === void 0 ? void 0 : _v.potentialActions) === null || _w === void 0 ? void 0 : _w.sendOrder) === null || _x === void 0 ? void 0 : _x.potentialActions) === null || _y === void 0 ? void 0 : _y.sendEmailMessage : [],
+                                    ? (_z = (_y = (_x = (_w = (_v = req.body.potentialActions) === null || _v === void 0 ? void 0 : _v.order) === null || _w === void 0 ? void 0 : _w.potentialActions) === null || _x === void 0 ? void 0 : _x.sendOrder) === null || _y === void 0 ? void 0 : _y.potentialActions) === null || _z === void 0 ? void 0 : _z.sendEmailMessage : [],
                                 ...(sendEmailMessage) ? [{ object: email }] : []
                             ] }) }) }) }) });
-        const resultOrderParams = Object.assign(Object.assign({}, (_z = req.body.result) === null || _z === void 0 ? void 0 : _z.order), { confirmationNumber: undefined, orderDate: orderDate, numItems: {
+        const resultOrderParams = Object.assign(Object.assign({}, (_0 = req.body.result) === null || _0 === void 0 ? void 0 : _0.order), { confirmationNumber: undefined, orderDate: orderDate, numItems: {
                 maxValue: NUM_ORDER_ITEMS_MAX_VALUE
                 // minValue: 0
             } });

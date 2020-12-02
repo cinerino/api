@@ -693,14 +693,9 @@ if (USE_LEGACY_AUTHORIZE_ORDER) {
     ], validator_1.default, 
     // tslint:disable-next-line:max-func-body-length
     (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        var _j;
         try {
             const now = new Date();
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = yield projectRepo.findById({ id: req.project.id });
-            const expiresInSeconds = (typeof ((_j = project.settings) === null || _j === void 0 ? void 0 : _j.codeExpiresInSeconds) === 'number')
-                ? project.settings.codeExpiresInSeconds
-                : CODE_EXPIRES_IN_SECONDS_DEFAULT;
+            const expiresInSeconds = CODE_EXPIRES_IN_SECONDS_DEFAULT;
             const customer = req.body.customer;
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
@@ -828,14 +823,14 @@ ordersRouter.post('/:orderNumber/authorize', permitScopes_1.default(['orders.*',
         .isInt({ min: 0, max: CODE_EXPIRES_IN_SECONDS_MAXIMUM })
         .toInt()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _k, _l, _m, _o, _p;
+    var _j, _k, _l, _m, _o;
     try {
         const now = new Date();
-        const expiresInSeconds = (typeof ((_k = req.body.result) === null || _k === void 0 ? void 0 : _k.expiresInSeconds) === 'number')
+        const expiresInSeconds = (typeof ((_j = req.body.result) === null || _j === void 0 ? void 0 : _j.expiresInSeconds) === 'number')
             ? Number(req.body.result.expiresInSeconds)
             : CODE_EXPIRES_IN_SECONDS_DEFAULT;
-        const email = (_m = (_l = req.body.object) === null || _l === void 0 ? void 0 : _l.customer) === null || _m === void 0 ? void 0 : _m.email;
-        const telephone = (_p = (_o = req.body.object) === null || _o === void 0 ? void 0 : _o.customer) === null || _p === void 0 ? void 0 : _p.telephone;
+        const email = (_l = (_k = req.body.object) === null || _k === void 0 ? void 0 : _k.customer) === null || _l === void 0 ? void 0 : _l.email;
+        const telephone = (_o = (_m = req.body.object) === null || _m === void 0 ? void 0 : _m.customer) === null || _o === void 0 ? void 0 : _o.telephone;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const codeRepo = new cinerino.repository.Code(mongoose.connection);

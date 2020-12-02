@@ -799,12 +799,7 @@ if (USE_LEGACY_AUTHORIZE_ORDER) {
             try {
                 const now = new Date();
 
-                const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
-                const project = await projectRepo.findById({ id: req.project.id });
-                const expiresInSeconds: number = (typeof project.settings?.codeExpiresInSeconds === 'number')
-                    ? project.settings.codeExpiresInSeconds
-                    : CODE_EXPIRES_IN_SECONDS_DEFAULT;
+                const expiresInSeconds: number = CODE_EXPIRES_IN_SECONDS_DEFAULT;
 
                 const customer = req.body.customer;
 
