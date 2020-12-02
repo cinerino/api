@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文取引開始パラメータからseller.typeOfを削除
 - update @chevre/factory
 - 決済サービス検索結果からサービス認証情報を隠蔽
+- USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER設定を削除
 
 ### Deprecated
 

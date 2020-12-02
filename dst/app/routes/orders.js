@@ -32,7 +32,6 @@ const CODE_EXPIRES_IN_SECONDS_MAXIMUM = (typeof process.env.CODE_EXPIRES_IN_SECO
     ? Number(process.env.CODE_EXPIRES_IN_SECONDS_MAXIMUM)
     // tslint:disable-next-line:no-magic-numbers
     : 600;
-const USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER = process.env.USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER === '1';
 const USE_LEGACY_AUTHORIZE_ORDER = process.env.USE_LEGACY_AUTHORIZE_ORDER === '1';
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
@@ -488,12 +487,7 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders.*', 
             // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
             throw new cinerino.factory.errors.NotFound('Order');
         }
-        if (USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER) {
-            res.json(orders);
-        }
-        else {
-            res.json(orders[0]);
-        }
+        res.json(orders);
     }
     catch (error) {
         next(error);
@@ -596,11 +590,6 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['orders.*
             throw new cinerino.factory.errors.NotFound('Order');
         }
         res.json(orders);
-        // if (USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER) {
-        //     res.json(orders);
-        // } else {
-        //     res.json(orders[0]);
-        // }
     }
     catch (error) {
         next(error);
