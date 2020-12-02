@@ -37,7 +37,7 @@ productsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const searchConditions: any = {
+            const searchConditions: cinerino.factory.chevre.product.ISearchConditions = {
                 ...req.query,
                 project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
@@ -49,7 +49,18 @@ productsRouter.get(
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
-            const { data } = await productService.search(searchConditions);
+            const { data } = await productService.search({
+                ...searchConditions,
+                ...{
+                    $projection: {
+                        'availableChannel.credentials': 0,
+                        'availableChannel.serviceUrl': 0,
+                        'provider.credentials.shopPass': 0,
+                        'provider.credentials.kgygishCd': 0,
+                        'provider.credentials.stCd': 0
+                    }
+                }
+            });
 
             res.json(data);
         } catch (error) {

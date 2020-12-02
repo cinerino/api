@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - プロジェクト設定からcodeExpiresInSecondsを削除
 - 注文取引開始パラメータからseller.typeOfを削除
 - update @chevre/factory
+- 決済サービス検索結果からサービス認証情報を隠蔽
 
 ### Deprecated
 

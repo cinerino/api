@@ -43,7 +43,15 @@ productsRouter.get('', permitScopes_1.default(['products.*', 'products.read']), 
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
-        const { data } = yield productService.search(searchConditions);
+        const { data } = yield productService.search(Object.assign(Object.assign({}, searchConditions), {
+            $projection: {
+                'availableChannel.credentials': 0,
+                'availableChannel.serviceUrl': 0,
+                'provider.credentials.shopPass': 0,
+                'provider.credentials.kgygishCd': 0,
+                'provider.credentials.stCd': 0
+            }
+        }));
         res.json(data);
     }
     catch (error) {
