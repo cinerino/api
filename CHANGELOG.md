@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - update @chevre/factory
 - 決済サービス検索結果からサービス認証情報を隠蔽
 - USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER設定を削除
+- 注文に最低限の勘定科目情報を追加
 
 ### Deprecated
 
