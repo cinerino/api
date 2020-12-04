@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v5.43.0 - 2020-12-04
+
+### Added
+
 - USE_LEGACY_AUTHORIZE_ORDER設定を追加
 
 ### Changed
@@ -20,14 +34,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文に最低限の勘定科目情報を追加
 - 予約取引中止前に取引の存在確認処理を追加
 - サービス登録取引中止前に取引の存在確認処理を追加
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## v5.42.0 - 2020-11-26
 
