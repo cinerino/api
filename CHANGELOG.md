@@ -18,6 +18,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.43.0 - 2020-12-04
+
+### Added
+
+- USE_LEGACY_AUTHORIZE_ORDER設定を追加
+
+### Changed
+
+- プロジェクト設定からcodeExpiresInSecondsを削除
+- 注文取引開始パラメータからseller.typeOfを削除
+- update @chevre/factory
+- 決済サービス検索結果からサービス認証情報を隠蔽
+- USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER設定を削除
+- 注文に最低限の勘定科目情報を追加
+- 予約取引中止前に取引の存在確認処理を追加
+- サービス登録取引中止前に取引の存在確認処理を追加
+
 ## v5.42.0 - 2020-11-26
 
 ### Changed

@@ -54,10 +54,7 @@ placeOrderTransactionsRouter.post(
     // Cinemasunshine互換性維持のため
     (req, _, next) => {
         if (typeof req.body.sellerId === 'string') {
-            req.body.seller = {
-                typeOf: cinerino.factory.chevre.organizationType.MovieTheater,
-                id: req.body.sellerId
-            };
+            req.body.seller = { id: req.body.sellerId };
         }
 
         if (typeof req.body.passportToken === 'string') {
@@ -90,10 +87,6 @@ placeOrderTransactionsRouter.post(
             .isEmpty()
             .isString()
             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        body('seller.typeOf')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required'),
         body('seller.id')
             .not()
             .isEmpty()
@@ -141,8 +134,7 @@ placeOrderTransactionsRouter.post(
             const passportValidator = createPassportValidator(seller, req.user.client_id);
 
             const project = await projectRepo.findById({ id: req.project.id });
-            const useTransactionClientUser =
-                project.settings !== undefined && (<any>project.settings).useTransactionClientUser === true;
+            const useTransactionClientUser = (<any>project.settings)?.useTransactionClientUser === true;
 
             const orderName: string | undefined = (typeof req.body.object?.name === 'string') ? req.body.object?.name : DEFAULT_ORDER_NAME;
 

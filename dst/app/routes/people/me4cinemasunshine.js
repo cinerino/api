@@ -74,12 +74,7 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
-        const seller = yield sellerService.findById(Object.assign({ id: sellerId }, {
-            $projection: {
-                'paymentAccepted.gmoInfo.shopPass': 0,
-                'paymentAccepted.movieTicketInfo': 0
-            }
-        }));
+        const seller = yield sellerService.findById({ id: sellerId });
         const membershipService = yield productService.findById({
             id: productId
         });

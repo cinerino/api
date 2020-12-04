@@ -26,7 +26,7 @@ const CODE_EXPIRES_IN_SECONDS_MAXIMUM = (typeof process.env.CODE_EXPIRES_IN_SECO
     ? Number(process.env.CODE_EXPIRES_IN_SECONDS_MAXIMUM)
     // tslint:disable-next-line:no-magic-numbers
     : 600;
-const USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER = process.env.USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER === '1';
+const USE_LEGACY_AUTHORIZE_ORDER = process.env.USE_LEGACY_AUTHORIZE_ORDER === '1';
 
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
@@ -556,11 +556,7 @@ ordersRouter.post(
                 throw new cinerino.factory.errors.NotFound('Order');
             }
 
-            if (USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER) {
-                res.json(orders);
-            } else {
-                res.json(orders[0]);
-            }
+            res.json(orders);
         } catch (error) {
             next(error);
         }
@@ -674,11 +670,6 @@ ordersRouter.post(
             }
 
             res.json(orders);
-            // if (USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER) {
-            //     res.json(orders);
-            // } else {
-            //     res.json(orders[0]);
-            // }
         } catch (error) {
             next(error);
         }
@@ -762,150 +753,148 @@ ordersRouter.post(
     }
 );
 
-/**
- * 確認番号で注文アイテムに対してコードを発行する
- */
-// tslint:disable-next-line:use-default-type-parameter
-ordersRouter.post<ParamsDictionary>(
-    '/:orderNumber/ownershipInfos/authorize',
-    permitScopes(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
-    rateLimit,
-    ...[
-        body('customer')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
-        oneOf([
-            [
-                body('customer.email')
-                    .not()
-                    .isEmpty()
-                    .isString()
-            ],
-            [
-                body('customer.telephone')
-                    .not()
-                    .isEmpty()
-                    .isString()
-            ]
-        ])
-    ],
-    validator,
-    // tslint:disable-next-line:max-func-body-length
-    async (req, res, next) => {
-        try {
-            const now = new Date();
+if (USE_LEGACY_AUTHORIZE_ORDER) {
+    /**
+     * 確認番号で注文アイテムに対してコードを発行する
+     * @deprecated Use /order/:orderNumber/authorize
+     */
+    // tslint:disable-next-line:use-default-type-parameter
+    ordersRouter.post<ParamsDictionary>(
+        '/:orderNumber/ownershipInfos/authorize',
+        permitScopes(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
+        rateLimit,
+        ...[
+            body('customer')
+                .not()
+                .isEmpty()
+                .withMessage(() => 'required'),
+            oneOf([
+                [
+                    body('customer.email')
+                        .not()
+                        .isEmpty()
+                        .isString()
+                ],
+                [
+                    body('customer.telephone')
+                        .not()
+                        .isEmpty()
+                        .isString()
+                ]
+            ])
+        ],
+        validator,
+        // tslint:disable-next-line:max-func-body-length
+        async (req, res, next) => {
+            try {
+                const now = new Date();
 
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+                const expiresInSeconds: number = CODE_EXPIRES_IN_SECONDS_DEFAULT;
 
-            const project = await projectRepo.findById({ id: req.project.id });
-            const expiresInSeconds: number = (typeof project.settings?.codeExpiresInSeconds === 'number')
-                ? project.settings.codeExpiresInSeconds
-                : CODE_EXPIRES_IN_SECONDS_DEFAULT;
+                const customer = req.body.customer;
 
-            const customer = req.body.customer;
+                const actionRepo = new cinerino.repository.Action(mongoose.connection);
+                const orderRepo = new cinerino.repository.Order(mongoose.connection);
+                const codeRepo = new cinerino.repository.Code(mongoose.connection);
 
-            const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            const orderRepo = new cinerino.repository.Order(mongoose.connection);
-            const codeRepo = new cinerino.repository.Code(mongoose.connection);
-
-            const order = await orderRepo.findByOrderNumber({ orderNumber: req.params.orderNumber });
-            if (order.customer.email !== customer.email && order.customer.telephone !== customer.telephone) {
-                throw new cinerino.factory.errors.Argument('customer');
-            }
-            // まだ配送済でない場合
-            if (order.orderStatus !== cinerino.factory.orderStatus.OrderDelivered) {
-                throw new cinerino.factory.errors.Argument('orderNumber', 'Not delivered yet');
-            }
-
-            // 配送サービスに問い合わせて、注文から所有権を検索
-            const actionsOnOrder = await actionRepo.searchByOrderNumber({ orderNumber: order.orderNumber });
-            const sendOrderAction = <cinerino.factory.action.transfer.send.order.IAction | undefined>actionsOnOrder
-                .filter((a) => a.typeOf === cinerino.factory.actionType.SendAction)
-                .filter((a) => a.object.typeOf === 'Order')
-                .find((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus);
-            // まだ配送済でない場合
-            const sendOrderActionResult = sendOrderAction?.result;
-            if (!Array.isArray(sendOrderActionResult)) {
-                throw new cinerino.factory.errors.Argument('orderNumber', 'Not delivered yet');
-            }
-
-            // 配送された所有権情報を注文に付加する
-            type IOwnershipInfo = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
-            const ownershipInfos: IOwnershipInfo[] = (Array.isArray(sendOrderActionResult))
-                ? sendOrderActionResult
-                : [];
-            const reservationIds = ownershipInfos
-                .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
-                .map((o) => <string>(<EventReservationGoodType>o.typeOfGood).id);
-
-            const reservationService = new cinerino.chevre.service.Reservation({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
-            });
-            const searchReservationsResult = await reservationService.search<cinerino.factory.chevre.reservationType.EventReservation>({
-                limit: reservationIds.length,
-                typeOf: cinerino.factory.chevre.reservationType.EventReservation,
-                ids: reservationIds
-            });
-
-            // コード発行対象の所有権を検索
-            const ownershipInfos2authorize = ownershipInfos
-                // ひとまずEventReservationのみ
-                .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation);
-
-            // 所有権に対してコード発行
-            const authorizations = await cinerino.service.code.publish({
-                project: req.project,
-                agent: req.agent,
-                recipient: req.agent,
-                object: ownershipInfos2authorize,
-                purpose: {},
-                validFrom: now,
-                expiresInSeconds: expiresInSeconds
-            })({
-                action: actionRepo,
-                code: codeRepo
-            });
-
-            order.acceptedOffers = order.acceptedOffers.map((offer) => {
-                const itemOffered = offer.itemOffered;
-                if (itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
-                    // 実際の予約データで置き換え
-                    const reservation = searchReservationsResult.data.find(
-                        (r) => r.id === (<cinerino.factory.order.IReservation>itemOffered).id
-                    );
-
-                    if (reservation !== undefined) {
-                        const authorization = authorizations.find((a) => a.object.typeOfGood?.id === reservation.id);
-                        if (typeof authorization?.code === 'string') {
-                            reservation.reservedTicket.ticketToken = authorization.code;
-                        }
-
-                        offer.itemOffered = reservation;
-                    }
+                const order = await orderRepo.findByOrderNumber({ orderNumber: req.params.orderNumber });
+                if (order.customer.email !== customer.email && order.customer.telephone !== customer.telephone) {
+                    throw new cinerino.factory.errors.Argument('customer');
+                }
+                // まだ配送済でない場合
+                if (order.orderStatus !== cinerino.factory.orderStatus.OrderDelivered) {
+                    throw new cinerino.factory.errors.Argument('orderNumber', 'Not delivered yet');
                 }
 
-                return offer;
-            });
+                // 配送サービスに問い合わせて、注文から所有権を検索
+                const actionsOnOrder = await actionRepo.searchByOrderNumber({ orderNumber: order.orderNumber });
+                const sendOrderAction = <cinerino.factory.action.transfer.send.order.IAction | undefined>actionsOnOrder
+                    .filter((a) => a.typeOf === cinerino.factory.actionType.SendAction)
+                    .filter((a) => a.object.typeOf === 'Order')
+                    .find((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus);
+                // まだ配送済でない場合
+                const sendOrderActionResult = sendOrderAction?.result;
+                if (!Array.isArray(sendOrderActionResult)) {
+                    throw new cinerino.factory.errors.Argument('orderNumber', 'Not delivered yet');
+                }
 
-            // 予約番号でChevreチェックイン
-            let reservationNumbers = ownershipInfos
-                .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
-                .map((o) => (<EventReservationGoodType>o.typeOfGood).reservationNumber);
-            reservationNumbers = [...new Set(reservationNumbers)];
-            await Promise.all(reservationNumbers.map(async (reservationNumber) => {
-                await reservationService.checkInScreeningEventReservations({
-                    reservationNumber: reservationNumber
+                // 配送された所有権情報を注文に付加する
+                type IOwnershipInfo = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
+                const ownershipInfos: IOwnershipInfo[] = (Array.isArray(sendOrderActionResult))
+                    ? sendOrderActionResult
+                    : [];
+                const reservationIds = ownershipInfos
+                    .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
+                    .map((o) => <string>(<EventReservationGoodType>o.typeOfGood).id);
+
+                const reservationService = new cinerino.chevre.service.Reservation({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient
                 });
-            }));
+                const searchReservationsResult = await reservationService.search<cinerino.factory.chevre.reservationType.EventReservation>({
+                    limit: reservationIds.length,
+                    typeOf: cinerino.factory.chevre.reservationType.EventReservation,
+                    ids: reservationIds
+                });
 
-            res.json(order);
-        } catch (error) {
-            next(error);
+                // コード発行対象の所有権を検索
+                const ownershipInfos2authorize = ownershipInfos
+                    // ひとまずEventReservationのみ
+                    .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation);
+
+                // 所有権に対してコード発行
+                const authorizations = await cinerino.service.code.publish({
+                    project: req.project,
+                    agent: req.agent,
+                    recipient: req.agent,
+                    object: ownershipInfos2authorize,
+                    purpose: {},
+                    validFrom: now,
+                    expiresInSeconds: expiresInSeconds
+                })({
+                    action: actionRepo,
+                    code: codeRepo
+                });
+
+                order.acceptedOffers = order.acceptedOffers.map((offer) => {
+                    const itemOffered = offer.itemOffered;
+                    if (itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
+                        // 実際の予約データで置き換え
+                        const reservation = searchReservationsResult.data.find(
+                            (r) => r.id === (<cinerino.factory.order.IReservation>itemOffered).id
+                        );
+
+                        if (reservation !== undefined) {
+                            const authorization = authorizations.find((a) => a.object.typeOfGood?.id === reservation.id);
+                            if (typeof authorization?.code === 'string') {
+                                reservation.reservedTicket.ticketToken = authorization.code;
+                            }
+
+                            offer.itemOffered = reservation;
+                        }
+                    }
+
+                    return offer;
+                });
+
+                // 予約番号でChevreチェックイン
+                let reservationNumbers = ownershipInfos
+                    .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
+                    .map((o) => (<EventReservationGoodType>o.typeOfGood).reservationNumber);
+                reservationNumbers = [...new Set(reservationNumbers)];
+                await Promise.all(reservationNumbers.map(async (reservationNumber) => {
+                    await reservationService.checkInScreeningEventReservations({
+                        reservationNumber: reservationNumber
+                    });
+                }));
+
+                res.json(order);
+            } catch (error) {
+                next(error);
+            }
         }
-    }
-);
+    );
+}
 
 /**
  * 注文に対するアクション検索

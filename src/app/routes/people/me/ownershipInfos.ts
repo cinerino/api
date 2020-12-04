@@ -129,7 +129,6 @@ ownershipInfosRouter.post(
             const now = new Date();
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const codeRepo = new cinerino.repository.Code(mongoose.connection);
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
 
@@ -138,10 +137,7 @@ ownershipInfosRouter.post(
                 throw new cinerino.factory.errors.Unauthorized();
             }
 
-            const project = await projectRepo.findById({ id: req.project.id });
-            const expiresInSeconds = (typeof project.settings?.codeExpiresInSeconds === 'number')
-                ? project.settings.codeExpiresInSeconds
-                : CODE_EXPIRES_IN_SECONDS_DEFAULT;
+            const expiresInSeconds = CODE_EXPIRES_IN_SECONDS_DEFAULT;
 
             const authorizations = await cinerino.service.code.publish({
                 project: req.project,
