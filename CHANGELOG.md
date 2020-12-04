@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 決済サービス検索結果からサービス認証情報を隠蔽
 - USE_MULTI_ORDERS_BY_CONFIRMATION_NUMBER設定を削除
 - 注文に最低限の勘定科目情報を追加
+- 予約取引中止前に取引の存在確認処理を追加
+- サービス登録取引中止前に取引の存在確認処理を追加
 
 ### Deprecated
 
