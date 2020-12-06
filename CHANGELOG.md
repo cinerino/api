@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.43.1 - 2020-12-06
+
+### Changed
+
+- タスクの実行間隔を調整
+
 ## v5.43.0 - 2020-12-04
 
 ### Added

@@ -16,7 +16,7 @@ export default async (params: {
     let countRetry = 0;
 
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
-    const INTERVAL_MILLISECONDS = 500;
+    const INTERVAL_MILLISECONDS = 100;
     const transactionRepo = new cinerino.repository.Transaction(connection);
     const RETRY_INTERVAL_MINUTES = 10;
 
