@@ -18,7 +18,7 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
-    const INTERVAL_MILLISECONDS = 500;
+    const INTERVAL_MILLISECONDS = 100;
     const RETRY_INTERVAL_MINUTES = 10;
     const taskRepo = new cinerino.repository.Task(connection);
     setInterval(() => __awaiter(void 0, void 0, void 0, function* () {

@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- タスクの実行間隔を調整
+
 ### Deprecated
 
 ### Removed
