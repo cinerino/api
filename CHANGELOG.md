@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- メンバーシップ注文時の初回登録かどうかをアプリケーション側に指定させるように変更
+
 ### Deprecated
 
 ### Removed

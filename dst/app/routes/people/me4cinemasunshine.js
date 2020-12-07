@@ -101,8 +101,8 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/register', permit
                         ? req.body.agent.additionalProperty.map((p) => {
                             return { name: String(p.name), value: String(p.value) };
                         })
-                        : [],
-                    ...[{ name: 'firstMembership', value: '1' }]
+                        : []
+                    // ...[{ name: 'firstMembership', value: '1' }]
                 ] }),
             object: {
                 typeOf: cinerino.factory.chevre.offerType.Offer,

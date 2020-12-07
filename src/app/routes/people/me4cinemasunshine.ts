@@ -111,8 +111,8 @@ me4cinemasunshineRouter.put(
                             ? (<any[]>req.body.agent.additionalProperty).map((p: any) => {
                                 return { name: String(p.name), value: String(p.value) };
                             })
-                            : [],
-                        ...[{ name: 'firstMembership', value: '1' }]
+                            : []
+                        // ...[{ name: 'firstMembership', value: '1' }]
                     ]
                 },
                 object: {
