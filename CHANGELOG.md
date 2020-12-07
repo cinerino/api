@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.43.2 - 2020-12-07
+
+### Changed
+
+- メンバーシップ注文時の初回登録かどうかをアプリケーション側に指定させるように変更
+
 ## v5.43.1 - 2020-12-06
 
 ### Changed
