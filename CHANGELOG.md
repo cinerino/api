@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - ポイント特典付与の際に、Pecorino取引に対して識別子を指定するように調整
+- USE_LEGACY_AUTHORIZE_ORDER設定を削除
 
 ### Deprecated
 
