@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - USE_LEGACY_AUTHORIZE_ORDER設定を削除
 - 注文番号の拡張性強化
 - 注文取引に対して任意のタイミングで注文番号を発行できるように調整
+- $setOnInsertを使用したクエリに対して{new: true}をセット
 
 ### Deprecated
 
