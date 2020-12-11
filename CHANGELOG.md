@@ -18,6 +18,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.44.0 - 2020-12-11
+
+### Changed
+
+- ポイント特典付与の際に、Pecorino取引に対して識別子を指定するように調整
+- USE_LEGACY_AUTHORIZE_ORDER設定を削除
+- 注文番号の拡張性強化
+- 注文取引に対して任意のタイミングで注文番号を発行できるように調整
+- $setOnInsertを使用したクエリに対して{new: true}をセット
+
+### Removed
+
+- トークンでの予約照会サービス(非推奨)を削除
+
 ## v5.43.2 - 2020-12-07
 
 ### Changed

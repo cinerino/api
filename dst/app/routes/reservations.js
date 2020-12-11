@@ -138,50 +138,6 @@ reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 're
         next(error);
     }
 }));
-/**
- * トークンで予約照会
- * @deprecated Use /reservations/use
- */
-reservationsRouter.post('/eventReservation/screeningEvent/findByToken', permitScopes_1.default(['reservations.read', 'reservations.findByToken']), rateLimit_1.default, ...[
-    express_validator_1.body('token')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        const payload = yield cinerino.service.code.verifyToken({
-            project: req.project,
-            agent: req.agent,
-            token: req.body.token,
-            secret: process.env.TOKEN_SECRET,
-            issuer: [process.env.RESOURCE_SERVER_IDENTIFIER]
-        })({});
-        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-        // 所有権検索
-        const ownershipInfo = yield ownershipInfoRepo.findById({
-            id: payload.id
-        });
-        const typeOfGood = ownershipInfo.typeOfGood;
-        if (typeOfGood.typeOf !== cinerino.factory.chevre.reservationType.EventReservation) {
-            throw new cinerino.factory.errors.Argument('token', 'Not reservation');
-        }
-        yield useReservation({
-            project: { id: req.project.id },
-            agent: req.agent,
-            object: { id: typeOfGood.id },
-            instrument: { token: req.body.token }
-        })({ action: actionRepo });
-        // const reservation = useAction.object[0];
-        // レスポンスをフロントアプリ側で使用していなかったので削除
-        // res.json({ ...ownershipInfo, typeOfGood: reservation });
-        res.json({});
-    }
-    catch (error) {
-        error = cinerino.errorHandler.handleChevreError(error);
-        next(error);
-    }
-}));
 function useReservation(params) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
         // 予約検索

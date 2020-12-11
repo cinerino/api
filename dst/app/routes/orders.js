@@ -32,7 +32,6 @@ const CODE_EXPIRES_IN_SECONDS_MAXIMUM = (typeof process.env.CODE_EXPIRES_IN_SECO
     ? Number(process.env.CODE_EXPIRES_IN_SECONDS_MAXIMUM)
     // tslint:disable-next-line:no-magic-numbers
     : 600;
-const USE_LEGACY_AUTHORIZE_ORDER = process.env.USE_LEGACY_AUTHORIZE_ORDER === '1';
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -654,124 +653,6 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['orders.*', '
         next(error);
     }
 }));
-if (USE_LEGACY_AUTHORIZE_ORDER) {
-    /**
-     * 確認番号で注文アイテムに対してコードを発行する
-     * @deprecated Use /order/:orderNumber/authorize
-     */
-    // tslint:disable-next-line:use-default-type-parameter
-    ordersRouter.post('/:orderNumber/ownershipInfos/authorize', permitScopes_1.default(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, ...[
-        express_validator_1.body('customer')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
-        express_validator_1.oneOf([
-            [
-                express_validator_1.body('customer.email')
-                    .not()
-                    .isEmpty()
-                    .isString()
-            ],
-            [
-                express_validator_1.body('customer.telephone')
-                    .not()
-                    .isEmpty()
-                    .isString()
-            ]
-        ])
-    ], validator_1.default, 
-    // tslint:disable-next-line:max-func-body-length
-    (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        try {
-            const now = new Date();
-            const expiresInSeconds = CODE_EXPIRES_IN_SECONDS_DEFAULT;
-            const customer = req.body.customer;
-            const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            const orderRepo = new cinerino.repository.Order(mongoose.connection);
-            const codeRepo = new cinerino.repository.Code(mongoose.connection);
-            const order = yield orderRepo.findByOrderNumber({ orderNumber: req.params.orderNumber });
-            if (order.customer.email !== customer.email && order.customer.telephone !== customer.telephone) {
-                throw new cinerino.factory.errors.Argument('customer');
-            }
-            // まだ配送済でない場合
-            if (order.orderStatus !== cinerino.factory.orderStatus.OrderDelivered) {
-                throw new cinerino.factory.errors.Argument('orderNumber', 'Not delivered yet');
-            }
-            // 配送サービスに問い合わせて、注文から所有権を検索
-            const actionsOnOrder = yield actionRepo.searchByOrderNumber({ orderNumber: order.orderNumber });
-            const sendOrderAction = actionsOnOrder
-                .filter((a) => a.typeOf === cinerino.factory.actionType.SendAction)
-                .filter((a) => a.object.typeOf === 'Order')
-                .find((a) => a.actionStatus === cinerino.factory.actionStatusType.CompletedActionStatus);
-            // まだ配送済でない場合
-            const sendOrderActionResult = sendOrderAction === null || sendOrderAction === void 0 ? void 0 : sendOrderAction.result;
-            if (!Array.isArray(sendOrderActionResult)) {
-                throw new cinerino.factory.errors.Argument('orderNumber', 'Not delivered yet');
-            }
-            const ownershipInfos = (Array.isArray(sendOrderActionResult))
-                ? sendOrderActionResult
-                : [];
-            const reservationIds = ownershipInfos
-                .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
-                .map((o) => o.typeOfGood.id);
-            const reservationService = new cinerino.chevre.service.Reservation({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
-            });
-            const searchReservationsResult = yield reservationService.search({
-                limit: reservationIds.length,
-                typeOf: cinerino.factory.chevre.reservationType.EventReservation,
-                ids: reservationIds
-            });
-            // コード発行対象の所有権を検索
-            const ownershipInfos2authorize = ownershipInfos
-                // ひとまずEventReservationのみ
-                .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation);
-            // 所有権に対してコード発行
-            const authorizations = yield cinerino.service.code.publish({
-                project: req.project,
-                agent: req.agent,
-                recipient: req.agent,
-                object: ownershipInfos2authorize,
-                purpose: {},
-                validFrom: now,
-                expiresInSeconds: expiresInSeconds
-            })({
-                action: actionRepo,
-                code: codeRepo
-            });
-            order.acceptedOffers = order.acceptedOffers.map((offer) => {
-                const itemOffered = offer.itemOffered;
-                if (itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
-                    // 実際の予約データで置き換え
-                    const reservation = searchReservationsResult.data.find((r) => r.id === itemOffered.id);
-                    if (reservation !== undefined) {
-                        const authorization = authorizations.find((a) => { var _a; return ((_a = a.object.typeOfGood) === null || _a === void 0 ? void 0 : _a.id) === reservation.id; });
-                        if (typeof (authorization === null || authorization === void 0 ? void 0 : authorization.code) === 'string') {
-                            reservation.reservedTicket.ticketToken = authorization.code;
-                        }
-                        offer.itemOffered = reservation;
-                    }
-                }
-                return offer;
-            });
-            // 予約番号でChevreチェックイン
-            let reservationNumbers = ownershipInfos
-                .filter((o) => o.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
-                .map((o) => o.typeOfGood.reservationNumber);
-            reservationNumbers = [...new Set(reservationNumbers)];
-            yield Promise.all(reservationNumbers.map((reservationNumber) => __awaiter(void 0, void 0, void 0, function* () {
-                yield reservationService.checkInScreeningEventReservations({
-                    reservationNumber: reservationNumber
-                });
-            })));
-            res.json(order);
-        }
-        catch (error) {
-            next(error);
-        }
-    }));
-}
 /**
  * 注文に対するアクション検索
  */

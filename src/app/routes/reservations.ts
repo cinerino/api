@@ -171,63 +171,6 @@ reservationsRouter.post(
     }
 );
 
-/**
- * トークンで予約照会
- * @deprecated Use /reservations/use
- */
-reservationsRouter.post(
-    '/eventReservation/screeningEvent/findByToken',
-    permitScopes(['reservations.read', 'reservations.findByToken']),
-    rateLimit,
-    ...[
-        body('token')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-    ],
-    validator,
-    async (req, res, next) => {
-        try {
-            const actionRepo = new cinerino.repository.Action(mongoose.connection);
-
-            const payload = await cinerino.service.code.verifyToken<IPayload>({
-                project: req.project,
-                agent: req.agent,
-                token: req.body.token,
-                secret: <string>process.env.TOKEN_SECRET,
-                issuer: [<string>process.env.RESOURCE_SERVER_IDENTIFIER]
-            })({});
-
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-
-            // 所有権検索
-            const ownershipInfo = await ownershipInfoRepo.findById({
-                id: payload.id
-            });
-            const typeOfGood = <cinerino.factory.ownershipInfo.IReservation>ownershipInfo.typeOfGood;
-            if (typeOfGood.typeOf !== cinerino.factory.chevre.reservationType.EventReservation) {
-                throw new cinerino.factory.errors.Argument('token', 'Not reservation');
-            }
-
-            await useReservation({
-                project: { id: req.project.id },
-                agent: req.agent,
-                object: { id: <string>typeOfGood.id },
-                instrument: { token: req.body.token }
-            })({ action: actionRepo });
-
-            // const reservation = useAction.object[0];
-
-            // レスポンスをフロントアプリ側で使用していなかったので削除
-            // res.json({ ...ownershipInfo, typeOfGood: reservation });
-            res.json({});
-        } catch (error) {
-            error = cinerino.errorHandler.handleChevreError(error);
-            next(error);
-        }
-    }
-);
-
 function useReservation(params: {
     project: { id: string };
     agent: cinerino.factory.person.IPerson;
