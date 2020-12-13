@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.44.1 - 2020-12-13
+
+### Changed
+
+- IAMメンバー追加時に名称を指定できるように調整
+
 ## v5.44.0 - 2020-12-11
 
 ### Changed

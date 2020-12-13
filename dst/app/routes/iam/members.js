@@ -51,6 +51,9 @@ iamMembersRouter.post('', permitScopes_1.default(['iam.members.write']), rateLim
         .isEmpty()
         .withMessage(() => 'required')
         .isString(),
+    express_validator_1.body('member.name')
+        .optional()
+        .isString(),
     express_validator_1.body('member.typeOf')
         .not()
         .isEmpty()
@@ -69,6 +72,7 @@ iamMembersRouter.post('', permitScopes_1.default(['iam.members.write']), rateLim
 ], validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
@@ -106,7 +110,9 @@ iamMembersRouter.post('', permitScopes_1.default(['iam.members.write']), rateLim
                 member = {
                     typeOf: cinerino.factory.chevre.creativeWorkType.WebApplication,
                     id: userPoolClient.ClientId,
-                    name: userPoolClient.ClientName,
+                    name: (typeof ((_a = req.body.member) === null || _a === void 0 ? void 0 : _a.name) === 'string')
+                        ? String(req.body.member.name)
+                        : userPoolClient.ClientName,
                     hasRole: [{
                             typeOf: 'OrganizationRole',
                             roleName: iam_1.RoleName.Customer,
@@ -137,6 +143,9 @@ iamMembersRouter.post('', permitScopes_1.default(['iam.members.write']), rateLim
                         member = {
                             typeOf: people[0].typeOf,
                             id: people[0].id,
+                            name: (typeof ((_b = req.body.member) === null || _b === void 0 ? void 0 : _b.name) === 'string')
+                                ? String(req.body.member.name)
+                                : people[0].memberOf.membershipNumber,
                             username: people[0].memberOf.membershipNumber,
                             hasRole: roles
                         };
@@ -165,7 +174,9 @@ iamMembersRouter.post('', permitScopes_1.default(['iam.members.write']), rateLim
                         member = {
                             typeOf: cinerino.factory.chevre.creativeWorkType.WebApplication,
                             id: userPoolClient.ClientId,
-                            name: userPoolClient.ClientName,
+                            name: (typeof ((_c = req.body.member) === null || _c === void 0 ? void 0 : _c.name) === 'string')
+                                ? String(req.body.member.name)
+                                : userPoolClient.ClientName,
                             hasRole: [{
                                     typeOf: 'OrganizationRole',
                                     roleName: iam_1.RoleName.Customer,
@@ -248,7 +259,7 @@ iamMembersRouter.put('/:id', permitScopes_1.default(['iam.members.write']), rate
         .withMessage(() => 'required')
         .isString()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _d;
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         // ロールを作成
@@ -259,7 +270,7 @@ iamMembersRouter.put('/:id', permitScopes_1.default(['iam.members.write']), rate
                 memberOf: { typeOf: req.project.typeOf, id: req.project.id }
             };
         });
-        const name = (_a = req.body.member) === null || _a === void 0 ? void 0 : _a.name;
+        const name = (_d = req.body.member) === null || _d === void 0 ? void 0 : _d.name;
         const doc = yield memberRepo.memberModel.findOneAndUpdate({
             'member.id': {
                 $eq: req.params.id

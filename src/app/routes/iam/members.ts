@@ -54,6 +54,9 @@ iamMembersRouter.post(
             .isEmpty()
             .withMessage(() => 'required')
             .isString(),
+        body('member.name')
+            .optional()
+            .isString(),
         body('member.typeOf')
             .not()
             .isEmpty()
@@ -117,7 +120,9 @@ iamMembersRouter.post(
                     member = {
                         typeOf: cinerino.factory.chevre.creativeWorkType.WebApplication,
                         id: userPoolClient.ClientId,
-                        name: userPoolClient.ClientName,
+                        name: (typeof req.body.member?.name === 'string')
+                            ? String(req.body.member.name)
+                            : userPoolClient.ClientName,
                         hasRole: [{
                             typeOf: 'OrganizationRole',
                             roleName: RoleName.Customer,
@@ -153,6 +158,9 @@ iamMembersRouter.post(
                             member = {
                                 typeOf: people[0].typeOf,
                                 id: people[0].id,
+                                name: (typeof req.body.member?.name === 'string')
+                                    ? String(req.body.member.name)
+                                    : people[0].memberOf.membershipNumber,
                                 username: people[0].memberOf.membershipNumber,
                                 hasRole: roles
                             };
@@ -185,7 +193,9 @@ iamMembersRouter.post(
                             member = {
                                 typeOf: cinerino.factory.chevre.creativeWorkType.WebApplication,
                                 id: userPoolClient.ClientId,
-                                name: userPoolClient.ClientName,
+                                name: (typeof req.body.member?.name === 'string')
+                                    ? String(req.body.member.name)
+                                    : userPoolClient.ClientName,
                                 hasRole: [{
                                     typeOf: 'OrganizationRole',
                                     roleName: RoleName.Customer,
