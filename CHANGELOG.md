@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- IAMメンバー追加時に名称を指定できるように調整
+
 ### Deprecated
 
 ### Removed
