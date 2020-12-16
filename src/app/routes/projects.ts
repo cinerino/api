@@ -139,6 +139,9 @@ function createFromBody(params: any): cinerino.factory.project.IProject {
                 }
             },
             onOrderStatusChanged: {
+                informOrder: (Array.isArray(params.settings?.onOrderStatusChanged?.informOrder))
+                    ? params.settings.onOrderStatusChanged.informOrder
+                    : []
             },
             transactionWebhookUrl: params.settings?.transactionWebhookUrl,
             useUsernameAsGMOMemberId: false,
@@ -268,6 +271,9 @@ projectsRouter.patch(
                         : undefined,
                     ...(typeof req.body.settings?.sendgridApiKey === 'string')
                         ? { 'settings.sendgridApiKey': req.body.settings.sendgridApiKey }
+                        : undefined,
+                    ...(Array.isArray(req.body.settings?.onOrderStatusChanged?.informOrder))
+                        ? { 'settings.onOrderStatusChanged.informOrder': req.body.settings.onOrderStatusChanged.informOrder }
                         : undefined,
                     // 機能改修で不要になった属性を削除
                     $unset: {
