@@ -83,10 +83,11 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['transactions
         id: req.body.purpose.id
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+        const useUsernameAsGMOMemberId = ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.useUsernameAsGMOMemberId) === true;
         const memberId = (useUsernameAsGMOMemberId) ? req.user.username : req.user.sub;
         const creditCard = Object.assign(Object.assign({}, req.body.object.creditCard), { memberId: memberId });
         const action = yield cinerino.service.payment.chevre.authorize({

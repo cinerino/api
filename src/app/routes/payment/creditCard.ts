@@ -89,7 +89,7 @@ creditCardPaymentRouter.post<ParamsDictionary>(
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
-            const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+            const useUsernameAsGMOMemberId = project.settings?.useUsernameAsGMOMemberId === true;
 
             // 会員IDを強制的にログイン中の人物IDに変更
             type ICreditCard4authorizeAction = cinerino.factory.action.authorize.paymentMethod.any.ICreditCard;
