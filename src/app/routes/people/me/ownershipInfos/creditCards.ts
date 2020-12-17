@@ -11,7 +11,7 @@ import rateLimit from '../../../../middlewares/rateLimit';
 import validator from '../../../../middlewares/validator';
 
 function checkUseMyCreditCards(project: cinerino.factory.project.IProject) {
-    if ((<any>project.settings)?.useMyCreditCards !== true) {
+    if (project.settings?.useMyCreditCards !== true) {
         throw new cinerino.factory.errors.Forbidden('my credit cards service unavailable');
     }
 }
@@ -38,7 +38,7 @@ creditCardsRouter.post(
                 paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
             });
 
-            const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+            const useUsernameAsGMOMemberId = project.settings?.useUsernameAsGMOMemberId === true;
             const memberId = (useUsernameAsGMOMemberId) ? <string>req.user.username : req.user.sub;
             const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
                 siteId: credentials.siteId,
@@ -77,7 +77,7 @@ creditCardsRouter.get(
                 paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
             });
 
-            const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+            const useUsernameAsGMOMemberId = project.settings?.useUsernameAsGMOMemberId === true;
             const memberId = (useUsernameAsGMOMemberId) ? <string>req.user.username : req.user.sub;
             const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
                 siteId: credentials.siteId,
@@ -113,7 +113,7 @@ creditCardsRouter.delete(
                 paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
             });
 
-            const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+            const useUsernameAsGMOMemberId = project.settings?.useUsernameAsGMOMemberId === true;
             const memberId = (useUsernameAsGMOMemberId) ? <string>req.user.username : req.user.sub;
             const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
                 siteId: credentials.siteId,

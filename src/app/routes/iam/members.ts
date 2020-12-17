@@ -81,7 +81,7 @@ iamMembersRouter.post(
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
             const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined || project.settings.cognito === undefined) {
+            if (project.settings?.cognito === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
             }
 

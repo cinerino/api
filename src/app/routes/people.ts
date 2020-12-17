@@ -35,8 +35,7 @@ peopleRouter.get(
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined
-                || project.settings.cognito === undefined) {
+            if (project.settings?.cognito === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
 
@@ -71,8 +70,7 @@ peopleRouter.get(
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined
-                || project.settings.cognito === undefined) {
+            if (project.settings?.cognito === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
 
@@ -281,7 +279,7 @@ peopleRouter.get(
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
 
-            const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+            const useUsernameAsGMOMemberId = project.settings?.useUsernameAsGMOMemberId === true;
 
             let memberId = req.params.id;
 
@@ -336,7 +334,7 @@ peopleRouter.delete(
 
             let memberId = req.params.id;
 
-            const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+            const useUsernameAsGMOMemberId = project.settings?.useUsernameAsGMOMemberId === true;
 
             if (useUsernameAsGMOMemberId) {
                 const personRepo = new cinerino.repository.Person({
@@ -386,8 +384,7 @@ peopleRouter.get(
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined
-                || project.settings.cognito === undefined) {
+            if (project.settings?.cognito === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
 
@@ -430,8 +427,7 @@ peopleRouter.patch(
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const project = await projectRepo.findById({ id: req.project.id });
-            if (project.settings === undefined
-                || project.settings.cognito === undefined) {
+            if (project.settings?.cognito === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
 

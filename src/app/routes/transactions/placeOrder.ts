@@ -134,7 +134,7 @@ placeOrderTransactionsRouter.post(
             const passportValidator = createPassportValidator(seller, req.user.client_id);
 
             const project = await projectRepo.findById({ id: req.project.id });
-            const useTransactionClientUser = (<any>project.settings)?.useTransactionClientUser === true;
+            const useTransactionClientUser = project.settings?.useTransactionClientUser === true;
 
             const orderName: string | undefined = (typeof req.body.object?.name === 'string') ? req.body.object?.name : DEFAULT_ORDER_NAME;
 

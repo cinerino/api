@@ -30,6 +30,7 @@ const creditCardsRouter = express_1.Router();
  * 会員クレジットカード追加
  */
 creditCardsRouter.post('', permitScopes_1.default(['people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -38,7 +39,7 @@ creditCardsRouter.post('', permitScopes_1.default(['people.me.*']), rateLimit_1.
             project: { id: req.project.id },
             paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
         });
-        const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+        const useUsernameAsGMOMemberId = ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.useUsernameAsGMOMemberId) === true;
         const memberId = (useUsernameAsGMOMemberId) ? req.user.username : req.user.sub;
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
             siteId: credentials.siteId,
@@ -60,6 +61,7 @@ creditCardsRouter.post('', permitScopes_1.default(['people.me.*']), rateLimit_1.
  * 会員クレジットカード検索
  */
 creditCardsRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -68,7 +70,7 @@ creditCardsRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_1.d
             project: { id: req.project.id },
             paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
         });
-        const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+        const useUsernameAsGMOMemberId = ((_b = project.settings) === null || _b === void 0 ? void 0 : _b.useUsernameAsGMOMemberId) === true;
         const memberId = (useUsernameAsGMOMemberId) ? req.user.username : req.user.sub;
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
             siteId: credentials.siteId,
@@ -86,6 +88,7 @@ creditCardsRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_1.d
  * 会員クレジットカード削除
  */
 creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
@@ -94,7 +97,7 @@ creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['people.me.*']), r
             project: { id: req.project.id },
             paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
         });
-        const useUsernameAsGMOMemberId = project.settings !== undefined && project.settings.useUsernameAsGMOMemberId === true;
+        const useUsernameAsGMOMemberId = ((_c = project.settings) === null || _c === void 0 ? void 0 : _c.useUsernameAsGMOMemberId) === true;
         const memberId = (useUsernameAsGMOMemberId) ? req.user.username : req.user.sub;
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
             siteId: credentials.siteId,
