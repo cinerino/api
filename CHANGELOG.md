@@ -10,12 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 所有権コレクションにユニークインデックスを追加
-- インボイスコレクションにユニークインデックスを追加
-- upsertを使用したクエリを実行した際の重複エラーハンドリングを追加
-- オファーカテゴリーについて、オファーの追加特性参照を廃止(ttts対応)
-- プロジェクトのonOrderStatusChangedを編集できるように調整
-
 ### Deprecated
 
 ### Removed
@@ -23,6 +17,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v5.45.0 - 2020-12-17
+
+### Changed
+
+- 所有権コレクションにユニークインデックスを追加
+- インボイスコレクションにユニークインデックスを追加
+- upsertを使用したクエリを実行した際の重複エラーハンドリングを追加
+- オファーカテゴリーについて、オファーの追加特性参照を廃止(ttts対応)
+- プロジェクトのonOrderStatusChangedを編集できるように調整
 
 ## v5.44.1 - 2020-12-13
 
