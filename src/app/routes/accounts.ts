@@ -13,7 +13,7 @@ import * as mongoose from 'mongoose';
 // import * as redis from '../../redis';
 
 import permitScopes from '../middlewares/permitScopes';
-// import rateLimit from '../middlewares/rateLimit';
+import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
@@ -24,69 +24,123 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 
+const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
+    domain: cinerino.credentials.pecorino.authorizeServerDomain,
+    clientId: cinerino.credentials.pecorino.clientId,
+    clientSecret: cinerino.credentials.pecorino.clientSecret,
+    scopes: [],
+    state: ''
+});
+
 const accountsRouter = Router();
 
 /**
- * 管理者として口座開設
+ * トークンで口座開設
  */
-// accountsRouter.post(
-//     '',
-//     permitScopes(['accounts.*', 'accounts.write']),
-//     ...[
-//         body('accountType', 'invalid accountType')
-//             .not()
-//             .isEmpty(),
-//         body('name', 'invalid name')
-//             .not()
-//             .isEmpty()
-//     ],
-//     rateLimit,
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const account = await cinerino.service.account.openWithoutOwnershipInfo({
-//                 project: req.project,
-//                 accountType: req.body.accountType,
-//                 name: req.body.name
-//             })({
-//                 // accountNumber: new cinerino.repository.AccountNumber(redis.getClient()),
-//                 project: new cinerino.repository.Project(mongoose.connection)
-//             });
+accountsRouter.post(
+    '/openByToken',
+    permitScopes(['accounts.openByToken']),
+    rateLimit,
+    ...[
+        body('instrument.token')
+            .not()
+            .isEmpty()
+            .isString(),
+        body('object.typeOf')
+            .not()
+            .isEmpty()
+            .isString(),
+        body('object.initialBalance')
+            .not()
+            .isEmpty()
+            .isInt()
+            .toInt()
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            const token = <string>req.body.instrument?.token;
+            const accountTypeOf = req.body.object?.typeOf;
+            const initialBalance = req.body.object?.initialBalance;
 
-//             res.status(CREATED)
-//                 .json(account);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
+            // プロダクト検索
+            const productService = new cinerino.chevre.service.Product({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const searchProductsResult = await productService.search({
+                limit: 1,
+                project: { id: { $eq: req.project.id } },
+                typeOf: { $eq: cinerino.factory.chevre.product.ProductType.PaymentCard },
+                serviceOutput: { typeOf: { $eq: accountTypeOf } }
+            });
+            const product = searchProductsResult.data.shift();
+            if (product === undefined) {
+                throw new cinerino.factory.errors.NotFound('Product');
+            }
 
-/**
- * 管理者として口座解約
- */
-// accountsRouter.put(
-//     '/:accountType/:accountNumber/close',
-//     permitScopes(['accounts.*', 'accounts.write']),
-//     rateLimit,
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             await cinerino.service.account.close({
-//                 project: req.project,
-//                 accountType: <cinerino.factory.accountType>req.params.accountType,
-//                 accountNumber: req.params.accountNumber
-//             })({
-//                 ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
-//                 project: new cinerino.repository.Project(mongoose.connection)
-//             });
+            const accountType = (<any>product).serviceOutput?.amount?.currency;
+            let accountNumber: string | undefined;
+            let orderNumber: string | undefined;
 
-//             res.status(NO_CONTENT)
-//                 .end();
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
+            // トークン検証
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO audienceのチェック
+            const payload = await cinerino.service.code.verifyToken<cinerino.factory.order.ISimpleOrder>({
+                project: req.project,
+                agent: req.agent,
+                token: token,
+                secret: <string>process.env.TOKEN_SECRET,
+                issuer: [<string>process.env.RESOURCE_SERVER_IDENTIFIER]
+            })({});
+
+            switch (payload.typeOf) {
+                case cinerino.factory.order.OrderType.Order:
+                    orderNumber = <string>(<any>payload).orderNumber;
+
+                    // 注文検索
+                    const orderRepo = new cinerino.repository.Order(mongoose.connection);
+                    const order = await orderRepo.findByOrderNumber({ orderNumber });
+
+                    // 口座番号を取得
+                    accountNumber = order.identifier?.find(
+                        (i) => i.name === cinerino.service.transaction.placeOrderInProgress.AWARD_ACCOUNT_NUMBER_IDENTIFIER_NAME
+                    )?.value;
+
+                    break;
+
+                default:
+                    throw new cinerino.factory.errors.NotImplemented(`Payload type ${payload.typeOf} not implemented`);
+            }
+
+            if (typeof accountNumber === 'string' && accountNumber.length > 0) {
+                // pecorinoで口座開設
+                const accountService = new cinerino.pecorinoapi.service.Account({
+                    endpoint: cinerino.credentials.pecorino.endpoint,
+                    auth: pecorinoAuthClient
+                });
+                await accountService.open([{
+                    project: {
+                        typeOf: 'Project',
+                        id: req.project.id
+                    },
+                    typeOf: accountTypeOf,
+                    accountType: accountType,
+                    accountNumber: accountNumber,
+                    name: `Order:${orderNumber}`,
+                    ...(typeof initialBalance === 'number') ? { initialBalance } : undefined
+                }]);
+            }
+
+            res.status(NO_CONTENT)
+                .end();
+        } catch (error) {
+            error = cinerino.errorHandler.handleChevreError(error);
+            error = cinerino.errorHandler.handlePecorinoError(error);
+            next(error);
+        }
+    }
+);
 
 // tslint:disable-next-line:no-magic-numbers
 const UNIT_IN_SECONDS = 5;
