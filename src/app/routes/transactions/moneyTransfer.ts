@@ -47,23 +47,32 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
             .withMessage(() => 'required')
             .isISO8601()
             .toDate(),
-        body('object')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
-        body('object.amount')
+        body('object.amount.value')
             .not()
             .isEmpty()
             .withMessage(() => 'required')
             .isInt()
             .toInt(),
-        body('object.fromLocation')
-            .not()
-            .isEmpty(),
-        body('object.toLocation')
+        body('object.amount.currency')
             .not()
             .isEmpty()
-            .withMessage(() => 'required'),
+            .withMessage(() => 'required')
+            .isString(),
+        body('object.fromLocation.typeOf')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isString(),
+        body('object.toLocation.typeOf')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isString(),
+        body('object.toLocation.identifier')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isString(),
         body('agent.identifier')
             .optional()
             .isArray({ max: 10 }),
@@ -88,15 +97,6 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
             .isEmpty()
             .withMessage(() => 'required')
             .isString(),
-        body('seller')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
-        body('seller.typeOf')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-            .isString(),
         body('seller.id')
             .not()
             .isEmpty()
@@ -113,7 +113,7 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
-            const fromLocation = await validateFromLocation(req);
+            const { fromLocation, pendingTransactionIdentifier } = await validateFromLocation(req);
 
             const transaction = await cinerino.service.transaction.moneyTransfer.start({
                 project: req.project,
@@ -134,8 +134,10 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
                     amount: req.body.object.amount,
                     fromLocation: fromLocation,
                     toLocation: req.body.object.toLocation,
-                    authorizeActions: [],
-                    ...(typeof req.body.object.description === 'string') ? { description: req.body.object.description } : {}
+                    ...(typeof req.body.object.description === 'string') ? { description: req.body.object.description } : undefined,
+                    ...(typeof pendingTransactionIdentifier === 'string')
+                        ? { pendingTransaction: { identifier: pendingTransactionIdentifier } }
+                        : undefined
                 },
                 recipient: {
                     typeOf: req.body.recipient.typeOf,
@@ -145,15 +147,11 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
                 },
                 seller: req.body.seller
             })({
-                // accountService: accountService,
                 action: actionRepo,
                 project: projectRepo,
                 transaction: transactionRepo
             });
 
-            // tslint:disable-next-line:no-string-literal
-            // const host = req.headers['host'];
-            // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
             res.json(transaction);
         } catch (error) {
             next(error);
@@ -161,69 +159,114 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
     }
 );
 
-async function validateFromLocation(req: Request): Promise<cinerino.factory.transaction.moneyTransfer.IFromLocation> {
-    let fromLocation = req.body.object.fromLocation;
+// tslint:disable-next-line:max-func-body-length
+async function validateFromLocation(req: Request): Promise<{
+    fromLocation: cinerino.factory.transaction.moneyTransfer.IFromLocation;
+    pendingTransactionIdentifier: string | undefined;
+}> {
+    let fromLocation = <cinerino.factory.transaction.moneyTransfer.IFromLocationBeforeStart>req.body.object.fromLocation;
+    let pendingTransactionIdentifier: string | undefined;
 
     // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
     if (typeof fromLocation === 'string') {
+        throw new cinerino.factory.errors.NotImplemented('tokenized from location not implemented');
         // tslint:disable-next-line:max-line-length
-        type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
-        const accountOwnershipInfo = await cinerino.service.code.verifyToken<IPayload>({
-            project: req.project,
-            agent: req.agent,
-            token: fromLocation,
-            secret: <string>process.env.TOKEN_SECRET,
-            issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
-        })({ action: new cinerino.repository.Action(mongoose.connection) });
+        // type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
+        // const accountOwnershipInfo = await cinerino.service.code.verifyToken<IPayload>({
+        //     project: req.project,
+        //     agent: req.agent,
+        //     token: fromLocation,
+        //     secret: <string>process.env.TOKEN_SECRET,
+        //     issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
+        // })({ action: new cinerino.repository.Action(mongoose.connection) });
 
-        fromLocation = accountOwnershipInfo.typeOfGood;
+        // fromLocation = accountOwnershipInfo.typeOfGood;
     } else {
-        const accessCode = fromLocation?.accessCode;
-        if (typeof accessCode === 'string') {
-            // アクセスコード情報があれば、認証
-            const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
-            });
-            const searchPaymentCardResult = await serviceOutputService.search({
+        // fromLocationが注文の場合に対応
+        if (fromLocation.typeOf === cinerino.factory.order.OrderType.Order) {
+            fromLocation = <cinerino.factory.transaction.moneyTransfer.IOrderAsFromLocation>fromLocation;
+
+            // 注文検索
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+            const searchOrdersResult = await orderRepo.search({
                 limit: 1,
-                page: 1,
-                project: { typeOf: req.project.typeOf, id: req.project.id },
-                typeOf: { $eq: fromLocation?.typeOf },
-                identifier: { $eq: fromLocation?.identifier },
-                accessCode: { $eq: accessCode }
+                project: { id: { $eq: req.project.id } },
+                orderNumbers: [String(fromLocation.orderNumber)],
+                confirmationNumbers: [String(fromLocation.confirmationNumber)]
             });
-            if (searchPaymentCardResult.data.length === 0) {
-                throw new cinerino.factory.errors.NotFound('PaymentCard');
+            const order = searchOrdersResult.shift();
+            if (order === undefined) {
+                throw new cinerino.factory.errors.NotFound('Order');
             }
-            const paymetCard = searchPaymentCardResult.data.shift();
-            fromLocation = {
-                typeOf: paymetCard.typeOf,
-                identifier: paymetCard.identifier
-            };
+
+            const accountNumber = order.identifier?.find(
+                (i) => i.name === cinerino.service.transaction.placeOrderInProgress.AWARD_ACCOUNT_NUMBER_IDENTIFIER_NAME
+            )?.value;
+            if (typeof accountNumber !== 'string') {
+                throw new cinerino.factory.errors.NotFound('account number');
+            }
+
+            // 口座種別はtoLocationに合わせる
+            const locationTypeOf = req.body.object.toLocation.typeOf;
+            fromLocation = { typeOf: locationTypeOf, identifier: accountNumber };
+
+            // ユニークネスを保証するために識別子を指定する
+            pendingTransactionIdentifier = cinerino.service.delivery.createPointAwardIdentifier({
+                project: { id: req.project.id },
+                purpose: { orderNumber: order.orderNumber },
+                toLocation: { accountNumber: req.body.object.toLocation.identifier }
+            });
+            // identifier: identifier,
         } else {
-            fromLocation = undefined;
-            // アクセスコード情報なし、かつ、会員の場合、所有権を確認
-            // 口座に所有権があるかどうか確認
-            // const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-            // const count = await ownershipInfoRepo.count<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
-            //     limit: 1,
-            //     ownedBy: { id: req.user.sub },
-            //     ownedFrom: new Date(),
-            //     ownedThrough: new Date(),
-            //     typeOfGood: {
-            //         typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
-            //         accountType: fromLocation.accountType,
-            //         accountNumber: fromLocation.accountNumber
-            //     }
-            // });
-            // if (count === 0) {
-            //     throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
-            // }
+            fromLocation = <cinerino.factory.action.transfer.moneyTransfer.IPaymentCard>fromLocation;
+
+            const accessCode = fromLocation.accessCode;
+            if (typeof accessCode === 'string') {
+                // アクセスコード情報があれば、認証
+                const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient
+                });
+                const searchPaymentCardResult = await serviceOutputService.search({
+                    limit: 1,
+                    page: 1,
+                    project: { typeOf: req.project.typeOf, id: req.project.id },
+                    typeOf: { $eq: fromLocation?.typeOf },
+                    identifier: { $eq: fromLocation?.identifier },
+                    accessCode: { $eq: accessCode }
+                });
+                if (searchPaymentCardResult.data.length === 0) {
+                    throw new cinerino.factory.errors.NotFound('PaymentCard');
+                }
+                const paymetCard = searchPaymentCardResult.data.shift();
+                fromLocation = {
+                    typeOf: paymetCard.typeOf,
+                    identifier: paymetCard.identifier
+                };
+            } else {
+                throw new cinerino.factory.errors.NotImplemented('owned payment card not implemented');
+                // アクセスコード情報なし、かつ、会員の場合、所有権を確認
+                // 口座に所有権があるかどうか確認
+                // const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+                // const count = await ownershipInfoRepo.count<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
+                //     limit: 1,
+                //     ownedBy: { id: req.user.sub },
+                //     ownedFrom: new Date(),
+                //     ownedThrough: new Date(),
+                //     typeOfGood: {
+                //         typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                //         accountType: fromLocation.accountType,
+                //         accountNumber: fromLocation.accountNumber
+                //     }
+                // });
+                // if (count === 0) {
+                //     throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
+                // }
+            }
         }
     }
 
-    return fromLocation;
+    return { fromLocation, pendingTransactionIdentifier };
 }
 
 /**
@@ -426,7 +469,7 @@ moneyTransferTransactionsRouter.get(
     async (req, res, next) => {
         try {
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-            const searchConditions: any = {
+            const searchConditions: cinerino.factory.transaction.moneyTransfer.ISearchConditions = {
                 ...req.query,
                 project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers

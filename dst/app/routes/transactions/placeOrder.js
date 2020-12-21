@@ -397,6 +397,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accou
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield authorizePointAward(req);
+        // 特典注文口座番号発行
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+        yield cinerino.service.transaction.placeOrderInProgress.publishAwardAccountNumberIfNotExist({
+            id: req.params.transactionId
+        })({ transaction: transactionRepo });
         res.status(http_status_1.CREATED)
             .json({
             id: 'dummy',

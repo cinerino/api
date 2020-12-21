@@ -133,7 +133,6 @@ returnOrderTransactionsRouter.post(
                     reason: reason
                 },
                 seller: {
-                    typeOf: order.seller.typeOf,
                     id: String(order.seller.id)
                 }
             })({
