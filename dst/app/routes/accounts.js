@@ -82,7 +82,6 @@ accountsRouter.post('/openByToken', permitScopes_1.default(['accounts.openByToke
         let accountNumber;
         let orderNumber;
         // トークン検証
-        // TODO audienceのチェック
         const hubClientId = cinerino.credentials.hub.clientId;
         if (typeof hubClientId !== 'string' || hubClientId.length === 0) {
             throw new cinerino.factory.errors.NotFound('hub client');
@@ -93,6 +92,7 @@ accountsRouter.post('/openByToken', permitScopes_1.default(['accounts.openByToke
             token: token,
             secret: process.env.TOKEN_SECRET,
             issuer: [process.env.RESOURCE_SERVER_IDENTIFIER],
+            // audienceのチェック
             audience: [hubClientId]
         })({});
         switch (payload.typeOf) {
