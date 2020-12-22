@@ -84,14 +84,18 @@ accountsRouter.post(
             let orderNumber: string | undefined;
 
             // トークン検証
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO audienceのチェック
+            const hubClientId = cinerino.credentials.hub.clientId;
+            if (typeof hubClientId !== 'string' || hubClientId.length === 0) {
+                throw new cinerino.factory.errors.NotFound('hub client');
+            }
             const payload = await cinerino.service.code.verifyToken<cinerino.factory.order.ISimpleOrder>({
                 project: req.project,
                 agent: req.agent,
                 token: token,
                 secret: <string>process.env.TOKEN_SECRET,
-                issuer: [<string>process.env.RESOURCE_SERVER_IDENTIFIER]
+                issuer: [<string>process.env.RESOURCE_SERVER_IDENTIFIER],
+                // audienceのチェック
+                audience: [hubClientId]
             })({});
 
             switch (payload.typeOf) {

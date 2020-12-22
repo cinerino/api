@@ -41,7 +41,7 @@ const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
 });
 const accountsRouter = express_1.Router();
 /**
- * 管理者として口座開設
+ * トークンで口座開設
  */
 accountsRouter.post('/openByToken', permitScopes_1.default(['accounts.openByToken']), rateLimit_1.default, ...[
     express_validator_1.body('instrument.token')
@@ -82,14 +82,18 @@ accountsRouter.post('/openByToken', permitScopes_1.default(['accounts.openByToke
         let accountNumber;
         let orderNumber;
         // トークン検証
-        // tslint:disable-next-line:no-suspicious-comment
         // TODO audienceのチェック
+        const hubClientId = cinerino.credentials.hub.clientId;
+        if (typeof hubClientId !== 'string' || hubClientId.length === 0) {
+            throw new cinerino.factory.errors.NotFound('hub client');
+        }
         const payload = yield cinerino.service.code.verifyToken({
             project: req.project,
             agent: req.agent,
             token: token,
             secret: process.env.TOKEN_SECRET,
-            issuer: [process.env.RESOURCE_SERVER_IDENTIFIER]
+            issuer: [process.env.RESOURCE_SERVER_IDENTIFIER],
+            audience: [hubClientId]
         })({});
         switch (payload.typeOf) {
             case cinerino.factory.order.OrderType.Order:
