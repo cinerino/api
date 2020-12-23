@@ -118,22 +118,31 @@ accountsRouter.post(
             }
 
             if (typeof accountNumber === 'string' && accountNumber.length > 0) {
-                // pecorinoで口座開設
                 const accountService = new cinerino.pecorinoapi.service.Account({
                     endpoint: cinerino.credentials.pecorino.endpoint,
                     auth: pecorinoAuthClient
                 });
-                await accountService.open([{
-                    project: {
-                        typeOf: 'Project',
-                        id: req.project.id
-                    },
-                    typeOf: accountTypeOf,
-                    accountType: accountType,
-                    accountNumber: accountNumber,
-                    name: `Order:${orderNumber}`,
-                    ...(typeof initialBalance === 'number') ? { initialBalance } : undefined
-                }]);
+
+                // 既存確認
+                const searchAcconutsResult = await accountService.search({
+                    limit: 1,
+                    project: { id: { $eq: req.project.id } },
+                    accountNumber: { $eq: accountNumber }
+                });
+                if (searchAcconutsResult.data.length < 1) {
+                    // pecorinoで口座開設
+                    await accountService.open([{
+                        project: {
+                            typeOf: 'Project',
+                            id: req.project.id
+                        },
+                        typeOf: accountTypeOf,
+                        accountType: accountType,
+                        accountNumber: accountNumber,
+                        name: `Order:${orderNumber}`,
+                        ...(typeof initialBalance === 'number') ? { initialBalance } : undefined
+                    }]);
+                }
             }
 
             res.status(NO_CONTENT)
