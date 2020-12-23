@@ -446,7 +446,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
 );
 
 // tslint:disable-next-line:max-func-body-length
-export async function authorizePointAward(req: Request) {
+export async function authorizePointAward(req: Request): Promise<cinerino.factory.transaction.placeOrder.IGivePointAwardParams[]> {
     const now = new Date();
     const notes = req.body.notes;
 
@@ -470,10 +470,9 @@ export async function authorizePointAward(req: Request) {
     });
 
     const programMemberships = programMembershipOwnershipInfos.map((o) => o.typeOfGood);
+    const givePointAwardParams: cinerino.factory.transaction.placeOrder.IGivePointAwardParams[] = [];
 
     if (programMemberships.length > 0) {
-        const givePointAwardParams: cinerino.factory.transaction.placeOrder.IGivePointAwardParams[] = [];
-
         for (const programMembership of programMemberships) {
             const membershipServiceId = <string>(<any>programMembership).membershipFor?.id;
             const membershipService = await productService.findById({ id: membershipServiceId });
@@ -523,6 +522,8 @@ export async function authorizePointAward(req: Request) {
             transaction: transactionRepo
         });
     }
+
+    return givePointAwardParams;
 }
 
 /**

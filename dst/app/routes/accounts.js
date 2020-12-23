@@ -108,23 +108,7 @@ accountsRouter.post('/openByToken', permitScopes_1.default(['accounts.openByToke
                 throw new cinerino.factory.errors.NotImplemented(`Payload type ${payload.typeOf} not implemented`);
         }
         if (typeof accountNumber === 'string' && accountNumber.length > 0) {
-            const accountService = new cinerino.pecorinoapi.service.Account({
-                endpoint: cinerino.credentials.pecorino.endpoint,
-                auth: pecorinoAuthClient
-            });
-            // 既存確認
-            const searchAcconutsResult = yield accountService.search({
-                limit: 1,
-                project: { id: { $eq: req.project.id } },
-                accountNumber: { $eq: accountNumber }
-            });
-            if (searchAcconutsResult.data.length < 1) {
-                // pecorinoで口座開設
-                yield accountService.open([Object.assign({ project: {
-                            typeOf: 'Project',
-                            id: req.project.id
-                        }, typeOf: accountTypeOf, accountType: accountType, accountNumber: accountNumber, name: `Order:${orderNumber}` }, (typeof initialBalance === 'number') ? { initialBalance } : undefined)]);
-            }
+            yield openAccountIfNotExist(Object.assign({ project: { typeOf: 'Project', id: req.project.id }, typeOf: accountTypeOf, accountType: accountType, accountNumber: accountNumber, name: `Order:${orderNumber}` }, (typeof initialBalance === 'number') ? { initialBalance } : undefined));
         }
         res.status(http_status_1.NO_CONTENT)
             .end();
@@ -135,6 +119,29 @@ accountsRouter.post('/openByToken', permitScopes_1.default(['accounts.openByToke
         next(error);
     }
 }));
+function openAccountIfNotExist(params) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const accountService = new cinerino.pecorinoapi.service.Account({
+            endpoint: cinerino.credentials.pecorino.endpoint,
+            auth: pecorinoAuthClient
+        });
+        try {
+            // pecorinoで口座開設
+            yield accountService.open([params]);
+        }
+        catch (error) {
+            // 口座番号重複エラーの可能性もあるので、口座が既存であればok
+            const searchAcconutsResult = yield accountService.search({
+                limit: 1,
+                project: { id: { $eq: params.project.id } },
+                accountNumber: { $eq: params.accountNumber }
+            });
+            if (searchAcconutsResult.data.length < 1) {
+                throw error;
+            }
+        }
+    });
+}
 // tslint:disable-next-line:no-magic-numbers
 const UNIT_IN_SECONDS = 5;
 // tslint:disable-next-line:no-magic-numbers

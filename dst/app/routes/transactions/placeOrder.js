@@ -387,8 +387,8 @@ function authorizePointAward(req) {
             ownedThrough: now
         });
         const programMemberships = programMembershipOwnershipInfos.map((o) => o.typeOfGood);
+        const givePointAwardParams = [];
         if (programMemberships.length > 0) {
-            const givePointAwardParams = [];
             for (const programMembership of programMemberships) {
                 const membershipServiceId = (_a = programMembership.membershipFor) === null || _a === void 0 ? void 0 : _a.id;
                 const membershipService = yield productService.findById({ id: membershipServiceId });
@@ -433,6 +433,7 @@ function authorizePointAward(req) {
                 transaction: transactionRepo
             });
         }
+        return givePointAwardParams;
     });
 }
 exports.authorizePointAward = authorizePointAward;

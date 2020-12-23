@@ -118,31 +118,14 @@ accountsRouter.post(
             }
 
             if (typeof accountNumber === 'string' && accountNumber.length > 0) {
-                const accountService = new cinerino.pecorinoapi.service.Account({
-                    endpoint: cinerino.credentials.pecorino.endpoint,
-                    auth: pecorinoAuthClient
+                await openAccountIfNotExist({
+                    project: { typeOf: 'Project', id: req.project.id },
+                    typeOf: accountTypeOf,
+                    accountType: accountType,
+                    accountNumber: accountNumber,
+                    name: `Order:${orderNumber}`,
+                    ...(typeof initialBalance === 'number') ? { initialBalance } : undefined
                 });
-
-                // 既存確認
-                const searchAcconutsResult = await accountService.search({
-                    limit: 1,
-                    project: { id: { $eq: req.project.id } },
-                    accountNumber: { $eq: accountNumber }
-                });
-                if (searchAcconutsResult.data.length < 1) {
-                    // pecorinoで口座開設
-                    await accountService.open([{
-                        project: {
-                            typeOf: 'Project',
-                            id: req.project.id
-                        },
-                        typeOf: accountTypeOf,
-                        accountType: accountType,
-                        accountNumber: accountNumber,
-                        name: `Order:${orderNumber}`,
-                        ...(typeof initialBalance === 'number') ? { initialBalance } : undefined
-                    }]);
-                }
             }
 
             res.status(NO_CONTENT)
@@ -154,6 +137,35 @@ accountsRouter.post(
         }
     }
 );
+
+async function openAccountIfNotExist(params: {
+    project: { typeOf: 'Project'; id: string };
+    typeOf: string;
+    accountType: string;
+    accountNumber: string;
+    name: string;
+    initialBalance?: number;
+}) {
+    const accountService = new cinerino.pecorinoapi.service.Account({
+        endpoint: cinerino.credentials.pecorino.endpoint,
+        auth: pecorinoAuthClient
+    });
+
+    try {
+        // pecorinoで口座開設
+        await accountService.open([params]);
+    } catch (error) {
+        // 口座番号重複エラーの可能性もあるので、口座が既存であればok
+        const searchAcconutsResult = await accountService.search({
+            limit: 1,
+            project: { id: { $eq: params.project.id } },
+            accountNumber: { $eq: params.accountNumber }
+        });
+        if (searchAcconutsResult.data.length < 1) {
+            throw error;
+        }
+    }
+}
 
 // tslint:disable-next-line:no-magic-numbers
 const UNIT_IN_SECONDS = 5;
