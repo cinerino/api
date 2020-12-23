@@ -108,15 +108,23 @@ accountsRouter.post('/openByToken', permitScopes_1.default(['accounts.openByToke
                 throw new cinerino.factory.errors.NotImplemented(`Payload type ${payload.typeOf} not implemented`);
         }
         if (typeof accountNumber === 'string' && accountNumber.length > 0) {
-            // pecorinoで口座開設
             const accountService = new cinerino.pecorinoapi.service.Account({
                 endpoint: cinerino.credentials.pecorino.endpoint,
                 auth: pecorinoAuthClient
             });
-            yield accountService.open([Object.assign({ project: {
-                        typeOf: 'Project',
-                        id: req.project.id
-                    }, typeOf: accountTypeOf, accountType: accountType, accountNumber: accountNumber, name: `Order:${orderNumber}` }, (typeof initialBalance === 'number') ? { initialBalance } : undefined)]);
+            // 既存確認
+            const searchAcconutsResult = yield accountService.search({
+                limit: 1,
+                project: { id: { $eq: req.project.id } },
+                accountNumber: { $eq: accountNumber }
+            });
+            if (searchAcconutsResult.data.length < 1) {
+                // pecorinoで口座開設
+                yield accountService.open([Object.assign({ project: {
+                            typeOf: 'Project',
+                            id: req.project.id
+                        }, typeOf: accountTypeOf, accountType: accountType, accountNumber: accountNumber, name: `Order:${orderNumber}` }, (typeof initialBalance === 'number') ? { initialBalance } : undefined)]);
+            }
         }
         res.status(http_status_1.NO_CONTENT)
             .end();
