@@ -15,6 +15,7 @@ import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
+import { createPassportValidator, validateWaiterPassport } from '../../middlewares/validateWaiterPassport';
 import validator from '../../middlewares/validator';
 
 import * as redis from '../../../redis';
@@ -32,7 +33,6 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     // tslint:disable-next-line:no-magic-numbers
     : 256;
 
-// const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const moneyTransferTransactionsRouter = Router();
 const debug = createDebug('cinerino-api:router');
 
@@ -102,12 +102,22 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
             .isEmpty()
             .withMessage(() => 'required')
             .isString()
-        // if (!WAITER_DISABLED) {
-        // }
     ],
     validator,
+    validateWaiterPassport,
     async (req, res, next) => {
         try {
+            const sellerService = new cinerino.chevre.service.Seller({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const seller = await sellerService.findById({ id: <string>req.body.seller.id });
+
+            const passportValidator = createPassportValidator({
+                transaction: { typeOf: cinerino.factory.transactionType.MoneyTransfer },
+                seller,
+                clientId: req.user.client_id
+            });
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
@@ -134,6 +144,7 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
                     amount: req.body.object.amount,
                     fromLocation: fromLocation,
                     toLocation: req.body.object.toLocation,
+                    ...(typeof req.waiterPassport?.token === 'string') ? { passport: req.waiterPassport } : undefined,
                     ...(typeof req.body.object.description === 'string') ? { description: req.body.object.description } : undefined,
                     ...(typeof pendingTransactionIdentifier === 'string')
                         ? { pendingTransaction: { identifier: pendingTransactionIdentifier } }
@@ -145,7 +156,8 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
                     ...(typeof req.body.recipient.name === 'string') ? { name: req.body.recipient.name } : {},
                     ...(typeof req.body.recipient.url === 'string') ? { url: req.body.recipient.url } : {}
                 },
-                seller: req.body.seller
+                seller: req.body.seller,
+                passportValidator
             })({
                 action: actionRepo,
                 project: projectRepo,

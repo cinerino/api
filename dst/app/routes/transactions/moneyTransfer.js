@@ -22,6 +22,7 @@ const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
+const validateWaiterPassport_1 = require("../../middlewares/validateWaiterPassport");
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
@@ -35,7 +36,6 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
     : 256;
-// const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const moneyTransferTransactionsRouter = express_1.Router();
 const debug = createDebug('cinerino-api:router');
 // tslint:disable-next-line:use-default-type-parameter
@@ -101,10 +101,19 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
         .isEmpty()
         .withMessage(() => 'required')
         .isString()
-    // if (!WAITER_DISABLED) {
-    // }
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+], validator_1.default, validateWaiterPassport_1.validateWaiterPassport, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
+        const sellerService = new cinerino.chevre.service.Seller({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const seller = yield sellerService.findById({ id: req.body.seller.id });
+        const passportValidator = validateWaiterPassport_1.createPassportValidator({
+            transaction: { typeOf: cinerino.factory.transactionType.MoneyTransfer },
+            seller,
+            clientId: req.user.client_id
+        });
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
@@ -120,11 +129,12 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
                         })
                         : []
                 ] }),
-            object: Object.assign(Object.assign({ amount: req.body.object.amount, fromLocation: fromLocation, toLocation: req.body.object.toLocation }, (typeof req.body.object.description === 'string') ? { description: req.body.object.description } : undefined), (typeof pendingTransactionIdentifier === 'string')
+            object: Object.assign(Object.assign(Object.assign({ amount: req.body.object.amount, fromLocation: fromLocation, toLocation: req.body.object.toLocation }, (typeof ((_a = req.waiterPassport) === null || _a === void 0 ? void 0 : _a.token) === 'string') ? { passport: req.waiterPassport } : undefined), (typeof req.body.object.description === 'string') ? { description: req.body.object.description } : undefined), (typeof pendingTransactionIdentifier === 'string')
                 ? { pendingTransaction: { identifier: pendingTransactionIdentifier } }
                 : undefined),
             recipient: Object.assign(Object.assign({ typeOf: req.body.recipient.typeOf, id: req.body.recipient.id }, (typeof req.body.recipient.name === 'string') ? { name: req.body.recipient.name } : {}), (typeof req.body.recipient.url === 'string') ? { url: req.body.recipient.url } : {}),
-            seller: req.body.seller
+            seller: req.body.seller,
+            passportValidator
         })({
             action: actionRepo,
             project: projectRepo,

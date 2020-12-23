@@ -28,6 +28,7 @@ declare global {
              * プロジェクトメンバーの権限
              */
             memberPermissions: string[];
+            waiterPassport?: cinerino.factory.transaction.IPassportBeforeStart;
         }
     }
 }

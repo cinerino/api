@@ -14,6 +14,7 @@ import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
+import { createPassportValidator, validateWaiterPassport } from '../../middlewares/validateWaiterPassport';
 import validator from '../../middlewares/validator';
 
 import placeOrder4cinemasunshineRouter from './placeOrder4cinemasunshine';
@@ -26,7 +27,6 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     // tslint:disable-next-line:no-magic-numbers
     : 256;
 
-const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== undefined)
     ? Number(process.env.NUM_ORDER_ITEMS_MAX_VALUE)
     // tslint:disable-next-line:no-magic-numbers
@@ -90,36 +90,13 @@ placeOrderTransactionsRouter.post(
         body('seller.id')
             .not()
             .isEmpty()
-            .withMessage((_, __) => 'required'),
-        ...(!WAITER_DISABLED)
-            ? [
-                body('object.passport.token')
-                    .not()
-                    .isEmpty()
-                    .withMessage((_, __) => 'required')
-            ]
-            : []
+            .withMessage((_, __) => 'required')
 
     ],
     validator,
+    validateWaiterPassport,
     async (req, res, next) => {
         try {
-            // WAITER有効設定であれば許可証をセット
-            let passport: cinerino.factory.transaction.placeOrder.IPassportBeforeStart | undefined;
-            if (!WAITER_DISABLED) {
-                if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
-                    throw new cinerino.factory.errors.ServiceUnavailable('WAITER_PASSPORT_ISSUER undefined');
-                }
-                if (process.env.WAITER_SECRET === undefined) {
-                    throw new cinerino.factory.errors.ServiceUnavailable('WAITER_SECRET undefined');
-                }
-                passport = {
-                    token: req.body.object.passport.token,
-                    issuer: process.env.WAITER_PASSPORT_ISSUER,
-                    secret: process.env.WAITER_SECRET
-                };
-            }
-
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
@@ -131,7 +108,11 @@ placeOrderTransactionsRouter.post(
             });
             const seller = await sellerService.findById({ id: <string>req.body.seller.id });
 
-            const passportValidator = createPassportValidator(seller, req.user.client_id);
+            const passportValidator = createPassportValidator({
+                transaction: { typeOf: cinerino.factory.transactionType.PlaceOrder },
+                seller,
+                clientId: req.user.client_id
+            });
 
             const project = await projectRepo.findById({ id: req.project.id });
             const useTransactionClientUser = project.settings?.useTransactionClientUser === true;
@@ -154,7 +135,7 @@ placeOrderTransactionsRouter.post(
                 },
                 seller: req.body.seller,
                 object: {
-                    passport: passport,
+                    ...(typeof req.waiterPassport?.token === 'string') ? { passport: req.waiterPassport } : undefined,
                     ...(useTransactionClientUser) ? { clientUser: req.user } : undefined,
                     ...(typeof orderName === 'string') ? { name: orderName } : undefined
                 },
@@ -173,47 +154,6 @@ placeOrderTransactionsRouter.post(
         }
     }
 );
-
-function createPassportValidator(
-    seller: cinerino.factory.chevre.seller.ISeller,
-    clientId?: string
-): cinerino.service.transaction.placeOrderInProgress.IPassportValidator {
-    return (params) => {
-        // 許可証発行者確認
-        const validIssuer = params.passport.iss === process.env.WAITER_PASSPORT_ISSUER;
-
-        // スコープのフォーマットは、Transaction:PlaceOrder:${sellerId}
-        const newExplodedScopeStrings = params.passport.scope.split(':');
-        const isNewValidScope = (
-            newExplodedScopeStrings[0] === 'Transaction' && // スコープ接頭辞確認
-            newExplodedScopeStrings[1] === cinerino.factory.transactionType.PlaceOrder && // スコープ接頭辞確認
-            (
-                // tslint:disable-next-line:no-magic-numbers
-                newExplodedScopeStrings[2] === seller.id || newExplodedScopeStrings[2] === '*' // 販売者ID確認
-            )
-        );
-
-        // 追加特性に登録されたwaiterScopeでもok
-        const validScopesByAdditionalProperty = seller.additionalProperty?.filter((p) => p.name === 'waiterScope')
-            .map((p) => p.value);
-        const isValidByAdditionalProperty = (Array.isArray(validScopesByAdditionalProperty))
-            ? validScopesByAdditionalProperty?.includes(params.passport.scope)
-            : false;
-
-        // スコープスタイルはどちらか一方有効であれok
-        const validScope = isNewValidScope || isValidByAdditionalProperty;
-
-        // クライアントの有効性
-        let validClient = true;
-        if (typeof clientId === 'string') {
-            if (Array.isArray(params.passport.aud) && params.passport.aud.indexOf(clientId) < 0) {
-                validClient = false;
-            }
-        }
-
-        return validIssuer && validScope && validClient;
-    };
-}
 
 /**
  * 購入者情報を変更する
