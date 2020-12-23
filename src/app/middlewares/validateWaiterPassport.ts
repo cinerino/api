@@ -10,10 +10,14 @@ const WAITER_SECRET = process.env.WAITER_SECRET;
 
 export function validateWaiterPassport(req: Request, __: Response, next: NextFunction) {
     if (typeof WAITER_PASSPORT_ISSUER !== 'string' || WAITER_PASSPORT_ISSUER.length < 1) {
-        throw new cinerino.factory.errors.ServiceUnavailable('WAITER_PASSPORT_ISSUER undefined');
+        next(new cinerino.factory.errors.ServiceUnavailable('WAITER_PASSPORT_ISSUER undefined'));
+
+        return;
     }
     if (typeof WAITER_SECRET !== 'string' || WAITER_SECRET.length < 1) {
-        throw new cinerino.factory.errors.ServiceUnavailable('WAITER_SECRET undefined');
+        next(new cinerino.factory.errors.ServiceUnavailable('WAITER_SECRET undefined'));
+
+        return;
     }
 
     if (WAITER_DISABLED) {
@@ -35,6 +39,8 @@ export function validateWaiterPassport(req: Request, __: Response, next: NextFun
         issuer: WAITER_PASSPORT_ISSUER,
         secret: WAITER_SECRET
     };
+
+    next();
 }
 
 export function createPassportValidator(params: {
