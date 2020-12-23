@@ -426,12 +426,19 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
     },
     async (req, res, next) => {
         try {
-            await authorizePointAward(req);
+            const givePointAwardParams = await authorizePointAward(req);
 
             // 特典注文口座番号発行
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             await cinerino.service.transaction.placeOrderInProgress.publishAwardAccountNumberIfNotExist({
-                id: req.params.transactionId
+                id: req.params.transactionId,
+                object: {
+                    awardAccounts: givePointAwardParams
+                        .filter((p) => typeof p.object?.toLocation.typeOf === 'string')
+                        .map((p) => {
+                            return { typeOf: <string>p.object?.toLocation.typeOf };
+                        })
+                }
             })({ transaction: transactionRepo });
 
             res.status(CREATED)

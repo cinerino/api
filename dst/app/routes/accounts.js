@@ -79,7 +79,7 @@ accountsRouter.post('/openByToken', permitScopes_1.default(['accounts.openByToke
             throw new cinerino.factory.errors.NotFound('Product');
         }
         const accountType = (_e = (_d = product.serviceOutput) === null || _d === void 0 ? void 0 : _d.amount) === null || _e === void 0 ? void 0 : _e.currency;
-        let accountNumber;
+        let awardAccounts = [];
         let orderNumber;
         // トークン検証
         const hubClientId = cinerino.credentials.hub.clientId;
@@ -102,13 +102,18 @@ accountsRouter.post('/openByToken', permitScopes_1.default(['accounts.openByToke
                 const orderRepo = new cinerino.repository.Order(mongoose.connection);
                 const order = yield orderRepo.findByOrderNumber({ orderNumber });
                 // 口座番号を取得
-                accountNumber = (_g = (_f = order.identifier) === null || _f === void 0 ? void 0 : _f.find((i) => i.name === cinerino.service.transaction.placeOrderInProgress.AWARD_ACCOUNT_NUMBER_IDENTIFIER_NAME)) === null || _g === void 0 ? void 0 : _g.value;
+                const awardAccountsValue = (_g = (_f = order.identifier) === null || _f === void 0 ? void 0 : _f.find((i) => i.name === cinerino.service.transaction.placeOrderInProgress.AWARD_ACCOUNTS_IDENTIFIER_NAME)) === null || _g === void 0 ? void 0 : _g.value;
+                if (typeof awardAccountsValue === 'string' && awardAccountsValue.length > 0) {
+                    awardAccounts = JSON.parse(awardAccountsValue);
+                }
                 break;
             default:
                 throw new cinerino.factory.errors.NotImplemented(`Payload type ${payload.typeOf} not implemented`);
         }
-        if (typeof accountNumber === 'string' && accountNumber.length > 0) {
-            yield openAccountIfNotExist(Object.assign({ project: { typeOf: 'Project', id: req.project.id }, typeOf: accountTypeOf, accountType: accountType, accountNumber: accountNumber, name: `Order:${orderNumber}` }, (typeof initialBalance === 'number') ? { initialBalance } : undefined));
+        // 指定された口座種別の特典口座が存在すれば、開設
+        const awardAccount = awardAccounts.find((a) => a.typeOf === accountTypeOf);
+        if (awardAccount !== undefined) {
+            yield openAccountIfNotExist(Object.assign({ project: { typeOf: 'Project', id: req.project.id }, typeOf: accountTypeOf, accountType: accountType, accountNumber: awardAccount.accountNumber, name: `Order:${orderNumber}` }, (typeof initialBalance === 'number') ? { initialBalance } : undefined));
         }
         res.status(http_status_1.NO_CONTENT)
             .end();

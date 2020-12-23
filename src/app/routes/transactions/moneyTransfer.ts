@@ -211,16 +211,22 @@ async function validateFromLocation(req: Request): Promise<{
                 throw new cinerino.factory.errors.NotFound('Order');
             }
 
-            const accountNumber = order.identifier?.find(
-                (i) => i.name === cinerino.service.transaction.placeOrderInProgress.AWARD_ACCOUNT_NUMBER_IDENTIFIER_NAME
+            let awardAccounts: cinerino.service.transaction.placeOrderInProgress.IAwardAccount[] = [];
+            const awardAccounsValue = order.identifier?.find(
+                (i) => i.name === cinerino.service.transaction.placeOrderInProgress.AWARD_ACCOUNTS_IDENTIFIER_NAME
             )?.value;
-            if (typeof accountNumber !== 'string') {
-                throw new cinerino.factory.errors.NotFound('account number');
+            if (typeof awardAccounsValue === 'string' && awardAccounsValue.length > 0) {
+                awardAccounts = JSON.parse(awardAccounsValue);
             }
 
             // 口座種別はtoLocationに合わせる
             const locationTypeOf = req.body.object.toLocation.typeOf;
-            fromLocation = { typeOf: locationTypeOf, identifier: accountNumber };
+
+            const awardAccount = awardAccounts.find((a) => a.typeOf === locationTypeOf);
+            if (awardAccount === undefined) {
+                throw new cinerino.factory.errors.NotFound('award account');
+            }
+            fromLocation = { typeOf: awardAccount.typeOf, identifier: awardAccount.accountNumber };
 
             // ユニークネスを保証するために識別子を指定する
             pendingTransactionIdentifier = cinerino.service.delivery.createPointAwardIdentifier({

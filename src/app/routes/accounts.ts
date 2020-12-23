@@ -80,7 +80,7 @@ accountsRouter.post(
             }
 
             const accountType = (<any>product).serviceOutput?.amount?.currency;
-            let accountNumber: string | undefined;
+            let awardAccounts: cinerino.service.transaction.placeOrderInProgress.IAwardAccount[] = [];
             let orderNumber: string | undefined;
 
             // トークン検証
@@ -107,9 +107,12 @@ accountsRouter.post(
                     const order = await orderRepo.findByOrderNumber({ orderNumber });
 
                     // 口座番号を取得
-                    accountNumber = order.identifier?.find(
-                        (i) => i.name === cinerino.service.transaction.placeOrderInProgress.AWARD_ACCOUNT_NUMBER_IDENTIFIER_NAME
+                    const awardAccountsValue = order.identifier?.find(
+                        (i) => i.name === cinerino.service.transaction.placeOrderInProgress.AWARD_ACCOUNTS_IDENTIFIER_NAME
                     )?.value;
+                    if (typeof awardAccountsValue === 'string' && awardAccountsValue.length > 0) {
+                        awardAccounts = JSON.parse(awardAccountsValue);
+                    }
 
                     break;
 
@@ -117,12 +120,14 @@ accountsRouter.post(
                     throw new cinerino.factory.errors.NotImplemented(`Payload type ${payload.typeOf} not implemented`);
             }
 
-            if (typeof accountNumber === 'string' && accountNumber.length > 0) {
+            // 指定された口座種別の特典口座が存在すれば、開設
+            const awardAccount = awardAccounts.find((a) => a.typeOf === accountTypeOf);
+            if (awardAccount !== undefined) {
                 await openAccountIfNotExist({
                     project: { typeOf: 'Project', id: req.project.id },
                     typeOf: accountTypeOf,
                     accountType: accountType,
-                    accountNumber: accountNumber,
+                    accountNumber: awardAccount.accountNumber,
                     name: `Order:${orderNumber}`,
                     ...(typeof initialBalance === 'number') ? { initialBalance } : undefined
                 });

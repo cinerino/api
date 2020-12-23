@@ -182,13 +182,18 @@ function validateFromLocation(req) {
                 if (order === undefined) {
                     throw new cinerino.factory.errors.NotFound('Order');
                 }
-                const accountNumber = (_b = (_a = order.identifier) === null || _a === void 0 ? void 0 : _a.find((i) => i.name === cinerino.service.transaction.placeOrderInProgress.AWARD_ACCOUNT_NUMBER_IDENTIFIER_NAME)) === null || _b === void 0 ? void 0 : _b.value;
-                if (typeof accountNumber !== 'string') {
-                    throw new cinerino.factory.errors.NotFound('account number');
+                let awardAccounts = [];
+                const awardAccounsValue = (_b = (_a = order.identifier) === null || _a === void 0 ? void 0 : _a.find((i) => i.name === cinerino.service.transaction.placeOrderInProgress.AWARD_ACCOUNTS_IDENTIFIER_NAME)) === null || _b === void 0 ? void 0 : _b.value;
+                if (typeof awardAccounsValue === 'string' && awardAccounsValue.length > 0) {
+                    awardAccounts = JSON.parse(awardAccounsValue);
                 }
                 // 口座種別はtoLocationに合わせる
                 const locationTypeOf = req.body.object.toLocation.typeOf;
-                fromLocation = { typeOf: locationTypeOf, identifier: accountNumber };
+                const awardAccount = awardAccounts.find((a) => a.typeOf === locationTypeOf);
+                if (awardAccount === undefined) {
+                    throw new cinerino.factory.errors.NotFound('award account');
+                }
+                fromLocation = { typeOf: awardAccount.typeOf, identifier: awardAccount.accountNumber };
                 // ユニークネスを保証するために識別子を指定する
                 pendingTransactionIdentifier = cinerino.service.delivery.createPointAwardIdentifier({
                     project: { id: req.project.id },

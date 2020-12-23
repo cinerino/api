@@ -348,11 +348,19 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accou
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield authorizePointAward(req);
+        const givePointAwardParams = yield authorizePointAward(req);
         // 特典注文口座番号発行
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         yield cinerino.service.transaction.placeOrderInProgress.publishAwardAccountNumberIfNotExist({
-            id: req.params.transactionId
+            id: req.params.transactionId,
+            object: {
+                awardAccounts: givePointAwardParams
+                    .filter((p) => { var _a; return typeof ((_a = p.object) === null || _a === void 0 ? void 0 : _a.toLocation.typeOf) === 'string'; })
+                    .map((p) => {
+                    var _a;
+                    return { typeOf: (_a = p.object) === null || _a === void 0 ? void 0 : _a.toLocation.typeOf };
+                })
+            }
         })({ transaction: transactionRepo });
         res.status(http_status_1.CREATED)
             .json({
