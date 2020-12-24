@@ -52,11 +52,6 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
         .withMessage(() => 'required')
         .isInt()
         .toInt(),
-    express_validator_1.body('object.amount.currency')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-        .isString(),
     express_validator_1.body('object.fromLocation.typeOf')
         .not()
         .isEmpty()
@@ -87,10 +82,6 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
         .isEmpty()
         .isString()
         .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.body('recipient')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required'),
     express_validator_1.body('recipient.typeOf')
         .not()
         .isEmpty()
@@ -102,7 +93,7 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
         .withMessage(() => 'required')
         .isString()
 ], validator_1.default, validateWaiterPassport_1.validateWaiterPassport, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     try {
         const sellerService = new cinerino.chevre.service.Seller({
             endpoint: cinerino.credentials.chevre.endpoint,
@@ -118,6 +109,25 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const { fromLocation, pendingTransactionIdentifier } = yield validateFromLocation(req);
+        // ペイメントカードプロダクトを検索して、currencyを自動取得
+        const productService = new cinerino.chevre.service.Product({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const searchProductsResult = yield productService.search({
+            limit: 1,
+            project: { id: { $eq: req.project.id } },
+            typeOf: { $eq: cinerino.factory.chevre.product.ProductType.PaymentCard },
+            serviceOutput: { typeOf: { $eq: fromLocation.typeOf } }
+        });
+        const product = searchProductsResult.data.shift();
+        if (product === undefined) {
+            throw new cinerino.factory.errors.NotFound('Product');
+        }
+        const currency = (_b = (_a = product.serviceOutput) === null || _a === void 0 ? void 0 : _a.amount) === null || _b === void 0 ? void 0 : _b.currency;
+        if (typeof currency !== 'string') {
+            throw new cinerino.factory.errors.ServiceUnavailable('currency settings undefined for the product');
+        }
         const transaction = yield cinerino.service.transaction.moneyTransfer.start({
             project: req.project,
             expires: req.body.expires,
@@ -129,10 +139,14 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
                         })
                         : []
                 ] }),
-            object: Object.assign(Object.assign(Object.assign({ amount: req.body.object.amount, fromLocation: fromLocation, toLocation: req.body.object.toLocation }, (typeof ((_a = req.waiterPassport) === null || _a === void 0 ? void 0 : _a.token) === 'string') ? { passport: req.waiterPassport } : undefined), (typeof req.body.object.description === 'string') ? { description: req.body.object.description } : undefined), (typeof pendingTransactionIdentifier === 'string')
+            object: Object.assign(Object.assign(Object.assign({ amount: {
+                    typeOf: 'MonetaryAmount',
+                    value: (_d = (_c = req.body.object) === null || _c === void 0 ? void 0 : _c.amount) === null || _d === void 0 ? void 0 : _d.value,
+                    currency
+                }, fromLocation: fromLocation, toLocation: req.body.object.toLocation }, (typeof ((_e = req.waiterPassport) === null || _e === void 0 ? void 0 : _e.token) === 'string') ? { passport: req.waiterPassport } : undefined), (typeof req.body.object.description === 'string') ? { description: req.body.object.description } : undefined), (typeof pendingTransactionIdentifier === 'string')
                 ? { pendingTransaction: { identifier: pendingTransactionIdentifier } }
                 : undefined),
-            recipient: Object.assign(Object.assign({ typeOf: req.body.recipient.typeOf, id: req.body.recipient.id }, (typeof req.body.recipient.name === 'string') ? { name: req.body.recipient.name } : {}), (typeof req.body.recipient.url === 'string') ? { url: req.body.recipient.url } : {}),
+            recipient: Object.assign(Object.assign(Object.assign({ project: req.project, typeOf: req.body.recipient.typeOf }, (typeof ((_f = req.body.recipient) === null || _f === void 0 ? void 0 : _f.id) === 'string') ? { id: req.body.recipient.id } : undefined), (typeof ((_g = req.body.recipient) === null || _g === void 0 ? void 0 : _g.name) === 'string') ? { name: req.body.recipient.name } : undefined), (typeof ((_h = req.body.recipient) === null || _h === void 0 ? void 0 : _h.url) === 'string') ? { url: req.body.recipient.url } : undefined),
             seller: req.body.seller,
             passportValidator
         })({
