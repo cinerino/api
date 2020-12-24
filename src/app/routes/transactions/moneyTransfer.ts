@@ -9,6 +9,7 @@ import { Request, Router } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { body, query } from 'express-validator';
 import { NO_CONTENT } from 'http-status';
+import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 
 import lockTransaction from '../../middlewares/lockTransaction';
@@ -19,6 +20,9 @@ import { createPassportValidator, validateWaiterPassport } from '../../middlewar
 import validator from '../../middlewares/validator';
 
 import * as redis from '../../../redis';
+
+// 注文→ペイメントカードの振替が有効な注文日時from
+const USE_ORDER2PAYMENTCARD_FROM = process.env.USE_ORDER2PAYMENTCARD_FROM;
 
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
@@ -227,6 +231,15 @@ async function validateFromLocation(req: Request): Promise<{
                 throw new cinerino.factory.errors.NotFound('Order');
             }
 
+            // 振替が有効な注文日時設定があれば確認
+            if (typeof USE_ORDER2PAYMENTCARD_FROM === 'string' && USE_ORDER2PAYMENTCARD_FROM.length > 0) {
+                const isEligibleOrder = moment(order.orderDate)
+                    .isSameOrAfter(moment(USE_ORDER2PAYMENTCARD_FROM));
+                if (!isEligibleOrder) {
+                    throw new cinerino.factory.errors.NotFound('Eligible Order');
+                }
+            }
+
             let awardAccounts: cinerino.service.transaction.placeOrderInProgress.IAwardAccount[] = [];
             const awardAccounsValue = order.identifier?.find(
                 (i) => i.name === cinerino.service.transaction.placeOrderInProgress.AWARD_ACCOUNTS_IDENTIFIER_NAME
@@ -256,27 +269,28 @@ async function validateFromLocation(req: Request): Promise<{
 
             const accessCode = fromLocation.accessCode;
             if (typeof accessCode === 'string') {
+                throw new cinerino.factory.errors.NotImplemented('owned payment card not implemented');
                 // アクセスコード情報があれば、認証
-                const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
-                    endpoint: cinerino.credentials.chevre.endpoint,
-                    auth: chevreAuthClient
-                });
-                const searchPaymentCardResult = await serviceOutputService.search({
-                    limit: 1,
-                    page: 1,
-                    project: { typeOf: req.project.typeOf, id: req.project.id },
-                    typeOf: { $eq: fromLocation?.typeOf },
-                    identifier: { $eq: fromLocation?.identifier },
-                    accessCode: { $eq: accessCode }
-                });
-                if (searchPaymentCardResult.data.length === 0) {
-                    throw new cinerino.factory.errors.NotFound('PaymentCard');
-                }
-                const paymetCard = searchPaymentCardResult.data.shift();
-                fromLocation = {
-                    typeOf: paymetCard.typeOf,
-                    identifier: paymetCard.identifier
-                };
+                // const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
+                //     endpoint: cinerino.credentials.chevre.endpoint,
+                //     auth: chevreAuthClient
+                // });
+                // const searchPaymentCardResult = await serviceOutputService.search({
+                //     limit: 1,
+                //     page: 1,
+                //     project: { typeOf: req.project.typeOf, id: req.project.id },
+                //     typeOf: { $eq: fromLocation?.typeOf },
+                //     identifier: { $eq: fromLocation?.identifier },
+                //     accessCode: { $eq: accessCode }
+                // });
+                // if (searchPaymentCardResult.data.length === 0) {
+                //     throw new cinerino.factory.errors.NotFound('PaymentCard');
+                // }
+                // const paymetCard = searchPaymentCardResult.data.shift();
+                // fromLocation = {
+                //     typeOf: paymetCard.typeOf,
+                //     identifier: paymetCard.identifier
+                // };
             } else {
                 throw new cinerino.factory.errors.NotImplemented('owned payment card not implemented');
                 // アクセスコード情報なし、かつ、会員の場合、所有権を確認

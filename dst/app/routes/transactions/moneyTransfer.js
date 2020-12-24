@@ -17,6 +17,7 @@ const createDebug = require("debug");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
+const moment = require("moment-timezone");
 const mongoose = require("mongoose");
 const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
@@ -25,6 +26,8 @@ const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4t
 const validateWaiterPassport_1 = require("../../middlewares/validateWaiterPassport");
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
+// 注文→ペイメントカードの振替が有効な注文日時from
+const USE_ORDER2PAYMENTCARD_FROM = process.env.USE_ORDER2PAYMENTCARD_FROM;
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -196,6 +199,14 @@ function validateFromLocation(req) {
                 if (order === undefined) {
                     throw new cinerino.factory.errors.NotFound('Order');
                 }
+                // 振替が有効な注文日時設定があれば確認
+                if (typeof USE_ORDER2PAYMENTCARD_FROM === 'string' && USE_ORDER2PAYMENTCARD_FROM.length > 0) {
+                    const isEligibleOrder = moment(order.orderDate)
+                        .isSameOrAfter(moment(USE_ORDER2PAYMENTCARD_FROM));
+                    if (!isEligibleOrder) {
+                        throw new cinerino.factory.errors.NotFound('Eligible Order');
+                    }
+                }
                 let awardAccounts = [];
                 const awardAccounsValue = (_b = (_a = order.identifier) === null || _a === void 0 ? void 0 : _a.find((i) => i.name === cinerino.service.transaction.placeOrderInProgress.AWARD_ACCOUNTS_IDENTIFIER_NAME)) === null || _b === void 0 ? void 0 : _b.value;
                 if (typeof awardAccounsValue === 'string' && awardAccounsValue.length > 0) {
@@ -220,27 +231,28 @@ function validateFromLocation(req) {
                 fromLocation = fromLocation;
                 const accessCode = fromLocation.accessCode;
                 if (typeof accessCode === 'string') {
+                    throw new cinerino.factory.errors.NotImplemented('owned payment card not implemented');
                     // アクセスコード情報があれば、認証
-                    const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
-                        endpoint: cinerino.credentials.chevre.endpoint,
-                        auth: chevreAuthClient
-                    });
-                    const searchPaymentCardResult = yield serviceOutputService.search({
-                        limit: 1,
-                        page: 1,
-                        project: { typeOf: req.project.typeOf, id: req.project.id },
-                        typeOf: { $eq: fromLocation === null || fromLocation === void 0 ? void 0 : fromLocation.typeOf },
-                        identifier: { $eq: fromLocation === null || fromLocation === void 0 ? void 0 : fromLocation.identifier },
-                        accessCode: { $eq: accessCode }
-                    });
-                    if (searchPaymentCardResult.data.length === 0) {
-                        throw new cinerino.factory.errors.NotFound('PaymentCard');
-                    }
-                    const paymetCard = searchPaymentCardResult.data.shift();
-                    fromLocation = {
-                        typeOf: paymetCard.typeOf,
-                        identifier: paymetCard.identifier
-                    };
+                    // const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
+                    //     endpoint: cinerino.credentials.chevre.endpoint,
+                    //     auth: chevreAuthClient
+                    // });
+                    // const searchPaymentCardResult = await serviceOutputService.search({
+                    //     limit: 1,
+                    //     page: 1,
+                    //     project: { typeOf: req.project.typeOf, id: req.project.id },
+                    //     typeOf: { $eq: fromLocation?.typeOf },
+                    //     identifier: { $eq: fromLocation?.identifier },
+                    //     accessCode: { $eq: accessCode }
+                    // });
+                    // if (searchPaymentCardResult.data.length === 0) {
+                    //     throw new cinerino.factory.errors.NotFound('PaymentCard');
+                    // }
+                    // const paymetCard = searchPaymentCardResult.data.shift();
+                    // fromLocation = {
+                    //     typeOf: paymetCard.typeOf,
+                    //     identifier: paymetCard.identifier
+                    // };
                 }
                 else {
                     throw new cinerino.factory.errors.NotImplemented('owned payment card not implemented');
