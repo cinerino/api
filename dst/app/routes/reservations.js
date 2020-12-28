@@ -86,21 +86,24 @@ reservationsRouter.get('/download', permitScopes_1.default([]), rateLimit_1.defa
  * トークンで予約を使用する
  */
 reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 'reservations.findByToken']), rateLimit_1.default, ...[
+    // どのトークンを使って
     express_validator_1.body('instrument.token')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
         .isString(),
+    // どの予約を
     express_validator_1.body('object.id')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
         .isString()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c;
     try {
         const token = (_a = req.body.instrument) === null || _a === void 0 ? void 0 : _a.token;
         const reservationId = (_b = req.body.object) === null || _b === void 0 ? void 0 : _b.id;
+        const locationIdentifier = (_c = req.body.location) === null || _c === void 0 ? void 0 : _c.identifier;
         const payload = yield cinerino.service.code.verifyToken({
             project: req.project,
             agent: req.agent,
@@ -124,7 +127,8 @@ reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 're
                     project: { id: req.project.id },
                     agent: req.agent,
                     object: { id: acceptedOffer.itemOffered.id },
-                    instrument: { token }
+                    instrument: { token },
+                    location: { identifier: (typeof locationIdentifier === 'string') ? locationIdentifier : undefined }
                 })({ action: new cinerino.repository.Action(mongoose.connection) });
                 res.status(http_status_1.NO_CONTENT)
                     .end();
@@ -140,6 +144,7 @@ reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 're
 }));
 function useReservation(params) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
+        var _a, _b;
         // 予約検索
         const reservationService = new cinerino.chevre.service.Reservation({
             endpoint: cinerino.credentials.chevre.endpoint,
@@ -160,7 +165,12 @@ function useReservation(params) {
         };
         const action = yield repos.action.start(actionAttributes);
         try {
-            yield reservationService.attendScreeningEvent({ id: reservation.id });
+            yield reservationService.use({
+                agent: params.agent,
+                object: { id: reservation.id },
+                instrument: { token: (typeof ((_a = params.instrument) === null || _a === void 0 ? void 0 : _a.token) === 'string') ? params.instrument.token : undefined },
+                location: { identifier: (typeof ((_b = params.location) === null || _b === void 0 ? void 0 : _b.identifier) === 'string') ? params.location.identifier : undefined }
+            });
         }
         catch (error) {
             // actionにエラー結果を追加

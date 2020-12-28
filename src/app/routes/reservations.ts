@@ -109,11 +109,13 @@ reservationsRouter.post(
     permitScopes(['reservations.read', 'reservations.findByToken']),
     rateLimit,
     ...[
+        // どのトークンを使って
         body('instrument.token')
             .not()
             .isEmpty()
             .withMessage(() => 'required')
             .isString(),
+        // どの予約を
         body('object.id')
             .not()
             .isEmpty()
@@ -125,6 +127,7 @@ reservationsRouter.post(
         try {
             const token = <string>req.body.instrument?.token;
             const reservationId = <string>req.body.object?.id;
+            const locationIdentifier = req.body.location?.identifier;
 
             const payload = await cinerino.service.code.verifyToken<IPayload>({
                 project: req.project,
@@ -153,7 +156,8 @@ reservationsRouter.post(
                         project: { id: req.project.id },
                         agent: req.agent,
                         object: { id: (<cinerino.factory.order.IReservation>acceptedOffer.itemOffered).id },
-                        instrument: { token }
+                        instrument: { token },
+                        location: { identifier: (typeof locationIdentifier === 'string') ? locationIdentifier : undefined }
                     })({ action: new cinerino.repository.Action(mongoose.connection) });
 
                     res.status(NO_CONTENT)
@@ -179,6 +183,9 @@ function useReservation(params: {
     };
     instrument?: {
         token?: string;
+    };
+    location?: {
+        identifier?: string;
     };
 }) {
     return async (repos: {
@@ -206,7 +213,12 @@ function useReservation(params: {
         const action = await repos.action.start(actionAttributes);
 
         try {
-            await reservationService.attendScreeningEvent({ id: reservation.id });
+            await reservationService.use({
+                agent: params.agent,
+                object: { id: reservation.id },
+                instrument: { token: (typeof params.instrument?.token === 'string') ? params.instrument.token : undefined },
+                location: { identifier: (typeof params.location?.identifier === 'string') ? params.location.identifier : undefined }
+            });
         } catch (error) {
             // actionにエラー結果を追加
             try {
