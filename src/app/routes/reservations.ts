@@ -290,6 +290,9 @@ reservationsRouter.get<ParamsDictionary>(
     }
 );
 
+// tslint:disable-next-line:no-suspicious-comment
+// TODO chevre予約使用アクション取消
+
 /**
  * 予約取消
  */

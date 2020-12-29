@@ -230,6 +230,8 @@ reservationsRouter.get('/:id/actions/use', permitScopes_1.default(['reservations
         next(error);
     }
 }));
+// tslint:disable-next-line:no-suspicious-comment
+// TODO chevre予約使用アクション取消
 /**
  * 予約取消
  */
