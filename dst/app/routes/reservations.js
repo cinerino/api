@@ -242,8 +242,28 @@ reservationsRouter.get('/:id/actions/use', permitScopes_1.default(['reservations
         next(error);
     }
 }));
-// tslint:disable-next-line:no-suspicious-comment
-// TODO chevre予約使用アクション取消
+/**
+ * chevre予約使用アクション取消
+ */
+// tslint:disable-next-line:use-default-type-parameter
+reservationsRouter.put(`/:id/actions/use/:actionId/${cinerino.factory.actionStatusType.CanceledActionStatus}`, 
+// ひとまずuserロールで実行できるように↓
+permitScopes_1.default(['projects.read']), rateLimit_1.default, ...[], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const actionService = new cinerino.chevre.service.Action({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        yield actionService.cancelById({
+            id: req.params.actionId
+        });
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 /**
  * 予約取消
  */

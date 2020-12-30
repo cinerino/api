@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - 注文トークンによる口座開設サービスを追加
+- 予約アクション取消サービスを追加
 
 ### Changed
 
