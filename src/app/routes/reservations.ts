@@ -125,6 +125,7 @@ reservationsRouter.post(
     validator,
     async (req, res, next) => {
         try {
+            const includesActionId = req.body.includesActionId === '1';
             const token = <string>req.body.instrument?.token;
             const reservationId = <string>req.body.object?.id;
             const locationIdentifier = req.body.location?.identifier;
@@ -152,7 +153,7 @@ reservationsRouter.post(
                         throw new cinerino.factory.errors.NotFound('AcceptedOffer');
                     }
 
-                    await useReservation({
+                    const chevreUseAction = await useReservation({
                         project: { id: req.project.id },
                         agent: req.agent,
                         object: { id: (<cinerino.factory.order.IReservation>acceptedOffer.itemOffered).id },
@@ -160,8 +161,13 @@ reservationsRouter.post(
                         location: { identifier: (typeof locationIdentifier === 'string') ? locationIdentifier : undefined }
                     })({ action: new cinerino.repository.Action(mongoose.connection) });
 
-                    res.status(NO_CONTENT)
-                        .end();
+                    // 指定があれば、アクションIDをレスポンスに含める
+                    if (includesActionId && typeof chevreUseAction?.id === 'string') {
+                        res.json({ id: chevreUseAction.id });
+                    } else {
+                        res.status(NO_CONTENT)
+                            .end();
+                    }
 
                     break;
 
@@ -211,14 +217,18 @@ function useReservation(params: {
             // purpose: params.purpose
         };
         const action = await repos.action.start(actionAttributes);
+        let chevreUseAction: { id: string } | undefined;
 
         try {
-            await reservationService.use({
+            const useResult = await reservationService.use({
                 agent: params.agent,
                 object: { id: reservation.id },
                 instrument: { token: (typeof params.instrument?.token === 'string') ? params.instrument.token : undefined },
                 location: { identifier: (typeof params.location?.identifier === 'string') ? params.location.identifier : undefined }
             });
+            if (useResult !== undefined) {
+                chevreUseAction = useResult;
+            }
         } catch (error) {
             // actionにエラー結果を追加
             try {
@@ -231,7 +241,9 @@ function useReservation(params: {
             throw error;
         }
 
-        return repos.action.complete({ typeOf: action.typeOf, id: action.id, result: {} });
+        await repos.action.complete({ typeOf: action.typeOf, id: action.id, result: {} });
+
+        return chevreUseAction;
     };
 }
 

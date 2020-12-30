@@ -101,6 +101,7 @@ reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 're
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     try {
+        const includesActionId = req.body.includesActionId === '1';
         const token = (_a = req.body.instrument) === null || _a === void 0 ? void 0 : _a.token;
         const reservationId = (_b = req.body.object) === null || _b === void 0 ? void 0 : _b.id;
         const locationIdentifier = (_c = req.body.location) === null || _c === void 0 ? void 0 : _c.identifier;
@@ -123,15 +124,21 @@ reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 're
                 if (acceptedOffer === undefined) {
                     throw new cinerino.factory.errors.NotFound('AcceptedOffer');
                 }
-                yield useReservation({
+                const chevreUseAction = yield useReservation({
                     project: { id: req.project.id },
                     agent: req.agent,
                     object: { id: acceptedOffer.itemOffered.id },
                     instrument: { token },
                     location: { identifier: (typeof locationIdentifier === 'string') ? locationIdentifier : undefined }
                 })({ action: new cinerino.repository.Action(mongoose.connection) });
-                res.status(http_status_1.NO_CONTENT)
-                    .end();
+                // 指定があれば、アクションIDをレスポンスに含める
+                if (includesActionId && typeof (chevreUseAction === null || chevreUseAction === void 0 ? void 0 : chevreUseAction.id) === 'string') {
+                    res.json({ id: chevreUseAction.id });
+                }
+                else {
+                    res.status(http_status_1.NO_CONTENT)
+                        .end();
+                }
                 break;
             default:
                 throw new cinerino.factory.errors.NotImplemented(`Payload type ${payload.typeOf} not implemented`);
@@ -164,13 +171,17 @@ function useReservation(params) {
             // purpose: params.purpose
         };
         const action = yield repos.action.start(actionAttributes);
+        let chevreUseAction;
         try {
-            yield reservationService.use({
+            const useResult = yield reservationService.use({
                 agent: params.agent,
                 object: { id: reservation.id },
                 instrument: { token: (typeof ((_a = params.instrument) === null || _a === void 0 ? void 0 : _a.token) === 'string') ? params.instrument.token : undefined },
                 location: { identifier: (typeof ((_b = params.location) === null || _b === void 0 ? void 0 : _b.identifier) === 'string') ? params.location.identifier : undefined }
             });
+            if (useResult !== undefined) {
+                chevreUseAction = useResult;
+            }
         }
         catch (error) {
             // actionにエラー結果を追加
@@ -183,7 +194,8 @@ function useReservation(params) {
             }
             throw error;
         }
-        return repos.action.complete({ typeOf: action.typeOf, id: action.id, result: {} });
+        yield repos.action.complete({ typeOf: action.typeOf, id: action.id, result: {} });
+        return chevreUseAction;
     });
 }
 /**
