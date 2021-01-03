@@ -65,6 +65,11 @@ reservationsRouter.get(
                 typeOf: cinerino.factory.chevre.reservationType.EventReservation
             });
 
+            // totalCount対応
+            if (typeof searchResult.totalCount === 'number') {
+                res.set('X-Total-Count', String(searchResult.totalCount));
+            }
+
             res.json(searchResult.data);
         } catch (error) {
             error = cinerino.errorHandler.handleChevreError(error);
