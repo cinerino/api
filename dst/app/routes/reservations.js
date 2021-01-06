@@ -21,6 +21,10 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
+const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
+    ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
+    // tslint:disable-next-line:no-magic-numbers
+    : 256;
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -90,6 +94,21 @@ reservationsRouter.get('/download', permitScopes_1.default([]), rateLimit_1.defa
  * トークンで予約を使用する
  */
 reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 'reservations.findByToken']), rateLimit_1.default, ...[
+    express_validator_1.body('agent.identifier')
+        .optional()
+        .isArray({ max: 10 }),
+    express_validator_1.body('agent.identifier.*.name')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.body('agent.identifier.*.value')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     // どのトークンを使って
     express_validator_1.body('instrument.token')
         .not()
@@ -103,7 +122,7 @@ reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 're
         .withMessage(() => 'required')
         .isString()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     try {
         const includesActionId = req.body.includesActionId === '1';
         const token = (_a = req.body.instrument) === null || _a === void 0 ? void 0 : _a.token;
@@ -130,7 +149,14 @@ reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 're
                 }
                 const chevreUseAction = yield useReservation({
                     project: { id: req.project.id },
-                    agent: req.agent,
+                    agent: Object.assign(Object.assign({}, req.agent), { identifier: [
+                            ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
+                            ...(Array.isArray((_d = req.body.agent) === null || _d === void 0 ? void 0 : _d.identifier))
+                                ? req.body.agent.identifier.map((p) => {
+                                    return { name: String(p.name), value: String(p.value) };
+                                })
+                                : []
+                        ] }),
                     object: { id: acceptedOffer.itemOffered.id },
                     instrument: { token },
                     location: { identifier: (typeof locationIdentifier === 'string') ? locationIdentifier : undefined }

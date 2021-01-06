@@ -16,6 +16,11 @@ import validator from '../middlewares/validator';
 
 type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
 
+const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
+    ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
+    // tslint:disable-next-line:no-magic-numbers
+    : 256;
+
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.CHEVRE_CLIENT_ID,
@@ -114,6 +119,21 @@ reservationsRouter.post(
     permitScopes(['reservations.read', 'reservations.findByToken']),
     rateLimit,
     ...[
+        body('agent.identifier')
+            .optional()
+            .isArray({ max: 10 }),
+        body('agent.identifier.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        body('agent.identifier.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         // どのトークンを使って
         body('instrument.token')
             .not()
@@ -160,7 +180,17 @@ reservationsRouter.post(
 
                     const chevreUseAction = await useReservation({
                         project: { id: req.project.id },
-                        agent: req.agent,
+                        agent: {
+                            ...req.agent,
+                            identifier: [
+                                ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
+                                ...(Array.isArray(req.body.agent?.identifier))
+                                    ? (<any[]>req.body.agent.identifier).map((p: any) => {
+                                        return { name: String(p.name), value: String(p.value) };
+                                    })
+                                    : []
+                            ]
+                        },
                         object: { id: (<cinerino.factory.order.IReservation>acceptedOffer.itemOffered).id },
                         instrument: { token },
                         location: { identifier: (typeof locationIdentifier === 'string') ? locationIdentifier : undefined }
