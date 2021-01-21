@@ -160,7 +160,9 @@ reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 're
                     object: { id: acceptedOffer.itemOffered.id },
                     instrument: { token },
                     location: { identifier: (typeof locationIdentifier === 'string') ? locationIdentifier : undefined }
-                })({ action: new cinerino.repository.Action(mongoose.connection) });
+                })(
+                // { action: new cinerino.repository.Action(mongoose.connection) }
+                );
                 // 指定があれば、アクションIDをレスポンスに含める
                 if (includesActionId && typeof (chevreUseAction === null || chevreUseAction === void 0 ? void 0 : chevreUseAction.id) === 'string') {
                     res.json({ id: chevreUseAction.id });
@@ -180,7 +182,11 @@ reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 're
     }
 }));
 function useReservation(params) {
-    return (repos) => __awaiter(this, void 0, void 0, function* () {
+    return (
+    // repos: {
+    //     action: cinerino.repository.Action;
+    // }
+    ) => __awaiter(this, void 0, void 0, function* () {
         var _a, _b;
         // 予約検索
         const reservationService = new cinerino.chevre.service.Reservation({
@@ -192,15 +198,15 @@ function useReservation(params) {
         });
         // 入場
         // 予約使用アクションを追加
-        const actionAttributes = {
-            project: { typeOf: cinerino.factory.chevre.organizationType.Project, id: params.project.id },
-            typeOf: cinerino.factory.actionType.UseAction,
-            agent: params.agent,
-            instrument: params.instrument,
-            object: [reservation]
-            // purpose: params.purpose
-        };
-        const action = yield repos.action.start(actionAttributes);
+        // const actionAttributes: cinerino.factory.action.IAttributes<cinerino.factory.actionType.UseAction, any, any> = {
+        //     project: { typeOf: cinerino.factory.chevre.organizationType.Project, id: params.project.id },
+        //     typeOf: cinerino.factory.actionType.UseAction,
+        //     agent: params.agent,
+        //     instrument: params.instrument,
+        //     object: [reservation]
+        //     // purpose: params.purpose
+        // };
+        // const action = await repos.action.start(actionAttributes);
         let chevreUseAction;
         try {
             const useResult = yield reservationService.use({
@@ -215,16 +221,15 @@ function useReservation(params) {
         }
         catch (error) {
             // actionにエラー結果を追加
-            try {
-                const actionError = Object.assign(Object.assign({}, error), { message: error.message, name: error.name });
-                yield repos.action.giveUp({ typeOf: actionAttributes.typeOf, id: action.id, error: actionError });
-            }
-            catch (__) {
-                // 失敗したら仕方ない
-            }
+            // try {
+            //     const actionError = { ...error, message: error.message, name: error.name };
+            //     await repos.action.giveUp({ typeOf: actionAttributes.typeOf, id: action.id, error: actionError });
+            // } catch (__) {
+            //     // 失敗したら仕方ない
+            // }
             throw error;
         }
-        yield repos.action.complete({ typeOf: action.typeOf, id: action.id, result: {} });
+        // await repos.action.complete({ typeOf: action.typeOf, id: action.id, result: {} });
         return chevreUseAction;
     });
 }

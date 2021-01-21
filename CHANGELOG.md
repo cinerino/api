@@ -19,7 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文作成後の通知に注文トークンを付加
 - Chevre決済中止処理のエラーハンドリングを調整
 - 予約使用レスポンスにアクションIDを含めることができるように調整
-- 予約に対する使用アクション検索をChevreで実装
+- 予約に対する使用アクションをChevreで実装
 - 予約使用時にagent.identifierを指定できるように調整
 
 ### Deprecated
