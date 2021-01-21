@@ -26,6 +26,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- 所有権に対するトークン検証アクション検索を削除
+
 ### Fixed
 
 ### Security
