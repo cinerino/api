@@ -119,7 +119,6 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
                 reason: reason
             },
             seller: {
-                typeOf: order.seller.typeOf,
                 id: String(order.seller.id)
             }
         })({

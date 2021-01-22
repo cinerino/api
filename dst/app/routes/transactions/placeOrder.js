@@ -23,6 +23,7 @@ const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
+const validateWaiterPassport_1 = require("../../middlewares/validateWaiterPassport");
 const validator_1 = require("../../middlewares/validator");
 const placeOrder4cinemasunshine_1 = require("./placeOrder4cinemasunshine");
 const connectMongo_1 = require("../../../connectMongo");
@@ -31,7 +32,6 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
     : 256;
-const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const NUM_ORDER_ITEMS_MAX_VALUE = (process.env.NUM_ORDER_ITEMS_MAX_VALUE !== undefined)
     ? Number(process.env.NUM_ORDER_ITEMS_MAX_VALUE)
     // tslint:disable-next-line:no-magic-numbers
@@ -85,33 +85,10 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
     express_validator_1.body('seller.id')
         .not()
         .isEmpty()
-        .withMessage((_, __) => 'required'),
-    ...(!WAITER_DISABLED)
-        ? [
-            express_validator_1.body('object.passport.token')
-                .not()
-                .isEmpty()
-                .withMessage((_, __) => 'required')
-        ]
-        : []
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
+        .withMessage((_, __) => 'required')
+], validator_1.default, validateWaiterPassport_1.validateWaiterPassport, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d, _e;
     try {
-        // WAITER有効設定であれば許可証をセット
-        let passport;
-        if (!WAITER_DISABLED) {
-            if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('WAITER_PASSPORT_ISSUER undefined');
-            }
-            if (process.env.WAITER_SECRET === undefined) {
-                throw new cinerino.factory.errors.ServiceUnavailable('WAITER_SECRET undefined');
-            }
-            passport = {
-                token: req.body.object.passport.token,
-                issuer: process.env.WAITER_PASSPORT_ISSUER,
-                secret: process.env.WAITER_SECRET
-            };
-        }
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const expires = req.body.expires;
@@ -120,7 +97,11 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
             auth: chevreAuthClient
         });
         const seller = yield sellerService.findById({ id: req.body.seller.id });
-        const passportValidator = createPassportValidator(seller, req.user.client_id);
+        const passportValidator = validateWaiterPassport_1.createPassportValidator({
+            transaction: { typeOf: cinerino.factory.transactionType.PlaceOrder },
+            seller,
+            clientId: req.user.client_id
+        });
         const project = yield projectRepo.findById({ id: req.project.id });
         const useTransactionClientUser = ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.useTransactionClientUser) === true;
         const orderName = (typeof ((_b = req.body.object) === null || _b === void 0 ? void 0 : _b.name) === 'string') ? (_c = req.body.object) === null || _c === void 0 ? void 0 : _c.name : DEFAULT_ORDER_NAME;
@@ -136,7 +117,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
                         : []
                 ] }),
             seller: req.body.seller,
-            object: Object.assign(Object.assign({ passport: passport }, (useTransactionClientUser) ? { clientUser: req.user } : undefined), (typeof orderName === 'string') ? { name: orderName } : undefined),
+            object: Object.assign(Object.assign(Object.assign({}, (typeof ((_e = req.waiterPassport) === null || _e === void 0 ? void 0 : _e.token) === 'string') ? { passport: req.waiterPassport } : undefined), (useTransactionClientUser) ? { clientUser: req.user } : undefined), (typeof orderName === 'string') ? { name: orderName } : undefined),
             passportValidator
         })({
             project: projectRepo,
@@ -151,35 +132,6 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         next(error);
     }
 }));
-function createPassportValidator(seller, clientId) {
-    return (params) => {
-        var _a;
-        // 許可証発行者確認
-        const validIssuer = params.passport.iss === process.env.WAITER_PASSPORT_ISSUER;
-        // スコープのフォーマットは、Transaction:PlaceOrder:${sellerId}
-        const newExplodedScopeStrings = params.passport.scope.split(':');
-        const isNewValidScope = (newExplodedScopeStrings[0] === 'Transaction' && // スコープ接頭辞確認
-            newExplodedScopeStrings[1] === cinerino.factory.transactionType.PlaceOrder && // スコープ接頭辞確認
-            (
-            // tslint:disable-next-line:no-magic-numbers
-            newExplodedScopeStrings[2] === seller.id || newExplodedScopeStrings[2] === '*' // 販売者ID確認
-            ));
-        // 追加特性に登録されたwaiterScopeでもok
-        const validScopesByAdditionalProperty = (_a = seller.additionalProperty) === null || _a === void 0 ? void 0 : _a.filter((p) => p.name === 'waiterScope').map((p) => p.value);
-        const isValidByAdditionalProperty = (Array.isArray(validScopesByAdditionalProperty))
-            ? validScopesByAdditionalProperty === null || validScopesByAdditionalProperty === void 0 ? void 0 : validScopesByAdditionalProperty.includes(params.passport.scope) : false;
-        // スコープスタイルはどちらか一方有効であれok
-        const validScope = isNewValidScope || isValidByAdditionalProperty;
-        // クライアントの有効性
-        let validClient = true;
-        if (typeof clientId === 'string') {
-            if (Array.isArray(params.passport.aud) && params.passport.aud.indexOf(clientId) < 0) {
-                validClient = false;
-            }
-        }
-        return validIssuer && validScope && validClient;
-    };
-}
 /**
  * 購入者情報を変更する
  */
@@ -396,7 +348,20 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/accou
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield authorizePointAward(req);
+        const givePointAwardParams = yield authorizePointAward(req);
+        // 特典注文口座番号発行
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+        yield cinerino.service.transaction.placeOrderInProgress.publishAwardAccountNumberIfNotExist({
+            id: req.params.transactionId,
+            object: {
+                awardAccounts: givePointAwardParams
+                    .filter((p) => { var _a; return typeof ((_a = p.object) === null || _a === void 0 ? void 0 : _a.toLocation.typeOf) === 'string'; })
+                    .map((p) => {
+                    var _a;
+                    return { typeOf: (_a = p.object) === null || _a === void 0 ? void 0 : _a.toLocation.typeOf };
+                })
+            }
+        })({ transaction: transactionRepo });
         res.status(http_status_1.CREATED)
             .json({
             id: 'dummy',
@@ -430,8 +395,8 @@ function authorizePointAward(req) {
             ownedThrough: now
         });
         const programMemberships = programMembershipOwnershipInfos.map((o) => o.typeOfGood);
+        const givePointAwardParams = [];
         if (programMemberships.length > 0) {
-            const givePointAwardParams = [];
             for (const programMembership of programMemberships) {
                 const membershipServiceId = (_a = programMembership.membershipFor) === null || _a === void 0 ? void 0 : _a.id;
                 const membershipService = yield productService.findById({ id: membershipServiceId });
@@ -476,6 +441,7 @@ function authorizePointAward(req) {
                 transaction: transactionRepo
             });
         }
+        return givePointAwardParams;
     });
 }
 exports.authorizePointAward = authorizePointAward;
@@ -541,7 +507,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
 }), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
+    var _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
     try {
         const orderDate = new Date();
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
@@ -559,14 +525,14 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             }
             email.template = String(req.body.emailTemplate);
         }
-        const potentialActions = Object.assign(Object.assign({}, req.body.potentialActions), { order: Object.assign(Object.assign({}, (_e = req.body.potentialActions) === null || _e === void 0 ? void 0 : _e.order), { potentialActions: Object.assign(Object.assign({}, (_g = (_f = req.body.potentialActions) === null || _f === void 0 ? void 0 : _f.order) === null || _g === void 0 ? void 0 : _g.potentialActions), { sendOrder: Object.assign(Object.assign({}, (_k = (_j = (_h = req.body.potentialActions) === null || _h === void 0 ? void 0 : _h.order) === null || _j === void 0 ? void 0 : _j.potentialActions) === null || _k === void 0 ? void 0 : _k.sendOrder), { potentialActions: Object.assign(Object.assign({}, (_p = (_o = (_m = (_l = req.body.potentialActions) === null || _l === void 0 ? void 0 : _l.order) === null || _m === void 0 ? void 0 : _m.potentialActions) === null || _o === void 0 ? void 0 : _o.sendOrder) === null || _p === void 0 ? void 0 : _p.potentialActions), { sendEmailMessage: [
+        const potentialActions = Object.assign(Object.assign({}, req.body.potentialActions), { order: Object.assign(Object.assign({}, (_f = req.body.potentialActions) === null || _f === void 0 ? void 0 : _f.order), { potentialActions: Object.assign(Object.assign({}, (_h = (_g = req.body.potentialActions) === null || _g === void 0 ? void 0 : _g.order) === null || _h === void 0 ? void 0 : _h.potentialActions), { sendOrder: Object.assign(Object.assign({}, (_l = (_k = (_j = req.body.potentialActions) === null || _j === void 0 ? void 0 : _j.order) === null || _k === void 0 ? void 0 : _k.potentialActions) === null || _l === void 0 ? void 0 : _l.sendOrder), { potentialActions: Object.assign(Object.assign({}, (_q = (_p = (_o = (_m = req.body.potentialActions) === null || _m === void 0 ? void 0 : _m.order) === null || _o === void 0 ? void 0 : _o.potentialActions) === null || _p === void 0 ? void 0 : _p.sendOrder) === null || _q === void 0 ? void 0 : _q.potentialActions), { sendEmailMessage: [
                                 // tslint:disable-next-line:max-line-length
-                                ...(Array.isArray((_u = (_t = (_s = (_r = (_q = req.body.potentialActions) === null || _q === void 0 ? void 0 : _q.order) === null || _r === void 0 ? void 0 : _r.potentialActions) === null || _s === void 0 ? void 0 : _s.sendOrder) === null || _t === void 0 ? void 0 : _t.potentialActions) === null || _u === void 0 ? void 0 : _u.sendEmailMessage))
+                                ...(Array.isArray((_v = (_u = (_t = (_s = (_r = req.body.potentialActions) === null || _r === void 0 ? void 0 : _r.order) === null || _s === void 0 ? void 0 : _s.potentialActions) === null || _t === void 0 ? void 0 : _t.sendOrder) === null || _u === void 0 ? void 0 : _u.potentialActions) === null || _v === void 0 ? void 0 : _v.sendEmailMessage))
                                     // tslint:disable-next-line:max-line-length
-                                    ? (_z = (_y = (_x = (_w = (_v = req.body.potentialActions) === null || _v === void 0 ? void 0 : _v.order) === null || _w === void 0 ? void 0 : _w.potentialActions) === null || _x === void 0 ? void 0 : _x.sendOrder) === null || _y === void 0 ? void 0 : _y.potentialActions) === null || _z === void 0 ? void 0 : _z.sendEmailMessage : [],
+                                    ? (_0 = (_z = (_y = (_x = (_w = req.body.potentialActions) === null || _w === void 0 ? void 0 : _w.order) === null || _x === void 0 ? void 0 : _x.potentialActions) === null || _y === void 0 ? void 0 : _y.sendOrder) === null || _z === void 0 ? void 0 : _z.potentialActions) === null || _0 === void 0 ? void 0 : _0.sendEmailMessage : [],
                                 ...(sendEmailMessage) ? [{ object: email }] : []
                             ] }) }) }) }) });
-        const resultOrderParams = Object.assign(Object.assign({}, (_0 = req.body.result) === null || _0 === void 0 ? void 0 : _0.order), { confirmationNumber: undefined, orderDate: orderDate, numItems: {
+        const resultOrderParams = Object.assign(Object.assign({}, (_1 = req.body.result) === null || _1 === void 0 ? void 0 : _1.order), { confirmationNumber: undefined, orderDate: orderDate, numItems: {
                 maxValue: NUM_ORDER_ITEMS_MAX_VALUE
                 // minValue: 0
             } });

@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const mongoose = require("mongoose");
 const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
+const ANY_PROJECT_ID = '*';
 exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
@@ -23,7 +24,7 @@ exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* 
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const roleRepo = new cinerino.repository.Role(mongoose.connection);
         // プロジェクトが決定していれば権限をセット
-        if (typeof ((_a = req.project) === null || _a === void 0 ? void 0 : _a.id) === 'string') {
+        if (typeof ((_a = req.project) === null || _a === void 0 ? void 0 : _a.id) === 'string' && req.project.id !== ANY_PROJECT_ID) {
             // プロジェクト決定済のリクエストに対してプロジェクトメンバー権限を決定する
             memberPermissions = yield cinerino.service.iam.searchPermissions({
                 project: { id: req.project.id },
@@ -37,6 +38,17 @@ exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* 
                 // プロジェクトメンバーが見つからない場合、アプリケーションクライアントとして権限検索
                 memberPermissions = yield cinerino.service.iam.searchPermissions({
                     project: { id: req.project.id },
+                    member: { id: req.user.client_id }
+                })({
+                    member: memberRepo,
+                    role: roleRepo
+                });
+                memberPermissions = memberPermissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`);
+            }
+            if (memberPermissions.length === 0) {
+                // 全プロジェクトに許可されたアプリケーションクライアントとして権限検索
+                memberPermissions = yield cinerino.service.iam.searchPermissions({
+                    project: { id: ANY_PROJECT_ID },
                     member: { id: req.user.client_id }
                 })({
                     member: memberRepo,

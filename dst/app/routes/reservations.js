@@ -21,6 +21,10 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
+const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
+    ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
+    // tslint:disable-next-line:no-magic-numbers
+    : 256;
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -57,6 +61,10 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.*', 'reservatio
             auth: chevreAuthClient
         });
         const searchResult = yield reservationService.search(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, typeOf: cinerino.factory.chevre.reservationType.EventReservation }));
+        // totalCount対応
+        if (typeof searchResult.totalCount === 'number') {
+            res.set('X-Total-Count', String(searchResult.totalCount));
+        }
         res.json(searchResult.data);
     }
     catch (error) {
@@ -86,21 +94,40 @@ reservationsRouter.get('/download', permitScopes_1.default([]), rateLimit_1.defa
  * トークンで予約を使用する
  */
 reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 'reservations.findByToken']), rateLimit_1.default, ...[
+    express_validator_1.body('agent.identifier')
+        .optional()
+        .isArray({ max: 10 }),
+    express_validator_1.body('agent.identifier.*.name')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.body('agent.identifier.*.value')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    // どのトークンを使って
     express_validator_1.body('instrument.token')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
         .isString(),
+    // どの予約を
     express_validator_1.body('object.id')
         .not()
         .isEmpty()
         .withMessage(() => 'required')
         .isString()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c, _d;
     try {
+        const includesActionId = req.body.includesActionId === '1';
         const token = (_a = req.body.instrument) === null || _a === void 0 ? void 0 : _a.token;
         const reservationId = (_b = req.body.object) === null || _b === void 0 ? void 0 : _b.id;
+        const locationIdentifier = (_c = req.body.location) === null || _c === void 0 ? void 0 : _c.identifier;
         const payload = yield cinerino.service.code.verifyToken({
             project: req.project,
             agent: req.agent,
@@ -120,14 +147,28 @@ reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 're
                 if (acceptedOffer === undefined) {
                     throw new cinerino.factory.errors.NotFound('AcceptedOffer');
                 }
-                yield useReservation({
+                const chevreUseAction = yield useReservation({
                     project: { id: req.project.id },
-                    agent: req.agent,
+                    agent: Object.assign(Object.assign({}, req.agent), { identifier: [
+                            ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
+                            ...(Array.isArray((_d = req.body.agent) === null || _d === void 0 ? void 0 : _d.identifier))
+                                ? req.body.agent.identifier.map((p) => {
+                                    return { name: String(p.name), value: String(p.value) };
+                                })
+                                : []
+                        ] }),
                     object: { id: acceptedOffer.itemOffered.id },
-                    instrument: { token }
-                })({ action: new cinerino.repository.Action(mongoose.connection) });
-                res.status(http_status_1.NO_CONTENT)
-                    .end();
+                    instrument: { token },
+                    location: { identifier: (typeof locationIdentifier === 'string') ? locationIdentifier : undefined }
+                })();
+                // 指定があれば、アクションIDをレスポンスに含める
+                if (includesActionId && typeof (chevreUseAction === null || chevreUseAction === void 0 ? void 0 : chevreUseAction.id) === 'string') {
+                    res.json({ id: chevreUseAction.id });
+                }
+                else {
+                    res.status(http_status_1.NO_CONTENT)
+                        .end();
+                }
                 break;
             default:
                 throw new cinerino.factory.errors.NotImplemented(`Payload type ${payload.typeOf} not implemented`);
@@ -139,7 +180,8 @@ reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 're
     }
 }));
 function useReservation(params) {
-    return (repos) => __awaiter(this, void 0, void 0, function* () {
+    return () => __awaiter(this, void 0, void 0, function* () {
+        var _a, _b;
         // 予約検索
         const reservationService = new cinerino.chevre.service.Reservation({
             endpoint: cinerino.credentials.chevre.endpoint,
@@ -148,32 +190,23 @@ function useReservation(params) {
         const reservation = yield reservationService.findById({
             id: params.object.id
         });
-        // 入場
-        // 予約使用アクションを追加
-        const actionAttributes = {
-            project: { typeOf: cinerino.factory.chevre.organizationType.Project, id: params.project.id },
-            typeOf: cinerino.factory.actionType.UseAction,
-            agent: params.agent,
-            instrument: params.instrument,
-            object: [reservation]
-            // purpose: params.purpose
-        };
-        const action = yield repos.action.start(actionAttributes);
+        let chevreUseAction;
         try {
-            yield reservationService.attendScreeningEvent({ id: reservation.id });
+            // 入場
+            const useResult = yield reservationService.use({
+                agent: params.agent,
+                object: { id: reservation.id },
+                instrument: { token: (typeof ((_a = params.instrument) === null || _a === void 0 ? void 0 : _a.token) === 'string') ? params.instrument.token : undefined },
+                location: { identifier: (typeof ((_b = params.location) === null || _b === void 0 ? void 0 : _b.identifier) === 'string') ? params.location.identifier : undefined }
+            });
+            if (useResult !== undefined) {
+                chevreUseAction = useResult;
+            }
         }
         catch (error) {
-            // actionにエラー結果を追加
-            try {
-                const actionError = Object.assign(Object.assign({}, error), { message: error.message, name: error.name });
-                yield repos.action.giveUp({ typeOf: actionAttributes.typeOf, id: action.id, error: actionError });
-            }
-            catch (__) {
-                // 失敗したら仕方ない
-            }
             throw error;
         }
-        return repos.action.complete({ typeOf: action.typeOf, id: action.id, result: {} });
+        return chevreUseAction;
     });
 }
 /**
@@ -191,30 +224,45 @@ reservationsRouter.get('/:id/actions/use', permitScopes_1.default(['reservations
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // const now = new Date();
         const reservationId = req.params.id;
-        const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        // 予約使用アクションを検索
-        const searchConditions = {
-            // ページング未実装、いったん100限定でも要件は十分満たされるか
-            // tslint:disable-next-line:no-magic-numbers
+        // Chevreアクション検索で実装する
+        const actionService = new cinerino.chevre.service.Action({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const searchActionsResult = yield actionService.search({
             limit: 100,
             sort: { startDate: cinerino.factory.sortType.Descending },
             project: { id: { $eq: req.project.id } },
-            typeOf: cinerino.factory.actionType.UseAction,
-            object: {
-                typeOf: { $in: [cinerino.factory.chevre.reservationType.EventReservation] },
-                id: { $in: [reservationId] }
-            },
-            startFrom: (req.query.startFrom instanceof Date)
-                ? req.query.startFrom
-                : undefined,
-            startThrough: (req.query.startThrough instanceof Date)
-                ? req.query.startThrough
-                : undefined
-        };
-        const actions = yield actionRepo.search(searchConditions);
-        res.json(actions);
+            typeOf: { $eq: cinerino.factory.chevre.actionType.UseAction },
+            actionStatus: { $in: [cinerino.factory.chevre.actionStatusType.CompletedActionStatus] },
+            object: Object.assign({ typeOf: { $eq: cinerino.factory.chevre.reservationType.EventReservation } }, {
+                id: { $eq: reservationId }
+            })
+        });
+        res.json(searchActionsResult.data);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * chevre予約使用アクション取消
+ */
+// tslint:disable-next-line:use-default-type-parameter
+reservationsRouter.put(`/:id/actions/use/:actionId/${cinerino.factory.actionStatusType.CanceledActionStatus}`, 
+// ひとまずuserロールで実行できるように↓
+permitScopes_1.default(['projects.read']), rateLimit_1.default, ...[], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const actionService = new cinerino.chevre.service.Action({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        yield actionService.cancelById({
+            id: req.params.actionId
+        });
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);

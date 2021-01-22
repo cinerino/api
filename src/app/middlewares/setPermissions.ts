@@ -6,6 +6,7 @@ import { NextFunction, Request, Response } from 'express';
 import * as mongoose from 'mongoose';
 
 const RESOURCE_SERVER_IDENTIFIER = <string>process.env.RESOURCE_SERVER_IDENTIFIER;
+const ANY_PROJECT_ID = '*';
 
 export default async (req: Request, _: Response, next: NextFunction) => {
     try {
@@ -16,7 +17,7 @@ export default async (req: Request, _: Response, next: NextFunction) => {
         const roleRepo = new cinerino.repository.Role(mongoose.connection);
 
         // プロジェクトが決定していれば権限をセット
-        if (typeof req.project?.id === 'string') {
+        if (typeof req.project?.id === 'string' && req.project.id !== ANY_PROJECT_ID) {
             // プロジェクト決定済のリクエストに対してプロジェクトメンバー権限を決定する
             memberPermissions = await cinerino.service.iam.searchPermissions({
                 project: { id: req.project.id },
@@ -31,6 +32,18 @@ export default async (req: Request, _: Response, next: NextFunction) => {
                 // プロジェクトメンバーが見つからない場合、アプリケーションクライアントとして権限検索
                 memberPermissions = await cinerino.service.iam.searchPermissions({
                     project: { id: req.project.id },
+                    member: { id: req.user.client_id }
+                })({
+                    member: memberRepo,
+                    role: roleRepo
+                });
+                memberPermissions = memberPermissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`);
+            }
+
+            if (memberPermissions.length === 0) {
+                // 全プロジェクトに許可されたアプリケーションクライアントとして権限検索
+                memberPermissions = await cinerino.service.iam.searchPermissions({
+                    project: { id: ANY_PROJECT_ID },
                     member: { id: req.user.client_id }
                 })({
                     member: memberRepo,

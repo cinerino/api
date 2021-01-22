@@ -9,15 +9,20 @@ import { Request, Router } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { body, query } from 'express-validator';
 import { NO_CONTENT } from 'http-status';
+import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 
 import lockTransaction from '../../middlewares/lockTransaction';
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
+import { createPassportValidator, validateWaiterPassport } from '../../middlewares/validateWaiterPassport';
 import validator from '../../middlewares/validator';
 
 import * as redis from '../../../redis';
+
+// 注文→ペイメントカードの振替が有効な注文日時from
+const USE_ORDER2PAYMENTCARD_FROM = process.env.USE_ORDER2PAYMENTCARD_FROM;
 
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
@@ -32,7 +37,6 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     // tslint:disable-next-line:no-magic-numbers
     : 256;
 
-// const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 const moneyTransferTransactionsRouter = Router();
 const debug = createDebug('cinerino-api:router');
 
@@ -47,23 +51,27 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
             .withMessage(() => 'required')
             .isISO8601()
             .toDate(),
-        body('object')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
-        body('object.amount')
+        body('object.amount.value')
             .not()
             .isEmpty()
             .withMessage(() => 'required')
             .isInt()
             .toInt(),
-        body('object.fromLocation')
-            .not()
-            .isEmpty(),
-        body('object.toLocation')
+        body('object.fromLocation.typeOf')
             .not()
             .isEmpty()
-            .withMessage(() => 'required'),
+            .withMessage(() => 'required')
+            .isString(),
+        body('object.toLocation.typeOf')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isString(),
+        body('object.toLocation.identifier')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+            .isString(),
         body('agent.identifier')
             .optional()
             .isArray({ max: 10 }),
@@ -79,20 +87,7 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
             .isEmpty()
             .isString()
             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        body('recipient')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
         body('recipient.typeOf')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-            .isString(),
-        body('seller')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required'),
-        body('seller.typeOf')
             .not()
             .isEmpty()
             .withMessage(() => 'required')
@@ -102,18 +97,48 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
             .isEmpty()
             .withMessage(() => 'required')
             .isString()
-        // if (!WAITER_DISABLED) {
-        // }
     ],
     validator,
+    validateWaiterPassport,
     async (req, res, next) => {
         try {
+            const sellerService = new cinerino.chevre.service.Seller({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const seller = await sellerService.findById({ id: <string>req.body.seller.id });
+
+            const passportValidator = createPassportValidator({
+                transaction: { typeOf: cinerino.factory.transactionType.MoneyTransfer },
+                seller,
+                clientId: req.user.client_id
+            });
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
-            const fromLocation = await validateFromLocation(req);
+            const { fromLocation, pendingTransactionIdentifier } = await validateFromLocation(req);
+
+            // ペイメントカードプロダクトを検索して、currencyを自動取得
+            const productService = new cinerino.chevre.service.Product({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const searchProductsResult = await productService.search({
+                limit: 1,
+                project: { id: { $eq: req.project.id } },
+                typeOf: { $eq: cinerino.factory.chevre.product.ProductType.PaymentCard },
+                serviceOutput: { typeOf: { $eq: fromLocation.typeOf } }
+            });
+            const product = <cinerino.factory.chevre.product.IProduct | undefined>searchProductsResult.data.shift();
+            if (product === undefined) {
+                throw new cinerino.factory.errors.NotFound('Product');
+            }
+            const currency = product.serviceOutput?.amount?.currency;
+            if (typeof currency !== 'string') {
+                throw new cinerino.factory.errors.ServiceUnavailable('currency settings undefined for the product');
+            }
 
             const transaction = await cinerino.service.transaction.moneyTransfer.start({
                 project: req.project,
@@ -131,29 +156,34 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
                     ]
                 },
                 object: {
-                    amount: req.body.object.amount,
+                    amount: {
+                        typeOf: 'MonetaryAmount',
+                        value: req.body.object?.amount?.value,
+                        currency
+                    },
                     fromLocation: fromLocation,
                     toLocation: req.body.object.toLocation,
-                    authorizeActions: [],
-                    ...(typeof req.body.object.description === 'string') ? { description: req.body.object.description } : {}
+                    ...(typeof req.waiterPassport?.token === 'string') ? { passport: req.waiterPassport } : undefined,
+                    ...(typeof req.body.object.description === 'string') ? { description: req.body.object.description } : undefined,
+                    ...(typeof pendingTransactionIdentifier === 'string')
+                        ? { pendingTransaction: { identifier: pendingTransactionIdentifier } }
+                        : undefined
                 },
                 recipient: {
+                    project: req.project,
                     typeOf: req.body.recipient.typeOf,
-                    id: req.body.recipient.id,
-                    ...(typeof req.body.recipient.name === 'string') ? { name: req.body.recipient.name } : {},
-                    ...(typeof req.body.recipient.url === 'string') ? { url: req.body.recipient.url } : {}
+                    ...(typeof req.body.recipient?.id === 'string') ? { id: req.body.recipient.id } : undefined,
+                    ...(typeof req.body.recipient?.name === 'string') ? { name: req.body.recipient.name } : undefined,
+                    ...(typeof req.body.recipient?.url === 'string') ? { url: req.body.recipient.url } : undefined
                 },
-                seller: req.body.seller
+                seller: req.body.seller,
+                passportValidator
             })({
-                // accountService: accountService,
                 action: actionRepo,
                 project: projectRepo,
                 transaction: transactionRepo
             });
 
-            // tslint:disable-next-line:no-string-literal
-            // const host = req.headers['host'];
-            // res.setHeader('Location', `https://${host}/transactions/${transaction.id}`);
             res.json(transaction);
         } catch (error) {
             next(error);
@@ -161,69 +191,130 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
     }
 );
 
-async function validateFromLocation(req: Request): Promise<cinerino.factory.transaction.moneyTransfer.IFromLocation> {
-    let fromLocation = req.body.object.fromLocation;
+// tslint:disable-next-line:max-func-body-length
+async function validateFromLocation(req: Request): Promise<{
+    fromLocation: cinerino.factory.transaction.moneyTransfer.IFromLocation;
+    pendingTransactionIdentifier: string | undefined;
+}> {
+    let fromLocation = <cinerino.factory.transaction.moneyTransfer.IFromLocationBeforeStart>req.body.object.fromLocation;
+    let pendingTransactionIdentifier: string | undefined;
 
     // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
     if (typeof fromLocation === 'string') {
+        throw new cinerino.factory.errors.NotImplemented('tokenized from location not implemented');
         // tslint:disable-next-line:max-line-length
-        type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
-        const accountOwnershipInfo = await cinerino.service.code.verifyToken<IPayload>({
-            project: req.project,
-            agent: req.agent,
-            token: fromLocation,
-            secret: <string>process.env.TOKEN_SECRET,
-            issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
-        })({ action: new cinerino.repository.Action(mongoose.connection) });
+        // type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
+        // const accountOwnershipInfo = await cinerino.service.code.verifyToken<IPayload>({
+        //     project: req.project,
+        //     agent: req.agent,
+        //     token: fromLocation,
+        //     secret: <string>process.env.TOKEN_SECRET,
+        //     issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
+        // })({ action: new cinerino.repository.Action(mongoose.connection) });
 
-        fromLocation = accountOwnershipInfo.typeOfGood;
+        // fromLocation = accountOwnershipInfo.typeOfGood;
     } else {
-        const accessCode = fromLocation?.accessCode;
-        if (typeof accessCode === 'string') {
-            // アクセスコード情報があれば、認証
-            const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
-            });
-            const searchPaymentCardResult = await serviceOutputService.search({
+        // fromLocationが注文の場合に対応
+        if (fromLocation.typeOf === cinerino.factory.order.OrderType.Order) {
+            fromLocation = <cinerino.factory.transaction.moneyTransfer.IOrderAsFromLocation>fromLocation;
+
+            // 注文検索
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+            const searchOrdersResult = await orderRepo.search({
                 limit: 1,
-                page: 1,
-                project: { typeOf: req.project.typeOf, id: req.project.id },
-                typeOf: { $eq: fromLocation?.typeOf },
-                identifier: { $eq: fromLocation?.identifier },
-                accessCode: { $eq: accessCode }
+                project: { id: { $eq: req.project.id } },
+                orderNumbers: [String(fromLocation.orderNumber)],
+                confirmationNumbers: [String(fromLocation.confirmationNumber)]
             });
-            if (searchPaymentCardResult.data.length === 0) {
-                throw new cinerino.factory.errors.NotFound('PaymentCard');
+            const order = searchOrdersResult.shift();
+            if (order === undefined) {
+                throw new cinerino.factory.errors.NotFound('Order');
             }
-            const paymetCard = searchPaymentCardResult.data.shift();
-            fromLocation = {
-                typeOf: paymetCard.typeOf,
-                identifier: paymetCard.identifier
-            };
+
+            // 振替が有効な注文日時設定があれば確認
+            if (typeof USE_ORDER2PAYMENTCARD_FROM === 'string' && USE_ORDER2PAYMENTCARD_FROM.length > 0) {
+                const isEligibleOrder = moment(order.orderDate)
+                    .isSameOrAfter(moment(USE_ORDER2PAYMENTCARD_FROM));
+                if (!isEligibleOrder) {
+                    throw new cinerino.factory.errors.NotFound('Eligible Order');
+                }
+            }
+
+            let awardAccounts: cinerino.service.transaction.placeOrderInProgress.IAwardAccount[] = [];
+            const awardAccounsValue = order.identifier?.find(
+                (i) => i.name === cinerino.service.transaction.placeOrderInProgress.AWARD_ACCOUNTS_IDENTIFIER_NAME
+            )?.value;
+            if (typeof awardAccounsValue === 'string' && awardAccounsValue.length > 0) {
+                awardAccounts = JSON.parse(awardAccounsValue);
+            }
+
+            // 口座種別はtoLocationに合わせる
+            const locationTypeOf = req.body.object.toLocation.typeOf;
+
+            const awardAccount = awardAccounts.find((a) => a.typeOf === locationTypeOf);
+            if (awardAccount === undefined) {
+                throw new cinerino.factory.errors.NotFound('award account');
+            }
+            fromLocation = { typeOf: awardAccount.typeOf, identifier: awardAccount.accountNumber };
+
+            // ユニークネスを保証するために識別子を指定する
+            pendingTransactionIdentifier = cinerino.service.delivery.createPointAwardIdentifier({
+                project: { id: req.project.id },
+                purpose: { orderNumber: order.orderNumber },
+                toLocation: { accountNumber: req.body.object.toLocation.identifier }
+            });
+            // identifier: identifier,
         } else {
-            fromLocation = undefined;
-            // アクセスコード情報なし、かつ、会員の場合、所有権を確認
-            // 口座に所有権があるかどうか確認
-            // const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-            // const count = await ownershipInfoRepo.count<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
-            //     limit: 1,
-            //     ownedBy: { id: req.user.sub },
-            //     ownedFrom: new Date(),
-            //     ownedThrough: new Date(),
-            //     typeOfGood: {
-            //         typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
-            //         accountType: fromLocation.accountType,
-            //         accountNumber: fromLocation.accountNumber
-            //     }
-            // });
-            // if (count === 0) {
-            //     throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
-            // }
+            fromLocation = <cinerino.factory.action.transfer.moneyTransfer.IPaymentCard>fromLocation;
+
+            const accessCode = fromLocation.accessCode;
+            if (typeof accessCode === 'string') {
+                throw new cinerino.factory.errors.NotImplemented('owned payment card not implemented');
+                // アクセスコード情報があれば、認証
+                // const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
+                //     endpoint: cinerino.credentials.chevre.endpoint,
+                //     auth: chevreAuthClient
+                // });
+                // const searchPaymentCardResult = await serviceOutputService.search({
+                //     limit: 1,
+                //     page: 1,
+                //     project: { typeOf: req.project.typeOf, id: req.project.id },
+                //     typeOf: { $eq: fromLocation?.typeOf },
+                //     identifier: { $eq: fromLocation?.identifier },
+                //     accessCode: { $eq: accessCode }
+                // });
+                // if (searchPaymentCardResult.data.length === 0) {
+                //     throw new cinerino.factory.errors.NotFound('PaymentCard');
+                // }
+                // const paymetCard = searchPaymentCardResult.data.shift();
+                // fromLocation = {
+                //     typeOf: paymetCard.typeOf,
+                //     identifier: paymetCard.identifier
+                // };
+            } else {
+                throw new cinerino.factory.errors.NotImplemented('owned payment card not implemented');
+                // アクセスコード情報なし、かつ、会員の場合、所有権を確認
+                // 口座に所有権があるかどうか確認
+                // const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+                // const count = await ownershipInfoRepo.count<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
+                //     limit: 1,
+                //     ownedBy: { id: req.user.sub },
+                //     ownedFrom: new Date(),
+                //     ownedThrough: new Date(),
+                //     typeOfGood: {
+                //         typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                //         accountType: fromLocation.accountType,
+                //         accountNumber: fromLocation.accountNumber
+                //     }
+                // });
+                // if (count === 0) {
+                //     throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
+                // }
+            }
         }
     }
 
-    return fromLocation;
+    return { fromLocation, pendingTransactionIdentifier };
 }
 
 /**
@@ -426,7 +517,7 @@ moneyTransferTransactionsRouter.get(
     async (req, res, next) => {
         try {
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-            const searchConditions: any = {
+            const searchConditions: cinerino.factory.transaction.moneyTransfer.ISearchConditions = {
                 ...req.query,
                 project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
