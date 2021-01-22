@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v5.46.0 - 2021-01-22
+
+### Added
+
 - 注文トークンによる口座開設サービスを追加
 - 予約アクション取消サービスを追加
 
@@ -22,15 +36,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 予約に対する使用アクションをChevreで実装
 - 予約使用時にagent.identifierを指定できるように調整
 
-### Deprecated
-
 ### Removed
 
 - 所有権に対するトークン検証アクション検索を削除
-
-### Fixed
-
-### Security
 
 ## v5.45.0 - 2020-12-17
 
