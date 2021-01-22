@@ -194,9 +194,7 @@ reservationsRouter.post(
                         object: { id: (<cinerino.factory.order.IReservation>acceptedOffer.itemOffered).id },
                         instrument: { token },
                         location: { identifier: (typeof locationIdentifier === 'string') ? locationIdentifier : undefined }
-                    })(
-                        // { action: new cinerino.repository.Action(mongoose.connection) }
-                    );
+                    })();
 
                     // 指定があれば、アクションIDをレスポンスに含める
                     if (includesActionId && typeof chevreUseAction?.id === 'string') {
@@ -231,11 +229,7 @@ function useReservation(params: {
         identifier?: string;
     };
 }) {
-    return async (
-        // repos: {
-        //     action: cinerino.repository.Action;
-        // }
-    ) => {
+    return async () => {
         // 予約検索
         const reservationService = new cinerino.chevre.service.Reservation({
             endpoint: cinerino.credentials.chevre.endpoint,
@@ -245,20 +239,10 @@ function useReservation(params: {
             id: params.object.id
         });
 
-        // 入場
-        // 予約使用アクションを追加
-        // const actionAttributes: cinerino.factory.action.IAttributes<cinerino.factory.actionType.UseAction, any, any> = {
-        //     project: { typeOf: cinerino.factory.chevre.organizationType.Project, id: params.project.id },
-        //     typeOf: cinerino.factory.actionType.UseAction,
-        //     agent: params.agent,
-        //     instrument: params.instrument,
-        //     object: [reservation]
-        //     // purpose: params.purpose
-        // };
-        // const action = await repos.action.start(actionAttributes);
         let chevreUseAction: { id: string } | undefined;
 
         try {
+            // 入場
             const useResult = await reservationService.use({
                 agent: params.agent,
                 object: { id: reservation.id },
@@ -269,18 +253,8 @@ function useReservation(params: {
                 chevreUseAction = useResult;
             }
         } catch (error) {
-            // actionにエラー結果を追加
-            // try {
-            //     const actionError = { ...error, message: error.message, name: error.name };
-            //     await repos.action.giveUp({ typeOf: actionAttributes.typeOf, id: action.id, error: actionError });
-            // } catch (__) {
-            //     // 失敗したら仕方ない
-            // }
-
             throw error;
         }
-
-        // await repos.action.complete({ typeOf: action.typeOf, id: action.id, result: {} });
 
         return chevreUseAction;
     };
@@ -307,7 +281,6 @@ reservationsRouter.get<ParamsDictionary>(
     validator,
     async (req, res, next) => {
         try {
-            // const now = new Date();
             const reservationId = req.params.id;
 
             // Chevreアクション検索で実装する
@@ -327,41 +300,9 @@ reservationsRouter.get<ParamsDictionary>(
                         id: { $eq: reservationId }
                     }
                 }
-                // startFrom: (req.query.startFrom instanceof Date)
-                //     ? req.query.startFrom
-                //     : undefined,
-                // startThrough: (req.query.startThrough instanceof Date)
-                //     ? req.query.startThrough
-                //     : undefined
             });
 
             res.json(searchActionsResult.data);
-
-            // const actionRepo = new cinerino.repository.Action(mongoose.connection);
-
-            // // 予約使用アクションを検索
-            // const searchConditions: cinerino.factory.action.ISearchConditions<cinerino.factory.actionType.UseAction> = {
-            //     // ページング未実装、いったん100限定でも要件は十分満たされるか
-            //     // tslint:disable-next-line:no-magic-numbers
-            //     limit: 100,
-            //     sort: { startDate: cinerino.factory.sortType.Descending },
-            //     project: { id: { $eq: req.project.id } },
-            //     typeOf: cinerino.factory.actionType.UseAction,
-            //     object: {
-            //         typeOf: { $in: [cinerino.factory.chevre.reservationType.EventReservation] },
-            //         id: { $in: [reservationId] }
-            //     },
-            //     startFrom: (req.query.startFrom instanceof Date)
-            //         ? req.query.startFrom
-            //         : undefined,
-            //     startThrough: (req.query.startThrough instanceof Date)
-            //         ? req.query.startThrough
-            //         : undefined
-            // };
-
-            // const actions = await actionRepo.search(searchConditions);
-
-            // res.json(actions);
         } catch (error) {
             next(error);
         }
