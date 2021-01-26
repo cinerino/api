@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.46.1 - 2021-01-26
+
+### Changed
+
+- Chevre予約の追加特性からpaymentSeatIndex,csvCode,transactionを削除
+
 ## v5.46.0 - 2021-01-22
 
 ### Added
@@ -35,7 +41,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 予約使用レスポンスにアクションIDを含めることができるように調整
 - 予約に対する使用アクションをChevreで実装
 - 予約使用時にagent.identifierを指定できるように調整
-- Chevre予約の追加特性からpaymentSeatIndex,csvCode,transactionを削除
 
 ### Removed
 
