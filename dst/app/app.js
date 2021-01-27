@@ -16,6 +16,9 @@ const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const router_1 = require("./routes/router");
 const debug = createDebug('cinerino-api:app');
+const MAXIMUM_REQUEST_BODY_SIZE = (typeof process.env.MAXIMUM_REQUEST_BODY_SIZE === 'string')
+    ? Number(process.env.MAXIMUM_REQUEST_BODY_SIZE)
+    : undefined;
 const app = express();
 app.set('query parser', (str) => qs.parse(str, {
     arrayLimit: 1000,
@@ -79,10 +82,10 @@ if (process.env.NODE_ENV !== 'production') {
 // app.set('views', `${__dirname}/views`);
 // app.set('view engine', 'ejs');
 app.use(favicon(`${__dirname}/../../public/favicon.ico`));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: MAXIMUM_REQUEST_BODY_SIZE }));
 // The extended option allows to choose between parsing the URL-encoded data
 // with the querystring library (when false) or the qs library (when true).
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ limit: MAXIMUM_REQUEST_BODY_SIZE, extended: true }));
 // 静的ファイル
 // app.use(express.static(__dirname + '/../../public'));
 connectMongo_1.connectMongo({ defaultConnection: true })
