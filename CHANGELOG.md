@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- MAXIMUM_REQUEST_BODY_SIZE設定を追加
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v5.46.2 - 2021-01-27
+
+### Changed
+
+- MAXIMUM_REQUEST_BODY_SIZE設定を追加
 
 ## v5.46.1 - 2021-01-26
 
