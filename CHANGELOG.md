@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.46.3 - 2021-02-12
+
+### Changed
+
+- 注文から予約への決済方法の連携に関して、決済方法区分コードがOthersの場合、名称を取り込むように調整
+
 ## v5.46.2 - 2021-01-27
 
 ### Changed
