@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - グローバル設定に注文変更時通知設定を追加
 - USE_FACE_TO_FACE_PAYMENT設定を追加
+- RATE_LIMIT_THRESHOLD_GET設定を追加
 
 ### Changed
 
