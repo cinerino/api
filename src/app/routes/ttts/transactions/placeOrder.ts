@@ -35,7 +35,7 @@ export interface IAcceptedOffer4ttts {
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/seatReservation',
-    permitScopes(['transactions', 'pos']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         try {

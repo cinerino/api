@@ -35,7 +35,7 @@ function escapeRegExp(params: string) {
 
 returnOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['transactions', 'pos']),
+    permitScopes(['transactions']),
     rateLimit,
     (req, _, next) => {
         // 互換性維持対応として、注文指定を配列に変換
@@ -215,7 +215,7 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 returnOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/confirm',
-    permitScopes(['transactions', 'pos']),
+    permitScopes(['transactions']),
     rateLimit,
     ...[
         // Eメールカスタマイズのバリデーション

@@ -48,7 +48,7 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 });
 // Cinemasunshine対応
 placeOrderTransactionsRouter.use(placeOrder4cinemasunshine_1.default);
-placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions', 'pos']), 
+placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), 
 // Cinemasunshine互換性維持のため
 (req, _, next) => {
     if (typeof req.body.sellerId === 'string') {
@@ -136,7 +136,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
  * 購入者情報を変更する
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['transactions', 'pos']), ...[
+placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes_1.default(['transactions']), ...[
     express_validator_1.body('additionalProperty')
         .optional()
         .isArray({ max: 10 }),
@@ -207,7 +207,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
  * 取引人プロフィール変更
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put('/:transactionId/agent', permitScopes_1.default(['transactions', 'pos']), ...[
+placeOrderTransactionsRouter.put('/:transactionId/agent', permitScopes_1.default(['transactions']), ...[
     express_validator_1.body('additionalProperty')
         .optional()
         .isArray({ max: 10 }),
@@ -476,7 +476,7 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/award/accoun
     }
 }));
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['transactions', 'pos']), ...[
+placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['transactions']), ...[
     // Eメールカスタマイズのバリデーション
     express_validator_1.body([
         'emailTemplate',

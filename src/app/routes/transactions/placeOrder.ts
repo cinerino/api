@@ -50,7 +50,7 @@ placeOrderTransactionsRouter.use(placeOrder4cinemasunshineRouter);
 
 placeOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['transactions', 'pos']),
+    permitScopes(['transactions']),
     // Cinemasunshine互換性維持のため
     (req, _, next) => {
         if (typeof req.body.sellerId === 'string') {
@@ -161,7 +161,7 @@ placeOrderTransactionsRouter.post(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/customerContact',
-    permitScopes(['transactions', 'pos']),
+    permitScopes(['transactions']),
     ...[
         body('additionalProperty')
             .optional()
@@ -247,7 +247,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/agent',
-    permitScopes(['transactions', 'pos']),
+    permitScopes(['transactions']),
     ...[
         body('additionalProperty')
             .optional()
@@ -574,7 +574,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/confirm',
-    permitScopes(['transactions', 'pos']),
+    permitScopes(['transactions']),
     ...[
         // Eメールカスタマイズのバリデーション
         body([

@@ -15,6 +15,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 許可スコープから'pos'を削除
+
 ### Deprecated
 
 ### Removed

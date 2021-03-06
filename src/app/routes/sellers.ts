@@ -23,7 +23,7 @@ const sellersRouter = Router();
  */
 sellersRouter.get(
     '',
-    permitScopes(['sellers.*', 'sellers.read', 'pos']),
+    permitScopes(['sellers.*', 'sellers.read']),
     rateLimit,
     validator,
     async (req, res, next) => {

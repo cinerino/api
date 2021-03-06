@@ -28,7 +28,7 @@ const faceToFacePaymentRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 faceToFacePaymentRouter.post<ParamsDictionary>(
     '/authorize',
-    permitScopes(['pos', 'payment.any.write']),
+    permitScopes(['payment.any.write']),
     rateLimit,
     ...[
         body('object')

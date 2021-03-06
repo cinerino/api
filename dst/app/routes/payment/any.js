@@ -31,7 +31,7 @@ const anyPaymentRouter = express_1.Router();
  * 汎用決済承認
  */
 // tslint:disable-next-line:use-default-type-parameter
-anyPaymentRouter.post('/authorize', permitScopes_1.default(['pos', 'payment.any.write']), rateLimit_1.default, ...[
+anyPaymentRouter.post('/authorize', permitScopes_1.default(['payment.any.write']), rateLimit_1.default, ...[
     express_validator_1.body('object')
         .not()
         .isEmpty(),

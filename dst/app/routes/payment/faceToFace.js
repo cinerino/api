@@ -31,7 +31,7 @@ const faceToFacePaymentRouter = express_1.Router();
  * 対面決済承認
  */
 // tslint:disable-next-line:use-default-type-parameter
-faceToFacePaymentRouter.post('/authorize', permitScopes_1.default(['pos', 'payment.any.write']), rateLimit_1.default, ...[
+faceToFacePaymentRouter.post('/authorize', permitScopes_1.default(['payment.any.write']), rateLimit_1.default, ...[
     express_validator_1.body('object')
         .not()
         .isEmpty(),
