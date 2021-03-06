@@ -23,6 +23,7 @@ declare global {
             user: IUser;
             accessToken: string;
             isAdmin: boolean;
+            isPOS: boolean;
             isProjectMember: boolean;
             /**
              * プロジェクトメンバーの権限

@@ -105,11 +105,11 @@ returnOrderTransactionsRouter.post(
                 returnableOrder = [order];
             }
 
-            const cancellationFee = (req.isAdmin)
+            // posロールでの返品処理の場合も、販売者都合とする
+            const cancellationFee = (req.isAdmin || req.isPOS)
                 ? 0
                 : CANCELLATION_FEE;
-
-            const reason = (req.isAdmin)
+            const reason = (req.isAdmin || req.isPOS)
                 ? cinerino.factory.transaction.returnOrder.Reason.Seller
                 : cinerino.factory.transaction.returnOrder.Reason.Customer;
 
