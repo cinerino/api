@@ -137,7 +137,8 @@ placeOrderTransactionsRouter.post(
                 object: {
                     ...(typeof req.waiterPassport?.token === 'string') ? { passport: req.waiterPassport } : undefined,
                     ...(useTransactionClientUser) ? { clientUser: req.user } : undefined,
-                    ...(typeof orderName === 'string') ? { name: orderName } : undefined
+                    ...(typeof orderName === 'string') ? { name: orderName } : undefined,
+                    ...(req.isAdmin) ? { broker: req.agent } : undefined
                 },
                 passportValidator
             })({
@@ -344,7 +345,8 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             const action = await cinerino.service.offer.seatReservation.create({
                 project: req.project,
                 object: {
-                    ...req.body
+                    ...req.body,
+                    broker: (req.isAdmin) ? req.agent : undefined
                 },
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId }

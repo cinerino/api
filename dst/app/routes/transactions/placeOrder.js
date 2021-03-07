@@ -117,7 +117,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
                         : []
                 ] }),
             seller: req.body.seller,
-            object: Object.assign(Object.assign(Object.assign({}, (typeof ((_e = req.waiterPassport) === null || _e === void 0 ? void 0 : _e.token) === 'string') ? { passport: req.waiterPassport } : undefined), (useTransactionClientUser) ? { clientUser: req.user } : undefined), (typeof orderName === 'string') ? { name: orderName } : undefined),
+            object: Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof ((_e = req.waiterPassport) === null || _e === void 0 ? void 0 : _e.token) === 'string') ? { passport: req.waiterPassport } : undefined), (useTransactionClientUser) ? { clientUser: req.user } : undefined), (typeof orderName === 'string') ? { name: orderName } : undefined), (req.isAdmin) ? { broker: req.agent } : undefined),
             passportValidator
         })({
             project: projectRepo,
@@ -284,7 +284,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const action = yield cinerino.service.offer.seatReservation.create({
             project: req.project,
-            object: Object.assign({}, req.body),
+            object: Object.assign(Object.assign({}, req.body), { broker: (req.isAdmin) ? req.agent : undefined }),
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId }
         })({
