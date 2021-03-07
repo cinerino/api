@@ -119,6 +119,21 @@ placeOrderTransactionsRouter.post(
 
             const orderName: string | undefined = (typeof req.body.object?.name === 'string') ? req.body.object?.name : DEFAULT_ORDER_NAME;
 
+            const broker: cinerino.factory.order.IBroker | undefined = (req.isAdmin) ? req.agent : undefined;
+
+            // object.customerを指定
+            let customer: cinerino.factory.order.ICustomer = {
+                id: req.agent.id,
+                typeOf: req.agent.typeOf
+            };
+            // 管理者がbrokerとして注文する場合、customerはWebApplicationとする
+            if (broker !== undefined) {
+                customer = {
+                    id: req.user.client_id,
+                    typeOf: <any>cinerino.factory.chevre.creativeWorkType.WebApplication
+                };
+            }
+
             const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
                 project: req.project,
                 expires: expires,
@@ -137,10 +152,11 @@ placeOrderTransactionsRouter.post(
                 object: {
                     ...(typeof req.waiterPassport?.token === 'string') ? { passport: req.waiterPassport } : undefined,
                     ...(useTransactionClientUser) ? { clientUser: req.user } : undefined,
-                    ...(typeof orderName === 'string') ? { name: orderName } : undefined
+                    ...(typeof orderName === 'string') ? { name: orderName } : undefined,
+                    customer
                 },
                 passportValidator,
-                ...(req.isAdmin) ? { broker: req.agent } : undefined
+                ...(broker !== undefined) ? { broker } : undefined
             })({
                 project: projectRepo,
                 transaction: transactionRepo

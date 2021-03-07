@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 許可スコープから'pos'を削除
 - リクエストにisPOSをセットするように調整
+- 注文取引でcustomerを指定できるように調整
 
 ### Deprecated
 
