@@ -137,10 +137,10 @@ placeOrderTransactionsRouter.post(
                 object: {
                     ...(typeof req.waiterPassport?.token === 'string') ? { passport: req.waiterPassport } : undefined,
                     ...(useTransactionClientUser) ? { clientUser: req.user } : undefined,
-                    ...(typeof orderName === 'string') ? { name: orderName } : undefined,
-                    ...(req.isAdmin) ? { broker: req.agent } : undefined
+                    ...(typeof orderName === 'string') ? { name: orderName } : undefined
                 },
-                passportValidator
+                passportValidator,
+                ...(req.isAdmin) ? { broker: req.agent } : undefined
             })({
                 project: projectRepo,
                 transaction: transactionRepo

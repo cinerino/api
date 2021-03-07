@@ -105,21 +105,14 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         const project = yield projectRepo.findById({ id: req.project.id });
         const useTransactionClientUser = ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.useTransactionClientUser) === true;
         const orderName = (typeof ((_b = req.body.object) === null || _b === void 0 ? void 0 : _b.name) === 'string') ? (_c = req.body.object) === null || _c === void 0 ? void 0 : _c.name : DEFAULT_ORDER_NAME;
-        const transaction = yield cinerino.service.transaction.placeOrderInProgress.start({
-            project: req.project,
-            expires: expires,
-            agent: Object.assign(Object.assign({}, req.agent), { identifier: [
+        const transaction = yield cinerino.service.transaction.placeOrderInProgress.start(Object.assign({ project: req.project, expires: expires, agent: Object.assign(Object.assign({}, req.agent), { identifier: [
                     ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
                     ...(Array.isArray((_d = req.body.agent) === null || _d === void 0 ? void 0 : _d.identifier))
                         ? req.body.agent.identifier.map((p) => {
                             return { name: String(p.name), value: String(p.value) };
                         })
                         : []
-                ] }),
-            seller: req.body.seller,
-            object: Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof ((_e = req.waiterPassport) === null || _e === void 0 ? void 0 : _e.token) === 'string') ? { passport: req.waiterPassport } : undefined), (useTransactionClientUser) ? { clientUser: req.user } : undefined), (typeof orderName === 'string') ? { name: orderName } : undefined), (req.isAdmin) ? { broker: req.agent } : undefined),
-            passportValidator
-        })({
+                ] }), seller: req.body.seller, object: Object.assign(Object.assign(Object.assign({}, (typeof ((_e = req.waiterPassport) === null || _e === void 0 ? void 0 : _e.token) === 'string') ? { passport: req.waiterPassport } : undefined), (useTransactionClientUser) ? { clientUser: req.user } : undefined), (typeof orderName === 'string') ? { name: orderName } : undefined), passportValidator }, (req.isAdmin) ? { broker: req.agent } : undefined))({
             project: projectRepo,
             transaction: transactionRepo
         });
