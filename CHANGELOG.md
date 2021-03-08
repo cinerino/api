@@ -24,6 +24,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- 非推奨エンドポイントを削除
+
 ### Fixed
 
 ### Security
