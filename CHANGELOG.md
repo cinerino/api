@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 許可スコープから'pos'を削除
 - リクエストにisPOSをセットするように調整
 - 注文取引でcustomerを指定できるように調整
+- Chevre返金時にpurposeを返品アクションに指定するように調整
 
 ### Deprecated
 

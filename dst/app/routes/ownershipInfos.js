@@ -22,7 +22,7 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const tokens_1 = require("./tokens");
+// import { TOKEN_EXPIRES_IN } from './tokens';
 const ownershipInfosRouter = express_1.Router();
 /**
  * 所有権検索
@@ -58,22 +58,27 @@ ownershipInfosRouter.get('', permitScopes_1.default(['ownershipInfos.read']), ra
  * コードから所有権に対するアクセストークンを発行する
  * @deprecated Use /tokens
  */
-ownershipInfosRouter.post('/tokens', permitScopes_1.default(['tokens']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const codeRepo = new cinerino.repository.Code(mongoose.connection);
-        const token = yield cinerino.service.code.getToken({
-            project: req.project,
-            code: req.body.code,
-            secret: process.env.TOKEN_SECRET,
-            issuer: process.env.RESOURCE_SERVER_IDENTIFIER,
-            expiresIn: tokens_1.TOKEN_EXPIRES_IN
-        })({ code: codeRepo });
-        res.json({ token });
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// ownershipInfosRouter.post(
+//     '/tokens',
+//     permitScopes(['tokens']),
+//     rateLimit,
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             const codeRepo = new cinerino.repository.Code(mongoose.connection);
+//             const token = await cinerino.service.code.getToken({
+//                 project: req.project,
+//                 code: req.body.code,
+//                 secret: <string>process.env.TOKEN_SECRET,
+//                 issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER,
+//                 expiresIn: TOKEN_EXPIRES_IN
+//             })({ code: codeRepo });
+//             res.json({ token });
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 /**
  * Cinemasunshine対応
  * @deprecated
