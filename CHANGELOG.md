@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v5.47.0 - 2021-03-12
+
+### Added
+
 - グローバル設定に注文変更時通知設定を追加
 - USE_FACE_TO_FACE_PAYMENT設定を追加
 - RATE_LIMIT_THRESHOLD_GET設定を追加
@@ -23,15 +37,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Chevreエラーハンドリング強化
 - 返金後メール送信を指定されなければ実行しないように調整
 
-### Deprecated
-
 ### Removed
 
 - 非推奨エンドポイントを削除
-
-### Fixed
-
-### Security
 
 ## v5.46.3 - 2021-02-12
 
