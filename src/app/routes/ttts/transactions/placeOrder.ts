@@ -81,7 +81,7 @@ placeOrderTransactionsRouter.post(
                 object: {
                     event: { id: eventId },
                     acceptedOffer: acceptedOffer,
-                    ...(req.isAdmin) ? { broker: req.agent } : undefined
+                    ...(req.isAdmin) ? { broker: <any>req.agent } : undefined
                 }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
