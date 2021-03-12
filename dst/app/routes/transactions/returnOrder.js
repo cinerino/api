@@ -35,7 +35,7 @@ const returnOrderTransactionsRouter = express_1.Router();
 function escapeRegExp(params) {
     return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
 }
-returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions', 'pos']), rateLimit_1.default, (req, _, next) => {
+returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), rateLimit_1.default, (req, _, next) => {
     var _a, _b, _c;
     // 互換性維持対応として、注文指定を配列に変換
     if (((_a = req.body.object) === null || _a === void 0 ? void 0 : _a.order) !== undefined && ((_b = req.body.object) === null || _b === void 0 ? void 0 : _b.order) !== null && !Array.isArray((_c = req.body.object) === null || _c === void 0 ? void 0 : _c.order)) {
@@ -96,10 +96,11 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
             }
             returnableOrder = [order];
         }
-        const cancellationFee = (req.isAdmin)
+        // posロールでの返品処理の場合も、販売者都合とする
+        const cancellationFee = (req.isAdmin || req.isPOS)
             ? 0
             : CANCELLATION_FEE;
-        const reason = (req.isAdmin)
+        const reason = (req.isAdmin || req.isPOS)
             ? cinerino.factory.transaction.returnOrder.Reason.Seller
             : cinerino.factory.transaction.returnOrder.Reason.Customer;
         const transaction = yield cinerino.service.transaction.returnOrder.start({
@@ -184,7 +185,7 @@ returnOrderTransactionsRouter.put('/:transactionId/agent', permitScopes_1.defaul
     }
 }));
 // tslint:disable-next-line:use-default-type-parameter
-returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['transactions', 'pos']), rateLimit_1.default, ...[
+returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['transactions']), rateLimit_1.default, ...[
     // Eメールカスタマイズのバリデーション
     express_validator_1.body([
         'potentialActions.returnOrder.potentialActions.refundCreditCard.potentialActions.sendEmailMessage.object.about',

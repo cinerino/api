@@ -18,6 +18,29 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v5.47.0 - 2021-03-12
+
+### Added
+
+- グローバル設定に注文変更時通知設定を追加
+- USE_FACE_TO_FACE_PAYMENT設定を追加
+- RATE_LIMIT_THRESHOLD_GET設定を追加
+- USE_PROJECTLESS_ROUTER設定を追加
+- 注文にbrokerを追加
+
+### Changed
+
+- 許可スコープから'pos'を削除
+- リクエストにisPOSをセットするように調整
+- 注文取引でcustomerを指定できるように調整
+- Chevre返金時にpurposeを返品アクションに指定するように調整
+- Chevreエラーハンドリング強化
+- 返金後メール送信を指定されなければ実行しないように調整
+
+### Removed
+
+- 非推奨エンドポイントを削除
+
 ## v5.46.3 - 2021-02-12
 
 ### Changed

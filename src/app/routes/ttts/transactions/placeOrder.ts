@@ -35,7 +35,7 @@ export interface IAcceptedOffer4ttts {
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/seatReservation',
-    permitScopes(['transactions', 'pos']),
+    permitScopes(['transactions']),
     validator,
     async (req, res, next) => {
         try {
@@ -80,7 +80,8 @@ placeOrderTransactionsRouter.post(
                 transaction: { id: req.params.transactionId },
                 object: {
                     event: { id: eventId },
-                    acceptedOffer: acceptedOffer
+                    acceptedOffer: acceptedOffer,
+                    ...(req.isAdmin) ? { broker: <any>req.agent } : undefined
                 }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),

@@ -50,7 +50,7 @@ placeOrderTransactionsRouter.use(placeOrder4cinemasunshineRouter);
 
 placeOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['transactions', 'pos']),
+    permitScopes(['transactions']),
     // Cinemasunshine互換性維持のため
     (req, _, next) => {
         if (typeof req.body.sellerId === 'string') {
@@ -119,6 +119,21 @@ placeOrderTransactionsRouter.post(
 
             const orderName: string | undefined = (typeof req.body.object?.name === 'string') ? req.body.object?.name : DEFAULT_ORDER_NAME;
 
+            const broker: cinerino.factory.order.IBroker | undefined = (req.isAdmin) ? req.agent : undefined;
+
+            // object.customerを指定
+            let customer: cinerino.factory.order.ICustomer = {
+                id: req.agent.id,
+                typeOf: req.agent.typeOf
+            };
+            // 管理者がbrokerとして注文する場合、customerはWebApplicationとする
+            if (broker !== undefined) {
+                customer = {
+                    id: req.user.client_id,
+                    typeOf: <any>cinerino.factory.chevre.creativeWorkType.WebApplication
+                };
+            }
+
             const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
                 project: req.project,
                 expires: expires,
@@ -137,9 +152,11 @@ placeOrderTransactionsRouter.post(
                 object: {
                     ...(typeof req.waiterPassport?.token === 'string') ? { passport: req.waiterPassport } : undefined,
                     ...(useTransactionClientUser) ? { clientUser: req.user } : undefined,
-                    ...(typeof orderName === 'string') ? { name: orderName } : undefined
+                    ...(typeof orderName === 'string') ? { name: orderName } : undefined,
+                    customer
                 },
-                passportValidator
+                passportValidator,
+                ...(broker !== undefined) ? { broker } : undefined
             })({
                 project: projectRepo,
                 transaction: transactionRepo
@@ -159,87 +176,87 @@ placeOrderTransactionsRouter.post(
  * 購入者情報を変更する
  */
 // tslint:disable-next-line:use-default-type-parameter
-placeOrderTransactionsRouter.put<ParamsDictionary>(
-    '/:transactionId/customerContact',
-    permitScopes(['transactions', 'pos']),
-    ...[
-        body('additionalProperty')
-            .optional()
-            .isArray({ max: 10 }),
-        body('additionalProperty.*.name')
-            .optional()
-            .not()
-            .isEmpty()
-            .isString()
-            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        body('additionalProperty.*.value')
-            .optional()
-            .not()
-            .isEmpty()
-            .isString()
-            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        body('email')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required'),
-        body('familyName')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required'),
-        body('givenName')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required'),
-        body('telephone')
-            .not()
-            .isEmpty()
-            .withMessage((_, __) => 'required')
-    ],
-    validator,
-    async (req, res, next) => {
-        await rateLimit4transactionInProgress({
-            typeOf: cinerino.factory.transactionType.PlaceOrder,
-            id: req.params.transactionId
-        })(req, res, next);
-    },
-    async (req, res, next) => {
-        await lockTransaction({
-            typeOf: cinerino.factory.transactionType.PlaceOrder,
-            id: req.params.transactionId
-        })(req, res, next);
-    },
-    async (req, res, next) => {
-        try {
-            let requestedNumber = String(req.body.telephone);
+// placeOrderTransactionsRouter.put<ParamsDictionary>(
+//     '/:transactionId/customerContact',
+//     permitScopes(['transactions']),
+//     ...[
+//         body('additionalProperty')
+//             .optional()
+//             .isArray({ max: 10 }),
+//         body('additionalProperty.*.name')
+//             .optional()
+//             .not()
+//             .isEmpty()
+//             .isString()
+//             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+//         body('additionalProperty.*.value')
+//             .optional()
+//             .not()
+//             .isEmpty()
+//             .isString()
+//             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+//         body('email')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('familyName')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('givenName')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required'),
+//         body('telephone')
+//             .not()
+//             .isEmpty()
+//             .withMessage((_, __) => 'required')
+//     ],
+//     validator,
+//     async (req, res, next) => {
+//         await rateLimit4transactionInProgress({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         await lockTransaction({
+//             typeOf: cinerino.factory.transactionType.PlaceOrder,
+//             id: req.params.transactionId
+//         })(req, res, next);
+//     },
+//     async (req, res, next) => {
+//         try {
+//             let requestedNumber = String(req.body.telephone);
 
-            try {
-                // cinemasunshine対応として、国内向け電話番号フォーマットであれば、強制的に日本国番号を追加
-                if (requestedNumber.slice(0, 1) === '0' && typeof req.body.telephoneRegion !== 'string') {
-                    requestedNumber = `+81${requestedNumber.slice(1)}`;
-                }
-            } catch (error) {
-                throw new cinerino.factory.errors.Argument('Telephone', `Unexpected value: ${error.message}`);
-            }
+//             try {
+//                 // cinemasunshine対応として、国内向け電話番号フォーマットであれば、強制的に日本国番号を追加
+//                 if (requestedNumber.slice(0, 1) === '0' && typeof req.body.telephoneRegion !== 'string') {
+//                     requestedNumber = `+81${requestedNumber.slice(1)}`;
+//                 }
+//             } catch (error) {
+//                 throw new cinerino.factory.errors.Argument('Telephone', `Unexpected value: ${error.message}`);
+//             }
 
-            const profile = await cinerino.service.transaction.updateAgent({
-                typeOf: cinerino.factory.transactionType.PlaceOrder,
-                id: req.params.transactionId,
-                agent: {
-                    ...req.body,
-                    typeOf: cinerino.factory.personType.Person,
-                    id: req.user.sub,
-                    telephone: requestedNumber
-                }
-            })({
-                transaction: new cinerino.repository.Transaction(mongoose.connection)
-            });
+//             const profile = await cinerino.service.transaction.updateAgent({
+//                 typeOf: cinerino.factory.transactionType.PlaceOrder,
+//                 id: req.params.transactionId,
+//                 agent: {
+//                     ...req.body,
+//                     typeOf: cinerino.factory.personType.Person,
+//                     id: req.user.sub,
+//                     telephone: requestedNumber
+//                 }
+//             })({
+//                 transaction: new cinerino.repository.Transaction(mongoose.connection)
+//             });
 
-            res.json(profile);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
+//             res.json(profile);
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 
 /**
  * 取引人プロフィール変更
@@ -247,7 +264,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/agent',
-    permitScopes(['transactions', 'pos']),
+    permitScopes(['transactions']),
     ...[
         body('additionalProperty')
             .optional()
@@ -344,7 +361,8 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             const action = await cinerino.service.offer.seatReservation.create({
                 project: req.project,
                 object: {
-                    ...req.body
+                    ...req.body,
+                    broker: (req.isAdmin) ? req.agent : undefined
                 },
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId }
@@ -574,7 +592,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 placeOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/confirm',
-    permitScopes(['transactions', 'pos']),
+    permitScopes(['transactions']),
     ...[
         // Eメールカスタマイズのバリデーション
         body([

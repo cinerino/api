@@ -5,9 +5,11 @@ import { NextFunction, Request, Response } from 'express';
 import * as ioredis from 'ioredis';
 
 const USE_RATE_LIMIT = process.env.USE_RATE_LIMIT === '1';
-const UNIT_IN_SECONDS = (process.env.RATE_LIMIT_UNIT_IN_SECONDS !== undefined) ? Number(process.env.RATE_LIMIT_UNIT_IN_SECONDS) : 1;
+const UNIT_IN_SECONDS = (typeof process.env.RATE_LIMIT_UNIT_IN_SECONDS === 'string') ? Number(process.env.RATE_LIMIT_UNIT_IN_SECONDS) : 1;
 // tslint:disable-next-line:no-magic-numbers
-const THRESHOLD = (process.env.RATE_LIMIT_THRESHOLD !== undefined) ? Number(process.env.RATE_LIMIT_THRESHOLD) : 10;
+const THRESHOLD = (typeof process.env.RATE_LIMIT_THRESHOLD === 'string') ? Number(process.env.RATE_LIMIT_THRESHOLD) : 10;
+// tslint:disable-next-line:no-magic-numbers
+const THRESHOLD_GET = (typeof process.env.RATE_LIMIT_THRESHOLD_GET === 'string') ? Number(process.env.RATE_LIMIT_THRESHOLD_GET) : 10;
 
 const redisClient = new ioredis({
     host: <string>process.env.REDIS_HOST,
@@ -39,7 +41,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         await middlewares.rateLimit({
             redisClient: redisClient,
             aggregationUnitInSeconds: UNIT_IN_SECONDS,
-            threshold: THRESHOLD,
+            threshold: (req.method === 'GET') ? THRESHOLD_GET : THRESHOLD,
             // 制限超過時の動作をカスタマイズ
             limitExceededHandler: (_, __, resOnLimitExceeded, nextOnLimitExceeded) => {
                 resOnLimitExceeded.setHeader('Retry-After', UNIT_IN_SECONDS);

@@ -21,7 +21,8 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 const identifier: cinerino.factory.person.IIdentifier = [
                     { name: 'tokenIssuer', value: user.iss },
                     { name: 'clientId', value: user.client_id },
-                    { name: 'hostname', value: req.hostname }
+                    { name: 'hostname', value: req.hostname },
+                    ...(typeof user.username === 'string') ? [{ name: 'username', value: user.username }] : []
                 ];
 
                 // リクエストユーザーの属性を識別子に追加

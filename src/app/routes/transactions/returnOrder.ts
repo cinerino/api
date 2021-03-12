@@ -35,7 +35,7 @@ function escapeRegExp(params: string) {
 
 returnOrderTransactionsRouter.post(
     '/start',
-    permitScopes(['transactions', 'pos']),
+    permitScopes(['transactions']),
     rateLimit,
     (req, _, next) => {
         // 互換性維持対応として、注文指定を配列に変換
@@ -105,11 +105,11 @@ returnOrderTransactionsRouter.post(
                 returnableOrder = [order];
             }
 
-            const cancellationFee = (req.isAdmin)
+            // posロールでの返品処理の場合も、販売者都合とする
+            const cancellationFee = (req.isAdmin || req.isPOS)
                 ? 0
                 : CANCELLATION_FEE;
-
-            const reason = (req.isAdmin)
+            const reason = (req.isAdmin || req.isPOS)
                 ? cinerino.factory.transaction.returnOrder.Reason.Seller
                 : cinerino.factory.transaction.returnOrder.Reason.Customer;
 
@@ -215,7 +215,7 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
 // tslint:disable-next-line:use-default-type-parameter
 returnOrderTransactionsRouter.put<ParamsDictionary>(
     '/:transactionId/confirm',
-    permitScopes(['transactions', 'pos']),
+    permitScopes(['transactions']),
     rateLimit,
     ...[
         // Eメールカスタマイズのバリデーション

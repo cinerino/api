@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * クレジットカード決済ルーター
+ * 対面決済ルーター
  */
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
@@ -26,12 +26,12 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
     : 256;
-const anyPaymentRouter = express_1.Router();
+const faceToFacePaymentRouter = express_1.Router();
 /**
- * 汎用決済承認
+ * 対面決済承認
  */
 // tslint:disable-next-line:use-default-type-parameter
-anyPaymentRouter.post('/authorize', permitScopes_1.default(['payment.any.write']), rateLimit_1.default, ...[
+faceToFacePaymentRouter.post('/authorize', permitScopes_1.default(['payment.any.write']), rateLimit_1.default, ...[
     express_validator_1.body('object')
         .not()
         .isEmpty(),
@@ -44,6 +44,10 @@ anyPaymentRouter.post('/authorize', permitScopes_1.default(['payment.any.write']
         .isEmpty()
         .withMessage((_, __) => 'required')
         .isInt(),
+    express_validator_1.body('object.paymentMethod')
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required'),
     express_validator_1.body('object.additionalProperty')
         .optional()
         .isArray({ max: 10 }),
@@ -70,17 +74,18 @@ anyPaymentRouter.post('/authorize', permitScopes_1.default(['payment.any.write']
         id: req.body.purpose.id
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        const action = yield cinerino.service.payment.any.authorize({
+        const action = yield cinerino.service.payment.chevre.authorize({
+            project: req.project,
             agent: { id: req.user.sub },
-            object: Object.assign(Object.assign(Object.assign({}, req.body.object), { 
-                // typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment,
-                additionalProperty: (Array.isArray(req.body.object.additionalProperty))
+            object: Object.assign({ typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment, paymentMethod: (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.paymentMethod, additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                     ? req.body.object.additionalProperty.map((p) => {
                         return { name: String(p.name), value: String(p.value) };
                     })
-                    : [] }), (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined),
-            purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
+                    : [], amount: Number(req.body.object.amount) }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined),
+            purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id },
+            paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.FaceToFace
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
@@ -93,9 +98,9 @@ anyPaymentRouter.post('/authorize', permitScopes_1.default(['payment.any.write']
     }
 }));
 /**
- * 汎用決済承認取消
+ * 対面決済承認取消
  */
-anyPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['payment.any.write']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+faceToFacePaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['payment.any.write']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: req.body.purpose.typeOf,
         id: req.body.purpose.id
@@ -107,7 +112,8 @@ anyPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['payme
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield cinerino.service.payment.any.voidTransaction({
+        yield cinerino.service.payment.chevre.voidPayment({
+            project: { id: req.project.id, typeOf: req.project.typeOf },
             agent: { id: req.user.sub },
             id: req.params.actionId,
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
@@ -122,4 +128,4 @@ anyPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['payme
         next(error);
     }
 }));
-exports.default = anyPaymentRouter;
+exports.default = faceToFacePaymentRouter;

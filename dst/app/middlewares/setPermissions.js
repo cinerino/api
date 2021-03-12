@@ -16,9 +16,11 @@ const cinerino = require("@cinerino/domain");
 const mongoose = require("mongoose");
 const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
 const ANY_PROJECT_ID = '*';
+const POS_ROLE_NAME = 'pos';
 exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
+        let isPOS = false;
         let isProjectMember = false;
         let memberPermissions = [];
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
@@ -26,36 +28,40 @@ exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* 
         // プロジェクトが決定していれば権限をセット
         if (typeof ((_a = req.project) === null || _a === void 0 ? void 0 : _a.id) === 'string' && req.project.id !== ANY_PROJECT_ID) {
             // プロジェクト決定済のリクエストに対してプロジェクトメンバー権限を決定する
-            memberPermissions = yield cinerino.service.iam.searchPermissions({
+            let searchPermissionsResult = yield cinerino.service.iam.searchPermissions({
                 project: { id: req.project.id },
                 member: { id: req.user.sub }
             })({
                 member: memberRepo,
                 role: roleRepo
             });
+            memberPermissions = searchPermissionsResult.permissions;
             memberPermissions = memberPermissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`);
             if (memberPermissions.length === 0) {
                 // プロジェクトメンバーが見つからない場合、アプリケーションクライアントとして権限検索
-                memberPermissions = yield cinerino.service.iam.searchPermissions({
+                searchPermissionsResult = yield cinerino.service.iam.searchPermissions({
                     project: { id: req.project.id },
                     member: { id: req.user.client_id }
                 })({
                     member: memberRepo,
                     role: roleRepo
                 });
+                memberPermissions = searchPermissionsResult.permissions;
                 memberPermissions = memberPermissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`);
             }
             if (memberPermissions.length === 0) {
                 // 全プロジェクトに許可されたアプリケーションクライアントとして権限検索
-                memberPermissions = yield cinerino.service.iam.searchPermissions({
+                searchPermissionsResult = yield cinerino.service.iam.searchPermissions({
                     project: { id: ANY_PROJECT_ID },
                     member: { id: req.user.client_id }
                 })({
                     member: memberRepo,
                     role: roleRepo
                 });
+                memberPermissions = searchPermissionsResult.permissions;
                 memberPermissions = memberPermissions.map((p) => `${RESOURCE_SERVER_IDENTIFIER}/${p}`);
             }
+            isPOS = searchPermissionsResult.roleNames.includes(POS_ROLE_NAME);
             isProjectMember = yield checkProjectMember({
                 project: { id: req.project.id },
                 member: { id: req.user.sub }
@@ -64,6 +70,7 @@ exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* 
             });
         }
         req.memberPermissions = memberPermissions;
+        req.isPOS = isPOS;
         req.isProjectMember = isProjectMember;
         next();
     }

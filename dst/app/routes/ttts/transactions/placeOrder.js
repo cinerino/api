@@ -29,7 +29,7 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 /**
  * 座席仮予約
  */
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['transactions', 'pos']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['transactions']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (!Array.isArray(req.body.offers)) {
             req.body.offers = [];
@@ -64,10 +64,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             project: req.project,
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId },
-            object: {
-                event: { id: eventId },
-                acceptedOffer: acceptedOffer
-            }
+            object: Object.assign({ event: { id: eventId }, acceptedOffer: acceptedOffer }, (req.isAdmin) ? { broker: req.agent } : undefined)
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             project: new cinerino.repository.Project(mongoose.connection),

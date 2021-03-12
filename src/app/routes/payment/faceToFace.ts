@@ -1,5 +1,5 @@
 /**
- * クレジットカード決済ルーター
+ * 対面決済ルーター
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
@@ -20,13 +20,13 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     // tslint:disable-next-line:no-magic-numbers
     : 256;
 
-const anyPaymentRouter = Router();
+const faceToFacePaymentRouter = Router();
 
 /**
- * 汎用決済承認
+ * 対面決済承認
  */
 // tslint:disable-next-line:use-default-type-parameter
-anyPaymentRouter.post<ParamsDictionary>(
+faceToFacePaymentRouter.post<ParamsDictionary>(
     '/authorize',
     permitScopes(['payment.any.write']),
     rateLimit,
@@ -43,6 +43,10 @@ anyPaymentRouter.post<ParamsDictionary>(
             .isEmpty()
             .withMessage((_, __) => 'required')
             .isInt(),
+        body('object.paymentMethod')
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required'),
         body('object.additionalProperty')
             .optional()
             .isArray({ max: 10 }),
@@ -74,19 +78,22 @@ anyPaymentRouter.post<ParamsDictionary>(
     },
     async (req, res, next) => {
         try {
-            const action = await cinerino.service.payment.any.authorize({
+            const action = await cinerino.service.payment.chevre.authorize({
+                project: req.project,
                 agent: { id: req.user.sub },
                 object: {
-                    ...req.body.object,
-                    // typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment,
+                    typeOf: cinerino.factory.action.authorize.paymentMethod.any.ResultType.Payment,
+                    paymentMethod: req.body.object?.paymentMethod,
                     additionalProperty: (Array.isArray(req.body.object.additionalProperty))
                         ? (<any[]>req.body.object.additionalProperty).map((p: any) => {
                             return { name: String(p.name), value: String(p.value) };
                         })
                         : [],
+                    amount: Number(req.body.object.amount),
                     ...(typeof req.body.object.name === 'string') ? { name: <string>req.body.object.name } : undefined
                 },
-                purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
+                purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id },
+                paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.FaceToFace
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
@@ -101,9 +108,9 @@ anyPaymentRouter.post<ParamsDictionary>(
 );
 
 /**
- * 汎用決済承認取消
+ * 対面決済承認取消
  */
-anyPaymentRouter.put(
+faceToFacePaymentRouter.put(
     '/authorize/:actionId/void',
     permitScopes(['payment.any.write']),
     rateLimit,
@@ -122,7 +129,8 @@ anyPaymentRouter.put(
     },
     async (req, res, next) => {
         try {
-            await cinerino.service.payment.any.voidTransaction({
+            await cinerino.service.payment.chevre.voidPayment({
+                project: { id: req.project.id, typeOf: req.project.typeOf },
                 agent: { id: req.user.sub },
                 id: req.params.actionId,
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
@@ -139,4 +147,4 @@ anyPaymentRouter.put(
     }
 );
 
-export default anyPaymentRouter;
+export default faceToFacePaymentRouter;
