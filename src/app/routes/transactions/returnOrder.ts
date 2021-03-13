@@ -22,8 +22,6 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     // tslint:disable-next-line:no-magic-numbers
     : 256;
 
-const CANCELLATION_FEE = 1000;
-
 const returnOrderTransactionsRouter = Router();
 
 /**
@@ -106,9 +104,6 @@ returnOrderTransactionsRouter.post(
             }
 
             // posロールでの返品処理の場合も、販売者都合とする
-            const cancellationFee = (req.isAdmin || req.isPOS)
-                ? 0
-                : CANCELLATION_FEE;
             const reason = (req.isAdmin || req.isPOS)
                 ? cinerino.factory.transaction.returnOrder.Reason.Seller
                 : cinerino.factory.transaction.returnOrder.Reason.Customer;
@@ -128,7 +123,6 @@ returnOrderTransactionsRouter.post(
                 },
                 expires: req.body.expires,
                 object: {
-                    cancellationFee: cancellationFee,
                     order: returnableOrder,
                     reason: reason
                 },
