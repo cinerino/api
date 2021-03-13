@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - req.agent.memberOfから不要な情報を削除
+- 返金後の注文通知アクション指定を廃止
+- プロジェクトに返品手数料設定を追加
 
 ### Deprecated
 
