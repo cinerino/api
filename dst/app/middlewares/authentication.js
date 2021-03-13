@@ -16,7 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express_middleware_1 = require("@motionpicture/express-middleware");
 // 許可発行者リスト
-const ISSUERS = process.env.TOKEN_ISSUERS.split(',');
+const ISSUERS = (typeof process.env.TOKEN_ISSUERS === 'string') ? process.env.TOKEN_ISSUERS.split(',') : [];
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
 // tslint:disable-next-line:max-func-body-length
@@ -46,14 +46,14 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                     // no op
                 }
                 let programMembership;
-                if (user.username !== undefined) {
+                if (typeof user.username === 'string') {
                     programMembership = {
                         membershipNumber: user.username,
-                        name: 'Default Program Membership',
+                        // name: 'Default Program Membership',
                         programName: 'Default Program Membership',
                         project: req.project,
-                        typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership,
-                        url: user.iss
+                        typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership
+                        // url: user.iss
                     };
                 }
                 req.user = user;

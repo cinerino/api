@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- req.agent.memberOfから不要な情報を削除
+
 ### Deprecated
 
 ### Removed

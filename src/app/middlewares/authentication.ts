@@ -8,7 +8,7 @@ import { cognitoAuth } from '@motionpicture/express-middleware';
 import { NextFunction, Request, Response } from 'express';
 
 // 許可発行者リスト
-const ISSUERS = (<string>process.env.TOKEN_ISSUERS).split(',');
+const ISSUERS: string[] = (typeof process.env.TOKEN_ISSUERS === 'string') ? process.env.TOKEN_ISSUERS.split(',') : [];
 
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
@@ -40,14 +40,14 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 }
 
                 let programMembership: cinerino.factory.programMembership.IProgramMembership | undefined;
-                if (user.username !== undefined) {
-                    programMembership = <any>{
+                if (typeof user.username === 'string') {
+                    programMembership = {
                         membershipNumber: user.username,
-                        name: 'Default Program Membership',
+                        // name: 'Default Program Membership',
                         programName: 'Default Program Membership',
                         project: req.project,
-                        typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership,
-                        url: user.iss
+                        typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership
+                        // url: user.iss
                     };
                 }
 
