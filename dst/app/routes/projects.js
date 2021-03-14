@@ -73,11 +73,6 @@ rateLimit_1.default, ...[
         .not()
         .isEmpty()
         .withMessage(() => 'required')
-        .isString(),
-    express_validator_1.body('settings.transactionWebhookUrl')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
         .isString()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -119,7 +114,7 @@ rateLimit_1.default, ...[
     }
 }));
 function createFromBody(params) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f;
     return {
         id: params.id,
         typeOf: params.typeOf,
@@ -134,7 +129,7 @@ function createFromBody(params) {
                 informOrder: (Array.isArray((_e = (_d = params.settings) === null || _d === void 0 ? void 0 : _d.onOrderStatusChanged) === null || _e === void 0 ? void 0 : _e.informOrder))
                     ? params.settings.onOrderStatusChanged.informOrder
                     : []
-            }, transactionWebhookUrl: (_f = params.settings) === null || _f === void 0 ? void 0 : _f.transactionWebhookUrl, useUsernameAsGMOMemberId: false }, (typeof ((_g = params.settings) === null || _g === void 0 ? void 0 : _g.sendgridApiKey) === 'string' && params.settings.sendgridApiKey.length > 0)
+            }, useUsernameAsGMOMemberId: false }, (typeof ((_f = params.settings) === null || _f === void 0 ? void 0 : _f.sendgridApiKey) === 'string' && params.settings.sendgridApiKey.length > 0)
             ? { sendgridApiKey: params.settings.sendgridApiKey }
             : undefined)
     };
@@ -209,14 +204,12 @@ projectsRouter.get('/:id', permitScopes_1.default(['projects.*', 'projects.read'
  * プロジェクト更新
  */
 projectsRouter.patch('/:id', permitScopes_1.default(['projects.*', 'projects.write']), rateLimit_1.default, ...[], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c, _d, _e;
+    var _b, _c, _d;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        yield projectRepo.projectModel.findOneAndUpdate({ _id: req.project.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ updatedAt: new Date() }, (typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined), (typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined), (typeof ((_b = req.body.settings) === null || _b === void 0 ? void 0 : _b.transactionWebhookUrl) === 'string')
-            ? { 'settings.transactionWebhookUrl': req.body.settings.transactionWebhookUrl }
-            : undefined), (typeof ((_c = req.body.settings) === null || _c === void 0 ? void 0 : _c.sendgridApiKey) === 'string')
+        yield projectRepo.projectModel.findOneAndUpdate({ _id: req.project.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ updatedAt: new Date() }, (typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined), (typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined), (typeof ((_b = req.body.settings) === null || _b === void 0 ? void 0 : _b.sendgridApiKey) === 'string')
             ? { 'settings.sendgridApiKey': req.body.settings.sendgridApiKey }
-            : undefined), (Array.isArray((_e = (_d = req.body.settings) === null || _d === void 0 ? void 0 : _d.onOrderStatusChanged) === null || _e === void 0 ? void 0 : _e.informOrder))
+            : undefined), (Array.isArray((_d = (_c = req.body.settings) === null || _c === void 0 ? void 0 : _c.onOrderStatusChanged) === null || _d === void 0 ? void 0 : _d.informOrder))
             ? { 'settings.onOrderStatusChanged.informOrder': req.body.settings.onOrderStatusChanged.informOrder }
             : undefined), { 
             // 機能改修で不要になった属性を削除
@@ -227,6 +220,7 @@ projectsRouter.patch('/:id', permitScopes_1.default(['projects.*', 'projects.wri
                 'settings.mvtkReserve': 1,
                 'settings.pecorino': 1,
                 'settings.emailInformUpdateProgrammembership': 1,
+                'settings.transactionWebhookUrl': 1,
                 'settings.useInMemoryOfferRepo': 1,
                 'settings.useReservationNumberAsConfirmationNumber': 1
             } }))
@@ -242,11 +236,11 @@ projectsRouter.patch('/:id', permitScopes_1.default(['projects.*', 'projects.wri
  * プロジェクト設定取得
  */
 projectsRouter.get('/:id/settings', permitScopes_1.default(['projects.*', 'projects.settings.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f;
+    var _e;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        res.json(Object.assign(Object.assign({}, project.settings), { cognito: Object.assign(Object.assign({}, (_f = project.settings) === null || _f === void 0 ? void 0 : _f.cognito), { 
+        res.json(Object.assign(Object.assign({}, project.settings), { cognito: Object.assign(Object.assign({}, (_e = project.settings) === null || _e === void 0 ? void 0 : _e.cognito), { 
                 // 互換性維持対応として
                 adminUserPool: { id: ADMIN_USER_POOL_ID } }) }));
     }

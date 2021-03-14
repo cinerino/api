@@ -70,11 +70,6 @@ projectsRouter.post(
             .not()
             .isEmpty()
             .withMessage(() => 'required')
-            .isString(),
-        body('settings.transactionWebhookUrl')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
             .isString()
     ],
     validator,
@@ -143,7 +138,6 @@ function createFromBody(params: any): cinerino.factory.project.IProject {
                     ? params.settings.onOrderStatusChanged.informOrder
                     : []
             },
-            transactionWebhookUrl: params.settings?.transactionWebhookUrl,
             useUsernameAsGMOMemberId: false,
             ...(typeof params.settings?.sendgridApiKey === 'string' && params.settings.sendgridApiKey.length > 0)
                 ? { sendgridApiKey: params.settings.sendgridApiKey }
@@ -266,9 +260,6 @@ projectsRouter.patch(
                     updatedAt: new Date(),
                     ...(typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined,
                     ...(typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined,
-                    ...(typeof req.body.settings?.transactionWebhookUrl === 'string')
-                        ? { 'settings.transactionWebhookUrl': req.body.settings.transactionWebhookUrl }
-                        : undefined,
                     ...(typeof req.body.settings?.sendgridApiKey === 'string')
                         ? { 'settings.sendgridApiKey': req.body.settings.sendgridApiKey }
                         : undefined,
@@ -283,6 +274,7 @@ projectsRouter.patch(
                         'settings.mvtkReserve': 1,
                         'settings.pecorino': 1,
                         'settings.emailInformUpdateProgrammembership': 1,
+                        'settings.transactionWebhookUrl': 1,
                         'settings.useInMemoryOfferRepo': 1,
                         'settings.useReservationNumberAsConfirmationNumber': 1
                     }

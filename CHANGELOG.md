@@ -13,6 +13,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - req.agent.memberOfから不要な情報を削除
 - 返金後の注文通知アクション指定を廃止
 - プロジェクトに返品手数料設定を追加
+- 注文取引確定時の注文通知指定を削除
+- 返品取引確定時の注文通知指定を削除
+- グローバル設定に取引通知設定を追加
 
 ### Deprecated
 
