@@ -48,6 +48,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Removed
 
 - 非推奨エンドポイントを削除
+- Chevreを使用しない汎用決済サービスを削除
 
 ## v5.46.3 - 2021-02-12
 
