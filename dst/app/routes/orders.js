@@ -647,7 +647,15 @@ ordersRouter.get('/:orderNumber', permitScopes_1.default(['orders.*', 'orders.re
 /**
  * 注文配送
  */
-ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['orders.*', 'orders.deliver']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+// tslint:disable-next-line:use-default-type-parameter
+ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['orders.*', 'orders.deliver']), rateLimit_1.default, ...[
+    express_validator_1.body('object.confirmationNumber')
+        .if(isNotAdmin)
+        .not()
+        .isEmpty()
+        .withMessage(() => 'required')
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _k;
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
@@ -660,6 +668,16 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['orders.*', '
         const order = yield orderRepo.findByOrderNumber({
             orderNumber: orderNumber
         });
+        if (req.isAdmin) {
+            // no op
+        }
+        else {
+            // 確認番号を検証
+            const confirmationNumber = (_k = req.body.object) === null || _k === void 0 ? void 0 : _k.confirmationNumber;
+            if (order.confirmationNumber !== confirmationNumber) {
+                throw new cinerino.factory.errors.NotFound(orderRepo.orderModel.modelName);
+            }
+        }
         if (order.orderStatus !== cinerino.factory.orderStatus.OrderDelivered) {
             // APIユーザーとして注文配送を実行する
             const sendOrderActionAttributes = {
@@ -728,14 +746,14 @@ ordersRouter.post('/:orderNumber/authorize', permitScopes_1.default(['orders.*',
         .isInt({ min: 0, max: CODE_EXPIRES_IN_SECONDS_MAXIMUM })
         .toInt()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _k, _l, _m, _o, _p;
+    var _l, _m, _o, _p, _q;
     try {
         const now = new Date();
-        const expiresInSeconds = (typeof ((_k = req.body.result) === null || _k === void 0 ? void 0 : _k.expiresInSeconds) === 'number')
+        const expiresInSeconds = (typeof ((_l = req.body.result) === null || _l === void 0 ? void 0 : _l.expiresInSeconds) === 'number')
             ? Number(req.body.result.expiresInSeconds)
             : CODE_EXPIRES_IN_SECONDS_DEFAULT;
-        const email = (_m = (_l = req.body.object) === null || _l === void 0 ? void 0 : _l.customer) === null || _m === void 0 ? void 0 : _m.email;
-        const telephone = (_p = (_o = req.body.object) === null || _o === void 0 ? void 0 : _o.customer) === null || _p === void 0 ? void 0 : _p.telephone;
+        const email = (_o = (_m = req.body.object) === null || _m === void 0 ? void 0 : _m.customer) === null || _o === void 0 ? void 0 : _o.email;
+        const telephone = (_q = (_p = req.body.object) === null || _p === void 0 ? void 0 : _p.customer) === null || _q === void 0 ? void 0 : _q.telephone;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const codeRepo = new cinerino.repository.Code(mongoose.connection);

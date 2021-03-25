@@ -744,10 +744,18 @@ ordersRouter.get(
 /**
  * 注文配送
  */
-ordersRouter.post(
+// tslint:disable-next-line:use-default-type-parameter
+ordersRouter.post<ParamsDictionary>(
     '/:orderNumber/deliver',
     permitScopes(['orders.*', 'orders.deliver']),
     rateLimit,
+    ...[
+        body('object.confirmationNumber')
+            .if(isNotAdmin)
+            .not()
+            .isEmpty()
+            .withMessage(() => 'required')
+    ],
     validator,
     async (req, res, next) => {
         try {
@@ -764,6 +772,16 @@ ordersRouter.post(
             const order = await orderRepo.findByOrderNumber({
                 orderNumber: orderNumber
             });
+
+            if (req.isAdmin) {
+                // no op
+            } else {
+                // 確認番号を検証
+                const confirmationNumber = <string>req.body.object?.confirmationNumber;
+                if (order.confirmationNumber !== confirmationNumber) {
+                    throw new cinerino.factory.errors.NotFound(orderRepo.orderModel.modelName);
+                }
+            }
 
             if (order.orderStatus !== cinerino.factory.orderStatus.OrderDelivered) {
                 // APIユーザーとして注文配送を実行する
