@@ -484,7 +484,7 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders.*', 
         });
         if (orders.length < 1) {
             // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
-            throw new cinerino.factory.errors.NotFound('Order');
+            throw new cinerino.factory.errors.NotFound(orderRepo.orderModel.modelName);
         }
         res.json(orders);
     }
@@ -586,9 +586,44 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['orders.*
         });
         if (orders.length < 1) {
             // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
-            throw new cinerino.factory.errors.NotFound('Order');
+            throw new cinerino.factory.errors.NotFound(orderRepo.orderModel.modelName);
         }
         res.json(orders);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * 注文番号と何かしらで注文照会
+ */
+ordersRouter.post('/findOneByOrderNumberAndSomething', permitScopes_1.default(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']), rateLimit_1.default, ...[
+    express_validator_1.body('orderNumber')
+        .not()
+        .isEmpty()
+        .isString(),
+    express_validator_1.body('customer.telephone')
+        .not()
+        .isEmpty()
+        .isString()
+], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _j;
+    try {
+        const telephone = (_j = req.body.customer) === null || _j === void 0 ? void 0 : _j.telephone;
+        const orderNumber = req.body.orderNumber;
+        // 個人情報完全一致で検索する
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        const orders = yield orderRepo.search({
+            limit: 1,
+            project: { id: { $eq: req.project.id } },
+            customer: { telephone: { $eq: telephone } },
+            orderNumbers: [orderNumber]
+        });
+        const order = orders.shift();
+        if (order === undefined) {
+            throw new cinerino.factory.errors.NotFound(orderRepo.orderModel.modelName);
+        }
+        res.json(order);
     }
     catch (error) {
         next(error);
@@ -693,20 +728,20 @@ ordersRouter.post('/:orderNumber/authorize', permitScopes_1.default(['orders.*',
         .isInt({ min: 0, max: CODE_EXPIRES_IN_SECONDS_MAXIMUM })
         .toInt()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _j, _k, _l, _m, _o;
+    var _k, _l, _m, _o, _p;
     try {
         const now = new Date();
-        const expiresInSeconds = (typeof ((_j = req.body.result) === null || _j === void 0 ? void 0 : _j.expiresInSeconds) === 'number')
+        const expiresInSeconds = (typeof ((_k = req.body.result) === null || _k === void 0 ? void 0 : _k.expiresInSeconds) === 'number')
             ? Number(req.body.result.expiresInSeconds)
             : CODE_EXPIRES_IN_SECONDS_DEFAULT;
-        const email = (_l = (_k = req.body.object) === null || _k === void 0 ? void 0 : _k.customer) === null || _l === void 0 ? void 0 : _l.email;
-        const telephone = (_o = (_m = req.body.object) === null || _m === void 0 ? void 0 : _m.customer) === null || _o === void 0 ? void 0 : _o.telephone;
+        const email = (_m = (_l = req.body.object) === null || _l === void 0 ? void 0 : _l.customer) === null || _m === void 0 ? void 0 : _m.email;
+        const telephone = (_p = (_o = req.body.object) === null || _o === void 0 ? void 0 : _o.customer) === null || _p === void 0 ? void 0 : _p.telephone;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const codeRepo = new cinerino.repository.Code(mongoose.connection);
         const order = yield orderRepo.findByOrderNumber({ orderNumber: req.params.orderNumber });
         if (order.customer.email !== email && order.customer.telephone !== telephone) {
-            throw new cinerino.factory.errors.NotFound('Order', 'No orders matched');
+            throw new cinerino.factory.errors.NotFound(orderRepo.orderModel.modelName, 'No orders matched');
         }
         // const authorizationObject: cinerino.factory.order.ISimpleOrder = {
         //     project: order.project,

@@ -551,7 +551,7 @@ ordersRouter.post(
 
             if (orders.length < 1) {
                 // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
-                throw new cinerino.factory.errors.NotFound('Order');
+                throw new cinerino.factory.errors.NotFound(orderRepo.orderModel.modelName);
             }
 
             res.json(orders);
@@ -664,10 +664,55 @@ ordersRouter.post(
 
             if (orders.length < 1) {
                 // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
-                throw new cinerino.factory.errors.NotFound('Order');
+                throw new cinerino.factory.errors.NotFound(orderRepo.orderModel.modelName);
             }
 
             res.json(orders);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 注文番号と何かしらで注文照会
+ */
+ordersRouter.post(
+    '/findOneByOrderNumberAndSomething',
+    permitScopes(['orders.*', 'orders.read', 'orders.findByConfirmationNumber']),
+    rateLimit,
+    ...[
+        body('orderNumber')
+            .not()
+            .isEmpty()
+            .isString(),
+        body('customer.telephone')
+            .not()
+            .isEmpty()
+            .isString()
+    ],
+    validator,
+    async (req, res, next) => {
+        try {
+            const telephone = <string>req.body.customer?.telephone;
+            const orderNumber = <string>req.body.orderNumber;
+
+            // 個人情報完全一致で検索する
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+
+            const orders = await orderRepo.search({
+                limit: 1,
+                project: { id: { $eq: req.project.id } },
+                customer: { telephone: { $eq: telephone } },
+                orderNumbers: [orderNumber]
+            });
+
+            const order = orders.shift();
+            if (order === undefined) {
+                throw new cinerino.factory.errors.NotFound(orderRepo.orderModel.modelName);
+            }
+
+            res.json(order);
         } catch (error) {
             next(error);
         }
@@ -819,7 +864,7 @@ ordersRouter.post<ParamsDictionary>(
 
             const order = await orderRepo.findByOrderNumber({ orderNumber: req.params.orderNumber });
             if (order.customer.email !== email && order.customer.telephone !== telephone) {
-                throw new cinerino.factory.errors.NotFound('Order', 'No orders matched');
+                throw new cinerino.factory.errors.NotFound(orderRepo.orderModel.modelName, 'No orders matched');
             }
 
             // const authorizationObject: cinerino.factory.order.ISimpleOrder = {

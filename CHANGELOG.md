@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 注文番号と電話番号での照会サービスを追加
+
 ### Changed
 
 - req.agent.memberOfから不要な情報を削除
