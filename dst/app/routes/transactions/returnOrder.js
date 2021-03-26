@@ -31,9 +31,9 @@ const returnOrderTransactionsRouter = express_1.Router();
 /**
  * 正規表現をエスケープする
  */
-function escapeRegExp(params) {
-    return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
-}
+// function escapeRegExp(params: string) {
+//     return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
+// }
 returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactions']), rateLimit_1.default, (req, _, next) => {
     var _a, _b, _c;
     // 互換性維持対応として、注文指定を配列に変換
@@ -81,11 +81,17 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
             const orders = yield orderRepo.search({
                 orderNumbers: returnableOrder.map((o) => o.orderNumber),
                 customer: {
-                    email: (returnableOrderCustomer.email !== undefined)
-                        ? `^${escapeRegExp(returnableOrderCustomer.email)}$`
+                    // email: (returnableOrderCustomer.email !== undefined)
+                    //     ? `^${escapeRegExp(returnableOrderCustomer.email)}$`
+                    //     : undefined,
+                    // telephone: (returnableOrderCustomer.telephone !== undefined)
+                    //     ? `^${escapeRegExp(returnableOrderCustomer.telephone)}$`
+                    //     : undefined,
+                    email: (typeof returnableOrderCustomer.email === 'string')
+                        ? { $eq: returnableOrderCustomer.email }
                         : undefined,
-                    telephone: (returnableOrderCustomer.telephone !== undefined)
-                        ? `^${escapeRegExp(returnableOrderCustomer.telephone)}$`
+                    telephone: (typeof returnableOrderCustomer.telephone === 'string')
+                        ? { $eq: returnableOrderCustomer.telephone }
                         : undefined
                 }
             });

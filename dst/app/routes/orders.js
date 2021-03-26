@@ -36,12 +36,6 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
     : 256;
-/**
- * 正規表現をエスケープする
- */
-function escapeRegExp(params) {
-    return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
-}
 const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.CHEVRE_CLIENT_ID,
@@ -474,7 +468,8 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders.*', 
             limit: 100,
             sort: { orderDate: cinerino.factory.sortType.Descending },
             project: { id: { $eq: req.project.id } },
-            customer: { telephone: `^${escapeRegExp(key.telephone)}$` },
+            // customer: { telephone: `^${escapeRegExp(key.telephone)}$` },
+            customer: { telephone: { $eq: key.telephone } },
             acceptedOffers: {
                 itemOffered: {
                     reservationFor: { superEvent: { location: { branchCodes: [String(key.theaterCode)] } } },
@@ -573,12 +568,14 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['orders.*
             project: { id: { $eq: req.project.id } },
             confirmationNumbers: [req.body.confirmationNumber],
             customer: {
-                email: (typeof email === 'string')
-                    ? `^${escapeRegExp(email)}$`
-                    : undefined,
-                telephone: (typeof telephone === 'string')
-                    ? `^${escapeRegExp(telephone)}$`
-                    : undefined
+                // email: (typeof email === 'string')
+                //     ? `^${escapeRegExp(email)}$`
+                //     : undefined,
+                // telephone: (typeof telephone === 'string')
+                //     ? `^${escapeRegExp(telephone)}$`
+                //     : undefined,
+                email: (typeof email === 'string') ? { $eq: email } : undefined,
+                telephone: (typeof telephone === 'string') ? { $eq: telephone } : undefined
             },
             orderNumbers: (typeof orderNumber === 'string') ? [orderNumber] : undefined,
             orderDateFrom: orderDateFrom,

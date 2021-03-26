@@ -34,9 +34,9 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
 /**
  * 正規表現をエスケープする
  */
-function escapeRegExp(params: string) {
-    return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
-}
+// function escapeRegExp(params: string) {
+//     return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
+// }
 
 type EventReservationGoodType = cinerino.factory.ownershipInfo.IReservation;
 
@@ -540,7 +540,8 @@ ordersRouter.post(
                 limit: 100,
                 sort: { orderDate: cinerino.factory.sortType.Descending },
                 project: { id: { $eq: req.project.id } },
-                customer: { telephone: `^${escapeRegExp(key.telephone)}$` },
+                // customer: { telephone: `^${escapeRegExp(key.telephone)}$` },
+                customer: { telephone: { $eq: key.telephone } },
                 acceptedOffers: {
                     itemOffered: {
                         reservationFor: { superEvent: { location: { branchCodes: [String(key.theaterCode)] } } },
@@ -650,12 +651,14 @@ ordersRouter.post(
                 project: { id: { $eq: req.project.id } },
                 confirmationNumbers: [<string>req.body.confirmationNumber],
                 customer: {
-                    email: (typeof email === 'string')
-                        ? `^${escapeRegExp(email)}$`
-                        : undefined,
-                    telephone: (typeof telephone === 'string')
-                        ? `^${escapeRegExp(telephone)}$`
-                        : undefined
+                    // email: (typeof email === 'string')
+                    //     ? `^${escapeRegExp(email)}$`
+                    //     : undefined,
+                    // telephone: (typeof telephone === 'string')
+                    //     ? `^${escapeRegExp(telephone)}$`
+                    //     : undefined,
+                    email: (typeof email === 'string') ? { $eq: email } : undefined,
+                    telephone: (typeof telephone === 'string') ? { $eq: telephone } : undefined
                 },
                 orderNumbers: (typeof orderNumber === 'string') ? [orderNumber] : undefined,
                 orderDateFrom: orderDateFrom,

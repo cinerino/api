@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - グローバル設定に取引通知設定を追加
 - プロジェクトの返金時設定を削除
 - 注文配送を管理者以外にも実行できるように調整
+- 個人情報での注文検索処理を最適化
 
 ### Deprecated
 

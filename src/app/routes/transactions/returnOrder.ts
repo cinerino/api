@@ -27,9 +27,9 @@ const returnOrderTransactionsRouter = Router();
 /**
  * 正規表現をエスケープする
  */
-function escapeRegExp(params: string) {
-    return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
-}
+// function escapeRegExp(params: string) {
+//     return params.replace(/[.*+?^=!:${}()|[\]\/\\]/g, '\\$&');
+// }
 
 returnOrderTransactionsRouter.post(
     '/start',
@@ -88,11 +88,17 @@ returnOrderTransactionsRouter.post(
                 const orders = await orderRepo.search({
                     orderNumbers: returnableOrder.map((o) => o.orderNumber),
                     customer: {
-                        email: (returnableOrderCustomer.email !== undefined)
-                            ? `^${escapeRegExp(returnableOrderCustomer.email)}$`
+                        // email: (returnableOrderCustomer.email !== undefined)
+                        //     ? `^${escapeRegExp(returnableOrderCustomer.email)}$`
+                        //     : undefined,
+                        // telephone: (returnableOrderCustomer.telephone !== undefined)
+                        //     ? `^${escapeRegExp(returnableOrderCustomer.telephone)}$`
+                        //     : undefined,
+                        email: (typeof returnableOrderCustomer.email === 'string')
+                            ? { $eq: returnableOrderCustomer.email }
                             : undefined,
-                        telephone: (returnableOrderCustomer.telephone !== undefined)
-                            ? `^${escapeRegExp(returnableOrderCustomer.telephone)}$`
+                        telephone: (typeof returnableOrderCustomer.telephone === 'string')
+                            ? { $eq: returnableOrderCustomer.telephone }
                             : undefined
                     }
                 });
