@@ -786,7 +786,7 @@ ordersRouter.post<ParamsDictionary>(
                 }
             }
 
-            if (order.orderStatus !== cinerino.factory.orderStatus.OrderDelivered) {
+            if (order.orderStatus === cinerino.factory.orderStatus.OrderProcessing) {
                 // APIユーザーとして注文配送を実行する
                 const sendOrderActionAttributes: cinerino.factory.action.transfer.send.order.IAttributes = {
                     agent: req.agent,

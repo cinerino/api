@@ -675,7 +675,7 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['orders.*', '
                 throw new cinerino.factory.errors.NotFound(orderRepo.orderModel.modelName);
             }
         }
-        if (order.orderStatus !== cinerino.factory.orderStatus.OrderDelivered) {
+        if (order.orderStatus === cinerino.factory.orderStatus.OrderProcessing) {
             // APIユーザーとして注文配送を実行する
             const sendOrderActionAttributes = {
                 agent: req.agent,
