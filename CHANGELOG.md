@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - プロジェクトの返金時設定を削除
 - 注文配送を管理者以外にも実行できるように調整
 - 個人情報での注文検索処理を最適化
+- オファーのアドオンに対しても利用可能アプリケーション設定を適用
 
 ### Deprecated
 
