@@ -28,6 +28,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- ページングなしのイベント座席検索を削除
+
 ### Fixed
 
 ### Security
