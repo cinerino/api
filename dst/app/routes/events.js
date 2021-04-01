@@ -222,7 +222,11 @@ eventsRouter.get('/:id/seats', permitScopes_1.default(['events.*', 'events.read'
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
-        const seats = yield eventService.searchSeats(Object.assign(Object.assign({}, req.query), { id: req.params.id }));
+        const seats = yield eventService.searchSeats(Object.assign(Object.assign({}, req.query), { id: req.params.id, 
+            // 試しに冗長な情報を非取得にしてみる
+            $projection: {
+                'containedInPlace.containedInPlace': 0
+            } }));
         res.json(seats.data);
     }
     catch (error) {

@@ -285,7 +285,11 @@ eventsRouter.get(
 
             const seats = await eventService.searchSeats({
                 ...req.query,
-                id: req.params.id
+                id: req.params.id,
+                // 試しに冗長な情報を非取得にしてみる
+                $projection: {
+                    'containedInPlace.containedInPlace': 0
+                }
             });
 
             res.json(seats.data);

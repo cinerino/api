@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 個人情報での注文検索処理を最適化
 - オファーのアドオンに対しても利用可能アプリケーション設定を適用
 - 注文ステータス変更の冪等性担保
+- イベントの座席検索レスポンスを最適化
 
 ### Deprecated
 
