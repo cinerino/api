@@ -87,7 +87,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         .isEmpty()
         .withMessage((_, __) => 'required')
 ], validator_1.default, validateWaiterPassport_1.validateWaiterPassport, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
@@ -106,6 +106,14 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         const useTransactionClientUser = ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.useTransactionClientUser) === true;
         const orderName = (typeof ((_b = req.body.object) === null || _b === void 0 ? void 0 : _b.name) === 'string') ? (_c = req.body.object) === null || _c === void 0 ? void 0 : _c.name : DEFAULT_ORDER_NAME;
         const broker = (req.isAdmin) ? req.agent : undefined;
+        const agent = Object.assign(Object.assign({}, req.agent), { identifier: [
+                ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
+                ...(Array.isArray((_d = req.body.agent) === null || _d === void 0 ? void 0 : _d.identifier))
+                    ? req.body.agent.identifier.map((p) => {
+                        return { name: String(p.name), value: String(p.value) };
+                    })
+                    : []
+            ] });
         // object.customerを指定
         let customer = {
             id: req.agent.id,
@@ -118,14 +126,13 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
                 typeOf: cinerino.factory.chevre.creativeWorkType.WebApplication
             };
         }
-        const transaction = yield cinerino.service.transaction.placeOrderInProgress.start(Object.assign({ project: req.project, expires: expires, agent: Object.assign(Object.assign({}, req.agent), { identifier: [
-                    ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
-                    ...(Array.isArray((_d = req.body.agent) === null || _d === void 0 ? void 0 : _d.identifier))
-                        ? req.body.agent.identifier.map((p) => {
-                            return { name: String(p.name), value: String(p.value) };
-                        })
-                        : []
-                ] }), seller: req.body.seller, object: Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof ((_e = req.waiterPassport) === null || _e === void 0 ? void 0 : _e.token) === 'string') ? { passport: req.waiterPassport } : undefined), (useTransactionClientUser) ? { clientUser: req.user } : undefined), (typeof orderName === 'string') ? { name: orderName } : undefined), { customer }), passportValidator }, (broker !== undefined) ? { broker } : undefined))({
+        if (Array.isArray(agent.identifier)) {
+            customer.identifier = agent.identifier;
+        }
+        if (typeof ((_e = agent.memberOf) === null || _e === void 0 ? void 0 : _e.typeOf) === 'string') {
+            customer.memberOf = agent.memberOf;
+        }
+        const transaction = yield cinerino.service.transaction.placeOrderInProgress.start(Object.assign({ project: req.project, expires: expires, agent: agent, seller: req.body.seller, object: Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof ((_f = req.waiterPassport) === null || _f === void 0 ? void 0 : _f.token) === 'string') ? { passport: req.waiterPassport } : undefined), (useTransactionClientUser) ? { clientUser: req.user } : undefined), (typeof orderName === 'string') ? { name: orderName } : undefined), { customer }), passportValidator }, (broker !== undefined) ? { broker } : undefined))({
             project: projectRepo,
             transaction: transactionRepo
         });
@@ -442,7 +449,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
 }), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
+    var _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2;
     try {
         const orderDate = new Date();
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
@@ -460,14 +467,14 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             }
             email.template = String(req.body.emailTemplate);
         }
-        const potentialActions = Object.assign(Object.assign({}, req.body.potentialActions), { order: Object.assign(Object.assign({}, (_f = req.body.potentialActions) === null || _f === void 0 ? void 0 : _f.order), { potentialActions: Object.assign(Object.assign({}, (_h = (_g = req.body.potentialActions) === null || _g === void 0 ? void 0 : _g.order) === null || _h === void 0 ? void 0 : _h.potentialActions), { sendOrder: Object.assign(Object.assign({}, (_l = (_k = (_j = req.body.potentialActions) === null || _j === void 0 ? void 0 : _j.order) === null || _k === void 0 ? void 0 : _k.potentialActions) === null || _l === void 0 ? void 0 : _l.sendOrder), { potentialActions: Object.assign(Object.assign({}, (_q = (_p = (_o = (_m = req.body.potentialActions) === null || _m === void 0 ? void 0 : _m.order) === null || _o === void 0 ? void 0 : _o.potentialActions) === null || _p === void 0 ? void 0 : _p.sendOrder) === null || _q === void 0 ? void 0 : _q.potentialActions), { sendEmailMessage: [
+        const potentialActions = Object.assign(Object.assign({}, req.body.potentialActions), { order: Object.assign(Object.assign({}, (_g = req.body.potentialActions) === null || _g === void 0 ? void 0 : _g.order), { potentialActions: Object.assign(Object.assign({}, (_j = (_h = req.body.potentialActions) === null || _h === void 0 ? void 0 : _h.order) === null || _j === void 0 ? void 0 : _j.potentialActions), { sendOrder: Object.assign(Object.assign({}, (_m = (_l = (_k = req.body.potentialActions) === null || _k === void 0 ? void 0 : _k.order) === null || _l === void 0 ? void 0 : _l.potentialActions) === null || _m === void 0 ? void 0 : _m.sendOrder), { potentialActions: Object.assign(Object.assign({}, (_r = (_q = (_p = (_o = req.body.potentialActions) === null || _o === void 0 ? void 0 : _o.order) === null || _p === void 0 ? void 0 : _p.potentialActions) === null || _q === void 0 ? void 0 : _q.sendOrder) === null || _r === void 0 ? void 0 : _r.potentialActions), { sendEmailMessage: [
                                 // tslint:disable-next-line:max-line-length
-                                ...(Array.isArray((_v = (_u = (_t = (_s = (_r = req.body.potentialActions) === null || _r === void 0 ? void 0 : _r.order) === null || _s === void 0 ? void 0 : _s.potentialActions) === null || _t === void 0 ? void 0 : _t.sendOrder) === null || _u === void 0 ? void 0 : _u.potentialActions) === null || _v === void 0 ? void 0 : _v.sendEmailMessage))
+                                ...(Array.isArray((_w = (_v = (_u = (_t = (_s = req.body.potentialActions) === null || _s === void 0 ? void 0 : _s.order) === null || _t === void 0 ? void 0 : _t.potentialActions) === null || _u === void 0 ? void 0 : _u.sendOrder) === null || _v === void 0 ? void 0 : _v.potentialActions) === null || _w === void 0 ? void 0 : _w.sendEmailMessage))
                                     // tslint:disable-next-line:max-line-length
-                                    ? (_0 = (_z = (_y = (_x = (_w = req.body.potentialActions) === null || _w === void 0 ? void 0 : _w.order) === null || _x === void 0 ? void 0 : _x.potentialActions) === null || _y === void 0 ? void 0 : _y.sendOrder) === null || _z === void 0 ? void 0 : _z.potentialActions) === null || _0 === void 0 ? void 0 : _0.sendEmailMessage : [],
+                                    ? (_1 = (_0 = (_z = (_y = (_x = req.body.potentialActions) === null || _x === void 0 ? void 0 : _x.order) === null || _y === void 0 ? void 0 : _y.potentialActions) === null || _z === void 0 ? void 0 : _z.sendOrder) === null || _0 === void 0 ? void 0 : _0.potentialActions) === null || _1 === void 0 ? void 0 : _1.sendEmailMessage : [],
                                 ...(sendEmailMessage) ? [{ object: email }] : []
                             ] }) }) }) }) });
-        const resultOrderParams = Object.assign(Object.assign({}, (_1 = req.body.result) === null || _1 === void 0 ? void 0 : _1.order), { confirmationNumber: undefined, orderDate: orderDate, numItems: {
+        const resultOrderParams = Object.assign(Object.assign({}, (_2 = req.body.result) === null || _2 === void 0 ? void 0 : _2.order), { confirmationNumber: undefined, orderDate: orderDate, numItems: {
                 maxValue: NUM_ORDER_ITEMS_MAX_VALUE
                 // minValue: 0
             } });

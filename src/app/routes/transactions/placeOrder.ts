@@ -121,6 +121,18 @@ placeOrderTransactionsRouter.post(
 
             const broker: cinerino.factory.order.IBroker | undefined = (req.isAdmin) ? req.agent : undefined;
 
+            const agent: cinerino.factory.transaction.placeOrder.IAgent = {
+                ...req.agent,
+                identifier: [
+                    ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
+                    ...(Array.isArray(req.body.agent?.identifier))
+                        ? (<any[]>req.body.agent.identifier).map((p: any) => {
+                            return { name: String(p.name), value: String(p.value) };
+                        })
+                        : []
+                ]
+            };
+
             // object.customerを指定
             let customer: cinerino.factory.order.ICustomer = {
                 id: req.agent.id,
@@ -133,21 +145,17 @@ placeOrderTransactionsRouter.post(
                     typeOf: <any>cinerino.factory.chevre.creativeWorkType.WebApplication
                 };
             }
+            if (Array.isArray(agent.identifier)) {
+                customer.identifier = agent.identifier;
+            }
+            if (typeof agent.memberOf?.typeOf === 'string') {
+                customer.memberOf = agent.memberOf;
+            }
 
             const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
                 project: req.project,
                 expires: expires,
-                agent: {
-                    ...req.agent,
-                    identifier: [
-                        ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
-                        ...(Array.isArray(req.body.agent?.identifier))
-                            ? (<any[]>req.body.agent.identifier).map((p: any) => {
-                                return { name: String(p.name), value: String(p.value) };
-                            })
-                            : []
-                    ]
-                },
+                agent: agent,
                 seller: req.body.seller,
                 object: {
                     ...(typeof req.waiterPassport?.token === 'string') ? { passport: req.waiterPassport } : undefined,
