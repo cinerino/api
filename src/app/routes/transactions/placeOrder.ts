@@ -174,6 +174,17 @@ function createStartParams(req: Request) {
             customer.memberOf = agent.memberOf;
         }
 
+        // customerの指定があれば、存在確認の上で上書き
+        const customerTypeOfByRequest = req.body.object?.customer?.typeOf;
+        const customerIdByRequest = req.body.object?.customer?.id;
+        if (typeof customerTypeOfByRequest === 'string' && customerTypeOfByRequest.length > 0
+            && typeof customerIdByRequest === 'string' && customerIdByRequest.length > 0) {
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO 存在確認
+            customer.typeOf = <any>customerTypeOfByRequest;
+            customer.id = customerIdByRequest;
+        }
+
         return {
             project: req.project,
             expires: expires,

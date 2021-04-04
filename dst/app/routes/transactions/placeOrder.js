@@ -107,7 +107,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
 }));
 function createStartParams(req) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
         const expires = req.body.expires;
         const sellerService = new cinerino.chevre.service.Seller({
             endpoint: cinerino.credentials.chevre.endpoint,
@@ -149,7 +149,17 @@ function createStartParams(req) {
         if (typeof ((_e = agent.memberOf) === null || _e === void 0 ? void 0 : _e.typeOf) === 'string') {
             customer.memberOf = agent.memberOf;
         }
-        return Object.assign({ project: req.project, expires: expires, agent: agent, seller: req.body.seller, object: Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof ((_f = req.waiterPassport) === null || _f === void 0 ? void 0 : _f.token) === 'string') ? { passport: req.waiterPassport } : undefined), (useTransactionClientUser) ? { clientUser: req.user } : undefined), (typeof orderName === 'string') ? { name: orderName } : undefined), { customer }), passportValidator }, (broker !== undefined) ? { broker } : undefined);
+        // customerの指定があれば、存在確認の上で上書き
+        const customerTypeOfByRequest = (_g = (_f = req.body.object) === null || _f === void 0 ? void 0 : _f.customer) === null || _g === void 0 ? void 0 : _g.typeOf;
+        const customerIdByRequest = (_j = (_h = req.body.object) === null || _h === void 0 ? void 0 : _h.customer) === null || _j === void 0 ? void 0 : _j.id;
+        if (typeof customerTypeOfByRequest === 'string' && customerTypeOfByRequest.length > 0
+            && typeof customerIdByRequest === 'string' && customerIdByRequest.length > 0) {
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO 存在確認
+            customer.typeOf = customerTypeOfByRequest;
+            customer.id = customerIdByRequest;
+        }
+        return Object.assign({ project: req.project, expires: expires, agent: agent, seller: req.body.seller, object: Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof ((_k = req.waiterPassport) === null || _k === void 0 ? void 0 : _k.token) === 'string') ? { passport: req.waiterPassport } : undefined), (useTransactionClientUser) ? { clientUser: req.user } : undefined), (typeof orderName === 'string') ? { name: orderName } : undefined), { customer }), passportValidator }, (broker !== undefined) ? { broker } : undefined);
     });
 }
 /**
