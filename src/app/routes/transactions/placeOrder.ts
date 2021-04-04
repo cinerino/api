@@ -48,7 +48,8 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 // Cinemasunshine対応
 placeOrderTransactionsRouter.use(placeOrder4cinemasunshineRouter);
 
-placeOrderTransactionsRouter.post(
+// tslint:disable-next-line:use-default-type-parameter
+placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/start',
     permitScopes(['transactions']),
     // Cinemasunshine互換性維持のため
@@ -100,72 +101,9 @@ placeOrderTransactionsRouter.post(
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
-            const expires: Date = req.body.expires;
+            const startParams = await createStartParams(req)({ project: projectRepo });
 
-            const sellerService = new cinerino.chevre.service.Seller({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
-            });
-            const seller = await sellerService.findById({ id: <string>req.body.seller.id });
-
-            const passportValidator = createPassportValidator({
-                transaction: { typeOf: cinerino.factory.transactionType.PlaceOrder },
-                seller,
-                clientId: req.user.client_id
-            });
-
-            const project = await projectRepo.findById({ id: req.project.id });
-            const useTransactionClientUser = project.settings?.useTransactionClientUser === true;
-
-            const orderName: string | undefined = (typeof req.body.object?.name === 'string') ? req.body.object?.name : DEFAULT_ORDER_NAME;
-
-            const broker: cinerino.factory.order.IBroker | undefined = (req.isAdmin) ? req.agent : undefined;
-
-            const agent: cinerino.factory.transaction.placeOrder.IAgent = {
-                ...req.agent,
-                identifier: [
-                    ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
-                    ...(Array.isArray(req.body.agent?.identifier))
-                        ? (<any[]>req.body.agent.identifier).map((p: any) => {
-                            return { name: String(p.name), value: String(p.value) };
-                        })
-                        : []
-                ]
-            };
-
-            // object.customerを指定
-            let customer: cinerino.factory.order.ICustomer = {
-                id: req.agent.id,
-                typeOf: req.agent.typeOf
-            };
-            // 管理者がbrokerとして注文する場合、customerはWebApplicationとする
-            if (broker !== undefined) {
-                customer = {
-                    id: req.user.client_id,
-                    typeOf: <any>cinerino.factory.chevre.creativeWorkType.WebApplication
-                };
-            }
-            if (Array.isArray(agent.identifier)) {
-                customer.identifier = agent.identifier;
-            }
-            if (typeof agent.memberOf?.typeOf === 'string') {
-                customer.memberOf = agent.memberOf;
-            }
-
-            const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
-                project: req.project,
-                expires: expires,
-                agent: agent,
-                seller: req.body.seller,
-                object: {
-                    ...(typeof req.waiterPassport?.token === 'string') ? { passport: req.waiterPassport } : undefined,
-                    ...(useTransactionClientUser) ? { clientUser: req.user } : undefined,
-                    ...(typeof orderName === 'string') ? { name: orderName } : undefined,
-                    customer
-                },
-                passportValidator,
-                ...(broker !== undefined) ? { broker } : undefined
-            })({
+            const transaction = await cinerino.service.transaction.placeOrderInProgress.start(startParams)({
                 project: projectRepo,
                 transaction: transactionRepo
             });
@@ -179,6 +117,79 @@ placeOrderTransactionsRouter.post(
         }
     }
 );
+
+function createStartParams(req: Request) {
+    return async (repos: {
+        project: cinerino.repository.Project;
+    }): Promise<cinerino.service.transaction.placeOrderInProgress.IStartParams> => {
+        const expires: Date = req.body.expires;
+
+        const sellerService = new cinerino.chevre.service.Seller({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const seller = await sellerService.findById({ id: <string>req.body.seller.id });
+
+        const passportValidator = createPassportValidator({
+            transaction: { typeOf: cinerino.factory.transactionType.PlaceOrder },
+            seller,
+            clientId: req.user.client_id
+        });
+
+        const project = await repos.project.findById({ id: req.project.id });
+        const useTransactionClientUser = project.settings?.useTransactionClientUser === true;
+
+        const orderName: string | undefined = (typeof req.body.object?.name === 'string') ? req.body.object?.name : DEFAULT_ORDER_NAME;
+
+        const broker: cinerino.factory.order.IBroker | undefined = (req.isAdmin) ? req.agent : undefined;
+
+        const agent: cinerino.factory.transaction.placeOrder.IAgent = {
+            ...req.agent,
+            identifier: [
+                ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
+                ...(Array.isArray(req.body.agent?.identifier))
+                    ? (<any[]>req.body.agent.identifier).map((p: any) => {
+                        return { name: String(p.name), value: String(p.value) };
+                    })
+                    : []
+            ]
+        };
+
+        // object.customerを指定
+        let customer: cinerino.factory.order.ICustomer = {
+            id: req.agent.id,
+            typeOf: req.agent.typeOf
+        };
+        // 管理者がbrokerとして注文する場合、customerはWebApplicationとする
+        if (broker !== undefined) {
+            customer = {
+                id: req.user.client_id,
+                typeOf: <any>cinerino.factory.chevre.creativeWorkType.WebApplication
+            };
+        }
+        if (Array.isArray(agent.identifier)) {
+            customer.identifier = agent.identifier;
+        }
+        if (typeof agent.memberOf?.typeOf === 'string') {
+            customer.memberOf = agent.memberOf;
+        }
+
+        return {
+            project: req.project,
+            expires: expires,
+            agent: agent,
+            seller: req.body.seller,
+            object: {
+                ...(typeof req.waiterPassport?.token === 'string') ? { passport: req.waiterPassport } : undefined,
+                ...(useTransactionClientUser) ? { clientUser: req.user } : undefined,
+                ...(typeof orderName === 'string') ? { name: orderName } : undefined,
+                customer
+            },
+            passportValidator,
+            ...(broker !== undefined) ? { broker } : undefined
+        };
+    };
+}
 
 /**
  * カスタマー変更

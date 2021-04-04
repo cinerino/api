@@ -11,8 +11,6 @@ import { Permission } from '../iam';
 
 const debug = createDebug('cinerino-api:middlewares');
 
-export const SCOPE_COGNITO_USER_ADMIN = 'aws.cognito.signin.user.admin';
-
 /**
  * スコープインターフェース
  */

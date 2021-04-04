@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SCOPE_COGNITO_USER_ADMIN = void 0;
 /**
  * スコープ許可ミドルウェア
  */
@@ -8,7 +7,6 @@ const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
 const iam_1 = require("../iam");
 const debug = createDebug('cinerino-api:middlewares');
-exports.SCOPE_COGNITO_USER_ADMIN = 'aws.cognito.signin.user.admin';
 exports.default = (specifiedPermittedScopes) => {
     return (req, __, next) => {
         const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
