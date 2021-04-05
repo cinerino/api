@@ -310,36 +310,6 @@ reservationsRouter.get<ParamsDictionary>(
 );
 
 /**
- * chevre予約使用アクション取消
- */
-// tslint:disable-next-line:use-default-type-parameter
-reservationsRouter.put<ParamsDictionary>(
-    `/:id/actions/use/:actionId/${cinerino.factory.actionStatusType.CanceledActionStatus}`,
-    // ひとまずuserロールで実行できるように↓
-    permitScopes(['projects.read']),
-    rateLimit,
-    ...[
-    ],
-    validator,
-    async (req, res, next) => {
-        try {
-            const actionService = new cinerino.chevre.service.Action({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
-            });
-            await actionService.cancelById({
-                id: req.params.actionId
-            });
-
-            res.status(NO_CONTENT)
-                .end();
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
  * 予約取消
  */
 reservationsRouter.put(

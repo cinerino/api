@@ -33,6 +33,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Removed
 
 - ページングなしのイベント座席検索を削除
+- 予約使用アクション取消を削除
 
 ### Fixed
 
