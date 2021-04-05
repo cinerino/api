@@ -17,6 +17,7 @@ const mongoose = require("mongoose");
 const iam_1 = require("../iam");
 const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
 const ANY_PROJECT_ID = '*';
+const ADMIN_CLIENTS = (typeof process.env.ADMIN_CLIENTS === 'string') ? process.env.ADMIN_CLIENTS.split(',') : [];
 exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
@@ -28,7 +29,8 @@ exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* 
         // プロジェクトが決定していれば権限をセット
         if (typeof ((_a = req.project) === null || _a === void 0 ? void 0 : _a.id) === 'string' && req.project.id !== ANY_PROJECT_ID) {
             let searchPermissionsResult;
-            const memberPermissionReadable = req.user.scopes.includes(`${RESOURCE_SERVER_IDENTIFIER}/${iam_1.Permission.ReadIAMMembersMe}`);
+            const memberPermissionReadable = req.user.scopes.includes(`${RESOURCE_SERVER_IDENTIFIER}/${iam_1.Permission.ReadIAMMembersMe}`)
+                || ADMIN_CLIENTS.includes(req.user.client_id);
             // Adminユーザーの認可コードフローであれば、プロジェクトメンバーとしてのmemberPermissions
             if (memberPermissionReadable) {
                 // プロジェクト決定済のリクエストに対してプロジェクトメンバー権限を決定する
