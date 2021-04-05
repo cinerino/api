@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - イベントの座席検索レスポンスを最適化
 - 注文取引のカスタマー情報をobject.customerにセットするように調整
 - order.customerをtransaction.object.customerから生成するように調整
+- メンバーパーミッション読み取り権限を持つクライアントのみログインユーザーとしてパーミッションを検索するように調整
 
 ### Deprecated
 

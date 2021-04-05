@@ -40,9 +40,6 @@ export default (specifiedPermittedScopes: IScope[]) => {
 
         debug('ownedScopes:', ownedScopes);
 
-        // isAdminの条件は、プロジェクトメンバーかどうか
-        req.isAdmin = req.isProjectMember === true;
-
         // ドメインつきのカスタムスコープリストを許容するように変更
         const permittedScopesWithResourceServerIdentifier = [
             ...permittedScopes.map((permittedScope) => `${RESOURCE_SERVER_IDENTIFIER}/${permittedScope}`),

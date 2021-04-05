@@ -143,9 +143,9 @@ iamMembersRouter.post('', permitScopes_1.default(['iam.members.write']), rateLim
                         member = {
                             typeOf: people[0].typeOf,
                             id: people[0].id,
-                            name: (typeof ((_c = req.body.member) === null || _c === void 0 ? void 0 : _c.name) === 'string')
+                            name: (typeof ((_c = req.body.member) === null || _c === void 0 ? void 0 : _c.name) === 'string' && req.body.member.name.length > 0)
                                 ? String(req.body.member.name)
-                                : people[0].memberOf.membershipNumber,
+                                : `${people[0].givenName} ${people[0].familyName}`,
                             username: people[0].memberOf.membershipNumber,
                             hasRole: roles
                         };

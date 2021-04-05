@@ -158,9 +158,9 @@ iamMembersRouter.post(
                             member = {
                                 typeOf: people[0].typeOf,
                                 id: people[0].id,
-                                name: (typeof req.body.member?.name === 'string')
+                                name: (typeof req.body.member?.name === 'string' && req.body.member.name.length > 0)
                                     ? String(req.body.member.name)
-                                    : people[0].memberOf.membershipNumber,
+                                    : `${people[0].givenName} ${people[0].familyName}`,
                                 username: people[0].memberOf.membershipNumber,
                                 hasRole: roles
                             };

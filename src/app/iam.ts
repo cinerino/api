@@ -2,7 +2,8 @@
  * 権限
  */
 export enum Permission {
-    Admin = 'admin'
+    Admin = 'admin',
+    ReadIAMMembersMe = 'iam.members.me.read'
 }
 
 export enum RoleName {
@@ -10,7 +11,8 @@ export enum RoleName {
     Editor = 'editor',
     Viewer = 'viewer',
     User = 'user',
-    Customer = 'customer'
+    Customer = 'customer',
+    POS = 'pos'
 }
 
 export interface IRole {
