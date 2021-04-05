@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文ステータス変更の冪等性担保
 - イベントの座席検索レスポンスを最適化
 - 注文取引のカスタマー情報をobject.customerにセットするように調整
+- order.customerをtransaction.object.customerから生成するように調整
 
 ### Deprecated
 
