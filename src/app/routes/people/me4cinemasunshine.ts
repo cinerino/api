@@ -5,7 +5,6 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
-import { body } from 'express-validator';
 import { ACCEPTED } from 'http-status';
 import * as mongoose from 'mongoose';
 
@@ -13,131 +12,7 @@ import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
-const DEFAULT_MEMBERSHIP_SERVICE_ID = process.env.DEFAULT_MEMBERSHIP_SERVICE_ID;
-
-const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
-    ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
-    // tslint:disable-next-line:no-magic-numbers
-    : 256;
-
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.CHEVRE_CLIENT_ID,
-    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
-
 const me4cinemasunshineRouter = Router();
-
-/**
- * メンバーシップ登録
- */
-me4cinemasunshineRouter.put(
-    '/ownershipInfos/programMembership/register',
-    permitScopes(['people.ownershipInfos', 'people.me.*']),
-    rateLimit,
-    ...[
-        body('agent.additionalProperty')
-            .optional()
-            .isArray({ max: 10 }),
-        body('agent.additionalProperty.*.name')
-            .optional()
-            .not()
-            .isEmpty()
-            .isString()
-            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        body('agent.additionalProperty.*.value')
-            .optional()
-            .not()
-            .isEmpty()
-            .isString()
-            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        body('sellerId')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-    ],
-    validator,
-    async (req, res, next) => {
-        try {
-            if (typeof DEFAULT_MEMBERSHIP_SERVICE_ID !== 'string') {
-                throw new cinerino.factory.errors.ServiceUnavailable('DEFAULT_MEMBERSHIP_SERVICE_ID undefined');
-            }
-            const productId = DEFAULT_MEMBERSHIP_SERVICE_ID;
-            const sellerId = String(req.body.sellerId);
-
-            const productService = new cinerino.chevre.service.Product({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
-            });
-            const sellerService = new cinerino.chevre.service.Seller({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
-            });
-
-            const seller = await sellerService.findById({ id: sellerId });
-
-            const membershipService = <cinerino.factory.chevre.product.IProduct>await productService.findById({
-                id: productId
-            });
-            if (membershipService.project.id !== req.project.id) {
-                throw new cinerino.factory.errors.NotFound('MembershipService');
-            }
-
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
-            const offers = await cinerino.service.offer.product.search({
-                project: { id: req.project.id },
-                itemOffered: { id: productId },
-                seller: { id: String(seller.id) },
-                availableAt: { id: req.user.client_id }
-            })({ project: projectRepo });
-
-            if (offers.length === 0) {
-                throw new cinerino.factory.errors.NotFound('Offer');
-            }
-
-            // sskts専用なので、強制的に一つ目のオファーを選択
-            const acceptedOffer = offers[0];
-
-            const task = await cinerino.service.product.createOrderTask({
-                project: { id: req.project.id },
-                agent: {
-                    ...req.agent,
-                    additionalProperty: [
-                        ...(Array.isArray(req.agent.additionalProperty)) ? req.agent.additionalProperty : [],
-                        ...(Array.isArray(req.body.agent?.additionalProperty))
-                            ? (<any[]>req.body.agent.additionalProperty).map((p: any) => {
-                                return { name: String(p.name), value: String(p.value) };
-                            })
-                            : []
-                        // ...[{ name: 'firstMembership', value: '1' }]
-                    ]
-                },
-                object: {
-                    typeOf: cinerino.factory.chevre.offerType.Offer,
-                    id: String(acceptedOffer.id),
-                    itemOffered: { id: productId },
-                    seller: {
-                        typeOf: seller.typeOf,
-                        id: String(seller.id)
-                    }
-                },
-                location: { id: req.user.client_id }
-            })({
-                project: new cinerino.repository.Project(mongoose.connection),
-                task: new cinerino.repository.Task(mongoose.connection)
-            });
-
-            // プロダクト注文タスクとして受け入れられたのでACCEPTED
-            res.status(ACCEPTED)
-                .json(task);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
 
 /**
  * 会員プログラム登録解除

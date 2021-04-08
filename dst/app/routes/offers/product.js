@@ -112,6 +112,7 @@ productOffersRouter.post('/authorize', permitScopes_1.default(['transactions']),
             transaction: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
+            orderNumber: new cinerino.repository.OrderNumber(redis.getClient()),
             ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
             project: new cinerino.repository.Project(mongoose.connection),
             registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),

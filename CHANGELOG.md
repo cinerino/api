@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文取引のカスタマー情報をobject.customerにセットするように調整
 - order.customerをtransaction.object.customerから生成するように調整
 - メンバーパーミッション読み取り権限を持つクライアントのみログインユーザーとしてパーミッションを検索するように調整
+- プロダクトオファー承認時にポイント特典に識別子を自動発行
 
 ### Deprecated
 
@@ -34,6 +35,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - ページングなしのイベント座席検索を削除
 - 予約使用アクション取消を削除
+- 非同期のメンバーシップ登録を廃止
 
 ### Fixed
 

@@ -132,6 +132,7 @@ productOffersRouter.post<ParamsDictionary>(
                 transaction: <any>{ typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
+                orderNumber: new cinerino.repository.OrderNumber(redis.getClient()),
                 ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
                 project: new cinerino.repository.Project(mongoose.connection),
                 registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),

@@ -164,29 +164,6 @@ eventsRouter.patch('/:id', permitScopes_1.default(['events.*', 'events.update'])
     }
 }));
 /**
- * イベントに対するオファー検索
- */
-// eventsRouter.get(
-//     '/:id/offers',
-//     permitScopes(['events.*', 'events.read']),
-//     rateLimit,
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const projectRepo = new cinerino.repository.Project(mongoose.connection);
-//             const offers = await cinerino.service.offer.searchEventOffers({
-//                 project: req.project,
-//                 event: { id: req.params.id }
-//             })({
-//                 project: projectRepo
-//             });
-//             res.json(offers);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
-/**
  * イベントに対する券種オファー検索
  */
 // tslint:disable-next-line:use-default-type-parameter
