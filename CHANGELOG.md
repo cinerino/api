@@ -39,6 +39,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
+- 予約承認開始前のコーディングバグに対応
+
 ### Security
 
 ## v5.47.0 - 2021-03-12
