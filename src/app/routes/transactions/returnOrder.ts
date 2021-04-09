@@ -59,7 +59,7 @@ returnOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
+            // const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
@@ -137,7 +137,7 @@ returnOrderTransactionsRouter.post(
                 }
             })({
                 action: actionRepo,
-                invoice: invoiceRepo,
+                // invoice: invoiceRepo,
                 order: orderRepo,
                 project: projectRepo,
                 transaction: transactionRepo

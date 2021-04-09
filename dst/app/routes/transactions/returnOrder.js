@@ -55,7 +55,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
+        // const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
@@ -125,7 +125,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
             }
         })({
             action: actionRepo,
-            invoice: invoiceRepo,
+            // invoice: invoiceRepo,
             order: orderRepo,
             project: projectRepo,
             transaction: transactionRepo

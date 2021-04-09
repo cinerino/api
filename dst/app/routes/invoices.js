@@ -12,10 +12,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * インボイスルーター
  */
-const cinerino = require("@cinerino/domain");
+// import * as cinerino from '@cinerino/domain';
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
-const mongoose = require("mongoose");
+// import * as mongoose from 'mongoose';
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
@@ -34,14 +34,19 @@ invoicesRouter.get('', permitScopes_1.default(['invoices.*', 'invoices.read']), 
         .isISO8601()
         .withMessage((_, options) => `${options.path} must be ISO8601 timestamp`)
         .toDate()
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+], validator_1.default, (__, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
-        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
-            // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const invoices = yield invoiceRepo.search(searchConditions);
-        res.json(invoices);
+        // const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
+        // const searchConditions: cinerino.factory.invoice.ISearchConditions = {
+        //     ...req.query,
+        //     project: { id: { $eq: req.project.id } },
+        //     // tslint:disable-next-line:no-magic-numbers
+        //     limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+        //     page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
+        // };
+        // const invoices = await invoiceRepo.search(searchConditions);
+        // res.json(invoices);
+        res.json([]);
     }
     catch (error) {
         next(error);

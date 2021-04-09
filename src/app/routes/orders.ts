@@ -271,7 +271,7 @@ ordersRouter.post(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
+            // const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
@@ -354,7 +354,7 @@ ordersRouter.post(
 
                 await cinerino.service.order.placeOrder(orderActionAttributes)({
                     action: actionRepo,
-                    invoice: invoiceRepo,
+                    // invoice: invoiceRepo,
                     order: orderRepo,
                     task: taskRepo,
                     transaction: transactionRepo

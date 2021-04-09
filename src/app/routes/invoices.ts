@@ -1,10 +1,10 @@
 /**
  * インボイスルーター
  */
-import * as cinerino from '@cinerino/domain';
+// import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import { query } from 'express-validator';
-import * as mongoose from 'mongoose';
+// import * as mongoose from 'mongoose';
 
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
@@ -32,21 +32,22 @@ invoicesRouter.get(
             .toDate()
     ],
     validator,
-    async (req, res, next) => {
+    async (__, res, next) => {
         try {
-            const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
+            // const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
 
-            const searchConditions: cinerino.factory.invoice.ISearchConditions = {
-                ...req.query,
-                project: { id: { $eq: req.project.id } },
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
-            };
+            // const searchConditions: cinerino.factory.invoice.ISearchConditions = {
+            //     ...req.query,
+            //     project: { id: { $eq: req.project.id } },
+            //     // tslint:disable-next-line:no-magic-numbers
+            //     limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+            //     page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
+            // };
 
-            const invoices = await invoiceRepo.search(searchConditions);
+            // const invoices = await invoiceRepo.search(searchConditions);
 
-            res.json(invoices);
+            // res.json(invoices);
+            res.json([]);
         } catch (error) {
             next(error);
         }
