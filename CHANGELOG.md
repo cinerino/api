@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 予約使用アクション取消を削除
 - 非同期のメンバーシップ登録を廃止
 - インボイスリポジトリを削除
+- 決済方法リポジトリを削除
 
 ### Fixed
 

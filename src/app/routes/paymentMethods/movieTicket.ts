@@ -1,10 +1,10 @@
 /**
  * ムビチケ決済方法ルーター
  */
-import * as cinerino from '@cinerino/domain';
+// import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import { query } from 'express-validator';
-import * as mongoose from 'mongoose';
+// import * as mongoose from 'mongoose';
 
 import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
@@ -27,22 +27,23 @@ movieTicketPaymentMethodsRouter.get(
             .toInt()
     ],
     validator,
-    async (req, res, next) => {
+    async (__, res, next) => {
         try {
-            const paymentMethodRepo = new cinerino.repository.PaymentMethod(mongoose.connection);
+            // const paymentMethodRepo = new cinerino.repository.PaymentMethod(mongoose.connection);
 
-            const searchConditions: any = {
-                ...req.query,
-                project: { ids: [req.project.id] },
-                // tslint:disable-next-line:no-magic-numbers
-                limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-                typeOf: { $eq: cinerino.factory.paymentMethodType.MovieTicket }
-            };
+            // const searchConditions: any = {
+            //     ...req.query,
+            //     project: { ids: [req.project.id] },
+            //     // tslint:disable-next-line:no-magic-numbers
+            //     limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+            //     page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+            //     typeOf: { $eq: cinerino.factory.paymentMethodType.MovieTicket }
+            // };
 
-            const paymentMethods = await paymentMethodRepo.search(searchConditions);
+            // const paymentMethods = await paymentMethodRepo.search(searchConditions);
 
-            res.json(paymentMethods);
+            // res.json(paymentMethods);
+            res.json([]);
         } catch (error) {
             next(error);
         }

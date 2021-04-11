@@ -12,10 +12,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * ムビチケ決済方法ルーター
  */
-const cinerino = require("@cinerino/domain");
+// import * as cinerino from '@cinerino/domain';
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
-const mongoose = require("mongoose");
+// import * as mongoose from 'mongoose';
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
@@ -29,14 +29,20 @@ movieTicketPaymentMethodsRouter.get('', permitScopes_1.default(['paymentMethods.
         .optional()
         .isInt()
         .toInt()
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+], validator_1.default, (__, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const paymentMethodRepo = new cinerino.repository.PaymentMethod(mongoose.connection);
-        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
-            // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, typeOf: { $eq: cinerino.factory.paymentMethodType.MovieTicket } });
-        const paymentMethods = yield paymentMethodRepo.search(searchConditions);
-        res.json(paymentMethods);
+        // const paymentMethodRepo = new cinerino.repository.PaymentMethod(mongoose.connection);
+        // const searchConditions: any = {
+        //     ...req.query,
+        //     project: { ids: [req.project.id] },
+        //     // tslint:disable-next-line:no-magic-numbers
+        //     limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
+        //     page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+        //     typeOf: { $eq: cinerino.factory.paymentMethodType.MovieTicket }
+        // };
+        // const paymentMethods = await paymentMethodRepo.search(searchConditions);
+        // res.json(paymentMethods);
+        res.json([]);
     }
     catch (error) {
         next(error);
