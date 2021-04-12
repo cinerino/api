@@ -29,6 +29,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - メンバーパーミッション読み取り権限を持つクライアントのみログインユーザーとしてパーミッションを検索するように調整
 - プロダクトオファー承認時にポイント特典に識別子を自動発行
 - 注文作成&変更時にchevreへ連携
+- chevreでの注文検索に対応(USE_CHEVRE_SEARCH_ORDER設定)
 
 ### Deprecated
 

@@ -79,6 +79,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
             }
             // 管理者でない場合は、個人情報完全一致で承認
             const orders = yield orderRepo.search({
+                project: { id: { $eq: req.project.id } },
                 orderNumbers: returnableOrder.map((o) => o.orderNumber),
                 customer: {
                     // email: (returnableOrderCustomer.email !== undefined)
