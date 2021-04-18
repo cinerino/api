@@ -137,7 +137,7 @@ peopleRouter.delete(
             const unRegisterActionAttributes: cinerino.factory.action.interact.unRegister.programMembership.IAttributes[]
                 = ownershipInfos.map((o) => {
                     return {
-                        project: o.project,
+                        project: { id: o.project?.id, typeOf: o.project?.typeOf },
                         typeOf: cinerino.factory.actionType.UnRegisterAction,
                         agent: req.agent,
                         object: {

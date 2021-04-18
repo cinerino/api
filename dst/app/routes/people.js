@@ -118,8 +118,9 @@ peopleRouter.delete('/:id', permitScopes_1.default(['people.*', 'people.delete']
         });
         // 所有が確認できれば、会員プログラム登録解除タスクを作成する
         const unRegisterActionAttributes = ownershipInfos.map((o) => {
+            var _a, _b;
             return {
-                project: o.project,
+                project: { id: (_a = o.project) === null || _a === void 0 ? void 0 : _a.id, typeOf: (_b = o.project) === null || _b === void 0 ? void 0 : _b.typeOf },
                 typeOf: cinerino.factory.actionType.UnRegisterAction,
                 agent: req.agent,
                 object: Object.assign(Object.assign({}, o.typeOfGood), { member: [person] })
