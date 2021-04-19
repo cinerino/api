@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - 注文番号と電話番号での照会サービスを追加
+- 顧客検索を追加
 
 ### Changed
 
