@@ -175,14 +175,19 @@ function createStartParams(req: Request) {
         }
 
         // customerの指定があれば、存在確認の上で上書き
-        const customerTypeOfByRequest = req.body.object?.customer?.typeOf;
+        // const customerTypeOfByRequest = req.body.object?.customer?.typeOf;
         const customerIdByRequest = req.body.object?.customer?.id;
-        if (typeof customerTypeOfByRequest === 'string' && customerTypeOfByRequest.length > 0
-            && typeof customerIdByRequest === 'string' && customerIdByRequest.length > 0) {
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO 存在確認
-            customer.typeOf = <any>customerTypeOfByRequest;
-            customer.id = customerIdByRequest;
+        if (typeof customerIdByRequest === 'string' && customerIdByRequest.length > 0) {
+            const customerService = new cinerino.chevre.service.Customer({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const customerFromChevre = await customerService.findById({ id: customerIdByRequest });
+            if (customerFromChevre.project?.id !== req.project.id) {
+                throw new cinerino.factory.errors.NotFound('Customer');
+            }
+            customer.typeOf = customerFromChevre.typeOf;
+            customer.id = customerFromChevre.id;
         }
 
         return {
