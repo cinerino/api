@@ -35,6 +35,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文取引に顧客を指定できるように調整
 - 承認コード発行時にchevreへ連携
 - 所有権発行時にchevreへ連携
+- 座席オファー承認処理を最適化
 
 ### Deprecated
 
