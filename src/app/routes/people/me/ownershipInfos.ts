@@ -132,7 +132,15 @@ ownershipInfosRouter.post(
             const codeRepo = new cinerino.repository.Code(mongoose.connection);
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
 
-            const ownershipInfo = await ownershipInfoRepo.findById({ id: req.params.id });
+            const ownershipInfos = await ownershipInfoRepo.search({
+                limit: 1,
+                project: { id: { $eq: req.project.id } },
+                ids: [req.params.id]
+            });
+            const ownershipInfo = ownershipInfos.shift();
+            if (ownershipInfo === undefined) {
+                throw new cinerino.factory.errors.NotFound(ownershipInfoRepo.ownershipInfoModel.modelName);
+            }
             if (ownershipInfo.ownedBy.id !== req.user.sub) {
                 throw new cinerino.factory.errors.Unauthorized();
             }

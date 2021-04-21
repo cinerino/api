@@ -127,6 +127,7 @@ peopleRouter.delete(
             // 現在所有している会員プログラムを全て検索
             const now = new Date();
             const ownershipInfos = await ownershipInfoRepo.search({
+                project: { id: { $eq: req.project.id } },
                 typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
                 ownedBy: { id: person.id },
                 ownedFrom: now,

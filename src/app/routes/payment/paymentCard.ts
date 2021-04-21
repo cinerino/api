@@ -189,8 +189,9 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
                         if (typeof req.user.username === 'string') {
                             // 口座に所有権があるかどうか確認
                             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-                            const count = await ownershipInfoRepo.count({
+                            const paymentCardOwnershipInfos = await ownershipInfoRepo.search({
                                 limit: 1,
+                                project: { id: { $eq: req.project.id } },
                                 ownedBy: { id: req.user.sub },
                                 ownedFrom: new Date(),
                                 ownedThrough: new Date(),
@@ -199,7 +200,7 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
                                     accountNumber: { $eq: accountIdentifier }
                                 }
                             });
-                            if (count === 0) {
+                            if (paymentCardOwnershipInfos.length === 0) {
                                 throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
                             }
 
