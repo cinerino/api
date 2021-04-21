@@ -13,8 +13,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-// import { TOKEN_EXPIRES_IN } from './tokens';
-
 const ownershipInfosRouter = Router();
 
 /**
@@ -62,34 +60,6 @@ ownershipInfosRouter.get(
         }
     }
 );
-
-/**
- * コードから所有権に対するアクセストークンを発行する
- * @deprecated Use /tokens
- */
-// ownershipInfosRouter.post(
-//     '/tokens',
-//     permitScopes(['tokens']),
-//     rateLimit,
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const codeRepo = new cinerino.repository.Code(mongoose.connection);
-
-//             const token = await cinerino.service.code.getToken({
-//                 project: req.project,
-//                 code: req.body.code,
-//                 secret: <string>process.env.TOKEN_SECRET,
-//                 issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER,
-//                 expiresIn: TOKEN_EXPIRES_IN
-//             })({ code: codeRepo });
-
-//             res.json({ token });
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
 
 /**
  * Cinemasunshine対応

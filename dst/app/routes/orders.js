@@ -753,7 +753,6 @@ ordersRouter.post('/:orderNumber/authorize', permitScopes_1.default(['orders.*',
         const telephone = (_q = (_p = req.body.object) === null || _p === void 0 ? void 0 : _p.customer) === null || _q === void 0 ? void 0 : _q.telephone;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
-        const codeRepo = new cinerino.repository.Code(mongoose.connection);
         const order = yield orderRepo.findByOrderNumber({ orderNumber: req.params.orderNumber });
         if (order.customer.email !== email && order.customer.telephone !== telephone) {
             throw new cinerino.factory.errors.NotFound(orderRepo.orderModel.modelName, 'No orders matched');
@@ -780,8 +779,7 @@ ordersRouter.post('/:orderNumber/authorize', permitScopes_1.default(['orders.*',
             validFrom: now,
             expiresInSeconds: expiresInSeconds
         })({
-            action: actionRepo,
-            code: codeRepo
+            action: actionRepo
         });
         // 予約番号でChevreチェックイン
         const reservationService = new cinerino.chevre.service.Reservation({

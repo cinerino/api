@@ -881,7 +881,6 @@ ordersRouter.post<ParamsDictionary>(
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
-            const codeRepo = new cinerino.repository.Code(mongoose.connection);
 
             const order = await orderRepo.findByOrderNumber({ orderNumber: req.params.orderNumber });
             if (order.customer.email !== email && order.customer.telephone !== telephone) {
@@ -911,8 +910,7 @@ ordersRouter.post<ParamsDictionary>(
                 validFrom: now,
                 expiresInSeconds: expiresInSeconds
             })({
-                action: actionRepo,
-                code: codeRepo
+                action: actionRepo
             });
 
             // 予約番号でChevreチェックイン

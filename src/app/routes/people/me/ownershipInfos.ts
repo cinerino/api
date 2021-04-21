@@ -129,7 +129,6 @@ ownershipInfosRouter.post(
             const now = new Date();
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            const codeRepo = new cinerino.repository.Code(mongoose.connection);
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
 
             const ownershipInfos = await ownershipInfoRepo.search({
@@ -156,8 +155,7 @@ ownershipInfosRouter.post(
                 validFrom: now,
                 expiresInSeconds: expiresInSeconds
             })({
-                action: actionRepo,
-                code: codeRepo
+                action: actionRepo
             });
             const code = authorizations[0].code;
 

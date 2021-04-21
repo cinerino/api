@@ -3,12 +3,18 @@
  */
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
-import { query } from 'express-validator';
-import * as mongoose from 'mongoose';
 
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
+
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 
 const authorizationsRouter = Router();
 
@@ -19,21 +25,9 @@ authorizationsRouter.get(
     '',
     permitScopes(['authorizations.*', 'authorizations.read']),
     rateLimit,
-    ...[
-        query('validFrom')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('validThrough')
-            .optional()
-            .isISO8601()
-            .toDate()
-    ],
     validator,
     async (req, res, next) => {
         try {
-            const authorizationRepo = new cinerino.repository.Code(mongoose.connection);
-
             const searchConditions: cinerino.factory.authorization.ISearchConditions = {
                 ...req.query,
                 project: { id: { $eq: req.project.id } },
@@ -42,9 +36,13 @@ authorizationsRouter.get(
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
 
-            const authorizations = await authorizationRepo.search(searchConditions);
+            const authorizationService = new cinerino.chevre.service.Authorization({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const { data } = await authorizationService.search(searchConditions);
 
-            res.json(authorizations);
+            res.json(data);
         } catch (error) {
             next(error);
         }

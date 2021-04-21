@@ -105,7 +105,6 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['people.me.*
     try {
         const now = new Date();
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        const codeRepo = new cinerino.repository.Code(mongoose.connection);
         const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const ownershipInfos = yield ownershipInfoRepo.search({
             limit: 1,
@@ -129,8 +128,7 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['people.me.*
             validFrom: now,
             expiresInSeconds: expiresInSeconds
         })({
-            action: actionRepo,
-            code: codeRepo
+            action: actionRepo
         });
         const code = authorizations[0].code;
         // 座席予約に対する所有権であれば、Chevreでチェックイン
