@@ -247,8 +247,8 @@ peopleRouter.get<ParamsDictionary>(
                         ...searchConditions,
                         project: { typeOf: req.project.typeOf, id: req.project.id }
                     })({
-                        ownershipInfo: ownershipInfoRepo,
-                        project: projectRepo
+                        ownershipInfo: ownershipInfoRepo
+                        // project: projectRepo
                     });
 
                     break;

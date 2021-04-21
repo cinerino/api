@@ -84,8 +84,8 @@ ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_
                 break;
             case cinerino.factory.chevre.reservationType.EventReservation === typeOfGood.typeOf:
                 ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(Object.assign(Object.assign({}, searchConditions), { project: { typeOf: req.project.typeOf, id: req.project.id } }))({
-                    ownershipInfo: ownershipInfoRepo,
-                    project: projectRepo
+                    ownershipInfo: ownershipInfoRepo
+                    // project: projectRepo
                 });
                 break;
             default:
