@@ -23,6 +23,13 @@ const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -55,15 +62,17 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        // const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
-        const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         let order;
         let returnableOrder = req.body.object.order;
+        const orderService = new cinerino.chevre.service.Order({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
         // APIユーザーが管理者の場合、顧客情報を自動取得
         if (req.isAdmin) {
-            order = yield orderRepo.findByOrderNumber({ orderNumber: returnableOrder[0].orderNumber });
+            order = yield orderService.findByOrderNumber({ orderNumber: returnableOrder[0].orderNumber });
             // returnableOrder = { ...returnableOrder, customer: { email: order.customer.email, telephone: order.customer.telephone } };
         }
         else {
@@ -78,7 +87,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
                 throw new cinerino.factory.errors.ArgumentNull('Order Customer', 'Order customer info required');
             }
             // 管理者でない場合は、個人情報完全一致で承認
-            const orders = yield orderRepo.search({
+            const searchOrdersResult = yield orderService.search({
                 project: { id: { $eq: req.project.id } },
                 orderNumbers: returnableOrder.map((o) => o.orderNumber),
                 customer: {
@@ -96,7 +105,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
                         : undefined
                 }
             });
-            order = orders.shift();
+            order = searchOrdersResult.data.shift();
             if (order === undefined) {
                 throw new cinerino.factory.errors.NotFound('Order');
             }
@@ -126,8 +135,6 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
             }
         })({
             action: actionRepo,
-            // invoice: invoiceRepo,
-            order: orderRepo,
             project: projectRepo,
             transaction: transactionRepo
         });
@@ -204,13 +211,11 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         yield cinerino.service.transaction.returnOrder.confirm(Object.assign(Object.assign({}, req.body), { id: req.params.transactionId, agent: { id: req.user.sub } }))({
             action: actionRepo,
-            order: orderRepo,
             transaction: transactionRepo
         });
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)

@@ -8,7 +8,6 @@ import { ParamsDictionary } from 'express-serve-static-core';
 import { body, query } from 'express-validator';
 import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
-import * as mongoose from 'mongoose';
 
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
@@ -165,10 +164,13 @@ reservationsRouter.post(
 
             switch (payload.typeOf) {
                 case <any>'Order':
-                    const orderRepo = new cinerino.repository.Order(mongoose.connection);
+                    const orderService = new cinerino.chevre.service.Order({
+                        endpoint: cinerino.credentials.chevre.endpoint,
+                        auth: chevreAuthClient
+                    });
 
                     // 注文検索
-                    const order = await orderRepo.findByOrderNumber({ orderNumber: (<any>payload).orderNumber });
+                    const order = await orderService.findByOrderNumber({ orderNumber: (<any>payload).orderNumber });
 
                     const acceptedOffer = order.acceptedOffers.find((offer) => {
                         return offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation

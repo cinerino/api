@@ -4,11 +4,18 @@
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import { query } from 'express-validator';
-import * as mongoose from 'mongoose';
 
 import permitScopes from '../../../middlewares/permitScopes';
 import rateLimit from '../../../middlewares/rateLimit';
 import validator from '../../../middlewares/validator';
+
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 
 const ordersRouter = Router();
 
@@ -42,7 +49,10 @@ ordersRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+            const orderService = new cinerino.chevre.service.Order({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
             const searchConditions: cinerino.factory.order.ISearchConditions = {
                 ...req.query,
                 project: { id: { $eq: req.project.id } },
@@ -55,9 +65,9 @@ ordersRouter.get(
                     ids: [req.user.sub]
                 }
             };
-            const orders = await orderRepo.search(searchConditions);
+            const { data } = await orderService.search(searchConditions);
 
-            res.json(orders);
+            res.json(data);
         } catch (error) {
             next(error);
         }

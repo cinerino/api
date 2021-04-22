@@ -103,8 +103,11 @@ accountsRouter.post(
                     orderNumber = <string>(<any>payload).orderNumber;
 
                     // 注文検索
-                    const orderRepo = new cinerino.repository.Order(mongoose.connection);
-                    const order = await orderRepo.findByOrderNumber({ orderNumber });
+                    const orderService = new cinerino.chevre.service.Order({
+                        endpoint: cinerino.credentials.chevre.endpoint,
+                        auth: chevreAuthClient
+                    });
+                    const order = await orderService.findByOrderNumber({ orderNumber });
 
                     // 口座番号を取得
                     const awardAccountsValue = order.identifier?.find(

@@ -17,7 +17,6 @@ const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment");
-const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
@@ -137,9 +136,12 @@ reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 're
         })({});
         switch (payload.typeOf) {
             case 'Order':
-                const orderRepo = new cinerino.repository.Order(mongoose.connection);
+                const orderService = new cinerino.chevre.service.Order({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient
+                });
                 // 注文検索
-                const order = yield orderRepo.findByOrderNumber({ orderNumber: payload.orderNumber });
+                const order = yield orderService.findByOrderNumber({ orderNumber: payload.orderNumber });
                 const acceptedOffer = order.acceptedOffers.find((offer) => {
                     return offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation
                         && offer.itemOffered.id === reservationId;

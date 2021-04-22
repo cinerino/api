@@ -99,8 +99,11 @@ accountsRouter.post('/openByToken', permitScopes_1.default(['accounts.openByToke
             case cinerino.factory.order.OrderType.Order:
                 orderNumber = payload.orderNumber;
                 // 注文検索
-                const orderRepo = new cinerino.repository.Order(mongoose.connection);
-                const order = yield orderRepo.findByOrderNumber({ orderNumber });
+                const orderService = new cinerino.chevre.service.Order({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient
+                });
+                const order = yield orderService.findByOrderNumber({ orderNumber });
                 // 口座番号を取得
                 const awardAccountsValue = (_g = (_f = order.identifier) === null || _f === void 0 ? void 0 : _f.find((i) => i.name === cinerino.service.transaction.placeOrderInProgress.AWARD_ACCOUNTS_IDENTIFIER_NAME)) === null || _g === void 0 ? void 0 : _g.value;
                 if (typeof awardAccountsValue === 'string' && awardAccountsValue.length > 0) {

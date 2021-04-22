@@ -17,6 +17,14 @@ import validator from '../../middlewares/validator';
 
 import * as redis from '../../../redis';
 
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -59,17 +67,20 @@ returnOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            // const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
-            const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
             let order: cinerino.factory.order.IOrder | undefined;
             let returnableOrder: cinerino.factory.transaction.returnOrder.IReturnableOrder[] = req.body.object.order;
 
+            const orderService = new cinerino.chevre.service.Order({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+
             // APIユーザーが管理者の場合、顧客情報を自動取得
             if (req.isAdmin) {
-                order = await orderRepo.findByOrderNumber({ orderNumber: returnableOrder[0].orderNumber });
+                order = await orderService.findByOrderNumber({ orderNumber: returnableOrder[0].orderNumber });
                 // returnableOrder = { ...returnableOrder, customer: { email: order.customer.email, telephone: order.customer.telephone } };
             } else {
                 if (returnableOrder.length !== 1) {
@@ -85,7 +96,7 @@ returnOrderTransactionsRouter.post(
                 }
 
                 // 管理者でない場合は、個人情報完全一致で承認
-                const orders = await orderRepo.search({
+                const searchOrdersResult = await orderService.search({
                     project: { id: { $eq: req.project.id } },
                     orderNumbers: returnableOrder.map((o) => o.orderNumber),
                     customer: {
@@ -103,7 +114,7 @@ returnOrderTransactionsRouter.post(
                             : undefined
                     }
                 });
-                order = orders.shift();
+                order = searchOrdersResult.data.shift();
                 if (order === undefined) {
                     throw new cinerino.factory.errors.NotFound('Order');
                 }
@@ -138,8 +149,6 @@ returnOrderTransactionsRouter.post(
                 }
             })({
                 action: actionRepo,
-                // invoice: invoiceRepo,
-                order: orderRepo,
                 project: projectRepo,
                 transaction: transactionRepo
             });
@@ -237,7 +246,6 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
@@ -248,7 +256,6 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
                 agent: { id: req.user.sub }
             })({
                 action: actionRepo,
-                order: orderRepo,
                 transaction: transactionRepo
             });
 

@@ -15,10 +15,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
-const mongoose = require("mongoose");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const rateLimit_1 = require("../../../middlewares/rateLimit");
 const validator_1 = require("../../../middlewares/validator");
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const ordersRouter = express_1.Router();
 /**
  * 注文検索
@@ -44,7 +50,10 @@ ordersRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_1.defaul
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        const orderService = new cinerino.chevre.service.Order({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, 
@@ -53,8 +62,8 @@ ordersRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_1.defaul
                 typeOf: cinerino.factory.personType.Person,
                 ids: [req.user.sub]
             } });
-        const orders = yield orderRepo.search(searchConditions);
-        res.json(orders);
+        const { data } = yield orderService.search(searchConditions);
+        res.json(data);
     }
     catch (error) {
         next(error);

@@ -15,7 +15,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-import { connectMongo } from '../../connectMongo';
 import * as redis from '../../redis';
 
 const CODE_EXPIRES_IN_SECONDS_DEFAULT = (typeof process.env.CODE_EXPIRES_IN_SECONDS_DEFAULT === 'string')
@@ -140,7 +139,10 @@ ordersRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+            const orderService = new cinerino.chevre.service.Order({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
 
             const searchConditions: cinerino.factory.order.ISearchConditions = {
                 ...req.query,
@@ -150,9 +152,9 @@ ordersRouter.get(
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
 
-            const orders = await orderRepo.search(searchConditions);
+            const { data } = await orderService.search(searchConditions);
 
-            res.json(orders);
+            res.json(data);
         } catch (error) {
             next(error);
         }
@@ -207,7 +209,10 @@ ordersRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+            const orderService = new cinerino.chevre.service.Order({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
 
             // 検索条件を限定
             const orderDateThrough = moment()
@@ -230,9 +235,9 @@ ordersRouter.get(
                 orderDateThrough: orderDateThrough
             };
 
-            const orders = await orderRepo.search(searchConditions);
+            const { data } = await orderService.search(searchConditions);
 
-            res.json(orders);
+            res.json(data);
         } catch (error) {
             next(error);
         }
@@ -271,20 +276,22 @@ ordersRouter.post(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            // const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
-            const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
             const orderNumber = <string>req.body.object?.orderNumber;
 
             // 注文検索
-            const orders = await orderRepo.search({
+            const orderService = new cinerino.chevre.service.Order({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const searchOrdersResult = await orderService.search({
                 limit: 1,
                 project: { id: { $eq: req.project.id } },
                 orderNumbers: [orderNumber]
             });
-            const order = orders.shift();
+            const order = searchOrdersResult.data.shift();
 
             // 注文未作成であれば作成
             if (order === undefined) {
@@ -354,8 +361,6 @@ ordersRouter.post(
 
                 await cinerino.service.order.placeOrder(orderActionAttributes)({
                     action: actionRepo,
-                    // invoice: invoiceRepo,
-                    order: orderRepo,
                     task: taskRepo,
                     transaction: transactionRepo
                 });
@@ -363,134 +368,6 @@ ordersRouter.post(
 
             res.json({});
         } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
- * ストリーミングダウンロード
- */
-ordersRouter.get(
-    '/download',
-    permitScopes([]),
-    rateLimit,
-    ...[
-        query('disableTotalCount')
-            .optional()
-            .isBoolean()
-            .toBoolean(),
-        query('identifier.$all')
-            .optional()
-            .isArray(),
-        query('identifier.$in')
-            .optional()
-            .isArray(),
-        query('identifier.$all.*.name')
-            .optional()
-            .not()
-            .isEmpty()
-            .isString()
-            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        query('identifier.$all.*.value')
-            .optional()
-            .not()
-            .isEmpty()
-            .isString()
-            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        query('identifier.$in.*.name')
-            .optional()
-            .not()
-            .isEmpty()
-            .isString()
-            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        query('identifier.$in.*.value')
-            .optional()
-            .not()
-            .isEmpty()
-            .isString()
-            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        query('orderDateFrom')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('orderDateThrough')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('orderDate.$gte')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('orderDate.$lte')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('acceptedOffers.itemOffered.reservationFor.startFrom')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('acceptedOffers.itemOffered.reservationFor.startThrough')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('price.$gte')
-            .optional()
-            .isInt()
-            .toInt(),
-        query('price.$lte')
-            .optional()
-            .isInt()
-            .toInt()
-    ],
-    validator,
-    async (req, res, next) => {
-        let connection: mongoose.Connection | undefined;
-
-        try {
-            connection = await connectMongo({
-                defaultConnection: false,
-                disableCheck: true
-            });
-            const orderRepo = new cinerino.repository.Order(connection);
-
-            const searchConditions: cinerino.factory.order.ISearchConditions = {
-                ...req.query,
-                project: { id: { $eq: req.project.id } }
-            };
-
-            const format = req.query.format;
-
-            const stream = await cinerino.service.report.order.stream({
-                conditions: searchConditions,
-                format: format
-            })({ order: orderRepo });
-
-            res.type(`${req.query.format}; charset=utf-8`);
-            stream.pipe(res)
-                .on('error', async () => {
-                    if (connection !== undefined) {
-                        await connection.close();
-                    }
-                })
-                .on('finish', async () => {
-                    if (connection !== undefined) {
-                        await connection.close();
-                    }
-                });
-        } catch (error) {
-            if (connection !== undefined) {
-                await connection.close();
-            }
-
             next(error);
         }
     }
@@ -533,10 +410,13 @@ ordersRouter.post(
                 telephone: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
             };
 
-            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+            const orderService = new cinerino.chevre.service.Order({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
 
             // 劇場枝番号、予約番号、個人情報完全一致で検索する
-            const orders = await orderRepo.search({
+            const searchOrdersResult = await orderService.search({
                 limit: 100,
                 sort: { orderDate: cinerino.factory.sortType.Descending },
                 project: { id: { $eq: req.project.id } },
@@ -550,12 +430,12 @@ ordersRouter.post(
                 }
             });
 
-            if (orders.length < 1) {
+            if (searchOrdersResult.data.length < 1) {
                 // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
-                throw new cinerino.factory.errors.NotFound(orderRepo.orderModel.modelName);
+                throw new cinerino.factory.errors.NotFound('Order');
             }
 
-            res.json(orders);
+            res.json(searchOrdersResult.data);
         } catch (error) {
             next(error);
         }
@@ -628,7 +508,10 @@ ordersRouter.post(
             const orderNumber = req.body.orderNumber;
 
             // 個人情報完全一致で検索する
-            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+            const orderService = new cinerino.chevre.service.Order({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
 
             const orderDateThrough = (req.query.orderDateThrough instanceof Date)
                 ? req.query.orderDateThrough
@@ -645,7 +528,7 @@ ordersRouter.post(
                         .add(-3, 'months') // とりあえず直近3カ月をデフォルト動作に設定
                         .toDate();
 
-            const orders = await orderRepo.search({
+            const searchOrdersResult = await orderService.search({
                 limit: 100,
                 sort: { orderDate: cinerino.factory.sortType.Descending },
                 project: { id: { $eq: req.project.id } },
@@ -665,12 +548,12 @@ ordersRouter.post(
                 orderDateThrough: orderDateThrough
             });
 
-            if (orders.length < 1) {
+            if (searchOrdersResult.data.length < 1) {
                 // まだ注文が作成されていなければ、注文取引から検索するか検討中だが、いまのところ取引検索条件が足りない...
-                throw new cinerino.factory.errors.NotFound(orderRepo.orderModel.modelName);
+                throw new cinerino.factory.errors.NotFound('Order');
             }
 
-            res.json(orders);
+            res.json(searchOrdersResult.data);
         } catch (error) {
             next(error);
         }
@@ -701,18 +584,21 @@ ordersRouter.post(
             const orderNumber = <string>req.body.orderNumber;
 
             // 個人情報完全一致で検索する
-            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+            const orderService = new cinerino.chevre.service.Order({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
 
-            const orders = await orderRepo.search({
+            const searchOrdersResult = await orderService.search({
                 limit: 1,
                 project: { id: { $eq: req.project.id } },
                 customer: { telephone: { $eq: telephone } },
                 orderNumbers: [orderNumber]
             });
 
-            const order = orders.shift();
+            const order = searchOrdersResult.data.shift();
             if (order === undefined) {
-                throw new cinerino.factory.errors.NotFound(orderRepo.orderModel.modelName);
+                throw new cinerino.factory.errors.NotFound('Order');
             }
 
             res.json(order);
@@ -732,8 +618,11 @@ ordersRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const orderRepo = new cinerino.repository.Order(mongoose.connection);
-            const order = await orderRepo.findByOrderNumber({
+            const orderService = new cinerino.chevre.service.Order({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const order = await orderService.findByOrderNumber({
                 orderNumber: req.params.orderNumber
             });
 
@@ -763,7 +652,6 @@ ordersRouter.post<ParamsDictionary>(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
@@ -772,7 +660,11 @@ ordersRouter.post<ParamsDictionary>(
             const orderNumber = req.params.orderNumber;
 
             // 注文検索
-            const order = await orderRepo.findByOrderNumber({
+            const orderService = new cinerino.chevre.service.Order({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const order = await orderService.findByOrderNumber({
                 orderNumber: orderNumber
             });
 
@@ -782,7 +674,7 @@ ordersRouter.post<ParamsDictionary>(
                 // 確認番号を検証
                 const confirmationNumber = <string>req.body.object?.confirmationNumber;
                 if (order.confirmationNumber !== confirmationNumber) {
-                    throw new cinerino.factory.errors.NotFound(orderRepo.orderModel.modelName);
+                    throw new cinerino.factory.errors.NotFound('Order');
                 }
             }
 
@@ -801,7 +693,6 @@ ordersRouter.post<ParamsDictionary>(
 
                 await cinerino.service.delivery.sendOrder(sendOrderActionAttributes)({
                     action: actionRepo,
-                    order: orderRepo,
                     ownershipInfo: ownershipInfoRepo,
                     registerActionInProgress: registerActionInProgressRepo,
                     task: taskRepo,
@@ -880,11 +771,14 @@ ordersRouter.post<ParamsDictionary>(
             const telephone = req.body.object?.customer?.telephone;
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            const orderRepo = new cinerino.repository.Order(mongoose.connection);
 
-            const order = await orderRepo.findByOrderNumber({ orderNumber: req.params.orderNumber });
+            const orderService = new cinerino.chevre.service.Order({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const order = await orderService.findByOrderNumber({ orderNumber: req.params.orderNumber });
             if (order.customer.email !== email && order.customer.telephone !== telephone) {
-                throw new cinerino.factory.errors.NotFound(orderRepo.orderModel.modelName, 'No orders matched');
+                throw new cinerino.factory.errors.NotFound('Order', 'No orders matched');
             }
 
             // const authorizationObject: cinerino.factory.order.ISimpleOrder = {

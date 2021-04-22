@@ -188,14 +188,17 @@ function validateFromLocation(req) {
             if (fromLocation.typeOf === cinerino.factory.order.OrderType.Order) {
                 fromLocation = fromLocation;
                 // 注文検索
-                const orderRepo = new cinerino.repository.Order(mongoose.connection);
-                const searchOrdersResult = yield orderRepo.search({
+                const orderService = new cinerino.chevre.service.Order({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient
+                });
+                const searchOrdersResult = yield orderService.search({
                     limit: 1,
                     project: { id: { $eq: req.project.id } },
                     orderNumbers: [String(fromLocation.orderNumber)],
                     confirmationNumbers: [String(fromLocation.confirmationNumber)]
                 });
-                const order = searchOrdersResult.shift();
+                const order = searchOrdersResult.data.shift();
                 if (order === undefined) {
                     throw new cinerino.factory.errors.NotFound('Order');
                 }
