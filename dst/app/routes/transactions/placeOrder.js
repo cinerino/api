@@ -343,21 +343,25 @@ function authorizePointAward(req) {
         const now = new Date();
         const notes = req.body.notes;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+        const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
         // 所有メンバーシップを検索
-        const programMembershipOwnershipInfos = yield ownershipInfoRepo.search({
+        const searchOwnershipInfosResult = yield ownershipInfoService.search({
             project: { id: { $eq: req.project.id } },
             typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
             ownedBy: { id: req.agent.id },
             ownedFrom: now,
             ownedThrough: now
         });
+        const programMembershipOwnershipInfos = searchOwnershipInfosResult.data;
         const programMemberships = programMembershipOwnershipInfos.map((o) => o.typeOfGood);
         const givePointAwardParams = [];
         if (programMemberships.length > 0) {
@@ -376,7 +380,7 @@ function authorizePointAward(req) {
                             project: { id: req.project.id },
                             now: now,
                             accountType: membershipPointsEarnedUnitText
-                        })({ project: projectRepo, ownershipInfo: ownershipInfoRepo });
+                        })({ project: projectRepo, ownershipInfo: ownershipInfoService });
                         givePointAwardParams.push({
                             object: {
                                 typeOf: cinerino.factory.action.authorize.award.point.ObjectType.PointAward,

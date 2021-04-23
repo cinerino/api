@@ -22,6 +22,14 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     // tslint:disable-next-line:no-magic-numbers
     : 256;
 
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+
 const productOffersRouter = Router();
 
 // アクセスコートは4桁の数字で固定
@@ -95,6 +103,11 @@ productOffersRouter.post<ParamsDictionary>(
     },
     async (req, res, next) => {
         try {
+            const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+
             const actionObject: cinerino.factory.action.authorize.offer.product.IObject = (<any[]>req.body.object).map((o) => {
                 return {
                     project: req.project,
@@ -133,7 +146,7 @@ productOffersRouter.post<ParamsDictionary>(
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 orderNumber: new cinerino.repository.OrderNumber(redis.getClient()),
-                ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
+                ownershipInfo: ownershipInfoService,
                 project: new cinerino.repository.Project(mongoose.connection),
                 registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)

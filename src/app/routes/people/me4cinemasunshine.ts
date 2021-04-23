@@ -12,6 +12,14 @@ import permitScopes from '../../middlewares/permitScopes';
 import rateLimit from '../../middlewares/rateLimit';
 import validator from '../../middlewares/validator';
 
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+
 const me4cinemasunshineRouter = Router();
 
 /**
@@ -26,18 +34,23 @@ me4cinemasunshineRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
+
+            const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
 
             // 現在所有している会員プログラムを全て検索
             const now = new Date();
-            const ownershipInfos = await ownershipInfoRepo.search({
+            const searchOwnershipInfosResult = await ownershipInfoService.search({
                 project: { id: { $eq: req.project.id } },
                 typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
                 ownedBy: { id: req.agent.id },
                 ownedFrom: now,
                 ownedThrough: now
             });
+            const ownershipInfos = searchOwnershipInfosResult.data;
 
             // 所有が確認できれば、会員プログラム登録解除タスクを作成する
             const unRegisterActionAttributes: cinerino.factory.action.interact.unRegister.programMembership.IAttributes[]

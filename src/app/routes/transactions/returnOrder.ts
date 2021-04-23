@@ -149,6 +149,7 @@ returnOrderTransactionsRouter.post(
                 }
             })({
                 action: actionRepo,
+                order: orderService,
                 project: projectRepo,
                 transaction: transactionRepo
             });
@@ -250,12 +251,18 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
+            const orderService = new cinerino.chevre.service.Order({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+
             await cinerino.service.transaction.returnOrder.confirm({
                 ...req.body,
                 id: req.params.transactionId,
                 agent: { id: req.user.sub }
             })({
                 action: actionRepo,
+                order: orderService,
                 transaction: transactionRepo
             });
 

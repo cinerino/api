@@ -69,8 +69,11 @@ ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, ownedBy: { id: req.user.sub } });
-        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
         const typeOfGood = req.query.typeOfGood;
         switch (true) {
             case paymentCardOutputTypes.includes(String(typeOfGood.typeOf)):
@@ -78,18 +81,18 @@ ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_
                     project: req.project,
                     conditions: searchConditions
                 })({
-                    ownershipInfo: ownershipInfoRepo,
+                    ownershipInfo: ownershipInfoService,
                     project: projectRepo
                 });
                 break;
             case cinerino.factory.chevre.reservationType.EventReservation === typeOfGood.typeOf:
                 ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(Object.assign(Object.assign({}, searchConditions), { project: { typeOf: req.project.typeOf, id: req.project.id } }))({
-                    ownershipInfo: ownershipInfoRepo
-                    // project: projectRepo
+                    ownershipInfo: ownershipInfoService
                 });
                 break;
             default:
-                ownershipInfos = yield ownershipInfoRepo.search(searchConditions);
+                const searchOwnershipInfosResult = yield ownershipInfoService.search(searchConditions);
+                ownershipInfos = searchOwnershipInfosResult.data;
             // throw new cinerino.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
         }
         res.json(ownershipInfos);
@@ -105,15 +108,19 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['people.me.*
     try {
         const now = new Date();
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-        const ownershipInfos = yield ownershipInfoRepo.search({
+        const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const searchOwnershipInfosResult = yield ownershipInfoService.search({
             limit: 1,
             project: { id: { $eq: req.project.id } },
             ids: [req.params.id]
         });
+        const ownershipInfos = searchOwnershipInfosResult.data;
         const ownershipInfo = ownershipInfos.shift();
         if (ownershipInfo === undefined) {
-            throw new cinerino.factory.errors.NotFound(ownershipInfoRepo.ownershipInfoModel.modelName);
+            throw new cinerino.factory.errors.NotFound('OwnershipInfo');
         }
         if (ownershipInfo.ownedBy.id !== req.user.sub) {
             throw new cinerino.factory.errors.Unauthorized();

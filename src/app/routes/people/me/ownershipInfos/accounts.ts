@@ -15,6 +15,14 @@ import validator from '../../../../middlewares/validator';
 
 import * as redis from '../../../../../redis';
 
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+
 const accountsRouter = Router();
 
 /**
@@ -36,7 +44,6 @@ accountsRouter.post<ParamsDictionary>(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const registerActionInProgressRepo = new cinerino.repository.action.RegisterServiceInProgress(redis.getClient());
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
@@ -52,6 +59,11 @@ accountsRouter.post<ParamsDictionary>(
                 userPoolId: project.settings.cognito.customerUserPool.id
             });
 
+            const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+
             const result = await cinerino.service.transaction.orderAccount.orderAccount({
                 project: { typeOf: project.typeOf, id: project.id },
                 agent: { typeOf: req.agent.typeOf, id: req.agent.id },
@@ -62,7 +74,7 @@ accountsRouter.post<ParamsDictionary>(
                 action: actionRepo,
                 confirmationNumber: confirmationNumberRepo,
                 orderNumber: orderNumberRepo,
-                ownershipInfo: ownershipInfoRepo,
+                ownershipInfo: ownershipInfoService,
                 person: personRepo,
                 registerActionInProgress: registerActionInProgressRepo,
                 project: projectRepo,
@@ -111,15 +123,19 @@ accountsRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
+
+            const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
 
             await cinerino.service.account.close({
                 project: req.project,
                 ownedBy: { id: req.user.sub },
                 accountNumber: req.params.accountNumber
             })({
-                ownershipInfo: ownershipInfoRepo,
+                ownershipInfo: ownershipInfoService,
                 project: projectRepo
             });
 
@@ -148,8 +164,12 @@ accountsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
+
+            const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
 
             let actions = await cinerino.service.account.searchMoneyTransferActions({
                 project: req.project,
@@ -157,7 +177,7 @@ accountsRouter.get(
                 conditions: req.query,
                 typeOfGood: { accountNumber: String(req.query.accountNumber) }
             })({
-                ownershipInfo: ownershipInfoRepo,
+                ownershipInfo: ownershipInfoService,
                 project: projectRepo
             });
 

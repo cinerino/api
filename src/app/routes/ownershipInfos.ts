@@ -7,11 +7,18 @@ import { Router } from 'express';
 // import { ParamsDictionary } from 'express-serve-static-core';
 import { query } from 'express-validator';
 // import * as moment from 'moment';
-import * as mongoose from 'mongoose';
 
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
+
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 
 const ownershipInfosRouter = Router();
 
@@ -35,7 +42,10 @@ ownershipInfosRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+            const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
 
             const typeOfGood = (req.query.typeOfGood !== undefined && req.query.typeOfGood !== null) ? req.query.typeOfGood : {};
             let ownershipInfos: cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGoodWithDetail>[]
@@ -51,7 +61,8 @@ ownershipInfosRouter.get(
 
             switch (typeOfGood.typeOf) {
                 default:
-                    ownershipInfos = await ownershipInfoRepo.search(searchConditions);
+                    const searchOwnershipInfosResult = await ownershipInfoService.search(searchConditions);
+                    ownershipInfos = searchOwnershipInfosResult.data;
             }
 
             res.json(ownershipInfos);
@@ -86,30 +97,44 @@ ownershipInfosRouter.get(
             const toDate: string = req.query.toDate;
             const theaterIds: string[] = req.query.theaterIds;
 
-            const repository = new cinerino.repository.OwnershipInfo(mongoose.connection);
-
-            const andConditions: any[] = [
-                { 'typeOfGood.typeOf': cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership }
-            ];
-
-            andConditions.push({
-                ownedFrom: {
-                    $gte: new Date(fromDate),
-                    $lte: new Date(toDate)
-                }
+            const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
             });
 
-            if (Array.isArray(theaterIds)) {
-                andConditions.push({
-                    'acquiredFrom.id': {
-                        $exists: true,
-                        $in: theaterIds
-                    }
-                });
-            }
+            // const andConditions: any[] = [
+            //     { 'typeOfGood.typeOf': cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership }
+            // ];
 
-            const count = await repository.ownershipInfoModel.countDocuments({ $and: andConditions })
-                .exec();
+            // andConditions.push({
+            //     ownedFrom: {
+            //         $gte: new Date(fromDate),
+            //         $lte: new Date(toDate)
+            //     }
+            // });
+
+            // if (Array.isArray(theaterIds)) {
+            //     andConditions.push({
+            //         'acquiredFrom.id': {
+            //             $exists: true,
+            //             $in: theaterIds
+            //         }
+            //     });
+            // }
+
+            // const count = await ownershipInfoService.countDocuments({ $and: andConditions })
+            //     .exec();
+            const searchOwnershipInfosResult = await ownershipInfoService.search({
+                project: { id: { $eq: req.project.id } },
+                typeOfGood: { typeOf: { $eq: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership } },
+                countDocuments: '1',
+                ownedFromGte: new Date(fromDate),
+                ownedFromLte: new Date(toDate),
+                ...(Array.isArray(theaterIds))
+                    ? { acquiredFrom: { id: { $in: theaterIds } } }
+                    : undefined
+            });
+            const count = Number(searchOwnershipInfosResult.totalCount);
 
             res.json({ count });
         } catch (error) {

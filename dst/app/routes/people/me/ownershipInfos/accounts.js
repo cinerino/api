@@ -21,6 +21,13 @@ const permitScopes_1 = require("../../../../middlewares/permitScopes");
 const rateLimit_1 = require("../../../../middlewares/rateLimit");
 const validator_1 = require("../../../../middlewares/validator");
 const redis = require("../../../../../redis");
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const accountsRouter = express_1.Router();
 /**
  * 口座開設
@@ -36,7 +43,6 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
     var _a, _b, _c;
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const registerActionInProgressRepo = new cinerino.repository.action.RegisterServiceInProgress(redis.getClient());
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
@@ -50,6 +56,10 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
         const personRepo = new cinerino.repository.Person({
             userPoolId: project.settings.cognito.customerUserPool.id
         });
+        const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
         const result = yield cinerino.service.transaction.orderAccount.orderAccount({
             project: { typeOf: project.typeOf, id: project.id },
             agent: { typeOf: req.agent.typeOf, id: req.agent.id },
@@ -60,7 +70,7 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
             action: actionRepo,
             confirmationNumber: confirmationNumberRepo,
             orderNumber: orderNumberRepo,
-            ownershipInfo: ownershipInfoRepo,
+            ownershipInfo: ownershipInfoService,
             person: personRepo,
             registerActionInProgress: registerActionInProgressRepo,
             project: projectRepo,
@@ -101,14 +111,17 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
  */
 accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(['people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
         yield cinerino.service.account.close({
             project: req.project,
             ownedBy: { id: req.user.sub },
             accountNumber: req.params.accountNumber
         })({
-            ownershipInfo: ownershipInfoRepo,
+            ownershipInfo: ownershipInfoService,
             project: projectRepo
         });
         res.status(http_status_1.NO_CONTENT)
@@ -129,15 +142,18 @@ accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default(['people.me.
         .isString()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
+        const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
         let actions = yield cinerino.service.account.searchMoneyTransferActions({
             project: req.project,
             ownedBy: { id: req.user.sub },
             conditions: req.query,
             typeOfGood: { accountNumber: String(req.query.accountNumber) }
         })({
-            ownershipInfo: ownershipInfoRepo,
+            ownershipInfo: ownershipInfoService,
             project: projectRepo
         });
         actions = actions.map((a) => {

@@ -27,6 +27,13 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
     : 256;
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const productOffersRouter = express_1.Router();
 // アクセスコートは4桁の数字で固定
 const accessCodeMustBe = /^[0-9]{4}$/;
@@ -87,6 +94,10 @@ productOffersRouter.post('/authorize', permitScopes_1.default(['transactions']),
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
         const actionObject = req.body.object.map((o) => {
             var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
             return {
@@ -113,7 +124,7 @@ productOffersRouter.post('/authorize', permitScopes_1.default(['transactions']),
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             orderNumber: new cinerino.repository.OrderNumber(redis.getClient()),
-            ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
+            ownershipInfo: ownershipInfoService,
             project: new cinerino.repository.Project(mongoose.connection),
             registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),
             transaction: new cinerino.repository.Transaction(mongoose.connection)

@@ -138,6 +138,11 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
+            const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+
             let paymentCard: cinerino.factory.action.authorize.paymentMethod.any.IPaymentCard | undefined;
 
             const paymentMethodType: string = req.body.object?.paymentMethod;
@@ -188,8 +193,7 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
                         // アクセスコード情報なし、かつ、会員の場合、所有権を確認
                         if (typeof req.user.username === 'string') {
                             // 口座に所有権があるかどうか確認
-                            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
-                            const paymentCardOwnershipInfos = await ownershipInfoRepo.search({
+                            const searchOwnershipInfosResult = await ownershipInfoService.search({
                                 limit: 1,
                                 project: { id: { $eq: req.project.id } },
                                 ownedBy: { id: req.user.sub },
@@ -200,6 +204,7 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
                                     accountNumber: { $eq: accountIdentifier }
                                 }
                             });
+                            const paymentCardOwnershipInfos = searchOwnershipInfosResult.data;
                             if (paymentCardOwnershipInfos.length === 0) {
                                 throw new cinerino.factory.errors.Forbidden('From Account access forbidden');
                             }

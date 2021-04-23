@@ -114,7 +114,6 @@ peopleRouter.delete(
                 sitePass: credentials.sitePass,
                 cardService: new cinerino.GMO.service.Card({ endpoint: credentials.endpoint })
             });
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const personRepo = new cinerino.repository.Person({
                 userPoolId: project.settings.cognito.customerUserPool.id
             });
@@ -124,15 +123,21 @@ peopleRouter.delete(
                 userId: req.params.id
             });
 
+            const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+
             // 現在所有している会員プログラムを全て検索
             const now = new Date();
-            const ownershipInfos = await ownershipInfoRepo.search({
+            const searchOwnershipInfosResult = await ownershipInfoService.search({
                 project: { id: { $eq: req.project.id } },
                 typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
                 ownedBy: { id: person.id },
                 ownedFrom: now,
                 ownedThrough: now
             });
+            const ownershipInfos = searchOwnershipInfosResult.data;
 
             // 所有が確認できれば、会員プログラム登録解除タスクを作成する
             const unRegisterActionAttributes: cinerino.factory.action.interact.unRegister.programMembership.IAttributes[]
@@ -226,8 +231,12 @@ peopleRouter.get<ParamsDictionary>(
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
                 ownedBy: { id: req.params.id }
             };
-            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
+
+            const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
 
             const typeOfGood = <cinerino.factory.ownershipInfo.ITypeOfGoodSearchConditions>req.query.typeOfGood;
             switch (true) {
@@ -236,7 +245,7 @@ peopleRouter.get<ParamsDictionary>(
                         project: req.project,
                         conditions: searchConditions
                     })({
-                        ownershipInfo: ownershipInfoRepo,
+                        ownershipInfo: ownershipInfoService,
                         project: projectRepo
                     });
 
@@ -247,14 +256,14 @@ peopleRouter.get<ParamsDictionary>(
                         ...searchConditions,
                         project: { typeOf: req.project.typeOf, id: req.project.id }
                     })({
-                        ownershipInfo: ownershipInfoRepo
-                        // project: projectRepo
+                        ownershipInfo: ownershipInfoService
                     });
 
                     break;
 
                 default:
-                    ownershipInfos = await ownershipInfoRepo.search(searchConditions);
+                    const searchOwnershipInfosResult = await ownershipInfoService.search(searchConditions);
+                    ownershipInfos = searchOwnershipInfosResult.data;
                 // throw new cinerino.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
             }
 

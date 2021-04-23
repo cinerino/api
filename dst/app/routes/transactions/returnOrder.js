@@ -135,6 +135,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
             }
         })({
             action: actionRepo,
+            order: orderService,
             project: projectRepo,
             transaction: transactionRepo
         });
@@ -214,8 +215,13 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+        const orderService = new cinerino.chevre.service.Order({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
         yield cinerino.service.transaction.returnOrder.confirm(Object.assign(Object.assign({}, req.body), { id: req.params.transactionId, agent: { id: req.user.sub } }))({
             action: actionRepo,
+            order: orderService,
             transaction: transactionRepo
         });
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
