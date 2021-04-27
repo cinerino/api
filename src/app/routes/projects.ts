@@ -129,7 +129,7 @@ projectsRouter.post(
                 typeOf: cinerino.factory.chevre.organizationType.Project,
                 id: project.id,
                 logo: project.logo,
-                name: (typeof project.name === 'string') ? project.name : project.name?.ja
+                name: (typeof project.name === 'string') ? project.name : undefined
             });
 
             res.status(CREATED)
@@ -322,7 +322,7 @@ projectsRouter.patch(
                 typeOf: cinerino.factory.chevre.organizationType.Project,
                 id: project.id,
                 logo: project.logo,
-                name: (typeof project.name === 'string') ? project.name : project.name?.ja,
+                name: (typeof project.name === 'string') ? project.name : undefined,
                 settings: <any>project.settings
             });
 
