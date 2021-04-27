@@ -223,7 +223,7 @@ projectsRouter.get('/:id', permitScopes_1.default(['projects.*', 'projects.read'
  * プロジェクト更新
  */
 projectsRouter.patch('/:id', permitScopes_1.default(['projects.*', 'projects.write']), rateLimit_1.default, ...[], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d, _e;
+    var _c, _d, _e, _f;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.projectModel.findOneAndUpdate({ _id: req.project.id }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ updatedAt: new Date() }, (typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined), (typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined), (typeof ((_c = req.body.settings) === null || _c === void 0 ? void 0 : _c.sendgridApiKey) === 'string')
@@ -260,6 +260,8 @@ projectsRouter.patch('/:id', permitScopes_1.default(['projects.*', 'projects.wri
         yield projectService.update({
             typeOf: cinerino.factory.chevre.organizationType.Project,
             id: project.id,
+            logo: project.logo,
+            name: (typeof project.name === 'string') ? project.name : (_f = project.name) === null || _f === void 0 ? void 0 : _f.ja,
             settings: project.settings
         });
         res.status(http_status_1.NO_CONTENT)
@@ -273,11 +275,11 @@ projectsRouter.patch('/:id', permitScopes_1.default(['projects.*', 'projects.wri
  * プロジェクト設定取得
  */
 projectsRouter.get('/:id/settings', permitScopes_1.default(['projects.*', 'projects.settings.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f;
+    var _g;
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const project = yield projectRepo.findById({ id: req.project.id });
-        res.json(Object.assign(Object.assign({}, project.settings), { cognito: Object.assign(Object.assign({}, (_f = project.settings) === null || _f === void 0 ? void 0 : _f.cognito), { 
+        res.json(Object.assign(Object.assign({}, project.settings), { cognito: Object.assign(Object.assign({}, (_g = project.settings) === null || _g === void 0 ? void 0 : _g.cognito), { 
                 // 互換性維持対応として
                 adminUserPool: { id: ADMIN_USER_POOL_ID } }) }));
     }
