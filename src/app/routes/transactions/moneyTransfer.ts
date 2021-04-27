@@ -113,7 +113,6 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
                 seller,
                 clientId: req.user.client_id
             });
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
@@ -180,7 +179,6 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
                 passportValidator
             })({
                 action: actionRepo,
-                project: projectRepo,
                 transaction: transactionRepo
             });
 
@@ -398,7 +396,6 @@ moneyTransferTransactionsRouter.put(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
 
@@ -417,7 +414,6 @@ moneyTransferTransactionsRouter.put(
                 status: cinerino.factory.transactionStatusType.Confirmed,
                 typeOf: { $in: [cinerino.factory.transactionType.MoneyTransfer] }
             })({
-                project: projectRepo,
                 task: taskRepo,
                 transaction: transactionRepo
             })
@@ -462,7 +458,6 @@ moneyTransferTransactionsRouter.put(
     },
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
@@ -478,7 +473,6 @@ moneyTransferTransactionsRouter.put(
                 status: cinerino.factory.transactionStatusType.Canceled,
                 typeOf: { $in: [cinerino.factory.transactionType.MoneyTransfer] }
             })({
-                project: projectRepo,
                 task: taskRepo,
                 transaction: transactionRepo
             });

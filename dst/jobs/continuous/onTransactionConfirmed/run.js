@@ -19,7 +19,6 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     let countExecute = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 100;
-    const projectRepo = new cinerino.repository.Project(connection);
     const taskRepo = new cinerino.repository.Task(connection);
     const transactionRepo = new cinerino.repository.Transaction(connection);
     setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
@@ -39,7 +38,6 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
                     ]
                 }
             })({
-                project: projectRepo,
                 task: taskRepo,
                 transaction: transactionRepo
             });

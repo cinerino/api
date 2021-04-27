@@ -245,7 +245,6 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const action = yield cinerino.service.offer.seatReservation.create({
             project: req.project,
             object: Object.assign(Object.assign({}, req.body), { broker: (req.isAdmin) ? req.agent : undefined }),
@@ -253,7 +252,6 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
             transaction: { id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            project: projectRepo,
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED)
@@ -286,7 +284,6 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatRe
             id: req.params.actionId
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)
@@ -343,7 +340,6 @@ function authorizePointAward(req) {
         const now = new Date();
         const notes = req.body.notes;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
@@ -380,7 +376,7 @@ function authorizePointAward(req) {
                             project: { id: req.project.id },
                             now: now,
                             accountType: membershipPointsEarnedUnitText
-                        })({ project: projectRepo, ownershipInfo: ownershipInfoService });
+                        })({ ownershipInfo: ownershipInfoService });
                         givePointAwardParams.push({
                             object: {
                                 typeOf: cinerino.factory.action.authorize.award.point.ObjectType.PointAward,
@@ -479,7 +475,6 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
     try {
         const orderDate = new Date();
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
         const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
@@ -506,7 +501,6 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             } });
         const result = yield cinerino.service.transaction.placeOrderInProgress.confirm(Object.assign(Object.assign({}, req.body), { agent: { id: req.user.sub }, id: req.params.transactionId, potentialActions: potentialActions, project: req.project, result: Object.assign(Object.assign({}, req.body.result), { order: resultOrderParams }) }))({
             action: actionRepo,
-            project: projectRepo,
             transaction: transactionRepo,
             confirmationNumber: confirmationNumberRepo,
             orderNumber: orderNumberRepo
@@ -518,7 +512,6 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             status: cinerino.factory.transactionStatusType.Confirmed,
             typeOf: { $in: [cinerino.factory.transactionType.PlaceOrder] }
         })({
-            project: projectRepo,
             task: taskRepo,
             transaction: transactionRepo
         })
@@ -554,7 +547,6 @@ placeOrderTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.defaul
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         yield transactionRepo.cancel({
@@ -568,7 +560,6 @@ placeOrderTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.defaul
             status: cinerino.factory.transactionStatusType.Canceled,
             typeOf: { $in: [cinerino.factory.transactionType.PlaceOrder] }
         })({
-            project: projectRepo,
             task: taskRepo,
             transaction: transactionRepo
         });

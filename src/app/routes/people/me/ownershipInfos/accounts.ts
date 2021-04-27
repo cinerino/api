@@ -88,7 +88,6 @@ accountsRouter.post<ParamsDictionary>(
                 status: cinerino.factory.transactionStatusType.Confirmed,
                 typeOf: { $in: [cinerino.factory.transactionType.PlaceOrder] }
             })({
-                project: projectRepo,
                 task: taskRepo,
                 transaction: transactionRepo
             })
@@ -123,8 +122,6 @@ accountsRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
             const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
@@ -135,8 +132,7 @@ accountsRouter.put(
                 ownedBy: { id: req.user.sub },
                 accountNumber: req.params.accountNumber
             })({
-                ownershipInfo: ownershipInfoService,
-                project: projectRepo
+                ownershipInfo: ownershipInfoService
             });
 
             res.status(NO_CONTENT)
@@ -164,8 +160,6 @@ accountsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
             const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
@@ -177,8 +171,7 @@ accountsRouter.get(
                 conditions: req.query,
                 typeOfGood: { accountNumber: String(req.query.accountNumber) }
             })({
-                ownershipInfo: ownershipInfoService,
-                project: projectRepo
+                ownershipInfo: ownershipInfoService
             });
 
             actions = actions.map((a) => {

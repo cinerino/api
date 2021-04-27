@@ -305,8 +305,6 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
     },
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
             const action = await cinerino.service.offer.seatReservation.create({
                 project: req.project,
                 object: {
@@ -317,7 +315,6 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
                 transaction: { id: req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                project: projectRepo,
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
@@ -358,7 +355,6 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 id: req.params.actionId
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                project: new cinerino.repository.Project(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
@@ -425,7 +421,6 @@ export async function authorizePointAward(req: Request): Promise<cinerino.factor
     const notes = req.body.notes;
 
     const actionRepo = new cinerino.repository.Action(mongoose.connection);
-    const projectRepo = new cinerino.repository.Project(mongoose.connection);
     const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
     const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
@@ -469,7 +464,7 @@ export async function authorizePointAward(req: Request): Promise<cinerino.factor
                         project: { id: req.project.id },
                         now: now,
                         accountType: membershipPointsEarnedUnitText
-                    })({ project: projectRepo, ownershipInfo: ownershipInfoService });
+                    })({ ownershipInfo: ownershipInfoService });
 
                     givePointAwardParams.push({
                         object: {
@@ -584,7 +579,6 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
             const orderDate = new Date();
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
             const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
@@ -649,7 +643,6 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 }
             })({
                 action: actionRepo,
-                project: projectRepo,
                 transaction: transactionRepo,
                 confirmationNumber: confirmationNumberRepo,
                 orderNumber: orderNumberRepo
@@ -662,7 +655,6 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 status: cinerino.factory.transactionStatusType.Confirmed,
                 typeOf: { $in: [cinerino.factory.transactionType.PlaceOrder] }
             })({
-                project: projectRepo,
                 task: taskRepo,
                 transaction: transactionRepo
             })
@@ -706,7 +698,6 @@ placeOrderTransactionsRouter.put(
     },
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
@@ -722,7 +713,6 @@ placeOrderTransactionsRouter.put(
                 status: cinerino.factory.transactionStatusType.Canceled,
                 typeOf: { $in: [cinerino.factory.transactionType.PlaceOrder] }
             })({
-                project: projectRepo,
                 task: taskRepo,
                 transaction: transactionRepo
             });

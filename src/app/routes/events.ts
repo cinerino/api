@@ -222,8 +222,6 @@ eventsRouter.get<ParamsDictionary>(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
             const offers = await cinerino.service.offer.searchEventTicketOffers({
                 project: req.project,
                 event: { id: req.params.id },
@@ -232,9 +230,7 @@ eventsRouter.get<ParamsDictionary>(
                 ...(req.query.movieTicket !== undefined && req.query.movieTicket !== null)
                     ? { movieTicket: req.query.movieTicket }
                     : {}
-            })({
-                project: projectRepo
-            });
+            })({});
             res.json(offers);
         } catch (error) {
             next(error);

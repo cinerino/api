@@ -6,7 +6,6 @@ import { Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
 import { query } from 'express-validator';
-import * as mongoose from 'mongoose';
 
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
@@ -86,16 +85,12 @@ productsRouter.get<ParamsDictionary>(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
             const offers = await cinerino.service.offer.product.search({
                 project: { id: req.project.id },
                 itemOffered: { id: req.params.id },
                 seller: { id: req.query.seller?.id },
                 availableAt: { id: req.user.client_id }
-            })({
-                project: projectRepo
-            });
+            })({});
 
             res.json(offers);
         } catch (error) {

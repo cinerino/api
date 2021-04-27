@@ -15,7 +15,6 @@ export default async (params: {
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 100;
 
-    const projectRepo = new cinerino.repository.Project(connection);
     const taskRepo = new cinerino.repository.Task(connection);
     const transactionRepo = new cinerino.repository.Transaction(connection);
 
@@ -39,7 +38,6 @@ export default async (params: {
                         ]
                     }
                 })({
-                    project: projectRepo,
                     task: taskRepo,
                     transaction: transactionRepo
                 });

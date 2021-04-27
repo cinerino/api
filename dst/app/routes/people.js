@@ -188,7 +188,6 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['people.*', 'peo
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, ownedBy: { id: req.params.id } });
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
@@ -200,8 +199,7 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['people.*', 'peo
                     project: req.project,
                     conditions: searchConditions
                 })({
-                    ownershipInfo: ownershipInfoService,
-                    project: projectRepo
+                    ownershipInfo: ownershipInfoService
                 });
                 break;
             case cinerino.factory.chevre.reservationType.EventReservation === typeOfGood.typeOf:

@@ -231,7 +231,6 @@ peopleRouter.get<ParamsDictionary>(
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
                 ownedBy: { id: req.params.id }
             };
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
             const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
                 endpoint: cinerino.credentials.chevre.endpoint,
@@ -245,8 +244,7 @@ peopleRouter.get<ParamsDictionary>(
                         project: req.project,
                         conditions: searchConditions
                     })({
-                        ownershipInfo: ownershipInfoService,
-                        project: projectRepo
+                        ownershipInfo: ownershipInfoService
                     });
 
                     break;

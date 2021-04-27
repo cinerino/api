@@ -48,7 +48,6 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/seatRese
             transaction: { id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED)
@@ -114,7 +113,6 @@ placeOrder4cinemasunshineRouter.patch('/:transactionId/actions/authorize/seatRes
             id: req.params.actionId
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.json(action);

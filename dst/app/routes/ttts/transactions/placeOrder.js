@@ -67,7 +67,6 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             object: Object.assign({ event: { id: eventId }, acceptedOffer: acceptedOffer }, (req.isAdmin) ? { broker: req.agent } : undefined)
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED)

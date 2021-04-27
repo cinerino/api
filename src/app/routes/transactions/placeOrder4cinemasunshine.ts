@@ -47,7 +47,6 @@ placeOrder4cinemasunshineRouter.post(
                 transaction: { id: req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                project: new cinerino.repository.Project(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
@@ -129,7 +128,6 @@ placeOrder4cinemasunshineRouter.patch(
                 id: req.params.actionId
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                project: new cinerino.repository.Project(mongoose.connection),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 

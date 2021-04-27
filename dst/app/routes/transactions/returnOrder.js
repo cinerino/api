@@ -212,7 +212,6 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const orderService = new cinerino.chevre.service.Order({
@@ -231,7 +230,6 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
             status: cinerino.factory.transactionStatusType.Confirmed,
             typeOf: { $in: [cinerino.factory.transactionType.ReturnOrder] }
         })({
-            project: projectRepo,
             task: taskRepo,
             transaction: transactionRepo
         })

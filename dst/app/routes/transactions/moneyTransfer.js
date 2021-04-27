@@ -108,7 +108,6 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
             seller,
             clientId: req.user.client_id
         });
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const { fromLocation, pendingTransactionIdentifier } = yield validateFromLocation(req);
@@ -154,7 +153,6 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
             passportValidator
         })({
             action: actionRepo,
-            project: projectRepo,
             transaction: transactionRepo
         });
         res.json(transaction);
@@ -341,7 +339,6 @@ moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.de
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         yield cinerino.service.transaction.moneyTransfer.confirm({
@@ -358,7 +355,6 @@ moneyTransferTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.de
             status: cinerino.factory.transactionStatusType.Confirmed,
             typeOf: { $in: [cinerino.factory.transactionType.MoneyTransfer] }
         })({
-            project: projectRepo,
             task: taskRepo,
             transaction: transactionRepo
         })
@@ -395,7 +391,6 @@ moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.def
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         yield transactionRepo.cancel({
@@ -409,7 +404,6 @@ moneyTransferTransactionsRouter.put('/:transactionId/cancel', permitScopes_1.def
             status: cinerino.factory.transactionStatusType.Canceled,
             typeOf: { $in: [cinerino.factory.transactionType.MoneyTransfer] }
         })({
-            project: projectRepo,
             task: taskRepo,
             transaction: transactionRepo
         });

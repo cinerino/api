@@ -147,7 +147,6 @@ productOffersRouter.post<ParamsDictionary>(
                 action: new cinerino.repository.Action(mongoose.connection),
                 orderNumber: new cinerino.repository.OrderNumber(redis.getClient()),
                 ownershipInfo: ownershipInfoService,
-                project: new cinerino.repository.Project(mongoose.connection),
                 registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
@@ -192,7 +191,6 @@ productOffersRouter.put<ParamsDictionary>(
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                project: new cinerino.repository.Project(mongoose.connection),
                 registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });

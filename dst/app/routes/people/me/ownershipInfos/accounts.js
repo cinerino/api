@@ -83,7 +83,6 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
             status: cinerino.factory.transactionStatusType.Confirmed,
             typeOf: { $in: [cinerino.factory.transactionType.PlaceOrder] }
         })({
-            project: projectRepo,
             task: taskRepo,
             transaction: transactionRepo
         })
@@ -111,7 +110,6 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
  */
 accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(['people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
@@ -121,8 +119,7 @@ accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(
             ownedBy: { id: req.user.sub },
             accountNumber: req.params.accountNumber
         })({
-            ownershipInfo: ownershipInfoService,
-            project: projectRepo
+            ownershipInfo: ownershipInfoService
         });
         res.status(http_status_1.NO_CONTENT)
             .end();
@@ -142,7 +139,6 @@ accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default(['people.me.
         .isString()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
@@ -153,8 +149,7 @@ accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default(['people.me.
             conditions: req.query,
             typeOfGood: { accountNumber: String(req.query.accountNumber) }
         })({
-            ownershipInfo: ownershipInfoService,
-            project: projectRepo
+            ownershipInfo: ownershipInfoService
         });
         actions = actions.map((a) => {
             return Object.assign(Object.assign({}, a), { amount: (typeof a.amount === 'number')

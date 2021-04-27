@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
-const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
@@ -70,15 +69,12 @@ productsRouter.get('/:id/offers', permitScopes_1.default(['products.*', 'product
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const offers = yield cinerino.service.offer.product.search({
             project: { id: req.project.id },
             itemOffered: { id: req.params.id },
             seller: { id: (_a = req.query.seller) === null || _a === void 0 ? void 0 : _a.id },
             availableAt: { id: req.user.client_id }
-        })({
-            project: projectRepo
-        });
+        })({});
         res.json(offers);
     }
     catch (error) {

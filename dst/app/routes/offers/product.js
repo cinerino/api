@@ -125,7 +125,6 @@ productOffersRouter.post('/authorize', permitScopes_1.default(['transactions']),
             action: new cinerino.repository.Action(mongoose.connection),
             orderNumber: new cinerino.repository.OrderNumber(redis.getClient()),
             ownershipInfo: ownershipInfoService,
-            project: new cinerino.repository.Project(mongoose.connection),
             registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
@@ -160,7 +159,6 @@ productOffersRouter.put('/authorize/:actionId/void', permitScopes_1.default(['tr
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
-            project: new cinerino.repository.Project(mongoose.connection),
             registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
