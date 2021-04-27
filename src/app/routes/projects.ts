@@ -13,6 +13,14 @@ import validator from '../middlewares/validator';
 
 import { RoleName } from '../iam';
 
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+
 const ADMIN_USER_POOL_ID = <string>process.env.ADMIN_USER_POOL_ID;
 
 const RESOURCE_SERVER_IDENTIFIER = <string>process.env.RESOURCE_SERVER_IDENTIFIER;
@@ -110,6 +118,18 @@ projectsRouter.post(
                 project: { typeOf: project.typeOf, id: project.id },
                 typeOf: 'OrganizationRole',
                 member: member
+            });
+
+            // chevre連携
+            const projectService = new cinerino.chevre.service.Project({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            await projectService.create({
+                typeOf: cinerino.factory.chevre.organizationType.Project,
+                id: project.id,
+                logo: project.logo,
+                name: (typeof project.name === 'string') ? project.name : project.name?.ja
             });
 
             res.status(CREATED)
@@ -254,7 +274,7 @@ projectsRouter.patch(
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
-            await projectRepo.projectModel.findOneAndUpdate(
+            const project = <cinerino.factory.project.IProject>await projectRepo.projectModel.findOneAndUpdate(
                 { _id: req.project.id },
                 {
                     updatedAt: new Date(),
@@ -278,9 +298,33 @@ projectsRouter.patch(
                         'settings.useInMemoryOfferRepo': 1,
                         'settings.useReservationNumberAsConfirmationNumber': 1
                     }
+                },
+                {
+                    new: true
                 }
             )
-                .exec();
+                .exec()
+                .then((doc) => {
+                    if (doc === null) {
+                        throw new cinerino.factory.errors.NotFound('Project');
+
+                    }
+
+                    return doc.toObject();
+                });
+
+            // chevre連携
+            const projectService = new cinerino.chevre.service.Project({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            await projectService.update({
+                typeOf: cinerino.factory.chevre.organizationType.Project,
+                id: project.id,
+                logo: project.logo,
+                name: (typeof project.name === 'string') ? project.name : project.name?.ja,
+                settings: <any>project.settings
+            });
 
             res.status(NO_CONTENT)
                 .end();
