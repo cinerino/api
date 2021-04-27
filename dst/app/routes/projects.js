@@ -185,8 +185,13 @@ rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, 
             .setOptions({ maxTimeMS: 10000 })
             .exec()
             .then((docs) => docs.map((doc) => doc.toObject()));
+        let projectIds = projectMembers.map((m) => m.project.id);
+        // length=1だとidsの指定がない検索になってしまうので、ありえないプロジェクトIDで保管
+        if (projectIds.length === 0) {
+            projectIds = ['***NoProjects***'];
+        }
         const projects = yield projectRepo.search({
-            ids: projectMembers.map((m) => m.project.id),
+            ids: projectIds,
             limit: limit
         }, { settings: 0 });
         res.json(projects);
