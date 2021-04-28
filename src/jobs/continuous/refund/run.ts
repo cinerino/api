@@ -26,7 +26,7 @@ export default async (params: {
             try {
                 await cinerino.service.task.executeByName({
                     project: params.project,
-                    name: cinerino.factory.taskName.Refund
+                    name: cinerino.factory.taskName.ConfirmRefund
                 })({
                     connection: connection
                 });

@@ -27,7 +27,7 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             yield cinerino.service.task.executeByName({
                 project: params.project,
-                name: cinerino.factory.taskName.MoneyTransfer
+                name: cinerino.factory.taskName.ConfirmMoneyTransfer
             })({
                 connection: connection
             });

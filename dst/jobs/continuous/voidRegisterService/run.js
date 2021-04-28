@@ -34,7 +34,7 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             yield cinerino.service.task.executeByName({
                 project: params.project,
-                name: cinerino.factory.taskName.VoidRegisterService
+                name: cinerino.factory.taskName.VoidRegisterServiceTransaction
             })({
                 connection: connection,
                 redisClient: redisClient

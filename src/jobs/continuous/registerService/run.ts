@@ -34,7 +34,7 @@ export default async (params: {
             try {
                 await cinerino.service.task.executeByName({
                     project: params.project,
-                    name: cinerino.factory.taskName.RegisterService
+                    name: cinerino.factory.taskName.ConfirmRegisterService
                 })({
                     connection: connection,
                     redisClient: redisClient
