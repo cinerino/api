@@ -216,7 +216,7 @@ projectsRouter.get(
                 projectIds = ['***NoProjects***'];
             }
 
-            const projects = await projectService.search(
+            const searchResult = await projectService.search(
                 {
                     ids: projectIds,
                     limit: limit,
@@ -224,7 +224,7 @@ projectsRouter.get(
                 }
             );
 
-            res.json(projects);
+            res.json(searchResult.data);
         } catch (error) {
             next(error);
         }
