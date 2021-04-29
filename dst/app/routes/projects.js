@@ -192,12 +192,12 @@ rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, 
         if (projectIds.length === 0) {
             projectIds = ['***NoProjects***'];
         }
-        const projects = yield projectService.search({
+        const searchResult = yield projectService.search({
             ids: projectIds,
             limit: limit,
             $projection: { settings: 0 }
         });
-        res.json(projects);
+        res.json(searchResult.data);
     }
     catch (error) {
         next(error);
