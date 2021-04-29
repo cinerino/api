@@ -59,14 +59,19 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
         .not()
         .isEmpty()
         .withMessage(() => 'orderNumber required')
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+], validator_1.default, 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         let order;
         let returnableOrder = req.body.object.order;
         const orderService = new cinerino.chevre.service.Order({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
@@ -136,7 +141,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
         })({
             action: actionRepo,
             order: orderService,
-            project: projectRepo,
+            project: projectService,
             transaction: transactionRepo
         });
         // tslint:disable-next-line:no-string-literal

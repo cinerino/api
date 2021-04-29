@@ -98,13 +98,17 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
     validateWaiterPassport,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
-            const startParams = await createStartParams(req)({ project: projectRepo });
+            const projectService = new cinerino.chevre.service.Project({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+
+            const startParams = await createStartParams(req)({ project: projectService });
 
             const transaction = await cinerino.service.transaction.placeOrderInProgress.start(startParams)({
-                project: projectRepo,
+                project: projectService,
                 transaction: transactionRepo
             });
 
@@ -120,7 +124,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
 
 function createStartParams(req: Request) {
     return async (repos: {
-        project: cinerino.repository.Project;
+        project: cinerino.chevre.service.Project;
     }): Promise<cinerino.service.transaction.placeOrderInProgress.IStartParams> => {
         const expires: Date = req.body.expires;
 

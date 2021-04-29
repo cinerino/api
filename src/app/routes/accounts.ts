@@ -8,7 +8,6 @@ import { body } from 'express-validator';
 import { NO_CONTENT } from 'http-status';
 import * as ioredis from 'ioredis';
 import * as moment from 'moment';
-import * as mongoose from 'mongoose';
 
 // import * as redis from '../../redis';
 
@@ -271,8 +270,6 @@ accountsRouter.post(
                 throw new cinerino.factory.errors.NotFound('Product');
             }
 
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
             const fromLocation: cinerino.chevre.factory.transaction.moneyTransfer.IFromLocation = {
                 typeOf: cinerino.factory.personType.Person,
                 name: (req.user.username !== undefined) ? req.user.username : req.user.sub,
@@ -307,9 +304,7 @@ accountsRouter.post(
                     description: description
                 },
                 recipient: recipient
-            })({
-                project: projectRepo
-            });
+            })({});
 
             res.status(NO_CONTENT)
                 .end();
@@ -325,18 +320,14 @@ export function deposit(params: {
     object: cinerino.chevre.factory.transaction.moneyTransfer.IObjectWithoutDetail;
     recipient: cinerino.chevre.factory.transaction.moneyTransfer.IRecipient;
 }) {
-    return async (repos: {
-        project: cinerino.repository.Project;
-    }) => {
+    return async (__: {}) => {
         try {
-            const project = await repos.project.findById({ id: params.project.id });
-
             const transactionNumberService = new cinerino.chevre.service.TransactionNumber({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
             const { transactionNumber } = await transactionNumberService.publish({
-                project: { id: project.id }
+                project: { id: params.project.id }
             });
 
             // Chevreで入金
@@ -347,7 +338,7 @@ export function deposit(params: {
 
             await moneyTransferService.start({
                 transactionNumber: transactionNumber,
-                project: { typeOf: project.typeOf, id: project.id },
+                project: { typeOf: cinerino.factory.chevre.organizationType.Project, id: params.project.id },
                 typeOf: cinerino.chevre.factory.transactionType.MoneyTransfer,
                 agent: params.agent,
                 expires: moment()

@@ -5,9 +5,9 @@ import { factory } from '@cinerino/domain';
  */
 export class APIError extends Error {
     public readonly code: number;
-    public readonly errors: factory.errors.Cinerino[];
+    public readonly errors: factory.errors.Chevre[];
 
-    constructor(code: number, errors: factory.errors.Cinerino[]) {
+    constructor(code: number, errors: factory.errors.Chevre[]) {
         const message = errors.map((error) => error.message)
             .join('\n');
         super(message);

@@ -64,16 +64,20 @@ returnOrderTransactionsRouter.post(
             .withMessage(() => 'orderNumber required')
     ],
     validator,
+    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
             let order: cinerino.factory.order.IOrder | undefined;
             let returnableOrder: cinerino.factory.transaction.returnOrder.IReturnableOrder[] = req.body.object.order;
 
             const orderService = new cinerino.chevre.service.Order({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
@@ -150,7 +154,7 @@ returnOrderTransactionsRouter.post(
             })({
                 action: actionRepo,
                 order: orderService,
-                project: projectRepo,
+                project: projectService,
                 transaction: transactionRepo
             });
 

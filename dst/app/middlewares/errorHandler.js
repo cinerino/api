@@ -23,12 +23,12 @@ exports.default = (err, req, res, next) => {
         if (Array.isArray(err)) {
             apiError = new api_1.APIError(cinerinoError2httpStatusCode(err[0]), err);
         }
-        else if (err instanceof cinerino.factory.errors.Cinerino) {
+        else if (err instanceof cinerino.factory.errors.Chevre) {
             apiError = new api_1.APIError(cinerinoError2httpStatusCode(err), [err]);
         }
         else {
             // 500
-            apiError = new api_1.APIError(http_status_1.INTERNAL_SERVER_ERROR, [new cinerino.factory.errors.Cinerino('InternalServerError', err.message)]);
+            apiError = new api_1.APIError(http_status_1.INTERNAL_SERVER_ERROR, [new cinerino.factory.errors.Chevre('InternalServerError', err.message)]);
         }
     }
     res.status(apiError.code)

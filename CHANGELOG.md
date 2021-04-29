@@ -63,6 +63,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文リポジトリを削除
 - 注文ダウンロードを削除
 - 所有権リポジトリを削除
+- プロジェクトリポジトリを削除
 
 ### Fixed
 

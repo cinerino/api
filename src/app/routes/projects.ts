@@ -84,9 +84,8 @@ projectsRouter.post(
     async (req, res, next) => {
         try {
             const memberRepo = new cinerino.repository.Member(mongoose.connection);
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
-            let project = createFromBody(req.body);
+            const project = createFromBody(req.body);
 
             let member;
 
@@ -110,8 +109,8 @@ projectsRouter.post(
             };
 
             // プロジェクト作成
-            project = await projectRepo.projectModel.create({ ...project, _id: project.id })
-                .then((doc) => doc.toObject());
+            // project = await projectRepo.projectModel.create({ ...project, _id: project.id })
+            //     .then((doc) => doc.toObject());
 
             // 権限作成
             await memberRepo.memberModel.create({
@@ -120,7 +119,7 @@ projectsRouter.post(
                 member: member
             });
 
-            // chevre連携
+            // chevreでプロジェクト作成
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
@@ -178,7 +177,10 @@ projectsRouter.get(
     async (req, res, next) => {
         try {
             const memberRepo = new cinerino.repository.Member(mongoose.connection);
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const projectService = new cinerino.chevre.service.Project({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
 
             // tslint:disable-next-line:no-magic-numbers
             const limit = (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100;
@@ -214,12 +216,12 @@ projectsRouter.get(
                 projectIds = ['***NoProjects***'];
             }
 
-            const projects = await projectRepo.search(
+            const projects = await projectService.search(
                 {
                     ids: projectIds,
-                    limit: limit
-                },
-                { settings: 0 }
+                    limit: limit,
+                    $projection: { settings: 0 }
+                }
             );
 
             res.json(projects);
@@ -228,6 +230,21 @@ projectsRouter.get(
         }
     }
 );
+
+/**
+ * プロジェクト検索
+ */
+// async function search(
+//     conditions: cinerino.factory.project.ISearchConditions,
+//     projection?: any
+// ): Promise<cinerino.factory.project.IProject[]> {
+//     const searchResult = await projectService.search({
+//         ...conditions,
+//         ...(projection !== undefined && projection !== null) ? { $projection: projection } : undefined
+//     });
+
+//     return searchResult.data;
+// }
 
 /**
  * プロジェクト取得
@@ -239,12 +256,18 @@ projectsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            const projectService = new cinerino.chevre.service.Project({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
 
             const projection: any = (req.memberPermissions.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/projects.settings.read`) >= 0)
                 ? undefined
                 : { settings: 0 };
-            const project = await projectRepo.findById({ id: req.project.id }, projection);
+            const project = await projectService.findById({
+                id: req.project.id,
+                ...(projection !== undefined) ? { $projection: projection } : undefined
+            });
 
             res.json({
                 ...project,
@@ -278,58 +301,63 @@ projectsRouter.patch(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-
-            const project = <cinerino.factory.project.IProject>await projectRepo.projectModel.findOneAndUpdate(
-                { _id: req.project.id },
-                {
-                    updatedAt: new Date(),
-                    ...(typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined,
-                    ...(typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined,
-                    ...(typeof req.body.settings?.sendgridApiKey === 'string')
-                        ? { 'settings.sendgridApiKey': req.body.settings.sendgridApiKey }
-                        : undefined,
-                    ...(Array.isArray(req.body.settings?.onOrderStatusChanged?.informOrder))
-                        ? { 'settings.onOrderStatusChanged.informOrder': req.body.settings.onOrderStatusChanged.informOrder }
-                        : undefined,
-                    // 機能改修で不要になった属性を削除
-                    $unset: {
-                        'settings.chevre': 1,
-                        'settings.codeExpiresInSeconds': 1,
-                        'settings.gmo': 1,
-                        'settings.mvtkReserve': 1,
-                        'settings.pecorino': 1,
-                        'settings.emailInformUpdateProgrammembership': 1,
-                        'settings.transactionWebhookUrl': 1,
-                        'settings.useInMemoryOfferRepo': 1,
-                        'settings.useReservationNumberAsConfirmationNumber': 1
-                    }
-                },
-                {
-                    new: true
-                }
-            )
-                .exec()
-                .then((doc) => {
-                    if (doc === null) {
-                        throw new cinerino.factory.errors.NotFound('Project');
-
-                    }
-
-                    return doc.toObject();
-                });
-
-            // chevre連携
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
+
+            let project = await projectService.findById({ id: req.project.id });
+            project = {
+                ...project,
+                ...(typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined,
+                ...(typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined,
+                settings: {
+                    ...project.settings,
+                    ...(typeof req.body.settings?.sendgridApiKey === 'string')
+                        ? { sendgridApiKey: req.body.settings.sendgridApiKey }
+                        : undefined,
+                    onOrderStatusChanged: {
+                        ...project.settings?.onOrderStatusChanged,
+                        ...(Array.isArray(req.body.settings?.onOrderStatusChanged?.informOrder))
+                            ? { informOrder: req.body.settings.onOrderStatusChanged.informOrder }
+                            : undefined
+                    }
+                }
+            };
+            // const project = <cinerino.factory.project.IProject>await projectRepo.projectModel.findOneAndUpdate(
+            //     { _id: req.project.id },
+            //     {
+            //         updatedAt: new Date(),
+            //         ...(typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined,
+            //         ...(typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined,
+            //         ...(typeof req.body.settings?.sendgridApiKey === 'string')
+            //             ? { 'settings.sendgridApiKey': req.body.settings.sendgridApiKey }
+            //             : undefined,
+            //         ...(Array.isArray(req.body.settings?.onOrderStatusChanged?.informOrder))
+            //             ? { 'settings.onOrderStatusChanged.informOrder': req.body.settings.onOrderStatusChanged.informOrder }
+            //             : undefined,
+            //     },
+            //     {
+            //         new: true
+            //     }
+            // )
+            //     .exec()
+            //     .then((doc) => {
+            //         if (doc === null) {
+            //             throw new cinerino.factory.errors.NotFound('Project');
+
+            //         }
+
+            //         return doc.toObject();
+            //     });
+
+            // chevre連携
             await projectService.update({
                 typeOf: cinerino.factory.chevre.organizationType.Project,
                 id: project.id,
                 logo: project.logo,
                 name: (typeof project.name === 'string') ? project.name : undefined,
-                settings: <any>project.settings
+                settings: project.settings
             });
 
             res.status(NO_CONTENT)
@@ -350,8 +378,11 @@ projectsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
+            const projectService = new cinerino.chevre.service.Project({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const project = await projectService.findById({ id: req.project.id });
 
             res.json({
                 ...project.settings,

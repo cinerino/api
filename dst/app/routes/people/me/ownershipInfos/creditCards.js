@@ -15,10 +15,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
-const mongoose = require("mongoose");
 const permitScopes_1 = require("../../../../middlewares/permitScopes");
 const rateLimit_1 = require("../../../../middlewares/rateLimit");
 const validator_1 = require("../../../../middlewares/validator");
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 function checkUseMyCreditCards(project) {
     var _a;
     if (((_a = project.settings) === null || _a === void 0 ? void 0 : _a.useMyCreditCards) !== true) {
@@ -32,8 +38,11 @@ const creditCardsRouter = express_1.Router();
 creditCardsRouter.post('', permitScopes_1.default(['people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
+        const projectService = new cinerino.chevre.service.Project({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const project = yield projectService.findById({ id: req.project.id });
         checkUseMyCreditCards(project);
         const credentials = yield cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
             project: { id: req.project.id },
@@ -63,8 +72,11 @@ creditCardsRouter.post('', permitScopes_1.default(['people.me.*']), rateLimit_1.
 creditCardsRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _b;
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
+        const projectService = new cinerino.chevre.service.Project({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const project = yield projectService.findById({ id: req.project.id });
         checkUseMyCreditCards(project);
         const credentials = yield cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
             project: { id: req.project.id },
@@ -90,8 +102,11 @@ creditCardsRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_1.d
 creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _c;
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
+        const projectService = new cinerino.chevre.service.Project({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const project = yield projectService.findById({ id: req.project.id });
         checkUseMyCreditCards(project);
         const credentials = yield cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
             project: { id: req.project.id },

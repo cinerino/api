@@ -33,8 +33,11 @@ peopleRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
+            const projectService = new cinerino.chevre.service.Project({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const project = await projectService.findById({ id: req.project.id });
             if (project.settings?.cognito === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
@@ -68,8 +71,11 @@ peopleRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
+            const projectService = new cinerino.chevre.service.Project({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const project = await projectService.findById({ id: req.project.id });
             if (project.settings?.cognito === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
@@ -97,8 +103,11 @@ peopleRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
+            const projectService = new cinerino.chevre.service.Project({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const project = await projectService.findById({ id: req.project.id });
             if (project.settings?.cognito === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
@@ -171,7 +180,7 @@ peopleRouter.delete(
                 action: actionRepo,
                 creditCard: creditCardRepo,
                 person: personRepo,
-                project: projectRepo,
+                project: projectService,
                 task: taskRepo
             });
 
@@ -281,8 +290,11 @@ peopleRouter.get(
     rateLimit,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
+            const projectService = new cinerino.chevre.service.Project({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const project = await projectService.findById({ id: req.project.id });
             if (project.settings?.cognito === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
@@ -334,8 +346,11 @@ peopleRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
+            const projectService = new cinerino.chevre.service.Project({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const project = await projectService.findById({ id: req.project.id });
             if (project.settings?.cognito === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
@@ -390,8 +405,11 @@ peopleRouter.get(
     rateLimit,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
+            const projectService = new cinerino.chevre.service.Project({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const project = await projectService.findById({ id: req.project.id });
             if (project.settings?.cognito === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
@@ -433,8 +451,11 @@ peopleRouter.patch(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
+            const projectService = new cinerino.chevre.service.Project({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const project = await projectService.findById({ id: req.project.id });
             if (project.settings?.cognito === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }

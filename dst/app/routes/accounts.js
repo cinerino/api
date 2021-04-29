@@ -20,7 +20,6 @@ const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const ioredis = require("ioredis");
 const moment = require("moment");
-const mongoose = require("mongoose");
 // import * as redis from '../../redis';
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
@@ -234,7 +233,6 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['accounts.t
         if (product === undefined) {
             throw new cinerino.factory.errors.NotFound('Product');
         }
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const fromLocation = Object.assign(Object.assign({ typeOf: cinerino.factory.personType.Person, name: (req.user.username !== undefined) ? req.user.username : req.user.sub }, req.body.agent), { id: req.user.sub });
         const toLocation = {
             typeOf: String((_h = product.serviceOutput) === null || _h === void 0 ? void 0 : _h.typeOf),
@@ -257,9 +255,7 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['accounts.t
                 description: description
             },
             recipient: recipient
-        })({
-            project: projectRepo
-        });
+        })({});
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
@@ -268,15 +264,14 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['accounts.t
     }
 }));
 function deposit(params) {
-    return (repos) => __awaiter(this, void 0, void 0, function* () {
+    return (__) => __awaiter(this, void 0, void 0, function* () {
         try {
-            const project = yield repos.project.findById({ id: params.project.id });
             const transactionNumberService = new cinerino.chevre.service.TransactionNumber({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
             const { transactionNumber } = yield transactionNumberService.publish({
-                project: { id: project.id }
+                project: { id: params.project.id }
             });
             // Chevreで入金
             const moneyTransferService = new cinerino.chevre.service.transaction.MoneyTransfer({
@@ -285,7 +280,7 @@ function deposit(params) {
             });
             yield moneyTransferService.start({
                 transactionNumber: transactionNumber,
-                project: { typeOf: project.typeOf, id: project.id },
+                project: { typeOf: cinerino.factory.chevre.organizationType.Project, id: params.project.id },
                 typeOf: cinerino.chevre.factory.transactionType.MoneyTransfer,
                 agent: params.agent,
                 expires: moment()

@@ -35,11 +35,11 @@ export default (err: any, req: Request, res: Response, next: NextFunction) => {
         // エラー配列が入ってくることもある
         if (Array.isArray(err)) {
             apiError = new APIError(cinerinoError2httpStatusCode(err[0]), err);
-        } else if (err instanceof cinerino.factory.errors.Cinerino) {
+        } else if (err instanceof cinerino.factory.errors.Chevre) {
             apiError = new APIError(cinerinoError2httpStatusCode(err), [err]);
         } else {
             // 500
-            apiError = new APIError(INTERNAL_SERVER_ERROR, [new cinerino.factory.errors.Cinerino(<any>'InternalServerError', err.message)]);
+            apiError = new APIError(INTERNAL_SERVER_ERROR, [new cinerino.factory.errors.Chevre(<any>'InternalServerError', err.message)]);
         }
     }
 
@@ -52,7 +52,7 @@ export default (err: any, req: Request, res: Response, next: NextFunction) => {
 /**
  * 内部エラーをHTTPステータスコードへ変換する
  */
-function cinerinoError2httpStatusCode(err: cinerino.factory.errors.Cinerino) {
+function cinerinoError2httpStatusCode(err: cinerino.factory.errors.Chevre) {
     let statusCode = BAD_REQUEST;
 
     switch (true) {

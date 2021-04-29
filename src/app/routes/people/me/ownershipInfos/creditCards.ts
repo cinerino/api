@@ -4,11 +4,18 @@
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import { CREATED, NO_CONTENT } from 'http-status';
-import * as mongoose from 'mongoose';
 
 import permitScopes from '../../../../middlewares/permitScopes';
 import rateLimit from '../../../../middlewares/rateLimit';
 import validator from '../../../../middlewares/validator';
+
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 
 function checkUseMyCreditCards(project: cinerino.factory.project.IProject) {
     if (project.settings?.useMyCreditCards !== true) {
@@ -28,8 +35,11 @@ creditCardsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
+            const projectService = new cinerino.chevre.service.Project({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const project = await projectService.findById({ id: req.project.id });
 
             checkUseMyCreditCards(project);
 
@@ -67,8 +77,11 @@ creditCardsRouter.get(
     rateLimit,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
+            const projectService = new cinerino.chevre.service.Project({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const project = await projectService.findById({ id: req.project.id });
 
             checkUseMyCreditCards(project);
 
@@ -103,8 +116,11 @@ creditCardsRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
+            const projectService = new cinerino.chevre.service.Project({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient
+            });
+            const project = await projectService.findById({ id: req.project.id });
 
             checkUseMyCreditCards(project);
 

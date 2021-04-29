@@ -23,6 +23,13 @@ const validator_1 = require("../../middlewares/validator");
 const me_1 = require("./members/me");
 const iam_1 = require("../../iam");
 const ADMIN_USER_POOL_ID = process.env.ADMIN_USER_POOL_ID;
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
     apiVersion: 'latest',
     region: 'ap-northeast-1',
@@ -75,8 +82,11 @@ iamMembersRouter.post('', permitScopes_1.default(['iam.members.write']), rateLim
     var _a, _b, _c, _d;
     try {
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
+        const projectService = new cinerino.chevre.service.Project({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const project = yield projectService.findById({ id: req.project.id });
         if (((_a = project.settings) === null || _a === void 0 ? void 0 : _a.cognito) === undefined) {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
         }
