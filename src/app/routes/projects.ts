@@ -128,7 +128,9 @@ projectsRouter.post(
                 typeOf: cinerino.factory.chevre.organizationType.Project,
                 id: project.id,
                 logo: project.logo,
-                name: (typeof project.name === 'string') ? project.name : undefined
+                name: (typeof project.name === 'string') ? project.name : undefined,
+                parentOrganization: project.parentOrganization,
+                settings: project.settings
             });
 
             res.status(CREATED)

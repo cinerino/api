@@ -121,7 +121,9 @@ rateLimit_1.default, ...[
             typeOf: cinerino.factory.chevre.organizationType.Project,
             id: project.id,
             logo: project.logo,
-            name: (typeof project.name === 'string') ? project.name : undefined
+            name: (typeof project.name === 'string') ? project.name : undefined,
+            parentOrganization: project.parentOrganization,
+            settings: project.settings
         });
         res.status(http_status_1.CREATED)
             .json(project);
