@@ -72,24 +72,6 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.*', 'reservatio
     }
 }));
 /**
- * ストリーミングダウンロード
- */
-reservationsRouter.get('/download', permitScopes_1.default([]), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        // クエリをそのままChevre検索へパス
-        const reservationService = new cinerino.chevre.service.Reservation({
-            endpoint: process.env.CHEVRE_STREAMING_API_ENDPOINT,
-            auth: chevreAuthClient
-        });
-        const stream = yield reservationService.download(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] } }));
-        res.type(`${req.query.format}; charset=utf-8`);
-        stream.pipe(res);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-/**
  * トークンで予約を使用する
  */
 reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 'reservations.findByToken']), rateLimit_1.default, ...[

@@ -83,34 +83,6 @@ reservationsRouter.get(
 );
 
 /**
- * ストリーミングダウンロード
- */
-reservationsRouter.get(
-    '/download',
-    permitScopes([]),
-    rateLimit,
-    validator,
-    async (req, res, next) => {
-        try {
-            // クエリをそのままChevre検索へパス
-            const reservationService = new cinerino.chevre.service.Reservation({
-                endpoint: <string>process.env.CHEVRE_STREAMING_API_ENDPOINT,
-                auth: chevreAuthClient
-            });
-            const stream = <NodeJS.ReadableStream>await reservationService.download({
-                ...req.query,
-                project: { ids: [req.project.id] }
-            });
-
-            res.type(`${req.query.format}; charset=utf-8`);
-            stream.pipe(res);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
  * トークンで予約を使用する
  */
 reservationsRouter.post(

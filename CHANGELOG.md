@@ -66,6 +66,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 所有権リポジトリを削除
 - プロジェクトリポジトリを削除
 - 決済方法ルーターを削除
+- 予約ダウンロードを削除
+- 注文取引ダウンロードを削除
 
 ### Fixed
 

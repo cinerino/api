@@ -19,7 +19,6 @@ import validator from '../../middlewares/validator';
 
 import placeOrder4cinemasunshineRouter from './placeOrder4cinemasunshine';
 
-import { connectMongo } from '../../../connectMongo';
 import * as redis from '../../../redis';
 
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
@@ -795,80 +794,6 @@ placeOrderTransactionsRouter.get(
             });
             res.json(actions);
         } catch (error) {
-            next(error);
-        }
-    }
-);
-
-/**
- * 取引レポート
- */
-placeOrderTransactionsRouter.get(
-    '/report',
-    permitScopes([]),
-    rateLimit,
-    ...[
-        query('startFrom')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('startThrough')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('endFrom')
-            .optional()
-            .isISO8601()
-            .toDate(),
-        query('endThrough')
-            .optional()
-            .isISO8601()
-            .toDate()
-    ],
-    validator,
-    async (req, res, next) => {
-        let connection: mongoose.Connection | undefined;
-
-        try {
-            connection = await connectMongo({
-                defaultConnection: false,
-                disableCheck: true
-            });
-            const transactionRepo = new cinerino.repository.Transaction(connection);
-
-            const searchConditions: cinerino.factory.transaction.ISearchConditions<cinerino.factory.transactionType.PlaceOrder> = {
-                ...req.query,
-                project: { id: { $eq: req.project.id } },
-                // tslint:disable-next-line:no-magic-numbers
-                limit: undefined,
-                page: undefined,
-                typeOf: cinerino.factory.transactionType.PlaceOrder
-            };
-
-            const format = req.query.format;
-
-            const stream = await cinerino.service.report.transaction.stream({
-                conditions: searchConditions,
-                format: format
-            })({ transaction: transactionRepo });
-
-            res.type(`${req.query.format}; charset=utf-8`);
-            stream.pipe(res)
-                .on('error', async () => {
-                    if (connection !== undefined) {
-                        await connection.close();
-                    }
-                })
-                .on('finish', async () => {
-                    if (connection !== undefined) {
-                        await connection.close();
-                    }
-                });
-        } catch (error) {
-            if (connection !== undefined) {
-                await connection.close();
-            }
-
             next(error);
         }
     }
