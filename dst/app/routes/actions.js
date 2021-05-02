@@ -20,6 +20,13 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const actionsRouter = express_1.Router();
 /**
  * アクション検索
@@ -35,12 +42,19 @@ actionsRouter.get('', permitScopes_1.default(['actions.*', 'actions.read']), rat
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        // const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const actions = yield actionRepo.search(searchConditions);
-        res.json(actions);
+        // const actions = await actionRepo.search(searchConditions);
+        // res.json(actions);
+        // chevreで検索
+        const actionService = new cinerino.chevre.service.Action({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient
+        });
+        const { data } = yield actionService.search(searchConditions);
+        res.json(data);
     }
     catch (error) {
         next(error);

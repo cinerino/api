@@ -49,6 +49,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - USE_CHEVRE_SEARCH_PROJECT設定を追加
 - プロジェクト編集時にchevre連携
 - chevreと重複するタスク名をrename
+- アクション検索をchevreで実装
 
 ### Deprecated
 
