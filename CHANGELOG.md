@@ -51,6 +51,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - chevreと重複するタスク名をrename
 - アクション検索をchevreで実装
 - 資産取引を再定義したchevreで再構築
+- プロジェクトのparentOrganizationを廃止
 
 ### Deprecated
 

@@ -61,21 +61,21 @@ rateLimit_1.default, ...[
         .isEmpty()
         .withMessage(() => 'required')
         .isURL(),
-    express_validator_1.body('parentOrganization.typeOf')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-        .isString(),
-    express_validator_1.body('parentOrganization.name.ja')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-        .isString(),
-    express_validator_1.body('parentOrganization.name.en')
-        .not()
-        .isEmpty()
-        .withMessage(() => 'required')
-        .isString(),
+    // body('parentOrganization.typeOf')
+    //     .not()
+    //     .isEmpty()
+    //     .withMessage(() => 'required')
+    //     .isString(),
+    // body('parentOrganization.name.ja')
+    //     .not()
+    //     .isEmpty()
+    //     .withMessage(() => 'required')
+    //     .isString(),
+    // body('parentOrganization.name.en')
+    //     .not()
+    //     .isEmpty()
+    //     .withMessage(() => 'required')
+    //     .isString(),
     express_validator_1.body('settings.cognito.customerUserPool.id')
         .not()
         .isEmpty()
@@ -122,7 +122,7 @@ rateLimit_1.default, ...[
             id: project.id,
             logo: project.logo,
             name: (typeof project.name === 'string') ? project.name : undefined,
-            parentOrganization: project.parentOrganization,
+            // parentOrganization: project.parentOrganization,
             settings: project.settings
         });
         res.status(http_status_1.CREATED)
@@ -139,7 +139,7 @@ function createFromBody(params) {
         typeOf: params.typeOf,
         logo: params.logo,
         name: params.name,
-        parentOrganization: params.parentOrganization,
+        // parentOrganization: params.parentOrganization,
         settings: Object.assign({ cognito: {
                 customerUserPool: {
                     id: (_c = (_b = (_a = params.settings) === null || _a === void 0 ? void 0 : _a.cognito) === null || _b === void 0 ? void 0 : _b.customerUserPool) === null || _c === void 0 ? void 0 : _c.id

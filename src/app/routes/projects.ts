@@ -59,21 +59,21 @@ projectsRouter.post(
             .isEmpty()
             .withMessage(() => 'required')
             .isURL(),
-        body('parentOrganization.typeOf')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-            .isString(),
-        body('parentOrganization.name.ja')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-            .isString(),
-        body('parentOrganization.name.en')
-            .not()
-            .isEmpty()
-            .withMessage(() => 'required')
-            .isString(),
+        // body('parentOrganization.typeOf')
+        //     .not()
+        //     .isEmpty()
+        //     .withMessage(() => 'required')
+        //     .isString(),
+        // body('parentOrganization.name.ja')
+        //     .not()
+        //     .isEmpty()
+        //     .withMessage(() => 'required')
+        //     .isString(),
+        // body('parentOrganization.name.en')
+        //     .not()
+        //     .isEmpty()
+        //     .withMessage(() => 'required')
+        //     .isString(),
         body('settings.cognito.customerUserPool.id')
             .not()
             .isEmpty()
@@ -129,7 +129,7 @@ projectsRouter.post(
                 id: project.id,
                 logo: project.logo,
                 name: (typeof project.name === 'string') ? project.name : undefined,
-                parentOrganization: project.parentOrganization,
+                // parentOrganization: project.parentOrganization,
                 settings: project.settings
             });
 
@@ -147,7 +147,7 @@ function createFromBody(params: any): cinerino.factory.project.IProject {
         typeOf: params.typeOf,
         logo: params.logo,
         name: params.name,
-        parentOrganization: params.parentOrganization,
+        // parentOrganization: params.parentOrganization,
         settings: {
             cognito: {
                 customerUserPool: {
