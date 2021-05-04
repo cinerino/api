@@ -47,7 +47,7 @@ movieTicketPaymentRouter.post(
                 paymentMethodType = cinerino.factory.paymentMethodType.MovieTicket;
             }
 
-            const payService = new cinerino.chevre.service.transaction.Pay({
+            const payService = new cinerino.chevre.service.assetTransaction.Pay({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });

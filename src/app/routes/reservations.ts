@@ -292,13 +292,13 @@ reservationsRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const cancelReservationService = new cinerino.chevre.service.transaction.CancelReservation({
+            const cancelReservationService = new cinerino.chevre.service.assetTransaction.CancelReservation({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
             await cancelReservationService.startAndConfirm({
                 project: { typeOf: req.project.typeOf, id: req.project.id },
-                typeOf: cinerino.factory.chevre.transactionType.CancelReservation,
+                typeOf: cinerino.factory.chevre.assetTransactionType.CancelReservation,
                 expires: moment()
                     .add(1, 'minute')
                     .toDate(),

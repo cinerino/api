@@ -270,19 +270,19 @@ accountsRouter.post(
                 throw new cinerino.factory.errors.NotFound('Product');
             }
 
-            const fromLocation: cinerino.chevre.factory.transaction.moneyTransfer.IFromLocation = {
+            const fromLocation: cinerino.chevre.factory.assetTransaction.moneyTransfer.IFromLocation = {
                 typeOf: cinerino.factory.personType.Person,
                 name: (req.user.username !== undefined) ? req.user.username : req.user.sub,
                 ...req.body.agent,
                 id: req.user.sub
             };
 
-            const toLocation: cinerino.chevre.factory.transaction.moneyTransfer.IToLocation = {
+            const toLocation: cinerino.chevre.factory.assetTransaction.moneyTransfer.IToLocation = {
                 typeOf: String(product.serviceOutput?.typeOf),
                 identifier: req.body.object?.toLocation?.accountNumber
             };
 
-            const recipient: cinerino.chevre.factory.transaction.moneyTransfer.IRecipient = {
+            const recipient: cinerino.chevre.factory.assetTransaction.moneyTransfer.IRecipient = {
                 typeOf: cinerino.factory.personType.Person,
                 ...req.body.recipient
             };
@@ -316,9 +316,9 @@ accountsRouter.post(
 
 export function deposit(params: {
     project: cinerino.factory.project.IProject;
-    agent: cinerino.chevre.factory.transaction.moneyTransfer.IAgent;
-    object: cinerino.chevre.factory.transaction.moneyTransfer.IObjectWithoutDetail;
-    recipient: cinerino.chevre.factory.transaction.moneyTransfer.IRecipient;
+    agent: cinerino.chevre.factory.assetTransaction.moneyTransfer.IAgent;
+    object: cinerino.chevre.factory.assetTransaction.moneyTransfer.IObjectWithoutDetail;
+    recipient: cinerino.chevre.factory.assetTransaction.moneyTransfer.IRecipient;
 }) {
     return async (__: {}) => {
         try {
@@ -331,7 +331,7 @@ export function deposit(params: {
             });
 
             // Chevreで入金
-            const moneyTransferService = new cinerino.chevre.service.transaction.MoneyTransfer({
+            const moneyTransferService = new cinerino.chevre.service.assetTransaction.MoneyTransfer({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
@@ -339,7 +339,7 @@ export function deposit(params: {
             await moneyTransferService.start({
                 transactionNumber: transactionNumber,
                 project: { typeOf: cinerino.factory.chevre.organizationType.Project, id: params.project.id },
-                typeOf: cinerino.chevre.factory.transactionType.MoneyTransfer,
+                typeOf: cinerino.chevre.factory.assetTransactionType.MoneyTransfer,
                 agent: params.agent,
                 expires: moment()
                     .add(1, 'minutes')

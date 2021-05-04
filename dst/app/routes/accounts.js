@@ -274,14 +274,14 @@ function deposit(params) {
                 project: { id: params.project.id }
             });
             // Chevreで入金
-            const moneyTransferService = new cinerino.chevre.service.transaction.MoneyTransfer({
+            const moneyTransferService = new cinerino.chevre.service.assetTransaction.MoneyTransfer({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient
             });
             yield moneyTransferService.start({
                 transactionNumber: transactionNumber,
                 project: { typeOf: cinerino.factory.chevre.organizationType.Project, id: params.project.id },
-                typeOf: cinerino.chevre.factory.transactionType.MoneyTransfer,
+                typeOf: cinerino.chevre.factory.assetTransactionType.MoneyTransfer,
                 agent: params.agent,
                 expires: moment()
                     .add(1, 'minutes')

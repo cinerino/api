@@ -266,7 +266,7 @@ async function validateFromLocation(req: Request): Promise<{
             });
             // identifier: identifier,
         } else {
-            fromLocation = <cinerino.factory.action.transfer.moneyTransfer.IPaymentCard>fromLocation;
+            fromLocation = <cinerino.factory.action.interact.confirm.moneyTransfer.IPaymentCard>fromLocation;
 
             const accessCode = fromLocation.accessCode;
             if (typeof accessCode === 'string') {

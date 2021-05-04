@@ -235,13 +235,13 @@ reservationsRouter.get('/:id/actions/use', permitScopes_1.default(['reservations
  */
 reservationsRouter.put('/cancel', permitScopes_1.default(['reservations.*', 'reservations.cancel']), validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const cancelReservationService = new cinerino.chevre.service.transaction.CancelReservation({
+        const cancelReservationService = new cinerino.chevre.service.assetTransaction.CancelReservation({
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient
         });
         yield cancelReservationService.startAndConfirm({
             project: { typeOf: req.project.typeOf, id: req.project.id },
-            typeOf: cinerino.factory.chevre.transactionType.CancelReservation,
+            typeOf: cinerino.factory.chevre.assetTransactionType.CancelReservation,
             expires: moment()
                 .add(1, 'minute')
                 .toDate(),
