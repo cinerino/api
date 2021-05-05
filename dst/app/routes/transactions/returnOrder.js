@@ -69,11 +69,13 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
         let returnableOrder = req.body.object.order;
         const orderService = new cinerino.chevre.service.Order({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         // APIユーザーが管理者の場合、顧客情報を自動取得
         if (req.isAdmin) {
@@ -221,7 +223,8 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const orderService = new cinerino.chevre.service.Order({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         yield cinerino.service.transaction.returnOrder.confirm(Object.assign(Object.assign({}, req.body), { id: req.params.transactionId, agent: { id: req.user.sub } }))({
             action: actionRepo,

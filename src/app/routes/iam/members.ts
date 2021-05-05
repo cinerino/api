@@ -89,7 +89,8 @@ iamMembersRouter.post(
 
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: '' }
             });
             const project = await projectService.findById({ id: req.project.id });
             if (project.settings?.cognito === undefined) {

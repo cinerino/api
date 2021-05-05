@@ -32,7 +32,8 @@ movieRouter.get('', permitScopes_1.default(['creativeWorks.*', 'creativeWorks.re
     try {
         const creativeWorkService = new cinerino.chevre.service.CreativeWork({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const { data } = yield creativeWorkService.searchMovies(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] } }));
         res.json(data);

@@ -105,7 +105,8 @@ productOffersRouter.post<ParamsDictionary>(
         try {
             const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             const actionObject: cinerino.factory.action.authorize.offer.product.IObject = (<any[]>req.body.object).map((o) => {

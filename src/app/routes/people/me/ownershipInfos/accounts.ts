@@ -52,7 +52,8 @@ accountsRouter.post<ParamsDictionary>(
 
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: '' }
             });
             const project = await projectService.findById({ id: req.project.id });
             if (typeof project.settings?.cognito?.customerUserPool?.id !== 'string') {
@@ -64,7 +65,8 @@ accountsRouter.post<ParamsDictionary>(
 
             const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             const result = await cinerino.service.transaction.orderAccount.orderAccount({
@@ -127,7 +129,8 @@ accountsRouter.put(
         try {
             const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             await cinerino.service.account.close({
@@ -165,7 +168,8 @@ accountsRouter.get(
         try {
             const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             let actions = await cinerino.service.account.searchMoneyTransferActions({

@@ -50,7 +50,8 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
         const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         const project = yield projectService.findById({ id: req.project.id });
         if (typeof ((_c = (_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.cognito) === null || _b === void 0 ? void 0 : _b.customerUserPool) === null || _c === void 0 ? void 0 : _c.id) !== 'string') {
@@ -61,7 +62,8 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
         });
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const result = yield cinerino.service.transaction.orderAccount.orderAccount({
             project: { typeOf: project.typeOf, id: project.id },
@@ -115,7 +117,8 @@ accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(
     try {
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         yield cinerino.service.account.close({
             project: req.project,
@@ -144,7 +147,8 @@ accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default(['people.me.
     try {
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         let actions = yield cinerino.service.account.searchMoneyTransferActions({
             project: req.project,

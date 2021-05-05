@@ -30,7 +30,8 @@ customersRouter.get(
         try {
             const customerService = new cinerino.chevre.service.Customer({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             const { data } = await customerService.search({
@@ -57,7 +58,8 @@ customersRouter.get(
         try {
             const customerService = new cinerino.chevre.service.Customer({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             const customer = await customerService.findById({ id: req.params.id });

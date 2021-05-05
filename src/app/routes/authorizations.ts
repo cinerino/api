@@ -38,7 +38,8 @@ authorizationsRouter.get(
 
             const authorizationService = new cinerino.chevre.service.Authorization({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const { data } = await authorizationService.search(searchConditions);
 

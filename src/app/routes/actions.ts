@@ -58,7 +58,8 @@ actionsRouter.get(
             // chevreで検索
             const actionService = new cinerino.chevre.service.Action({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             const { data } = await actionService.search(<any>searchConditions);

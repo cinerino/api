@@ -44,7 +44,8 @@ ownershipInfosRouter.get(
         try {
             const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             const typeOfGood = (req.query.typeOfGood !== undefined && req.query.typeOfGood !== null) ? req.query.typeOfGood : {};
@@ -99,7 +100,8 @@ ownershipInfosRouter.get(
 
             const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             // const andConditions: any[] = [

@@ -56,7 +56,8 @@ ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_
     try {
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const searchPaymentCardProductsResult = yield productService.search({
             limit: 100,
@@ -71,7 +72,8 @@ ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, ownedBy: { id: req.user.sub } });
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const typeOfGood = req.query.typeOfGood;
         switch (true) {
@@ -108,7 +110,8 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['people.me.*
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const searchOwnershipInfosResult = yield ownershipInfoService.search({
             limit: 1,
@@ -140,7 +143,8 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['people.me.*
         if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
             const reservationService = new cinerino.chevre.service.Reservation({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             yield reservationService.checkInScreeningEventReservations({
                 id: ownershipInfo.typeOfGood.id

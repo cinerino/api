@@ -96,7 +96,8 @@ productOffersRouter.post('/authorize', permitScopes_1.default(['transactions']),
     try {
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const actionObject = req.body.object.map((o) => {
             var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;

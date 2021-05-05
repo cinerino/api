@@ -46,7 +46,8 @@ productsRouter.get(
 
             const productService = new cinerino.chevre.service.Product({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const { data } = await productService.search({
                 ...searchConditions,

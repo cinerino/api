@@ -44,7 +44,8 @@ serviceOutputsRouter.get(
 
             const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const { data } = await serviceOutputService.search(searchConditions);
 

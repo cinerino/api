@@ -40,7 +40,8 @@ serviceOutputsRouter.get('', permitScopes_1.default(['serviceOutputs.*', 'servic
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined });
         const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const { data } = yield serviceOutputService.search(searchConditions);
         res.json(data);

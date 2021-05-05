@@ -39,7 +39,8 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/:identifier/unReg
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         // 現在所有している会員プログラムを全て検索
         const now = new Date();

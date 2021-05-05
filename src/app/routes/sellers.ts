@@ -30,7 +30,8 @@ sellersRouter.get(
         try {
             const sellerService = new cinerino.chevre.service.Seller({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             // location.branchCodesをadditionalPropertyに自動変換
@@ -70,7 +71,8 @@ sellersRouter.get(
         try {
             const sellerService = new cinerino.chevre.service.Seller({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             const seller = await sellerService.findById({ id: req.params.id });

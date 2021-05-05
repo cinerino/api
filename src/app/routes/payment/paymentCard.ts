@@ -42,7 +42,8 @@ paymentCardPaymentRouter.post(
         try {
             const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const searchPaymentCardResult = await serviceOutputService.search({
                 limit: 1,
@@ -140,7 +141,8 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
 
             const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             let paymentCard: cinerino.factory.action.authorize.paymentMethod.any.IPaymentCard | undefined;
@@ -171,7 +173,8 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
                         // アクセスコード情報があれば、認証
                         const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
                             endpoint: cinerino.credentials.chevre.endpoint,
-                            auth: chevreAuthClient
+                            auth: chevreAuthClient,
+                            project: { id: req.project.id }
                         });
                         const searchPaymentCardResult = await serviceOutputService.search({
                             limit: 1,

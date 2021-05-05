@@ -51,7 +51,8 @@ actionsRouter.get('', permitScopes_1.default(['actions.*', 'actions.read']), rat
         // chevreで検索
         const actionService = new cinerino.chevre.service.Action({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const { data } = yield actionService.search(searchConditions);
         res.json(data);

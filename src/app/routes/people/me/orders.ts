@@ -51,7 +51,8 @@ ordersRouter.get(
         try {
             const orderService = new cinerino.chevre.service.Order({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const searchConditions: cinerino.factory.order.ISearchConditions = {
                 ...req.query,

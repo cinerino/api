@@ -83,7 +83,8 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
     try {
         const eventService = new cinerino.chevre.service.Event({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
             // tslint:disable-next-line:no-magic-numbers
@@ -103,7 +104,8 @@ eventsRouter.get('/:id', permitScopes_1.default(['events.*', 'events.read']), ra
         let event;
         const eventService = new cinerino.chevre.service.Event({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         event = yield eventService.findById({ id: req.params.id });
         res.json(event);
@@ -125,7 +127,8 @@ eventsRouter.patch('/:id', permitScopes_1.default(['events.*', 'events.update'])
     try {
         const eventService = new cinerino.chevre.service.Event({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const event = yield eventService.findById({ id: req.params.id });
         yield eventService.updatePartially({
@@ -194,7 +197,8 @@ eventsRouter.get('/:id/seats', permitScopes_1.default(['events.*', 'events.read'
     try {
         const eventService = new cinerino.chevre.service.Event({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const seats = yield eventService.searchSeats(Object.assign(Object.assign({}, req.query), { id: req.params.id, 
             // 試しに冗長な情報を非取得にしてみる

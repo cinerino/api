@@ -75,11 +75,13 @@ returnOrderTransactionsRouter.post(
 
             const orderService = new cinerino.chevre.service.Order({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: '' }
             });
 
             // APIユーザーが管理者の場合、顧客情報を自動取得
@@ -256,7 +258,8 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
 
             const orderService = new cinerino.chevre.service.Order({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             await cinerino.service.transaction.returnOrder.confirm({

@@ -49,7 +49,8 @@ placeOrderTransactionsRouter.post(
             // チケットオファー検索
             const eventService = new cinerino.chevre.service.Event({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const ticketOffers = await eventService.searchTicketOffers({ id: eventId });
 

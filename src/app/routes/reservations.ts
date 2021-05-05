@@ -61,7 +61,8 @@ reservationsRouter.get(
             // クエリをそのままChevre検索へパス
             const reservationService = new cinerino.chevre.service.Reservation({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const searchResult = await reservationService.search({
                 ...req.query,
@@ -138,7 +139,8 @@ reservationsRouter.post(
                 case <any>'Order':
                     const orderService = new cinerino.chevre.service.Order({
                         endpoint: cinerino.credentials.chevre.endpoint,
-                        auth: chevreAuthClient
+                        auth: chevreAuthClient,
+                        project: { id: req.project.id }
                     });
 
                     // 注文検索
@@ -207,7 +209,8 @@ function useReservation(params: {
         // 予約検索
         const reservationService = new cinerino.chevre.service.Reservation({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: params.project.id }
         });
         const reservation = await reservationService.findById<cinerino.factory.chevre.reservationType.EventReservation>({
             id: params.object.id
@@ -260,7 +263,8 @@ reservationsRouter.get<ParamsDictionary>(
             // Chevreアクション検索で実装する
             const actionService = new cinerino.chevre.service.Action({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const searchActionsResult = await actionService.search({
                 limit: 100,
@@ -294,7 +298,8 @@ reservationsRouter.put(
         try {
             const cancelReservationService = new cinerino.chevre.service.assetTransaction.CancelReservation({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             await cancelReservationService.startAndConfirm({
                 project: { typeOf: req.project.typeOf, id: req.project.id },

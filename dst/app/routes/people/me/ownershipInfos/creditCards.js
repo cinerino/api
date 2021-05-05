@@ -40,7 +40,8 @@ creditCardsRouter.post('', permitScopes_1.default(['people.me.*']), rateLimit_1.
     try {
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         const project = yield projectService.findById({ id: req.project.id });
         checkUseMyCreditCards(project);
@@ -74,7 +75,8 @@ creditCardsRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_1.d
     try {
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         const project = yield projectService.findById({ id: req.project.id });
         checkUseMyCreditCards(project);
@@ -104,7 +106,8 @@ creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['people.me.*']), r
     try {
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         const project = yield projectService.findById({ id: req.project.id });
         checkUseMyCreditCards(project);

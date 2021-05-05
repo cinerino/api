@@ -115,7 +115,8 @@ rateLimit_1.default, ...[
         // chevreでプロジェクト作成
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         yield projectService.create({
             typeOf: cinerino.factory.chevre.organizationType.Project,
@@ -164,7 +165,8 @@ rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, 
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         // tslint:disable-next-line:no-magic-numbers
         const limit = (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100;
@@ -226,7 +228,8 @@ projectsRouter.get('/:id', permitScopes_1.default(['projects.*', 'projects.read'
     try {
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         const projection = (req.memberPermissions.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/projects.settings.read`) >= 0)
             ? undefined
@@ -252,7 +255,8 @@ projectsRouter.patch('/:id', permitScopes_1.default(['projects.*', 'projects.wri
     try {
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         let project = yield projectService.findById({ id: req.project.id });
         project = Object.assign(Object.assign(Object.assign(Object.assign({}, project), (typeof req.body.name === 'string' && req.body.name.length > 0) ? { name: req.body.name } : undefined), (typeof req.body.logo === 'string' && req.body.logo.length > 0) ? { logo: req.body.logo } : undefined), { settings: Object.assign(Object.assign(Object.assign({}, project.settings), (typeof ((_b = req.body.settings) === null || _b === void 0 ? void 0 : _b.sendgridApiKey) === 'string')
@@ -307,7 +311,8 @@ projectsRouter.get('/:id/settings', permitScopes_1.default(['projects.*', 'proje
     try {
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         const project = yield projectService.findById({ id: req.project.id });
         res.json(Object.assign(Object.assign({}, project.settings), { cognito: Object.assign(Object.assign({}, (_f = project.settings) === null || _f === void 0 ? void 0 : _f.cognito), { 

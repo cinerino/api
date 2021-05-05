@@ -30,7 +30,8 @@ movieRouter.get(
         try {
             const creativeWorkService = new cinerino.chevre.service.CreativeWork({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const { data } = await creativeWorkService.searchMovies({
                 ...req.query,

@@ -52,7 +52,8 @@ ordersRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_1.defaul
     try {
         const orderService = new cinerino.chevre.service.Order({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers

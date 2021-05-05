@@ -35,7 +35,8 @@ authorizationsRouter.get('', permitScopes_1.default(['authorizations.*', 'author
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         const authorizationService = new cinerino.chevre.service.Authorization({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const { data } = yield authorizationService.search(searchConditions);
         res.json(data);

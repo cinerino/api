@@ -85,7 +85,8 @@ eventsRouter.get(
         try {
             const eventService = new cinerino.chevre.service.Event({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             const searchConditions: cinerino.chevre.factory.event.screeningEvent.ISearchConditions = {
@@ -119,7 +120,8 @@ eventsRouter.get(
 
             const eventService = new cinerino.chevre.service.Event({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             event = await eventService.findById({ id: req.params.id });
 
@@ -148,7 +150,8 @@ eventsRouter.patch<ParamsDictionary>(
         try {
             const eventService = new cinerino.chevre.service.Event({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             const event = await eventService.findById<cinerino.factory.chevre.eventType.ScreeningEvent>({ id: req.params.id });
@@ -250,7 +253,8 @@ eventsRouter.get(
         try {
             const eventService = new cinerino.chevre.service.Event({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             const seats = await eventService.searchSeats({

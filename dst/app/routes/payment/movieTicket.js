@@ -47,7 +47,8 @@ movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['transac
         }
         const payService = new cinerino.chevre.service.assetTransaction.Pay({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const checkAction = yield payService.check({
             project: { id: req.project.id, typeOf: cinerino.chevre.factory.organizationType.Project },

@@ -91,7 +91,8 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         const startParams = yield createStartParams(req)({ project: projectService });
         const transaction = yield cinerino.service.transaction.placeOrderInProgress.start(startParams)({
@@ -113,7 +114,8 @@ function createStartParams(req) {
         const expires = req.body.expires;
         const sellerService = new cinerino.chevre.service.Seller({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const seller = yield sellerService.findById({ id: req.body.seller.id });
         const passportValidator = validateWaiterPassport_1.createPassportValidator({
@@ -157,7 +159,8 @@ function createStartParams(req) {
         if (typeof customerIdByRequest === 'string' && customerIdByRequest.length > 0) {
             const customerService = new cinerino.chevre.service.Customer({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const customerFromChevre = yield customerService.findById({ id: customerIdByRequest });
             if (((_h = customerFromChevre.project) === null || _h === void 0 ? void 0 : _h.id) !== req.project.id) {
@@ -345,11 +348,13 @@ function authorizePointAward(req) {
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         // 所有メンバーシップを検索
         const searchOwnershipInfosResult = yield ownershipInfoService.search({

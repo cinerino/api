@@ -38,7 +38,8 @@ me4cinemasunshineRouter.put(
 
             const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             // 現在所有している会員プログラムを全て検索

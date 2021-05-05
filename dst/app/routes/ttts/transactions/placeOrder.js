@@ -39,7 +39,8 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
         // チケットオファー検索
         const eventService = new cinerino.chevre.service.Event({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const ticketOffers = yield eventService.searchTicketOffers({ id: eventId });
         // Cinerino本家のacceptedOfferへ変換

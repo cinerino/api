@@ -27,7 +27,8 @@ placesRouter.get(
         try {
             const placeService = new cinerino.chevre.service.Place({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const { data } = await placeService.searchMovieTheaters({
                 ...req.query,
@@ -51,7 +52,8 @@ placesRouter.get(
         try {
             const placeService = new cinerino.chevre.service.Place({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const { data } = await placeService.searchScreeningRooms({
                 ...req.query,
@@ -75,7 +77,8 @@ placesRouter.get(
         try {
             const placeService = new cinerino.chevre.service.Place({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const { data } = await placeService.searchSeats({
                 ...req.query,

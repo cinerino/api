@@ -29,7 +29,8 @@ placesRouter.get(`/${cinerino.factory.chevre.placeType.MovieTheater}`, permitSco
     try {
         const placeService = new cinerino.chevre.service.Place({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const { data } = yield placeService.searchMovieTheaters(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] } }));
         res.json(data);
@@ -43,7 +44,8 @@ placesRouter.get(`/${cinerino.factory.chevre.placeType.ScreeningRoom}`, permitSc
     try {
         const placeService = new cinerino.chevre.service.Place({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const { data } = yield placeService.searchScreeningRooms(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }));
         res.json(data);
@@ -57,7 +59,8 @@ placesRouter.get(`/${cinerino.factory.chevre.placeType.Seat}`, permitScopes_1.de
     try {
         const placeService = new cinerino.chevre.service.Place({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const { data } = yield placeService.searchSeats(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }));
         res.json(data);

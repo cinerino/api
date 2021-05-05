@@ -122,7 +122,8 @@ projectsRouter.post(
             // chevreでプロジェクト作成
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: '' }
             });
             await projectService.create({
                 typeOf: cinerino.factory.chevre.organizationType.Project,
@@ -181,7 +182,8 @@ projectsRouter.get(
             const memberRepo = new cinerino.repository.Member(mongoose.connection);
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: '' }
             });
 
             // tslint:disable-next-line:no-magic-numbers
@@ -260,7 +262,8 @@ projectsRouter.get(
         try {
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: '' }
             });
 
             const projection: any = (req.memberPermissions.indexOf(`${RESOURCE_SERVER_IDENTIFIER}/projects.settings.read`) >= 0)
@@ -305,7 +308,8 @@ projectsRouter.patch(
         try {
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: '' }
             });
 
             let project = await projectService.findById({ id: req.project.id });
@@ -382,7 +386,8 @@ projectsRouter.get(
         try {
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: '' }
             });
             const project = await projectService.findById({ id: req.project.id });
 

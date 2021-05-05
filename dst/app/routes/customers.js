@@ -32,7 +32,8 @@ customersRouter.get('', permitScopes_1.default(['customers.*', 'customers.read']
     try {
         const customerService = new cinerino.chevre.service.Customer({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const { data } = yield customerService.search(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }));
         res.json(data);
@@ -48,7 +49,8 @@ customersRouter.get('/:id', permitScopes_1.default(['customers.*', 'customers.re
     try {
         const customerService = new cinerino.chevre.service.Customer({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const customer = yield customerService.findById({ id: req.params.id });
         res.json(customer);

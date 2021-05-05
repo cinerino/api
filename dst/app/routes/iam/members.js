@@ -84,7 +84,8 @@ iamMembersRouter.post('', permitScopes_1.default(['iam.members.write']), rateLim
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         const project = yield projectService.findById({ id: req.project.id });
         if (((_a = project.settings) === null || _a === void 0 ? void 0 : _a.cognito) === undefined) {

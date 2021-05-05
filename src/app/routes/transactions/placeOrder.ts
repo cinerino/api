@@ -101,7 +101,8 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
 
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: '' }
             });
 
             const startParams = await createStartParams(req)({ project: projectService });
@@ -129,7 +130,8 @@ function createStartParams(req: Request) {
 
         const sellerService = new cinerino.chevre.service.Seller({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const seller = await sellerService.findById({ id: <string>req.body.seller.id });
 
@@ -183,7 +185,8 @@ function createStartParams(req: Request) {
         if (typeof customerIdByRequest === 'string' && customerIdByRequest.length > 0) {
             const customerService = new cinerino.chevre.service.Customer({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const customerFromChevre = await customerService.findById({ id: customerIdByRequest });
             if (customerFromChevre.project?.id !== req.project.id) {
@@ -428,11 +431,13 @@ export async function authorizePointAward(req: Request): Promise<cinerino.factor
 
     const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
         endpoint: cinerino.credentials.chevre.endpoint,
-        auth: chevreAuthClient
+        auth: chevreAuthClient,
+        project: { id: req.project.id }
     });
     const productService = new cinerino.chevre.service.Product({
         endpoint: cinerino.credentials.chevre.endpoint,
-        auth: chevreAuthClient
+        auth: chevreAuthClient,
+        project: { id: req.project.id }
     });
 
     // 所有メンバーシップを検索

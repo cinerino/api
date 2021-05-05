@@ -58,7 +58,8 @@ ownershipInfosRouter.get(
         try {
             const productService = new cinerino.chevre.service.Product({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const searchPaymentCardProductsResult = await productService.search({
                 limit: 100,
@@ -81,7 +82,8 @@ ownershipInfosRouter.get(
 
             const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             const typeOfGood = <cinerino.factory.ownershipInfo.ITypeOfGoodSearchConditions>req.query.typeOfGood;
@@ -134,7 +136,8 @@ ownershipInfosRouter.post(
 
             const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             const searchOwnershipInfosResult = await ownershipInfoService.search({
@@ -170,7 +173,8 @@ ownershipInfosRouter.post(
             if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
                 const reservationService = new cinerino.chevre.service.Reservation({
                     endpoint: cinerino.credentials.chevre.endpoint,
-                    auth: chevreAuthClient
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
                 });
                 await reservationService.checkInScreeningEventReservations({
                     id: (<cinerino.factory.ownershipInfo.IReservation>ownershipInfo.typeOfGood).id

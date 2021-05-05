@@ -35,7 +35,8 @@ peopleRouter.get(
         try {
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: '' }
             });
             const project = await projectService.findById({ id: req.project.id });
             if (project.settings?.cognito === undefined) {
@@ -73,7 +74,8 @@ peopleRouter.get(
         try {
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: '' }
             });
             const project = await projectService.findById({ id: req.project.id });
             if (project.settings?.cognito === undefined) {
@@ -105,7 +107,8 @@ peopleRouter.delete(
         try {
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: '' }
             });
             const project = await projectService.findById({ id: req.project.id });
             if (project.settings?.cognito === undefined) {
@@ -134,7 +137,8 @@ peopleRouter.delete(
 
             const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             // 現在所有している会員プログラムを全て検索
@@ -218,7 +222,8 @@ peopleRouter.get<ParamsDictionary>(
         try {
             const productService = new cinerino.chevre.service.Product({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const searchPaymentCardProductsResult = await productService.search({
                 limit: 100,
@@ -243,7 +248,8 @@ peopleRouter.get<ParamsDictionary>(
 
             const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
 
             const typeOfGood = <cinerino.factory.ownershipInfo.ITypeOfGoodSearchConditions>req.query.typeOfGood;
@@ -292,7 +298,8 @@ peopleRouter.get(
         try {
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: '' }
             });
             const project = await projectService.findById({ id: req.project.id });
             if (project.settings?.cognito === undefined) {
@@ -348,7 +355,8 @@ peopleRouter.delete(
         try {
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: '' }
             });
             const project = await projectService.findById({ id: req.project.id });
             if (project.settings?.cognito === undefined) {
@@ -407,7 +415,8 @@ peopleRouter.get(
         try {
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: '' }
             });
             const project = await projectService.findById({ id: req.project.id });
             if (project.settings?.cognito === undefined) {
@@ -453,7 +462,8 @@ peopleRouter.patch(
         try {
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: '' }
             });
             const project = await projectService.findById({ id: req.project.id });
             if (project.settings?.cognito === undefined) {

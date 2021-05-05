@@ -36,7 +36,8 @@ peopleRouter.get('', permitScopes_1.default(['people.*', 'people.read']), rateLi
     try {
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         const project = yield projectService.findById({ id: req.project.id });
         if (((_a = project.settings) === null || _a === void 0 ? void 0 : _a.cognito) === undefined) {
@@ -67,7 +68,8 @@ peopleRouter.get('/:id', permitScopes_1.default(['people.*', 'people.read']), ra
     try {
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         const project = yield projectService.findById({ id: req.project.id });
         if (((_b = project.settings) === null || _b === void 0 ? void 0 : _b.cognito) === undefined) {
@@ -93,7 +95,8 @@ peopleRouter.delete('/:id', permitScopes_1.default(['people.*', 'people.delete']
     try {
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         const project = yield projectService.findById({ id: req.project.id });
         if (((_c = project.settings) === null || _c === void 0 ? void 0 : _c.cognito) === undefined) {
@@ -118,7 +121,8 @@ peopleRouter.delete('/:id', permitScopes_1.default(['people.*', 'people.delete']
         });
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         // 現在所有している会員プログラムを全て検索
         const now = new Date();
@@ -184,7 +188,8 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['people.*', 'peo
     try {
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const searchPaymentCardProductsResult = yield productService.search({
             limit: 100,
@@ -199,7 +204,8 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['people.*', 'peo
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, ownedBy: { id: req.params.id } });
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const typeOfGood = req.query.typeOfGood;
         switch (true) {
@@ -235,7 +241,8 @@ peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['peo
     try {
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         const project = yield projectService.findById({ id: req.project.id });
         if (((_d = project.settings) === null || _d === void 0 ? void 0 : _d.cognito) === undefined) {
@@ -279,7 +286,8 @@ peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.d
     try {
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         const project = yield projectService.findById({ id: req.project.id });
         if (((_f = project.settings) === null || _f === void 0 ? void 0 : _f.cognito) === undefined) {
@@ -327,7 +335,8 @@ peopleRouter.get('/:id/profile', permitScopes_1.default(['people.*', 'people.rea
     try {
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         const project = yield projectService.findById({ id: req.project.id });
         if (((_h = project.settings) === null || _h === void 0 ? void 0 : _h.cognito) === undefined) {
@@ -363,7 +372,8 @@ peopleRouter.patch('/:id/profile', permitScopes_1.default(['people.*', 'people.p
     try {
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         const project = yield projectService.findById({ id: req.project.id });
         if (((_j = project.settings) === null || _j === void 0 ? void 0 : _j.cognito) === undefined) {

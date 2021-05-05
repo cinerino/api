@@ -65,7 +65,8 @@ accountsRouter.post('/openByToken', permitScopes_1.default(['accounts.openByToke
         // プロダクト検索
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const searchProductsResult = yield productService.search({
             limit: 1,
@@ -100,7 +101,8 @@ accountsRouter.post('/openByToken', permitScopes_1.default(['accounts.openByToke
                 // 注文検索
                 const orderService = new cinerino.chevre.service.Order({
                     endpoint: cinerino.credentials.chevre.endpoint,
-                    auth: chevreAuthClient
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
                 });
                 const order = yield orderService.findByOrderNumber({ orderNumber });
                 // 口座番号を取得
@@ -222,7 +224,8 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['accounts.t
         // ひとつ目のペイメントカードプロダクトを検索
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const searchProductsResult = yield productService.search({
             limit: 1,
@@ -268,7 +271,8 @@ function deposit(params) {
         try {
             const transactionNumberService = new cinerino.chevre.service.TransactionNumber({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: params.project.id }
             });
             const { transactionNumber } = yield transactionNumberService.publish({
                 project: { id: params.project.id }
@@ -276,7 +280,8 @@ function deposit(params) {
             // Chevreで入金
             const moneyTransferService = new cinerino.chevre.service.assetTransaction.MoneyTransfer({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: params.project.id }
             });
             yield moneyTransferService.start({
                 transactionNumber: transactionNumber,

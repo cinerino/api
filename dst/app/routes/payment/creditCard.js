@@ -94,7 +94,8 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['transactions
     try {
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: '' }
         });
         const project = yield projectService.findById({ id: req.project.id });
         const useUsernameAsGMOMemberId = ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.useUsernameAsGMOMemberId) === true;

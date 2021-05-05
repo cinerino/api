@@ -57,7 +57,8 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.*', 'reservatio
         // クエリをそのままChevre検索へパス
         const reservationService = new cinerino.chevre.service.Reservation({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const searchResult = yield reservationService.search(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, typeOf: cinerino.factory.chevre.reservationType.EventReservation }));
         // totalCount対応
@@ -120,7 +121,8 @@ reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 're
             case 'Order':
                 const orderService = new cinerino.chevre.service.Order({
                     endpoint: cinerino.credentials.chevre.endpoint,
-                    auth: chevreAuthClient
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
                 });
                 // 注文検索
                 const order = yield orderService.findByOrderNumber({ orderNumber: payload.orderNumber });
@@ -169,7 +171,8 @@ function useReservation(params) {
         // 予約検索
         const reservationService = new cinerino.chevre.service.Reservation({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: params.project.id }
         });
         const reservation = yield reservationService.findById({
             id: params.object.id
@@ -212,7 +215,8 @@ reservationsRouter.get('/:id/actions/use', permitScopes_1.default(['reservations
         // Chevreアクション検索で実装する
         const actionService = new cinerino.chevre.service.Action({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const searchActionsResult = yield actionService.search({
             limit: 100,
@@ -237,7 +241,8 @@ reservationsRouter.put('/cancel', permitScopes_1.default(['reservations.*', 'res
     try {
         const cancelReservationService = new cinerino.chevre.service.assetTransaction.CancelReservation({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         yield cancelReservationService.startAndConfirm({
             project: { typeOf: req.project.typeOf, id: req.project.id },

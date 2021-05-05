@@ -41,7 +41,8 @@ paymentCardPaymentRouter.post('/check', permitScopes_1.default(['transactions'])
     try {
         const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const searchPaymentCardResult = yield serviceOutputService.search({
             limit: 1,
@@ -128,7 +129,8 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         let paymentCard;
         const paymentMethodType = (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.paymentMethod;
@@ -155,7 +157,8 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
                     // アクセスコード情報があれば、認証
                     const serviceOutputService = new cinerino.chevre.service.ServiceOutput({
                         endpoint: cinerino.credentials.chevre.endpoint,
-                        auth: chevreAuthClient
+                        auth: chevreAuthClient,
+                        project: { id: req.project.id }
                     });
                     const searchPaymentCardResult = yield serviceOutputService.search({
                         limit: 1,

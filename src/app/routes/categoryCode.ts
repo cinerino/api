@@ -41,7 +41,8 @@ categoryCodesRouter.get(
 
             const categoryCodeService = new cinerino.chevre.service.CategoryCode({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const { data } = await categoryCodeService.search(searchConditions);
 

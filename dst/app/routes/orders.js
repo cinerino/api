@@ -129,7 +129,8 @@ ordersRouter.get('', permitScopes_1.default(['orders.*', 'orders.read']), rateLi
     try {
         const orderService = new cinerino.chevre.service.Order({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
@@ -185,7 +186,8 @@ ordersRouter.get('/findByIdentifier', permitScopes_1.default(['orders.*', 'order
     try {
         const orderService = new cinerino.chevre.service.Order({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         // 検索条件を限定
         const orderDateThrough = moment()
@@ -246,7 +248,8 @@ ordersRouter.post('', permitScopes_1.default(['orders.*', 'orders.create']), rat
         // 注文検索
         const orderService = new cinerino.chevre.service.Order({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const searchOrdersResult = yield orderService.search({
             limit: 1,
@@ -358,7 +361,8 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['orders.*', 
         };
         const orderService = new cinerino.chevre.service.Order({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         // 劇場枝番号、予約番号、個人情報完全一致で検索する
         const searchOrdersResult = yield orderService.search({
@@ -446,7 +450,8 @@ ordersRouter.post('/findByConfirmationNumber', permitScopes_1.default(['orders.*
         // 個人情報完全一致で検索する
         const orderService = new cinerino.chevre.service.Order({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const orderDateThrough = (req.query.orderDateThrough instanceof Date)
             ? req.query.orderDateThrough
@@ -511,7 +516,8 @@ ordersRouter.post('/findOneByOrderNumberAndSomething', permitScopes_1.default(['
         // 個人情報完全一致で検索する
         const orderService = new cinerino.chevre.service.Order({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const searchOrdersResult = yield orderService.search({
             limit: 1,
@@ -536,7 +542,8 @@ ordersRouter.get('/:orderNumber', permitScopes_1.default(['orders.*', 'orders.re
     try {
         const orderService = new cinerino.chevre.service.Order({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const order = yield orderService.findByOrderNumber({
             orderNumber: req.params.orderNumber
@@ -566,13 +573,15 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['orders.*', '
         const registerActionInProgressRepo = new cinerino.repository.action.RegisterServiceInProgress(redis.getClient());
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const orderNumber = req.params.orderNumber;
         // 注文検索
         const orderService = new cinerino.chevre.service.Order({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const order = yield orderService.findByOrderNumber({
             orderNumber: orderNumber
@@ -666,7 +675,8 @@ ordersRouter.post('/:orderNumber/authorize', permitScopes_1.default(['orders.*',
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderService = new cinerino.chevre.service.Order({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const order = yield orderService.findByOrderNumber({ orderNumber: req.params.orderNumber });
         if (order.customer.email !== email && order.customer.telephone !== telephone) {
@@ -699,7 +709,8 @@ ordersRouter.post('/:orderNumber/authorize', permitScopes_1.default(['orders.*',
         // 予約番号でChevreチェックイン
         const reservationService = new cinerino.chevre.service.Reservation({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         let reservationNumbers = order.acceptedOffers
             .filter((o) => o.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation)

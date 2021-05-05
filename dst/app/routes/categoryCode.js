@@ -38,7 +38,8 @@ categoryCodesRouter.get('', permitScopes_1.default(['categoryCodes.*', 'category
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined });
         const categoryCodeService = new cinerino.chevre.service.CategoryCode({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const { data } = yield categoryCodeService.search(searchConditions);
         res.json(data);

@@ -45,7 +45,8 @@ ownershipInfosRouter.get('', permitScopes_1.default(['ownershipInfos.read']), ra
     try {
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         const typeOfGood = (req.query.typeOfGood !== undefined && req.query.typeOfGood !== null) ? req.query.typeOfGood : {};
         let ownershipInfos;
@@ -83,7 +84,8 @@ ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.defaul
         const theaterIds = req.query.theaterIds;
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
         });
         // const andConditions: any[] = [
         //     { 'typeOfGood.typeOf': cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership }

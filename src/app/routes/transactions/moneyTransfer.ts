@@ -104,7 +104,8 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
         try {
             const sellerService = new cinerino.chevre.service.Seller({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const seller = await sellerService.findById({ id: <string>req.body.seller.id });
 
@@ -122,7 +123,8 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
             // ペイメントカードプロダクトを検索して、currencyを自動取得
             const productService = new cinerino.chevre.service.Product({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const searchProductsResult = await productService.search({
                 limit: 1,
@@ -219,7 +221,8 @@ async function validateFromLocation(req: Request): Promise<{
             // 注文検索
             const orderService = new cinerino.chevre.service.Order({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
             });
             const searchOrdersResult = await orderService.search({
                 limit: 1,
