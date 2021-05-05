@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 注文番号と電話番号での照会サービスを追加
 - 顧客検索を追加
+- ABORTED_TASKS_WITHOUT_REPORT設定を追加
 
 ### Changed
 
