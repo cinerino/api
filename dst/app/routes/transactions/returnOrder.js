@@ -75,7 +75,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient,
-            project: { id: req.project.id }
+            project: { id: '' }
         });
         // APIユーザーが管理者の場合、顧客情報を自動取得
         if (req.isAdmin) {
