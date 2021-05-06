@@ -75,6 +75,8 @@ movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['transac
             project: { id: req.project.id, typeOf: req.project.typeOf },
             typeOf: cinerino.factory.actionType.CheckAction,
             agent: req.agent,
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO ひとまず強制型変換しているが、checkAction.objectのままで問題なければ変更する
             object: {
                 typeOf: paymentMethodType,
                 movieTickets: (Array.isArray((_a = checkAction.object[0]) === null || _a === void 0 ? void 0 : _a.movieTickets)) ? (_b = checkAction.object[0]) === null || _b === void 0 ? void 0 : _b.movieTickets : [],

@@ -41,19 +41,13 @@ actionsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            // const actionRepo = new cinerino.repository.Action(mongoose.connection);
-
-            const searchConditions: cinerino.factory.action.ISearchConditions<any> = {
+            const searchConditions: cinerino.factory.action.ISearchConditions = {
                 ...req.query,
                 project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
-
-            // const actions = await actionRepo.search(searchConditions);
-
-            // res.json(actions);
 
             // chevreで検索
             const actionService = new cinerino.chevre.service.Action({

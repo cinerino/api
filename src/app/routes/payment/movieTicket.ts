@@ -81,7 +81,9 @@ movieTicketPaymentRouter.post(
                 project: { id: req.project.id, typeOf: req.project.typeOf },
                 typeOf: cinerino.factory.actionType.CheckAction,
                 agent: req.agent,
-                object: {
+                // tslint:disable-next-line:no-suspicious-comment
+                // TODO ひとまず強制型変換しているが、checkAction.objectのままで問題なければ変更する
+                object: <any>{
                     typeOf: paymentMethodType,
                     movieTickets: (Array.isArray(checkAction.object[0]?.movieTickets)) ? checkAction.object[0]?.movieTickets : [],
                     seller: checkAction.object[0]?.seller
