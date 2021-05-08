@@ -39,7 +39,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                     // no op
                 }
 
-                let programMembership: cinerino.factory.programMembership.IProgramMembership | undefined;
+                let programMembership: cinerino.factory.chevre.programMembership.IProgramMembership | undefined;
                 if (typeof user.username === 'string') {
                     programMembership = {
                         membershipNumber: user.username,
