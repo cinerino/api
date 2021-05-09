@@ -54,6 +54,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 資産取引を再定義したchevreで再構築
 - プロジェクトのparentOrganizationを廃止
 - 全chevreサービスにプロジェクトを指定
+- @chevre/factoryで再構築
 
 ### Deprecated
 
