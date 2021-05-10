@@ -88,7 +88,7 @@ me4cinemasunshineRouter.put(
                 data: deleteMemberAction
             };
 
-            await taskRepo.save<cinerino.factory.taskName.DeleteMember>(deleteMemberTask);
+            await taskRepo.save(deleteMemberTask);
 
             // 会員登録解除タスクとして受け入れられたのでACCEPTED
             res.status(ACCEPTED)

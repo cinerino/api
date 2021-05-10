@@ -55,6 +55,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - プロジェクトのparentOrganizationを廃止
 - 全chevreサービスにプロジェクトを指定
 - @chevre/factoryで再構築
+- Mongoリポジトリを@chevre/domainからインポートするように変更
 
 ### Deprecated
 
