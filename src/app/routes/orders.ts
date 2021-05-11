@@ -660,6 +660,7 @@ ordersRouter.post<ParamsDictionary>(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             const registerActionInProgressRepo = new cinerino.repository.action.RegisterServiceInProgress(redis.getClient());
@@ -673,12 +674,12 @@ ordersRouter.post<ParamsDictionary>(
             const orderNumber = req.params.orderNumber;
 
             // 注文検索
-            const orderService = new cinerino.chevre.service.Order({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
-                project: { id: req.project.id }
-            });
-            const order = await orderService.findByOrderNumber({
+            // const orderService = new cinerino.chevre.service.Order({
+            //     endpoint: cinerino.credentials.chevre.endpoint,
+            //     auth: chevreAuthClient,
+            //     project: { id: req.project.id }
+            // });
+            const order = await orderRepo.findByOrderNumber({
                 orderNumber: orderNumber
             });
 
@@ -707,7 +708,7 @@ ordersRouter.post<ParamsDictionary>(
 
                 await cinerino.service.delivery.sendOrder(sendOrderActionAttributes)({
                     action: actionRepo,
-                    order: orderService,
+                    order: orderRepo,
                     ownershipInfo: ownershipInfoService,
                     registerActionInProgress: registerActionInProgressRepo,
                     task: taskRepo,

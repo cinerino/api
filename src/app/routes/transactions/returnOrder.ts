@@ -68,16 +68,17 @@ returnOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
             let order: cinerino.factory.order.IOrder | undefined;
             let returnableOrder: cinerino.factory.transaction.returnOrder.IReturnableOrder[] = req.body.object.order;
 
-            const orderService = new cinerino.chevre.service.Order({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
-                project: { id: req.project.id }
-            });
+            // const orderService = new cinerino.chevre.service.Order({
+            //     endpoint: cinerino.credentials.chevre.endpoint,
+            //     auth: chevreAuthClient,
+            //     project: { id: req.project.id }
+            // });
             const projectService = new cinerino.chevre.service.Project({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient,
@@ -86,7 +87,7 @@ returnOrderTransactionsRouter.post(
 
             // APIユーザーが管理者の場合、顧客情報を自動取得
             if (req.isAdmin) {
-                order = await orderService.findByOrderNumber({ orderNumber: returnableOrder[0].orderNumber });
+                order = await orderRepo.findByOrderNumber({ orderNumber: returnableOrder[0].orderNumber });
                 // returnableOrder = { ...returnableOrder, customer: { email: order.customer.email, telephone: order.customer.telephone } };
             } else {
                 if (returnableOrder.length !== 1) {
@@ -102,7 +103,7 @@ returnOrderTransactionsRouter.post(
                 }
 
                 // 管理者でない場合は、個人情報完全一致で承認
-                const searchOrdersResult = await orderService.search({
+                const searchOrdersResult = await orderRepo.search({
                     project: { id: { $eq: req.project.id } },
                     orderNumbers: returnableOrder.map((o) => o.orderNumber),
                     customer: {
@@ -120,7 +121,8 @@ returnOrderTransactionsRouter.post(
                             : undefined
                     }
                 });
-                order = searchOrdersResult.data.shift();
+                // order = searchOrdersResult.data.shift();
+                order = searchOrdersResult.shift();
                 if (order === undefined) {
                     throw new cinerino.factory.errors.NotFound('Order');
                 }
@@ -155,7 +157,7 @@ returnOrderTransactionsRouter.post(
                 }
             })({
                 action: actionRepo,
-                order: orderService,
+                order: orderRepo,
                 project: projectService,
                 transaction: transactionRepo
             });
@@ -253,14 +255,15 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
-            const orderService = new cinerino.chevre.service.Order({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
-                project: { id: req.project.id }
-            });
+            // const orderService = new cinerino.chevre.service.Order({
+            //     endpoint: cinerino.credentials.chevre.endpoint,
+            //     auth: chevreAuthClient,
+            //     project: { id: req.project.id }
+            // });
 
             await cinerino.service.transaction.returnOrder.confirm({
                 ...req.body,
@@ -268,7 +271,7 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
                 agent: { id: req.user.sub }
             })({
                 action: actionRepo,
-                order: orderService,
+                order: orderRepo,
                 transaction: transactionRepo
             });
 

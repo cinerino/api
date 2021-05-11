@@ -568,6 +568,7 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['orders.*', '
     var _k;
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const registerActionInProgressRepo = new cinerino.repository.action.RegisterServiceInProgress(redis.getClient());
@@ -578,12 +579,12 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['orders.*', '
         });
         const orderNumber = req.params.orderNumber;
         // 注文検索
-        const orderService = new cinerino.chevre.service.Order({
-            endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
-            project: { id: req.project.id }
-        });
-        const order = yield orderService.findByOrderNumber({
+        // const orderService = new cinerino.chevre.service.Order({
+        //     endpoint: cinerino.credentials.chevre.endpoint,
+        //     auth: chevreAuthClient,
+        //     project: { id: req.project.id }
+        // });
+        const order = yield orderRepo.findByOrderNumber({
             orderNumber: orderNumber
         });
         if (req.isAdmin) {
@@ -610,7 +611,7 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['orders.*', '
             };
             yield cinerino.service.delivery.sendOrder(sendOrderActionAttributes)({
                 action: actionRepo,
-                order: orderService,
+                order: orderRepo,
                 ownershipInfo: ownershipInfoService,
                 registerActionInProgress: registerActionInProgressRepo,
                 task: taskRepo,

@@ -64,14 +64,15 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         let order;
         let returnableOrder = req.body.object.order;
-        const orderService = new cinerino.chevre.service.Order({
-            endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
-            project: { id: req.project.id }
-        });
+        // const orderService = new cinerino.chevre.service.Order({
+        //     endpoint: cinerino.credentials.chevre.endpoint,
+        //     auth: chevreAuthClient,
+        //     project: { id: req.project.id }
+        // });
         const projectService = new cinerino.chevre.service.Project({
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient,
@@ -79,7 +80,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
         });
         // APIユーザーが管理者の場合、顧客情報を自動取得
         if (req.isAdmin) {
-            order = yield orderService.findByOrderNumber({ orderNumber: returnableOrder[0].orderNumber });
+            order = yield orderRepo.findByOrderNumber({ orderNumber: returnableOrder[0].orderNumber });
             // returnableOrder = { ...returnableOrder, customer: { email: order.customer.email, telephone: order.customer.telephone } };
         }
         else {
@@ -94,7 +95,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
                 throw new cinerino.factory.errors.ArgumentNull('Order Customer', 'Order customer info required');
             }
             // 管理者でない場合は、個人情報完全一致で承認
-            const searchOrdersResult = yield orderService.search({
+            const searchOrdersResult = yield orderRepo.search({
                 project: { id: { $eq: req.project.id } },
                 orderNumbers: returnableOrder.map((o) => o.orderNumber),
                 customer: {
@@ -112,7 +113,8 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
                         : undefined
                 }
             });
-            order = searchOrdersResult.data.shift();
+            // order = searchOrdersResult.data.shift();
+            order = searchOrdersResult.shift();
             if (order === undefined) {
                 throw new cinerino.factory.errors.NotFound('Order');
             }
@@ -142,7 +144,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
             }
         })({
             action: actionRepo,
-            order: orderService,
+            order: orderRepo,
             project: projectService,
             transaction: transactionRepo
         });
@@ -219,16 +221,17 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        const orderService = new cinerino.chevre.service.Order({
-            endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
-            project: { id: req.project.id }
-        });
+        // const orderService = new cinerino.chevre.service.Order({
+        //     endpoint: cinerino.credentials.chevre.endpoint,
+        //     auth: chevreAuthClient,
+        //     project: { id: req.project.id }
+        // });
         yield cinerino.service.transaction.returnOrder.confirm(Object.assign(Object.assign({}, req.body), { id: req.params.transactionId, agent: { id: req.user.sub } }))({
             action: actionRepo,
-            order: orderService,
+            order: orderRepo,
             transaction: transactionRepo
         });
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
