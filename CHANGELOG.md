@@ -74,6 +74,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 決済方法ルーターを削除
 - 予約ダウンロードを削除
 - 注文取引ダウンロードを削除
+- タスクルーターを削除
 
 ### Fixed
 
