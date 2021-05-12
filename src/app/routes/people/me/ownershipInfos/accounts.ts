@@ -44,18 +44,14 @@ accountsRouter.post<ParamsDictionary>(
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const registerActionInProgressRepo = new cinerino.repository.action.RegisterServiceInProgress(redis.getClient());
             const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
             const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
 
-            const projectService = new cinerino.chevre.service.Project({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
-                project: { id: '' }
-            });
-            const project = await projectService.findById({ id: req.project.id });
+            const project = await projectRepo.findById({ id: req.project.id });
             if (typeof project.settings?.cognito?.customerUserPool?.id !== 'string') {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satidfied');
             }
@@ -82,7 +78,7 @@ accountsRouter.post<ParamsDictionary>(
                 ownershipInfo: ownershipInfoService,
                 person: personRepo,
                 registerActionInProgress: registerActionInProgressRepo,
-                project: projectService,
+                project: projectRepo,
                 transaction: transactionRepo
             });
 

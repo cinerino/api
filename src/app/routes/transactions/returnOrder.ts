@@ -17,14 +17,6 @@ import validator from '../../middlewares/validator';
 
 import * as redis from '../../../redis';
 
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.CHEVRE_CLIENT_ID,
-    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
-
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -69,21 +61,11 @@ returnOrderTransactionsRouter.post(
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const orderRepo = new cinerino.repository.Order(mongoose.connection);
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
             let order: cinerino.factory.order.IOrder | undefined;
             let returnableOrder: cinerino.factory.transaction.returnOrder.IReturnableOrder[] = req.body.object.order;
-
-            // const orderService = new cinerino.chevre.service.Order({
-            //     endpoint: cinerino.credentials.chevre.endpoint,
-            //     auth: chevreAuthClient,
-            //     project: { id: req.project.id }
-            // });
-            const projectService = new cinerino.chevre.service.Project({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
-                project: { id: '' }
-            });
 
             // APIユーザーが管理者の場合、顧客情報を自動取得
             if (req.isAdmin) {
@@ -158,7 +140,7 @@ returnOrderTransactionsRouter.post(
             })({
                 action: actionRepo,
                 order: orderRepo,
-                project: projectService,
+                project: projectRepo,
                 transaction: transactionRepo
             });
 

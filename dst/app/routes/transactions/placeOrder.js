@@ -88,15 +88,11 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
         .withMessage((_, __) => 'required')
 ], validator_1.default, validateWaiterPassport_1.validateWaiterPassport, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        const projectService = new cinerino.chevre.service.Project({
-            endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
-            project: { id: '' }
-        });
-        const startParams = yield createStartParams(req)({ project: projectService });
+        const startParams = yield createStartParams(req)({ project: projectRepo });
         const transaction = yield cinerino.service.transaction.placeOrderInProgress.start(startParams)({
-            project: projectService,
+            project: projectRepo,
             transaction: transactionRepo
         });
         // tslint:disable-next-line:no-string-literal

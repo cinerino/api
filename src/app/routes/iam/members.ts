@@ -19,14 +19,6 @@ import { RoleName } from '../../iam';
 
 const ADMIN_USER_POOL_ID = <string>process.env.ADMIN_USER_POOL_ID;
 
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.CHEVRE_CLIENT_ID,
-    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
-
 const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
     apiVersion: 'latest',
     region: 'ap-northeast-1',
@@ -86,13 +78,9 @@ iamMembersRouter.post(
     async (req, res, next) => {
         try {
             const memberRepo = new cinerino.repository.Member(mongoose.connection);
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
-            const projectService = new cinerino.chevre.service.Project({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
-                project: { id: '' }
-            });
-            const project = await projectService.findById({ id: req.project.id });
+            const project = await projectRepo.findById({ id: req.project.id });
             if (project.settings?.cognito === undefined) {
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satisfied');
             }

@@ -43,17 +43,13 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
     var _a, _b, _c;
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const registerActionInProgressRepo = new cinerino.repository.action.RegisterServiceInProgress(redis.getClient());
         const taskRepo = new cinerino.repository.Task(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const confirmationNumberRepo = new cinerino.repository.ConfirmationNumber(redis.getClient());
         const orderNumberRepo = new cinerino.repository.OrderNumber(redis.getClient());
-        const projectService = new cinerino.chevre.service.Project({
-            endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
-            project: { id: '' }
-        });
-        const project = yield projectService.findById({ id: req.project.id });
+        const project = yield projectRepo.findById({ id: req.project.id });
         if (typeof ((_c = (_b = (_a = project.settings) === null || _a === void 0 ? void 0 : _a.cognito) === null || _b === void 0 ? void 0 : _b.customerUserPool) === null || _c === void 0 ? void 0 : _c.id) !== 'string') {
             throw new cinerino.factory.errors.ServiceUnavailable('Project settings not satidfied');
         }
@@ -78,7 +74,7 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
             ownershipInfo: ownershipInfoService,
             person: personRepo,
             registerActionInProgress: registerActionInProgressRepo,
-            project: projectService,
+            project: projectRepo,
             transaction: transactionRepo
         });
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)

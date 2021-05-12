@@ -23,13 +23,6 @@ const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.CHEVRE_CLIENT_ID,
-    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -65,19 +58,10 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         let order;
         let returnableOrder = req.body.object.order;
-        // const orderService = new cinerino.chevre.service.Order({
-        //     endpoint: cinerino.credentials.chevre.endpoint,
-        //     auth: chevreAuthClient,
-        //     project: { id: req.project.id }
-        // });
-        const projectService = new cinerino.chevre.service.Project({
-            endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
-            project: { id: '' }
-        });
         // APIユーザーが管理者の場合、顧客情報を自動取得
         if (req.isAdmin) {
             order = yield orderRepo.findByOrderNumber({ orderNumber: returnableOrder[0].orderNumber });
@@ -145,7 +129,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
         })({
             action: actionRepo,
             order: orderRepo,
-            project: projectService,
+            project: projectRepo,
             transaction: transactionRepo
         });
         // tslint:disable-next-line:no-string-literal
