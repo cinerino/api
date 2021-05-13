@@ -246,6 +246,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const eventService = new cinerino.chevre.service.Event({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: req.chevreAuthClient,
+            project: { id: req.project.id }
+        });
         const action = yield cinerino.service.offer.seatReservation.create({
             project: req.project,
             object: Object.assign(Object.assign({}, req.body), { broker: (req.isAdmin) ? req.agent : undefined }),
@@ -253,6 +258,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
             transaction: { id: req.params.transactionId }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
+            event: eventService,
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED)

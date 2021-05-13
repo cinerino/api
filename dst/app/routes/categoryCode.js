@@ -20,13 +20,13 @@ const express_1 = require("express");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.CHEVRE_CLIENT_ID,
-    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
+// const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+//     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+//     clientId: <string>process.env.CHEVRE_CLIENT_ID,
+//     clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+//     scopes: [],
+//     state: ''
+// });
 const categoryCodesRouter = express_1.Router();
 /**
  * 検索
@@ -38,7 +38,7 @@ categoryCodesRouter.get('', permitScopes_1.default(['categoryCodes.*', 'category
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined });
         const categoryCodeService = new cinerino.chevre.service.CategoryCode({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const { data } = yield categoryCodeService.search(searchConditions);

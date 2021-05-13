@@ -17,13 +17,13 @@ const express_1 = require("express");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit_1 = require("../../middlewares/rateLimit");
 const validator_1 = require("../../middlewares/validator");
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.CHEVRE_CLIENT_ID,
-    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
+// const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+//     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+//     clientId: <string>process.env.CHEVRE_CLIENT_ID,
+//     clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+//     scopes: [],
+//     state: ''
+// });
 const movieRouter = express_1.Router();
 /**
  * 映画作品検索
@@ -32,7 +32,7 @@ movieRouter.get('', permitScopes_1.default(['creativeWorks.*', 'creativeWorks.re
     try {
         const creativeWorkService = new cinerino.chevre.service.CreativeWork({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const { data } = yield creativeWorkService.searchMovies(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] } }));

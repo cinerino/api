@@ -17,13 +17,13 @@ const express_1 = require("express");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.CHEVRE_CLIENT_ID,
-    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
+// const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+//     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+//     clientId: <string>process.env.CHEVRE_CLIENT_ID,
+//     clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+//     scopes: [],
+//     state: ''
+// });
 const sellersRouter = express_1.Router();
 /**
  * 販売者検索
@@ -33,7 +33,7 @@ sellersRouter.get('', permitScopes_1.default(['sellers.*', 'sellers.read']), rat
     try {
         const sellerService = new cinerino.chevre.service.Seller({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         // location.branchCodesをadditionalPropertyに自動変換
@@ -58,7 +58,7 @@ sellersRouter.get('/:id', permitScopes_1.default(['sellers.*', 'sellers.read']),
     try {
         const sellerService = new cinerino.chevre.service.Seller({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const seller = yield sellerService.findById({ id: req.params.id });

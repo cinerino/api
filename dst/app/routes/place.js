@@ -17,19 +17,19 @@ const express_1 = require("express");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.CHEVRE_CLIENT_ID,
-    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
+// const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+//     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+//     clientId: <string>process.env.CHEVRE_CLIENT_ID,
+//     clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+//     scopes: [],
+//     state: ''
+// });
 const placesRouter = express_1.Router();
 placesRouter.get(`/${cinerino.factory.chevre.placeType.MovieTheater}`, permitScopes_1.default(['places.*', 'places.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const placeService = new cinerino.chevre.service.Place({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const { data } = yield placeService.searchMovieTheaters(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] } }));
@@ -44,7 +44,7 @@ placesRouter.get(`/${cinerino.factory.chevre.placeType.ScreeningRoom}`, permitSc
     try {
         const placeService = new cinerino.chevre.service.Place({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const { data } = yield placeService.searchScreeningRooms(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }));
@@ -59,7 +59,7 @@ placesRouter.get(`/${cinerino.factory.chevre.placeType.Seat}`, permitScopes_1.de
     try {
         const placeService = new cinerino.chevre.service.Place({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const { data } = yield placeService.searchSeats(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }));

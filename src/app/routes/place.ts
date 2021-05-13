@@ -8,13 +8,13 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.CHEVRE_CLIENT_ID,
-    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
+// const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+//     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+//     clientId: <string>process.env.CHEVRE_CLIENT_ID,
+//     clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+//     scopes: [],
+//     state: ''
+// });
 
 const placesRouter = Router();
 
@@ -27,7 +27,7 @@ placesRouter.get(
         try {
             const placeService = new cinerino.chevre.service.Place({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
+                auth: req.chevreAuthClient,
                 project: { id: req.project.id }
             });
             const { data } = await placeService.searchMovieTheaters({
@@ -52,7 +52,7 @@ placesRouter.get(
         try {
             const placeService = new cinerino.chevre.service.Place({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
+                auth: req.chevreAuthClient,
                 project: { id: req.project.id }
             });
             const { data } = await placeService.searchScreeningRooms({
@@ -77,7 +77,7 @@ placesRouter.get(
         try {
             const placeService = new cinerino.chevre.service.Place({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
+                auth: req.chevreAuthClient,
                 project: { id: req.project.id }
             });
             const { data } = await placeService.searchSeats({

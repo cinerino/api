@@ -85,7 +85,7 @@ eventsRouter.get(
         try {
             const eventService = new cinerino.chevre.service.Event({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
+                auth: req.chevreAuthClient,
                 project: { id: req.project.id }
             });
 
@@ -120,7 +120,7 @@ eventsRouter.get(
 
             const eventService = new cinerino.chevre.service.Event({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
+                auth: req.chevreAuthClient,
                 project: { id: req.project.id }
             });
             event = await eventService.findById({ id: req.params.id });
@@ -225,6 +225,12 @@ eventsRouter.get<ParamsDictionary>(
     validator,
     async (req, res, next) => {
         try {
+            const eventService = new cinerino.chevre.service.Event({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: req.chevreAuthClient,
+                project: { id: req.project.id }
+            });
+
             const offers = await cinerino.service.offer.searchEventTicketOffers({
                 project: req.project,
                 event: { id: req.params.id },
@@ -233,7 +239,9 @@ eventsRouter.get<ParamsDictionary>(
                 ...(req.query.movieTicket !== undefined && req.query.movieTicket !== null)
                     ? { movieTicket: req.query.movieTicket }
                     : {}
-            })({});
+            })({
+                event: eventService
+            });
             res.json(offers);
         } catch (error) {
             next(error);
@@ -253,7 +261,7 @@ eventsRouter.get(
         try {
             const eventService = new cinerino.chevre.service.Event({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
+                auth: req.chevreAuthClient,
                 project: { id: req.project.id }
             });
 

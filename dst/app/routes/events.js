@@ -83,7 +83,7 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
     try {
         const eventService = new cinerino.chevre.service.Event({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
@@ -104,7 +104,7 @@ eventsRouter.get('/:id', permitScopes_1.default(['events.*', 'events.read']), ra
         let event;
         const eventService = new cinerino.chevre.service.Event({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         event = yield eventService.findById({ id: req.params.id });
@@ -181,9 +181,16 @@ eventsRouter.get('/:id/offers/ticket', permitScopes_1.default(['events.*', 'even
         .withMessage(() => 'required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const eventService = new cinerino.chevre.service.Event({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: req.chevreAuthClient,
+            project: { id: req.project.id }
+        });
         const offers = yield cinerino.service.offer.searchEventTicketOffers(Object.assign({ project: req.project, event: { id: req.params.id }, seller: req.query.seller, store: req.query.store }, (req.query.movieTicket !== undefined && req.query.movieTicket !== null)
             ? { movieTicket: req.query.movieTicket }
-            : {}))({});
+            : {}))({
+            event: eventService
+        });
         res.json(offers);
     }
     catch (error) {
@@ -197,7 +204,7 @@ eventsRouter.get('/:id/seats', permitScopes_1.default(['events.*', 'events.read'
     try {
         const eventService = new cinerino.chevre.service.Event({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const seats = yield eventService.searchSeats(Object.assign(Object.assign({}, req.query), { id: req.params.id, 

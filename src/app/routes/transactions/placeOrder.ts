@@ -306,6 +306,12 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
     },
     async (req, res, next) => {
         try {
+            const eventService = new cinerino.chevre.service.Event({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: req.chevreAuthClient,
+                project: { id: req.project.id }
+            });
+
             const action = await cinerino.service.offer.seatReservation.create({
                 project: req.project,
                 object: {
@@ -316,6 +322,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
                 transaction: { id: req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
+                event: eventService,
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 

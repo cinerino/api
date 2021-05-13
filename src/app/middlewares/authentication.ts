@@ -67,6 +67,17 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                         identifier: identifier
                     };
 
+                // リクエストに対してChevre認証クライアントをセット
+                const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+                    domain: '',
+                    clientId: '',
+                    clientSecret: '',
+                    scopes: [],
+                    state: ''
+                });
+                chevreAuthClient.setCredentials({ access_token: token });
+                req.chevreAuthClient = chevreAuthClient;
+
                 next();
             },
             unauthorizedHandler: (err) => {

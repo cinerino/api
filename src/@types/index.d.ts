@@ -22,6 +22,7 @@ declare global {
             agent: IRequestAgent;
             user: IUser;
             accessToken: string;
+            chevreAuthClient: cinerino.chevre.auth.ClientCredentials;
             isAdmin: boolean;
             isPOS: boolean;
             isProjectMember: boolean;
