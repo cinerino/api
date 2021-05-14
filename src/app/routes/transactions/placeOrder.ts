@@ -99,11 +99,17 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
         try {
             const projectRepo = new cinerino.repository.Project(mongoose.connection);
             const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+            const sellerService = new cinerino.chevre.service.Seller({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: req.chevreAuthClient,
+                project: { id: req.project.id }
+            });
 
-            const startParams = await createStartParams(req)({ project: projectRepo });
+            const startParams = await createStartParams(req)({ project: projectRepo, seller: sellerService });
 
             const transaction = await cinerino.service.transaction.placeOrderInProgress.start(startParams)({
                 project: projectRepo,
+                seller: sellerService,
                 transaction: transactionRepo
             });
 
@@ -120,15 +126,16 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
 function createStartParams(req: Request) {
     return async (repos: {
         project: cinerino.repository.Project;
+        seller: cinerino.chevre.service.Seller;
     }): Promise<cinerino.service.transaction.placeOrderInProgress.IStartParams> => {
         const expires: Date = req.body.expires;
 
-        const sellerService = new cinerino.chevre.service.Seller({
-            endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
-            project: { id: req.project.id }
-        });
-        const seller = await sellerService.findById({ id: <string>req.body.seller.id });
+        // const sellerService = new cinerino.chevre.service.Seller({
+        //     endpoint: cinerino.credentials.chevre.endpoint,
+        //     auth: chevreAuthClient,
+        //     project: { id: req.project.id }
+        // });
+        const seller = await repos.seller.findById({ id: <string>req.body.seller.id });
 
         const passportValidator = createPassportValidator({
             transaction: { typeOf: cinerino.factory.transactionType.PlaceOrder },
@@ -653,6 +660,16 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 }
             })({
                 action: actionRepo,
+                categoryCode: new cinerino.chevre.service.CategoryCode({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: req.chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
+                seller: new cinerino.chevre.service.Seller({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: req.chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
                 transaction: transactionRepo,
                 confirmationNumber: confirmationNumberRepo,
                 orderNumber: orderNumberRepo

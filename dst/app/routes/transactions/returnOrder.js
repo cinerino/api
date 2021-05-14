@@ -130,6 +130,11 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
             action: actionRepo,
             order: orderRepo,
             project: projectRepo,
+            seller: new cinerino.chevre.service.Seller({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: req.chevreAuthClient,
+                project: { id: req.project.id }
+            }),
             transaction: transactionRepo
         });
         // tslint:disable-next-line:no-string-literal

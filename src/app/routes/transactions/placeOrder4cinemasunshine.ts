@@ -47,6 +47,11 @@ placeOrder4cinemasunshineRouter.post(
                 transaction: { id: req.params.transactionId }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
+                event: new cinerino.chevre.service.Event({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: req.chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
@@ -128,6 +133,11 @@ placeOrder4cinemasunshineRouter.patch(
                 id: req.params.actionId
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
+                event: new cinerino.chevre.service.Event({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: req.chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 

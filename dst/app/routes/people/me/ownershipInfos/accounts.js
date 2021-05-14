@@ -69,12 +69,22 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
             location: { id: req.user.client_id }
         })({
             action: actionRepo,
+            categoryCode: new cinerino.chevre.service.CategoryCode({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: req.chevreAuthClient,
+                project: { id: req.project.id }
+            }),
             confirmationNumber: confirmationNumberRepo,
             orderNumber: orderNumberRepo,
             ownershipInfo: ownershipInfoService,
             person: personRepo,
             registerActionInProgress: registerActionInProgressRepo,
             project: projectRepo,
+            seller: new cinerino.chevre.service.Seller({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: req.chevreAuthClient,
+                project: { id: req.project.id }
+            }),
             transaction: transactionRepo
         });
         // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)

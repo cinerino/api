@@ -104,7 +104,7 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
         try {
             const sellerService = new cinerino.chevre.service.Seller({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
+                auth: req.chevreAuthClient,
                 project: { id: req.project.id }
             });
             const seller = await sellerService.findById({ id: <string>req.body.seller.id });
@@ -181,6 +181,7 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
                 passportValidator
             })({
                 action: actionRepo,
+                seller: sellerService,
                 transaction: transactionRepo
             });
 

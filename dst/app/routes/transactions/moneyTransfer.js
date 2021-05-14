@@ -100,7 +100,7 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
     try {
         const sellerService = new cinerino.chevre.service.Seller({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const seller = yield sellerService.findById({ id: req.body.seller.id });
@@ -155,6 +155,7 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
             passportValidator
         })({
             action: actionRepo,
+            seller: sellerService,
             transaction: transactionRepo
         });
         res.json(transaction);

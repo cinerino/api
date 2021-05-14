@@ -90,9 +90,15 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['transaction
     try {
         const projectRepo = new cinerino.repository.Project(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
-        const startParams = yield createStartParams(req)({ project: projectRepo });
+        const sellerService = new cinerino.chevre.service.Seller({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: req.chevreAuthClient,
+            project: { id: req.project.id }
+        });
+        const startParams = yield createStartParams(req)({ project: projectRepo, seller: sellerService });
         const transaction = yield cinerino.service.transaction.placeOrderInProgress.start(startParams)({
             project: projectRepo,
+            seller: sellerService,
             transaction: transactionRepo
         });
         // tslint:disable-next-line:no-string-literal
@@ -108,12 +114,12 @@ function createStartParams(req) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         const expires = req.body.expires;
-        const sellerService = new cinerino.chevre.service.Seller({
-            endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
-            project: { id: req.project.id }
-        });
-        const seller = yield sellerService.findById({ id: req.body.seller.id });
+        // const sellerService = new cinerino.chevre.service.Seller({
+        //     endpoint: cinerino.credentials.chevre.endpoint,
+        //     auth: chevreAuthClient,
+        //     project: { id: req.project.id }
+        // });
+        const seller = yield repos.seller.findById({ id: req.body.seller.id });
         const passportValidator = validateWaiterPassport_1.createPassportValidator({
             transaction: { typeOf: cinerino.factory.transactionType.PlaceOrder },
             seller,
@@ -510,6 +516,16 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             } });
         const result = yield cinerino.service.transaction.placeOrderInProgress.confirm(Object.assign(Object.assign({}, req.body), { agent: { id: req.user.sub }, id: req.params.transactionId, potentialActions: potentialActions, project: req.project, result: Object.assign(Object.assign({}, req.body.result), { order: resultOrderParams }) }))({
             action: actionRepo,
+            categoryCode: new cinerino.chevre.service.CategoryCode({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: req.chevreAuthClient,
+                project: { id: req.project.id }
+            }),
+            seller: new cinerino.chevre.service.Seller({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: req.chevreAuthClient,
+                project: { id: req.project.id }
+            }),
             transaction: transactionRepo,
             confirmationNumber: confirmationNumberRepo,
             orderNumber: orderNumberRepo
