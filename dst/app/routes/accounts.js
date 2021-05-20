@@ -297,7 +297,7 @@ function deposit(params) {
                     toLocation: params.object.toLocation,
                     description: params.object.description,
                     pendingTransaction: {
-                        typeOf: cinerino.factory.pecorino.transactionType.Deposit,
+                        typeOf: cinerino.factory.account.transactionType.Deposit,
                         id: '' // 空でok
                     }
                 },
