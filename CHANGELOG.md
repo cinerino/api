@@ -58,6 +58,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Mongoリポジトリを@chevre/domainからインポートするように変更
 - 承認コードの発行をchevreへ移行
 - cinerinoクライアントユーザーとしてchevreを使用するように調整
+- メンバーシップ注文処理中のすでに登録済エラーハンドリング
 
 ### Deprecated
 
