@@ -133,6 +133,11 @@ accountsRouter.put(
     validator,
     async (req, res, next) => {
         try {
+            const accountService = new cinerino.chevre.service.Account({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            });
             const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient,
@@ -144,6 +149,7 @@ accountsRouter.put(
                 ownedBy: { id: req.user.sub },
                 accountNumber: req.params.accountNumber
             })({
+                account: accountService,
                 ownershipInfo: ownershipInfoService
             });
 
@@ -172,6 +178,11 @@ accountsRouter.get(
     validator,
     async (req, res, next) => {
         try {
+            const accountService = new cinerino.chevre.service.Account({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            });
             const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient,
@@ -184,6 +195,7 @@ accountsRouter.get(
                 conditions: req.query,
                 typeOfGood: { accountNumber: String(req.query.accountNumber) }
             })({
+                account: accountService,
                 ownershipInfo: ownershipInfoService
             });
 

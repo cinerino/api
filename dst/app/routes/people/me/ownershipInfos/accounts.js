@@ -121,6 +121,11 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
  */
 accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(['people.me.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const accountService = new cinerino.chevre.service.Account({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
+        });
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient,
@@ -131,6 +136,7 @@ accountsRouter.put('/:accountType/:accountNumber/close', permitScopes_1.default(
             ownedBy: { id: req.user.sub },
             accountNumber: req.params.accountNumber
         })({
+            account: accountService,
             ownershipInfo: ownershipInfoService
         });
         res.status(http_status_1.NO_CONTENT)
@@ -151,6 +157,11 @@ accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default(['people.me.
         .isString()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const accountService = new cinerino.chevre.service.Account({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
+        });
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient,
@@ -162,6 +173,7 @@ accountsRouter.get('/actions/moneyTransfer', permitScopes_1.default(['people.me.
             conditions: req.query,
             typeOfGood: { accountNumber: String(req.query.accountNumber) }
         })({
+            account: accountService,
             ownershipInfo: ownershipInfoService
         });
         actions = actions.map((a) => {

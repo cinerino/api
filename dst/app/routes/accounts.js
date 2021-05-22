@@ -31,13 +31,13 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
-    domain: cinerino.credentials.pecorino.authorizeServerDomain,
-    clientId: cinerino.credentials.pecorino.clientId,
-    clientSecret: cinerino.credentials.pecorino.clientSecret,
-    scopes: [],
-    state: ''
-});
+// const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
+//     domain: cinerino.credentials.pecorino.authorizeServerDomain,
+//     clientId: cinerino.credentials.pecorino.clientId,
+//     clientSecret: cinerino.credentials.pecorino.clientSecret,
+//     scopes: [],
+//     state: ''
+// });
 const accountsRouter = express_1.Router();
 /**
  * トークンで口座開設
@@ -130,10 +130,16 @@ accountsRouter.post('/openByToken', permitScopes_1.default(['accounts.openByToke
 }));
 function openAccountIfNotExist(params) {
     return __awaiter(this, void 0, void 0, function* () {
-        const accountService = new cinerino.pecorinoapi.service.Account({
-            endpoint: cinerino.credentials.pecorino.endpoint,
-            auth: pecorinoAuthClient
+        // chevreで実装
+        const accountService = new cinerino.chevre.service.Account({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient,
+            project: { id: params.project.id }
         });
+        // const accountService = new cinerino.pecorinoapi.service.Account({
+        //     endpoint: cinerino.credentials.pecorino.endpoint,
+        //     auth: pecorinoAuthClient
+        // });
         try {
             // pecorinoで口座開設
             yield accountService.open([params]);

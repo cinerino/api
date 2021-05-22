@@ -354,6 +354,11 @@ function authorizePointAward(req) {
         const notes = req.body.notes;
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+        const accountService = new cinerino.chevre.service.Account({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
+        });
         const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient,
@@ -391,7 +396,7 @@ function authorizePointAward(req) {
                             project: { id: req.project.id },
                             now: now,
                             accountType: membershipPointsEarnedUnitText
-                        })({ ownershipInfo: ownershipInfoService });
+                        })({ account: accountService, ownershipInfo: ownershipInfoService });
                         givePointAwardParams.push({
                             object: {
                                 typeOf: cinerino.factory.action.authorize.award.point.ObjectType.PointAward,

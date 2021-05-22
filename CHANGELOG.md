@@ -59,6 +59,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 承認コードの発行をchevreへ移行
 - cinerinoクライアントユーザーとしてchevreを使用するように調整
 - メンバーシップ注文処理中のすでに登録済エラーハンドリング
+- Pecorino依存をChevre依存へ変更
 
 ### Deprecated
 
