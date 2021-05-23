@@ -60,6 +60,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - cinerinoクライアントユーザーとしてchevreを使用するように調整
 - メンバーシップ注文処理中のすでに登録済エラーハンドリング
 - Pecorino依存をChevre依存へ変更
+- IAMメンバー検索をChevre依存で実装
+- マイプロジェクト検索をChevre依存で実装
 
 ### Deprecated
 
@@ -79,6 +81,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 予約ダウンロードを削除
 - 注文取引ダウンロードを削除
 - タスクルーターを削除
+- 不要なIAMサービスを削除
+- プロジェクト設定取得を削除
 
 ### Fixed
 

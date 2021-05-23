@@ -5,7 +5,7 @@ import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // import { body } from 'express-validator';
 // import { CREATED, NO_CONTENT } from 'http-status';
-import * as mongoose from 'mongoose';
+// import * as mongoose from 'mongoose';
 
 import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
@@ -24,9 +24,9 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 const ADMIN_USER_POOL_ID = <string>process.env.ADMIN_USER_POOL_ID;
 
 const RESOURCE_SERVER_IDENTIFIER = <string>process.env.RESOURCE_SERVER_IDENTIFIER;
-const TOKEN_ISSUERS_AS_ADMIN: string[] = (typeof process.env.TOKEN_ISSUERS_AS_ADMIN === 'string')
-    ? process.env.TOKEN_ISSUERS_AS_ADMIN.split(',')
-    : [];
+// const TOKEN_ISSUERS_AS_ADMIN: string[] = (typeof process.env.TOKEN_ISSUERS_AS_ADMIN === 'string')
+//     ? process.env.TOKEN_ISSUERS_AS_ADMIN.split(',')
+//     : [];
 
 const projectsRouter = Router();
 
@@ -41,76 +41,73 @@ projectsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const memberRepo = new cinerino.repository.Member(mongoose.connection);
-            const projectService = new cinerino.chevre.service.Project({
+            const meService = new cinerino.chevre.service.Me({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
+                auth: req.chevreAuthClient,
                 project: { id: '' }
             });
 
-            // tslint:disable-next-line:no-magic-numbers
-            const limit = (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100;
-            const page = (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1;
+            const { data } = await meService.searchProjects({
+                ...req.query
+            });
 
-            // 権限を持つプロジェクト検索
-            let searchConditions: any;
-            if (TOKEN_ISSUERS_AS_ADMIN.includes(req.user.iss)) {
-                // 管理ユーザープールのクライアントであればreq.user.subとして検索
-                searchConditions = {
-                    'member.id': { $eq: req.user.sub }
-                };
-            } else {
-                // それ以外であればreq.user.client_idとして検索
-                searchConditions = {
-                    'member.id': { $eq: req.user.client_id }
-                };
-            }
+            res.json(data);
 
-            const projectMembers = await memberRepo.memberModel.find(
-                searchConditions,
-                { project: 1 }
-            )
-                .limit(limit)
-                .skip(limit * (page - 1))
-                .setOptions({ maxTimeMS: 10000 })
-                .exec()
-                .then((docs) => docs.map((doc) => doc.toObject()));
+            // const memberRepo = new cinerino.repository.Member(mongoose.connection);
+            // const projectService = new cinerino.chevre.service.Project({
+            //     endpoint: cinerino.credentials.chevre.endpoint,
+            //     auth: chevreAuthClient,
+            //     project: { id: '' }
+            // });
 
-            let projectIds = projectMembers.map((m) => m.project.id);
-            // length=1だとidsの指定がない検索になってしまうので、ありえないプロジェクトIDで保管
-            if (projectIds.length === 0) {
-                projectIds = ['***NoProjects***'];
-            }
+            // // tslint:disable-next-line:no-magic-numbers
+            // const limit = (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100;
+            // const page = (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1;
 
-            const searchResult = await projectService.search(
-                {
-                    ids: projectIds,
-                    limit: limit,
-                    $projection: { settings: 0 }
-                }
-            );
+            // // 権限を持つプロジェクト検索
+            // let searchConditions: any;
+            // if (TOKEN_ISSUERS_AS_ADMIN.includes(req.user.iss)) {
+            //     // 管理ユーザープールのクライアントであればreq.user.subとして検索
+            //     searchConditions = {
+            //         'member.id': { $eq: req.user.sub }
+            //     };
+            // } else {
+            //     // それ以外であればreq.user.client_idとして検索
+            //     searchConditions = {
+            //         'member.id': { $eq: req.user.client_id }
+            //     };
+            // }
 
-            res.json(searchResult.data);
+            // const projectMembers = await memberRepo.memberModel.find(
+            //     searchConditions,
+            //     { project: 1 }
+            // )
+            //     .limit(limit)
+            //     .skip(limit * (page - 1))
+            //     .setOptions({ maxTimeMS: 10000 })
+            //     .exec()
+            //     .then((docs) => docs.map((doc) => doc.toObject()));
+
+            // let projectIds = projectMembers.map((m) => m.project.id);
+            // // length=1だとidsの指定がない検索になってしまうので、ありえないプロジェクトIDで保管
+            // if (projectIds.length === 0) {
+            //     projectIds = ['***NoProjects***'];
+            // }
+
+            // const searchResult = await projectService.search(
+            //     {
+            //         ids: projectIds,
+            //         limit: limit,
+            //         $projection: { settings: 0 }
+            //     }
+            // );
+
+            // res.json(searchResult.data);
         } catch (error) {
             next(error);
         }
     }
 );
-
-/**
- * プロジェクト検索
- */
-// async function search(
-//     conditions: cinerino.factory.project.ISearchConditions,
-//     projection?: any
-// ): Promise<cinerino.factory.project.IProject[]> {
-//     const searchResult = await projectService.search({
-//         ...conditions,
-//         ...(projection !== undefined && projection !== null) ? { $projection: projection } : undefined
-//     });
-
-//     return searchResult.data;
-// }
 
 /**
  * プロジェクト取得
@@ -160,32 +157,32 @@ projectsRouter.get(
 /**
  * プロジェクト設定取得
  */
-projectsRouter.get(
-    '/:id/settings',
-    permitScopes(['projects.*', 'projects.settings.read']),
-    rateLimit,
-    validator,
-    async (req, res, next) => {
-        try {
-            const projectService = new cinerino.chevre.service.Project({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
-                project: { id: '' }
-            });
-            const project = await projectService.findById({ id: req.project.id });
+// projectsRouter.get(
+//     '/:id/settings',
+//     permitScopes(['projects.*', 'projects.settings.read']),
+//     rateLimit,
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             const projectService = new cinerino.chevre.service.Project({
+//                 endpoint: cinerino.credentials.chevre.endpoint,
+//                 auth: chevreAuthClient,
+//                 project: { id: '' }
+//             });
+//             const project = await projectService.findById({ id: req.project.id });
 
-            res.json({
-                ...project.settings,
-                cognito: {
-                    ...project.settings?.cognito,
-                    // 互換性維持対応として
-                    adminUserPool: { id: ADMIN_USER_POOL_ID }
-                }
-            });
-        } catch (error) {
-            next(error);
-        }
-    }
-);
+//             res.json({
+//                 ...project.settings,
+//                 cognito: {
+//                     ...project.settings?.cognito,
+//                     // 互換性維持対応として
+//                     adminUserPool: { id: ADMIN_USER_POOL_ID }
+//                 }
+//             });
+//         } catch (error) {
+//             next(error);
+//         }
+//     }
+// );
 
 export default projectsRouter;
