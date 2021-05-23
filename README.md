@@ -30,10 +30,6 @@
 | `JOBS_STOPPED`                           | true     | 1 or 0         | 非同期ジョブ停止フラグ                  |
 | `MONGOLAB_URI`                           | true     |                | MongoDB connection URI                  |
 | `MONGO_AUTO_INDEX_DISABLED`              | false    | 1 or 0         | MongoDB auto index flag                 |
-| `PECORINO_AUTHORIZE_SERVER_DOMAIN`       | true     |                | Pecorino credentials                    |
-| `PECORINO_CLIENT_ID`                     | true     |                | Pecorino credentials                    |
-| `PECORINO_CLIENT_SECRET`                 | true     |                | Pecorino credentials                    |
-| `PECORINO_ENDPOINT`                      | true     |                | Pecorino credentials                    |
 | `REDIS_HOST`                             | true     |                | Redis Cache host                        |
 | `REDIS_PORT`                             | true     |                | Redis Cache port                        |
 | `REDIS_KEY`                              | true     |                | Redis Cache key                         |
