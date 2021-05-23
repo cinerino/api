@@ -99,19 +99,6 @@ rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, 
     }
 }));
 /**
- * プロジェクト検索
- */
-// async function search(
-//     conditions: cinerino.factory.project.ISearchConditions,
-//     projection?: any
-// ): Promise<cinerino.factory.project.IProject[]> {
-//     const searchResult = await projectService.search({
-//         ...conditions,
-//         ...(projection !== undefined && projection !== null) ? { $projection: projection } : undefined
-//     });
-//     return searchResult.data;
-// }
-/**
  * プロジェクト取得
  */
 projectsRouter.get('/:id', permitScopes_1.default(['projects.*', 'projects.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
