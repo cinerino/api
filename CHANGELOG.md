@@ -62,6 +62,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Pecorino依存をChevre依存へ変更
 - IAMメンバー検索をChevre依存で実装
 - マイプロジェクト検索をChevre依存で実装
+- 口座所有権検索時に所有物詳細をChevre側で取得するように変更
 
 ### Deprecated
 
@@ -83,6 +84,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - タスクルーターを削除
 - 不要なIAMサービスを削除
 - プロジェクト設定取得を削除
+- 承認検索を削除
 
 ### Fixed
 
