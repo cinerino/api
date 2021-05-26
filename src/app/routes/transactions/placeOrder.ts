@@ -438,11 +438,6 @@ export async function authorizePointAward(req: Request): Promise<cinerino.factor
     const actionRepo = new cinerino.repository.Action(mongoose.connection);
     const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
-    const accountService = new cinerino.chevre.service.Account({
-        endpoint: cinerino.credentials.chevre.endpoint,
-        auth: chevreAuthClient,
-        project: { id: req.project.id }
-    });
     const ownershipInfoService = new cinerino.chevre.service.OwnershipInfo({
         endpoint: cinerino.credentials.chevre.endpoint,
         auth: chevreAuthClient,
@@ -470,7 +465,15 @@ export async function authorizePointAward(req: Request): Promise<cinerino.factor
     if (programMemberships.length > 0) {
         for (const programMembership of programMemberships) {
             const membershipServiceId = <string>(<any>programMembership).membershipFor?.id;
-            const membershipService = await productService.findById({ id: membershipServiceId });
+            const searchMembershipServicesResult = await productService.search({
+                limit: 1,
+                id: { $eq: membershipServiceId }
+            });
+            const membershipService = searchMembershipServicesResult.data.shift();
+            if (membershipService === undefined) {
+                throw new cinerino.factory.errors.NotFound('MembershipService');
+            }
+            // const membershipService = await productService.findById({ id: membershipServiceId });
 
             // 登録時の獲得ポイント
             const membershipServiceOutput = membershipService.serviceOutput;
@@ -486,7 +489,7 @@ export async function authorizePointAward(req: Request): Promise<cinerino.factor
                         project: { id: req.project.id },
                         now: now,
                         accountType: membershipPointsEarnedUnitText
-                    })({ account: accountService, ownershipInfo: ownershipInfoService });
+                    })({ ownershipInfo: ownershipInfoService });
 
                     givePointAwardParams.push({
                         object: {

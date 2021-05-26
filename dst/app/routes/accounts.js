@@ -124,7 +124,6 @@ accountsRouter.post('/openByToken', permitScopes_1.default(['accounts.openByToke
     }
     catch (error) {
         error = cinerino.errorHandler.handleChevreError(error);
-        error = cinerino.errorHandler.handlePecorinoError(error);
         next(error);
     }
 }));

@@ -174,11 +174,6 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['people.*', 'peo
         .toDate()
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const accountService = new cinerino.chevre.service.Account({
-            endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
-            project: { id: req.project.id }
-        });
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: chevreAuthClient,
@@ -207,7 +202,6 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['people.*', 'peo
                     project: req.project,
                     conditions: searchConditions
                 })({
-                    account: accountService,
                     ownershipInfo: ownershipInfoService
                 });
                 break;

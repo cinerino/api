@@ -141,7 +141,6 @@ accountsRouter.post(
                 .end();
         } catch (error) {
             error = cinerino.errorHandler.handleChevreError(error);
-            error = cinerino.errorHandler.handlePecorinoError(error);
             next(error);
         }
     }

@@ -56,11 +56,6 @@ ownershipInfosRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const accountService = new cinerino.chevre.service.Account({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
-                project: { id: req.project.id }
-            });
             const productService = new cinerino.chevre.service.Product({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient,
@@ -98,7 +93,6 @@ ownershipInfosRouter.get(
                         project: req.project,
                         conditions: searchConditions
                     })({
-                        account: accountService,
                         ownershipInfo: ownershipInfoService
                     });
 

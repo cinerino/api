@@ -208,11 +208,6 @@ peopleRouter.get<ParamsDictionary>(
     validator,
     async (req, res, next) => {
         try {
-            const accountService = new cinerino.chevre.service.Account({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
-                project: { id: req.project.id }
-            });
             const productService = new cinerino.chevre.service.Product({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient,
@@ -252,7 +247,6 @@ peopleRouter.get<ParamsDictionary>(
                         project: req.project,
                         conditions: searchConditions
                     })({
-                        account: accountService,
                         ownershipInfo: ownershipInfoService
                     });
 
