@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authorizePointAward = void 0;
 /**
  * 注文取引ルーター
  */
@@ -361,7 +360,7 @@ function authorizePointAward(req) {
         });
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         // 所有メンバーシップを検索
@@ -431,7 +430,6 @@ function authorizePointAward(req) {
         return givePointAwardParams;
     });
 }
-exports.authorizePointAward = authorizePointAward;
 /**
  * インセンティブ承認アクション取消
  */
@@ -531,7 +529,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             }),
             product: new cinerino.chevre.service.Product({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
+                auth: req.chevreAuthClient,
                 project: { id: req.project.id }
             }),
             seller: new cinerino.chevre.service.Seller({

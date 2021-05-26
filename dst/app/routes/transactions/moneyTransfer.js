@@ -115,7 +115,7 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
         // ペイメントカードプロダクトを検索して、currencyを自動取得
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const searchProductsResult = yield productService.search({

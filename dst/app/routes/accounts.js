@@ -65,7 +65,7 @@ accountsRouter.post('/openByToken', permitScopes_1.default(['accounts.openByToke
         // プロダクト検索
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const searchProductsResult = yield productService.search({
@@ -229,7 +229,7 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['accounts.t
         // ひとつ目のペイメントカードプロダクトを検索
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const searchProductsResult = yield productService.search({

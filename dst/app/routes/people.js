@@ -92,7 +92,7 @@ peopleRouter.delete('/:id', permitScopes_1.default(['people.*', 'people.delete']
         }
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const credentials = yield cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
@@ -181,7 +181,7 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['people.*', 'peo
     try {
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const searchPaymentCardProductsResult = yield productService.search({
@@ -253,7 +253,7 @@ peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['peo
         }
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const credentials = yield cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
@@ -299,7 +299,7 @@ peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.d
         }
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const credentials = yield cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({

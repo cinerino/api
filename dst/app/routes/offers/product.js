@@ -101,7 +101,7 @@ productOffersRouter.post('/authorize', permitScopes_1.default(['transactions']),
         });
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const actionObject = req.body.object.map((o) => {

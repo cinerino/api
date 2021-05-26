@@ -19,13 +19,6 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../../../../middlewares/permitScopes");
 const rateLimit_1 = require("../../../../middlewares/rateLimit");
 const validator_1 = require("../../../../middlewares/validator");
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.CHEVRE_CLIENT_ID,
-    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
 function checkUseMyCreditCards(project) {
     var _a;
     if (((_a = project.settings) === null || _a === void 0 ? void 0 : _a.useMyCreditCards) !== true) {
@@ -44,7 +37,7 @@ creditCardsRouter.post('', permitScopes_1.default(['people.me.*']), rateLimit_1.
         checkUseMyCreditCards(project);
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const credentials = yield cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
@@ -80,7 +73,7 @@ creditCardsRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_1.d
         checkUseMyCreditCards(project);
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const credentials = yield cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
@@ -112,7 +105,7 @@ creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['people.me.*']), r
         checkUseMyCreditCards(project);
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const credentials = yield cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({

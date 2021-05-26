@@ -18,13 +18,6 @@ const express_validator_1 = require("express-validator");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.CHEVRE_CLIENT_ID,
-    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
 const productsRouter = express_1.Router();
 /**
  * 検索
@@ -40,7 +33,7 @@ productsRouter.get('', permitScopes_1.default(['products.*', 'products.read']), 
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined });
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const { data } = yield productService.search(Object.assign(Object.assign({}, searchConditions), {
@@ -72,7 +65,7 @@ productsRouter.get('/:id/offers', permitScopes_1.default(['products.*', 'product
     try {
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
         const offers = yield cinerino.service.offer.product.search({

@@ -431,7 +431,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
 );
 
 // tslint:disable-next-line:max-func-body-length
-export async function authorizePointAward(req: Request): Promise<cinerino.factory.transaction.placeOrder.IGivePointAwardParams[]> {
+async function authorizePointAward(req: Request): Promise<cinerino.factory.transaction.placeOrder.IGivePointAwardParams[]> {
     const now = new Date();
     const notes = req.body.notes;
 
@@ -445,7 +445,7 @@ export async function authorizePointAward(req: Request): Promise<cinerino.factor
     });
     const productService = new cinerino.chevre.service.Product({
         endpoint: cinerino.credentials.chevre.endpoint,
-        auth: chevreAuthClient,
+        auth: req.chevreAuthClient,
         project: { id: req.project.id }
     });
 
@@ -675,7 +675,7 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 }),
                 product: new cinerino.chevre.service.Product({
                     endpoint: cinerino.credentials.chevre.endpoint,
-                    auth: chevreAuthClient,
+                    auth: req.chevreAuthClient,
                     project: { id: req.project.id }
                 }),
                 seller: new cinerino.chevre.service.Seller({

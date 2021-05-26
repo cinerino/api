@@ -65,7 +65,7 @@ accountsRouter.post(
             // プロダクト検索
             const productService = new cinerino.chevre.service.Product({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
+                auth: req.chevreAuthClient,
                 project: { id: req.project.id }
             });
             const searchProductsResult = await productService.search({
@@ -265,7 +265,7 @@ accountsRouter.post(
             // ひとつ目のペイメントカードプロダクトを検索
             const productService = new cinerino.chevre.service.Product({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
+                auth: req.chevreAuthClient,
                 project: { id: req.project.id }
             });
             const searchProductsResult = await productService.search({
