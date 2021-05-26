@@ -108,6 +108,11 @@ productOffersRouter.post<ParamsDictionary>(
                 auth: chevreAuthClient,
                 project: { id: req.project.id }
             });
+            const productService = new cinerino.chevre.service.Product({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            });
 
             const actionObject: cinerino.factory.action.authorize.offer.product.IObject = (<any[]>req.body.object).map((o) => {
                 return {
@@ -148,6 +153,7 @@ productOffersRouter.post<ParamsDictionary>(
                 action: new cinerino.repository.Action(mongoose.connection),
                 orderNumber: new cinerino.repository.OrderNumber(redis.getClient()),
                 ownershipInfo: ownershipInfoService,
+                product: productService,
                 registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });

@@ -399,7 +399,7 @@ function authorizePointAward(req) {
                             project: { id: req.project.id },
                             now: now,
                             accountType: membershipPointsEarnedUnitText
-                        })({ ownershipInfo: ownershipInfoService });
+                        })({ ownershipInfo: ownershipInfoService, product: productService });
                         givePointAwardParams.push({
                             object: {
                                 typeOf: cinerino.factory.action.authorize.award.point.ObjectType.PointAward,
@@ -527,6 +527,11 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             categoryCode: new cinerino.chevre.service.CategoryCode({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: req.chevreAuthClient,
+                project: { id: req.project.id }
+            }),
+            product: new cinerino.chevre.service.Product({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
                 project: { id: req.project.id }
             }),
             seller: new cinerino.chevre.service.Seller({

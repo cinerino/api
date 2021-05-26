@@ -64,6 +64,11 @@ accountsRouter.post<ParamsDictionary>(
                 auth: chevreAuthClient,
                 project: { id: req.project.id }
             });
+            const productService = new cinerino.chevre.service.Product({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            });
 
             const result = await cinerino.service.transaction.orderAccount.orderAccount({
                 project: { typeOf: project.typeOf, id: project.id },
@@ -82,6 +87,7 @@ accountsRouter.post<ParamsDictionary>(
                 orderNumber: orderNumberRepo,
                 ownershipInfo: ownershipInfoService,
                 person: personRepo,
+                product: productService,
                 registerActionInProgress: registerActionInProgressRepo,
                 project: projectRepo,
                 seller: new cinerino.chevre.service.Seller({

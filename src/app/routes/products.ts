@@ -52,13 +52,13 @@ productsRouter.get(
             const { data } = await productService.search({
                 ...searchConditions,
                 ...{
-                    $projection: {
-                        'availableChannel.credentials': 0,
-                        'availableChannel.serviceUrl': 0,
-                        'provider.credentials.shopPass': 0,
-                        'provider.credentials.kgygishCd': 0,
-                        'provider.credentials.stCd': 0
-                    }
+                    // $projection: {
+                    //     'availableChannel.credentials': 0,
+                    //     'availableChannel.serviceUrl': 0,
+                    //     'provider.credentials.shopPass': 0,
+                    //     'provider.credentials.kgygishCd': 0,
+                    //     'provider.credentials.stCd': 0
+                    // }
                 }
             });
 
@@ -86,12 +86,18 @@ productsRouter.get<ParamsDictionary>(
     validator,
     async (req, res, next) => {
         try {
+            const productService = new cinerino.chevre.service.Product({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            });
+
             const offers = await cinerino.service.offer.product.search({
                 project: { id: req.project.id },
                 itemOffered: { id: req.params.id },
                 seller: { id: req.query.seller?.id },
                 availableAt: { id: req.user.client_id }
-            })({});
+            })({ product: productService });
 
             res.json(offers);
         } catch (error) {

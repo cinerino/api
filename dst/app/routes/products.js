@@ -44,13 +44,13 @@ productsRouter.get('', permitScopes_1.default(['products.*', 'products.read']), 
             project: { id: req.project.id }
         });
         const { data } = yield productService.search(Object.assign(Object.assign({}, searchConditions), {
-            $projection: {
-                'availableChannel.credentials': 0,
-                'availableChannel.serviceUrl': 0,
-                'provider.credentials.shopPass': 0,
-                'provider.credentials.kgygishCd': 0,
-                'provider.credentials.stCd': 0
-            }
+        // $projection: {
+        //     'availableChannel.credentials': 0,
+        //     'availableChannel.serviceUrl': 0,
+        //     'provider.credentials.shopPass': 0,
+        //     'provider.credentials.kgygishCd': 0,
+        //     'provider.credentials.stCd': 0
+        // }
         }));
         res.json(data);
     }
@@ -70,12 +70,17 @@ productsRouter.get('/:id/offers', permitScopes_1.default(['products.*', 'product
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
+        const productService = new cinerino.chevre.service.Product({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
+        });
         const offers = yield cinerino.service.offer.product.search({
             project: { id: req.project.id },
             itemOffered: { id: req.params.id },
             seller: { id: (_a = req.query.seller) === null || _a === void 0 ? void 0 : _a.id },
             availableAt: { id: req.user.client_id }
-        })({});
+        })({ product: productService });
         res.json(offers);
     }
     catch (error) {

@@ -10,6 +10,14 @@ import permitScopes from '../../../../middlewares/permitScopes';
 import rateLimit from '../../../../middlewares/rateLimit';
 import validator from '../../../../middlewares/validator';
 
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+
 function checkUseMyCreditCards(project: cinerino.factory.project.IProject) {
     if (project.settings?.useMyCreditCards !== true) {
         throw new cinerino.factory.errors.Forbidden('my credit cards service unavailable');
@@ -33,10 +41,15 @@ creditCardsRouter.post(
 
             checkUseMyCreditCards(project);
 
+            const productService = new cinerino.chevre.service.Product({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            });
             const credentials = await cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
                 project: { id: req.project.id },
                 paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
-            });
+            })({ product: productService });
 
             const useUsernameAsGMOMemberId = project.settings?.useUsernameAsGMOMemberId === true;
             const memberId = (useUsernameAsGMOMemberId) ? <string>req.user.username : req.user.sub;
@@ -72,10 +85,15 @@ creditCardsRouter.get(
 
             checkUseMyCreditCards(project);
 
+            const productService = new cinerino.chevre.service.Product({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            });
             const credentials = await cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
                 project: { id: req.project.id },
                 paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
-            });
+            })({ product: productService });
 
             const useUsernameAsGMOMemberId = project.settings?.useUsernameAsGMOMemberId === true;
             const memberId = (useUsernameAsGMOMemberId) ? <string>req.user.username : req.user.sub;
@@ -108,10 +126,16 @@ creditCardsRouter.delete(
 
             checkUseMyCreditCards(project);
 
+            const productService = new cinerino.chevre.service.Product({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            });
+
             const credentials = await cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
                 project: { id: req.project.id },
                 paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
-            });
+            })({ product: productService });
 
             const useUsernameAsGMOMemberId = project.settings?.useUsernameAsGMOMemberId === true;
             const memberId = (useUsernameAsGMOMemberId) ? <string>req.user.username : req.user.sub;

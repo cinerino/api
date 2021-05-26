@@ -489,7 +489,7 @@ export async function authorizePointAward(req: Request): Promise<cinerino.factor
                         project: { id: req.project.id },
                         now: now,
                         accountType: membershipPointsEarnedUnitText
-                    })({ ownershipInfo: ownershipInfoService });
+                    })({ ownershipInfo: ownershipInfoService, product: productService });
 
                     givePointAwardParams.push({
                         object: {
@@ -671,6 +671,11 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 categoryCode: new cinerino.chevre.service.CategoryCode({
                     endpoint: cinerino.credentials.chevre.endpoint,
                     auth: req.chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
+                product: new cinerino.chevre.service.Product({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
                     project: { id: req.project.id }
                 }),
                 seller: new cinerino.chevre.service.Seller({

@@ -103,10 +103,15 @@ peopleRouter.delete(
                 throw new cinerino.factory.errors.ServiceUnavailable('Project settings undefined');
             }
 
+            const productService = new cinerino.chevre.service.Product({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            });
             const credentials = await cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
                 project: { id: req.project.id },
                 paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
-            });
+            })({ product: productService });
 
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
@@ -308,10 +313,15 @@ peopleRouter.get(
                 memberId = <string>person.memberOf.membershipNumber;
             }
 
+            const productService = new cinerino.chevre.service.Product({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            });
             const credentials = await cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
                 project: { id: req.project.id },
                 paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
-            });
+            })({ product: productService });
 
             const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
                 siteId: credentials.siteId,
@@ -361,10 +371,15 @@ peopleRouter.delete(
                 memberId = <string>person.memberOf.membershipNumber;
             }
 
+            const productService = new cinerino.chevre.service.Product({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            });
             const credentials = await cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
                 project: { id: req.project.id },
                 paymentMethodType: cinerino.factory.paymentMethodType.CreditCard
-            });
+            })({ product: productService });
 
             const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
                 siteId: credentials.siteId,

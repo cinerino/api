@@ -61,6 +61,11 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
             auth: chevreAuthClient,
             project: { id: req.project.id }
         });
+        const productService = new cinerino.chevre.service.Product({
+            endpoint: cinerino.credentials.chevre.endpoint,
+            auth: chevreAuthClient,
+            project: { id: req.project.id }
+        });
         const result = yield cinerino.service.transaction.orderAccount.orderAccount({
             project: { typeOf: project.typeOf, id: project.id },
             agent: { typeOf: req.agent.typeOf, id: req.agent.id },
@@ -78,6 +83,7 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
             orderNumber: orderNumberRepo,
             ownershipInfo: ownershipInfoService,
             person: personRepo,
+            product: productService,
             registerActionInProgress: registerActionInProgressRepo,
             project: projectRepo,
             seller: new cinerino.chevre.service.Seller({
