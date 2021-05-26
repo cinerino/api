@@ -105,7 +105,7 @@ peopleRouter.delete(
 
             const productService = new cinerino.chevre.service.Product({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: req.chevreAuthClient,
+                auth: chevreAuthClient,
                 project: { id: req.project.id }
             });
             const credentials = await cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
@@ -315,7 +315,7 @@ peopleRouter.get(
 
             const productService = new cinerino.chevre.service.Product({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: req.chevreAuthClient,
+                auth: chevreAuthClient,
                 project: { id: req.project.id }
             });
             const credentials = await cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
@@ -373,7 +373,7 @@ peopleRouter.delete(
 
             const productService = new cinerino.chevre.service.Product({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: req.chevreAuthClient,
+                auth: chevreAuthClient,
                 project: { id: req.project.id }
             });
             const credentials = await cinerino.service.payment.chevre.getCreditCardPaymentServiceChannel({
