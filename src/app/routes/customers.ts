@@ -8,14 +8,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.CHEVRE_CLIENT_ID,
-    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
-
 const customersRouter = Router();
 
 /**
@@ -30,7 +22,7 @@ customersRouter.get(
         try {
             const customerService = new cinerino.chevre.service.Customer({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
+                auth: req.chevreAuthClient,
                 project: { id: req.project.id }
             });
 
@@ -58,7 +50,7 @@ customersRouter.get(
         try {
             const customerService = new cinerino.chevre.service.Customer({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
+                auth: req.chevreAuthClient,
                 project: { id: req.project.id }
             });
 

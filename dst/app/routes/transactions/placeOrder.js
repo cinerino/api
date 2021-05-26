@@ -160,7 +160,7 @@ function createStartParams(req) {
         if (typeof customerIdByRequest === 'string' && customerIdByRequest.length > 0) {
             const customerService = new cinerino.chevre.service.Customer({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
+                auth: req.chevreAuthClient,
                 project: { id: req.project.id }
             });
             const customerFromChevre = yield customerService.findById({ id: customerIdByRequest });
