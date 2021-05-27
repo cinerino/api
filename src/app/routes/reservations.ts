@@ -260,23 +260,16 @@ reservationsRouter.get<ParamsDictionary>(
         try {
             const reservationId = req.params.id;
 
-            // Chevreアクション検索で実装する
-            const actionService = new cinerino.chevre.service.Action({
+            // Chevreで検索
+            const reservationService = new cinerino.chevre.service.Reservation({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
+                auth: req.chevreAuthClient,
                 project: { id: req.project.id }
             });
-            const searchActionsResult = await actionService.search({
-                limit: 100,
-                sort: { startDate: cinerino.factory.sortType.Descending },
-                project: { id: { $eq: req.project.id } },
-                typeOf: { $eq: cinerino.factory.chevre.actionType.UseAction },
-                actionStatus: { $in: [cinerino.factory.chevre.actionStatusType.CompletedActionStatus] },
+            const searchActionsResult = await reservationService.searchUseActions({
+                ...req.query,
                 object: {
-                    typeOf: { $eq: cinerino.factory.chevre.reservationType.EventReservation },
-                    ...{
-                        id: { $eq: reservationId }
-                    }
+                    id: { $eq: reservationId }
                 }
             });
 

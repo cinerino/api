@@ -175,7 +175,12 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
             paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.MovieTicket
         })({
             action: actionRepo,
-            transaction: transactionRepo
+            transaction: transactionRepo,
+            transactionNumber: new cinerino.chevre.service.TransactionNumber({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: req.chevreAuthClient,
+                project: { id: req.project.id }
+            })
         });
         res.status(http_status_1.CREATED)
             .json(action);

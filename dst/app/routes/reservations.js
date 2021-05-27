@@ -212,22 +212,15 @@ reservationsRouter.get('/:id/actions/use', permitScopes_1.default(['reservations
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const reservationId = req.params.id;
-        // Chevreアクション検索で実装する
-        const actionService = new cinerino.chevre.service.Action({
+        // Chevreで検索
+        const reservationService = new cinerino.chevre.service.Reservation({
             endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
+            auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
-        const searchActionsResult = yield actionService.search({
-            limit: 100,
-            sort: { startDate: cinerino.factory.sortType.Descending },
-            project: { id: { $eq: req.project.id } },
-            typeOf: { $eq: cinerino.factory.chevre.actionType.UseAction },
-            actionStatus: { $in: [cinerino.factory.chevre.actionStatusType.CompletedActionStatus] },
-            object: Object.assign({ typeOf: { $eq: cinerino.factory.chevre.reservationType.EventReservation } }, {
+        const searchActionsResult = yield reservationService.searchUseActions(Object.assign(Object.assign({}, req.query), { object: {
                 id: { $eq: reservationId }
-            })
-        });
+            } }));
         res.json(searchActionsResult.data);
     }
     catch (error) {

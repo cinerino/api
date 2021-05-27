@@ -155,7 +155,12 @@ productOffersRouter.post<ParamsDictionary>(
                 ownershipInfo: ownershipInfoService,
                 product: productService,
                 registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),
-                transaction: new cinerino.repository.Transaction(mongoose.connection)
+                transaction: new cinerino.repository.Transaction(mongoose.connection),
+                transactionNumber: new cinerino.chevre.service.TransactionNumber({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: req.chevreAuthClient,
+                    project: { id: req.project.id }
+                })
             });
 
             res.status(CREATED)

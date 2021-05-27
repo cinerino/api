@@ -120,7 +120,12 @@ creditCardPaymentRouter.post<ParamsDictionary>(
                 paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.CreditCard
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
-                transaction: new cinerino.repository.Transaction(mongoose.connection)
+                transaction: new cinerino.repository.Transaction(mongoose.connection),
+                transactionNumber: new cinerino.chevre.service.TransactionNumber({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: req.chevreAuthClient,
+                    project: { id: req.project.id }
+                })
             });
 
             res.status(CREATED)

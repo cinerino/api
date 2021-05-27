@@ -11,14 +11,6 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.CHEVRE_CLIENT_ID,
-    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
-
 const actionsRouter = Router();
 
 /**
@@ -52,11 +44,11 @@ actionsRouter.get(
             // chevreで検索
             const actionService = new cinerino.chevre.service.Action({
                 endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
+                auth: req.chevreAuthClient,
                 project: { id: req.project.id }
             });
 
-            const { data } = await actionService.search(<any>searchConditions);
+            const { data } = await actionService.search(searchConditions);
 
             res.json(data);
         } catch (error) {

@@ -312,7 +312,13 @@ accountsRouter.post(
                     description: description
                 },
                 recipient: recipient
-            })({});
+            })({
+                transactionNumber: new cinerino.chevre.service.TransactionNumber({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: req.chevreAuthClient,
+                    project: { id: req.project.id }
+                })
+            });
 
             res.status(NO_CONTENT)
                 .end();
@@ -328,14 +334,11 @@ export function deposit(params: {
     object: cinerino.chevre.factory.assetTransaction.moneyTransfer.IObjectWithoutDetail;
     recipient: cinerino.chevre.factory.assetTransaction.moneyTransfer.IRecipient;
 }) {
-    return async (__: {}) => {
+    return async (repos: {
+        transactionNumber: cinerino.chevre.service.TransactionNumber;
+    }) => {
         try {
-            const transactionNumberService = new cinerino.chevre.service.TransactionNumber({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
-                project: { id: params.project.id }
-            });
-            const { transactionNumber } = await transactionNumberService.publish({
+            const { transactionNumber } = await repos.transactionNumber.publish({
                 project: { id: params.project.id }
             });
 

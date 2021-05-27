@@ -194,7 +194,7 @@ function createStartParams(req: Request) {
             if (customerFromChevre.project?.id !== req.project.id) {
                 throw new cinerino.factory.errors.NotFound('Customer');
             }
-            customer.typeOf = customerFromChevre.typeOf;
+            customer.typeOf = <any>customerFromChevre.typeOf;
             customer.id = customerFromChevre.id;
         }
 
@@ -330,7 +330,12 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 event: eventService,
-                transaction: new cinerino.repository.Transaction(mongoose.connection)
+                transaction: new cinerino.repository.Transaction(mongoose.connection),
+                transactionNumber: new cinerino.chevre.service.TransactionNumber({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: req.chevreAuthClient,
+                    project: { id: req.project.id }
+                })
             });
 
             res.status(CREATED)

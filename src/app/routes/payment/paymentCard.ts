@@ -242,7 +242,12 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
                 paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.PaymentCard
             })({
                 action: actionRepo,
-                transaction: transactionRepo
+                transaction: transactionRepo,
+                transactionNumber: new cinerino.chevre.service.TransactionNumber({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: req.chevreAuthClient,
+                    project: { id: req.project.id }
+                })
             });
 
             res.status(CREATED)

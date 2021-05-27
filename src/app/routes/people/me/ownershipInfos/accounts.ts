@@ -95,7 +95,12 @@ accountsRouter.post<ParamsDictionary>(
                     auth: req.chevreAuthClient,
                     project: { id: req.project.id }
                 }),
-                transaction: transactionRepo
+                transaction: transactionRepo,
+                transactionNumber: new cinerino.chevre.service.TransactionNumber({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: req.chevreAuthClient,
+                    project: { id: req.project.id }
+                })
             });
 
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)

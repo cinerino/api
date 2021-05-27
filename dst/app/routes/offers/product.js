@@ -133,7 +133,12 @@ productOffersRouter.post('/authorize', permitScopes_1.default(['transactions']),
             ownershipInfo: ownershipInfoService,
             product: productService,
             registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),
-            transaction: new cinerino.repository.Transaction(mongoose.connection)
+            transaction: new cinerino.repository.Transaction(mongoose.connection),
+            transactionNumber: new cinerino.chevre.service.TransactionNumber({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: req.chevreAuthClient,
+                project: { id: req.project.id }
+            })
         });
         res.status(http_status_1.CREATED)
             .json(action);

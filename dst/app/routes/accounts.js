@@ -263,7 +263,13 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['accounts.t
                 description: description
             },
             recipient: recipient
-        })({});
+        })({
+            transactionNumber: new cinerino.chevre.service.TransactionNumber({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: req.chevreAuthClient,
+                project: { id: req.project.id }
+            })
+        });
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
@@ -272,14 +278,9 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['accounts.t
     }
 }));
 function deposit(params) {
-    return (__) => __awaiter(this, void 0, void 0, function* () {
+    return (repos) => __awaiter(this, void 0, void 0, function* () {
         try {
-            const transactionNumberService = new cinerino.chevre.service.TransactionNumber({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: chevreAuthClient,
-                project: { id: params.project.id }
-            });
-            const { transactionNumber } = yield transactionNumberService.publish({
+            const { transactionNumber } = yield repos.transactionNumber.publish({
                 project: { id: params.project.id }
             });
             // Chevreで入金
