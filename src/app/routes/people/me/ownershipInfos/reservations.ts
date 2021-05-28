@@ -10,11 +10,5 @@ import { Router } from 'express';
 // import validator from '../../../../middlewares/validator';
 
 const reservationsRouter = Router();
-// const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-//     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-//     clientId: <string>process.env.CHEVRE_CLIENT_ID,
-//     clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-//     scopes: [],
-//     state: ''
-// });
+
 export default reservationsRouter;

@@ -10,6 +10,14 @@ export default async (params: {
 }) => {
     const connection = await connectMongo({ defaultConnection: false });
 
+    const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+        domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+        clientId: <string>process.env.CHEVRE_CLIENT_ID,
+        clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+        scopes: [],
+        state: ''
+    });
+
     let count = 0;
 
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
@@ -28,7 +36,7 @@ export default async (params: {
                     project: params.project,
                     name: cinerino.factory.taskName.ConfirmRefund
                 })({
-                    connection: connection
+                    connection: connection, chevreAuthClient
                 });
             } catch (error) {
                 console.error(error);

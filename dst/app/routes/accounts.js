@@ -31,13 +31,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-// const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
-//     domain: cinerino.credentials.pecorino.authorizeServerDomain,
-//     clientId: cinerino.credentials.pecorino.clientId,
-//     clientSecret: cinerino.credentials.pecorino.clientSecret,
-//     scopes: [],
-//     state: ''
-// });
 const accountsRouter = express_1.Router();
 /**
  * トークンで口座開設

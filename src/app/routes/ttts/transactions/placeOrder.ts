@@ -11,14 +11,6 @@ const placeOrderTransactionsRouter = Router();
 import permitScopes from '../../../middlewares/permitScopes';
 import validator from '../../../middlewares/validator';
 
-// const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-//     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-//     clientId: <string>process.env.CHEVRE_CLIENT_ID,
-//     clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-//     scopes: [],
-//     state: ''
-// });
-
 export interface IAcceptedOffer4ttts {
     /**
      * オファーコード(オファーIDではない)

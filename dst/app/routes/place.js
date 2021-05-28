@@ -17,13 +17,6 @@ const express_1 = require("express");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-// const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-//     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-//     clientId: <string>process.env.CHEVRE_CLIENT_ID,
-//     clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
-//     scopes: [],
-//     state: ''
-// });
 const placesRouter = express_1.Router();
 placesRouter.get(`/${cinerino.factory.chevre.placeType.MovieTheater}`, permitScopes_1.default(['places.*', 'places.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {

@@ -11,6 +11,14 @@ export default async (params: {
 }) => {
     const connection = await connectMongo({ defaultConnection: false });
 
+    const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+        domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+        clientId: <string>process.env.CHEVRE_CLIENT_ID,
+        clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+        scopes: [],
+        state: ''
+    });
+
     const redisClient = redis.createClient({
         host: <string>process.env.REDIS_HOST,
         port: Number(<string>process.env.REDIS_PORT),
@@ -37,7 +45,8 @@ export default async (params: {
                     name: cinerino.factory.taskName.ConfirmRegisterService
                 })({
                     connection: connection,
-                    redisClient: redisClient
+                    redisClient: redisClient,
+                    chevreAuthClient
                 });
             } catch (error) {
                 // tslint:disable-next-line:no-console

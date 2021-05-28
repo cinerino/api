@@ -16,6 +16,13 @@ const cinerino = require("@cinerino/domain");
 const connectMongo_1 = require("../../../connectMongo");
 exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
+    const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+        domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+        clientId: process.env.CHEVRE_CLIENT_ID,
+        clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+        scopes: [],
+        state: ''
+    });
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 100;
@@ -29,7 +36,7 @@ exports.default = (params) => __awaiter(void 0, void 0, void 0, function* () {
                 project: params.project,
                 name: cinerino.factory.taskName.VoidMoneyTransferTransaction
             })({
-                connection: connection
+                connection: connection, chevreAuthClient
             });
         }
         catch (error) {
