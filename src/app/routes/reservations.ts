@@ -267,10 +267,8 @@ reservationsRouter.get<ParamsDictionary>(
                 project: { id: req.project.id }
             });
             const searchActionsResult = await reservationService.searchUseActions({
-                ...req.query,
-                object: {
-                    id: { $eq: reservationId }
-                }
+                // ...req.query,
+                object: { id: reservationId }
             });
 
             res.json(searchActionsResult.data);

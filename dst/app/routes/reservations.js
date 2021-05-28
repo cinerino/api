@@ -218,9 +218,10 @@ reservationsRouter.get('/:id/actions/use', permitScopes_1.default(['reservations
             auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
-        const searchActionsResult = yield reservationService.searchUseActions(Object.assign(Object.assign({}, req.query), { object: {
-                id: { $eq: reservationId }
-            } }));
+        const searchActionsResult = yield reservationService.searchUseActions({
+            // ...req.query,
+            object: { id: reservationId }
+        });
         res.json(searchActionsResult.data);
     }
     catch (error) {
