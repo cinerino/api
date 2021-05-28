@@ -23,6 +23,13 @@ const rateLimit_1 = require("../../middlewares/rateLimit");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
 const redis = require("../../../redis");
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -239,7 +246,8 @@ returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defa
                 yield Promise.all(tasks.map((task) => __awaiter(void 0, void 0, void 0, function* () {
                     yield cinerino.service.task.executeByName(task)({
                         connection: mongoose.connection,
-                        redisClient: redis.getClient()
+                        redisClient: redis.getClient(),
+                        chevreAuthClient
                     });
                 })));
             }

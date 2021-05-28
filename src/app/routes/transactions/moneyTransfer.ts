@@ -427,7 +427,8 @@ moneyTransferTransactionsRouter.put(
                         await Promise.all(tasks.map(async (task) => {
                             await cinerino.service.task.executeByName(task)({
                                 connection: mongoose.connection,
-                                redisClient: redis.getClient()
+                                redisClient: redis.getClient(),
+                                chevreAuthClient
                             });
                         }));
                     }

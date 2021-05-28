@@ -17,6 +17,14 @@ import validator from '../../middlewares/validator';
 
 import * as redis from '../../../redis';
 
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
@@ -278,7 +286,8 @@ returnOrderTransactionsRouter.put<ParamsDictionary>(
                         await Promise.all(tasks.map(async (task) => {
                             await cinerino.service.task.executeByName(task)({
                                 connection: mongoose.connection,
-                                redisClient: redis.getClient()
+                                redisClient: redis.getClient(),
+                                chevreAuthClient
                             });
                         }));
                     }

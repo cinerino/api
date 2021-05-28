@@ -574,7 +574,8 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
                 yield Promise.all(tasks.map((task) => __awaiter(void 0, void 0, void 0, function* () {
                     yield cinerino.service.task.executeByName(task)({
                         connection: mongoose.connection,
-                        redisClient: redis.getClient()
+                        redisClient: redis.getClient(),
+                        chevreAuthClient
                     });
                 })));
             }
