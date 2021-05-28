@@ -10,6 +10,14 @@ import validator from '../middlewares/validator';
 
 export const TOKEN_EXPIRES_IN = 1800;
 
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+
 const tokensRouter = Router();
 
 /**
@@ -28,7 +36,13 @@ tokensRouter.post(
                 secret: <string>process.env.TOKEN_SECRET,
                 issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER,
                 expiresIn: TOKEN_EXPIRES_IN
-            })();
+            })({
+                authorization: new cinerino.chevre.service.Authorization({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
+                })
+            });
 
             res.json({ token });
         } catch (error) {

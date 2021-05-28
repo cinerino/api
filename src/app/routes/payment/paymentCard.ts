@@ -287,6 +287,11 @@ paymentCardPaymentRouter.put(
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
+                assetTransaction: new cinerino.chevre.service.AssetTransaction({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 

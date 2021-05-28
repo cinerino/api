@@ -19,6 +19,13 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 exports.TOKEN_EXPIRES_IN = 1800;
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const tokensRouter = express_1.Router();
 /**
  * コードからトークンを発行する
@@ -31,7 +38,13 @@ tokensRouter.post('', permitScopes_1.default(['tokens']), rateLimit_1.default, v
             secret: process.env.TOKEN_SECRET,
             issuer: process.env.RESOURCE_SERVER_IDENTIFIER,
             expiresIn: exports.TOKEN_EXPIRES_IN
-        })();
+        })({
+            authorization: new cinerino.chevre.service.Authorization({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            })
+        });
         res.json({ token });
     }
     catch (error) {

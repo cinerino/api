@@ -705,7 +705,12 @@ ordersRouter.post('/:orderNumber/authorize', permitScopes_1.default(['orders.*',
             validFrom: now,
             expiresInSeconds: expiresInSeconds
         })({
-            action: actionRepo
+            action: actionRepo,
+            authorization: new cinerino.chevre.service.Authorization({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            })
         });
         // 予約番号でChevreチェックイン
         const reservationService = new cinerino.chevre.service.Reservation({

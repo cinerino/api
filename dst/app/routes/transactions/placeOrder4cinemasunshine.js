@@ -22,6 +22,13 @@ const lockTransaction_1 = require("../../middlewares/lockTransaction");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const rateLimit4transactionInProgress_1 = require("../../middlewares/rateLimit4transactionInProgress");
 const validator_1 = require("../../middlewares/validator");
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const placeOrder4cinemasunshineRouter = express_1.Router();
 /**
  * 座席仮予約
@@ -51,6 +58,11 @@ placeOrder4cinemasunshineRouter.post('/:transactionId/actions/authorize/seatRese
             event: new cinerino.chevre.service.Event({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: req.chevreAuthClient,
+                project: { id: req.project.id }
+            }),
+            offer: new cinerino.chevre.service.Offer({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
                 project: { id: req.project.id }
             }),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
@@ -121,6 +133,11 @@ placeOrder4cinemasunshineRouter.patch('/:transactionId/actions/authorize/seatRes
             event: new cinerino.chevre.service.Event({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: req.chevreAuthClient,
+                project: { id: req.project.id }
+            }),
+            offer: new cinerino.chevre.service.Offer({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
                 project: { id: req.project.id }
             }),
             transaction: new cinerino.repository.Transaction(mongoose.connection)

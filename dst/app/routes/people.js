@@ -212,7 +212,12 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['people.*', 'peo
                 break;
             case cinerino.factory.chevre.reservationType.EventReservation === typeOfGood.typeOf:
                 ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(Object.assign(Object.assign({}, searchConditions), { project: { typeOf: req.project.typeOf, id: req.project.id } }))({
-                    ownershipInfo: ownershipInfoService
+                    ownershipInfo: ownershipInfoService,
+                    reservation: new cinerino.chevre.service.Reservation({
+                        endpoint: cinerino.credentials.chevre.endpoint,
+                        auth: chevreAuthClient,
+                        project: { id: req.project.id }
+                    })
                 });
                 break;
             default:

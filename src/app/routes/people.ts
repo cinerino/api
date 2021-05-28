@@ -262,7 +262,12 @@ peopleRouter.get<ParamsDictionary>(
                         ...searchConditions,
                         project: { typeOf: req.project.typeOf, id: req.project.id }
                     })({
-                        ownershipInfo: ownershipInfoService
+                        ownershipInfo: ownershipInfoService,
+                        reservation: new cinerino.chevre.service.Reservation({
+                            endpoint: cinerino.credentials.chevre.endpoint,
+                            auth: chevreAuthClient,
+                            project: { id: req.project.id }
+                        })
                     });
 
                     break;

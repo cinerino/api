@@ -14,6 +14,14 @@ import permitScopes from '../../middlewares/permitScopes';
 import rateLimit4transactionInProgress from '../../middlewares/rateLimit4transactionInProgress';
 import validator from '../../middlewares/validator';
 
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+
 const placeOrder4cinemasunshineRouter = Router();
 
 /**
@@ -50,6 +58,11 @@ placeOrder4cinemasunshineRouter.post(
                 event: new cinerino.chevre.service.Event({
                     endpoint: cinerino.credentials.chevre.endpoint,
                     auth: req.chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
+                offer: new cinerino.chevre.service.Offer({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
                     project: { id: req.project.id }
                 }),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
@@ -136,6 +149,11 @@ placeOrder4cinemasunshineRouter.patch(
                 event: new cinerino.chevre.service.Event({
                     endpoint: cinerino.credentials.chevre.endpoint,
                     auth: req.chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
+                offer: new cinerino.chevre.service.Offer({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
                     project: { id: req.project.id }
                 }),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)

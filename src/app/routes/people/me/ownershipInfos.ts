@@ -103,7 +103,12 @@ ownershipInfosRouter.get(
                         ...searchConditions,
                         project: { typeOf: req.project.typeOf, id: req.project.id }
                     })({
-                        ownershipInfo: ownershipInfoService
+                        ownershipInfo: ownershipInfoService,
+                        reservation: new cinerino.chevre.service.Reservation({
+                            endpoint: cinerino.credentials.chevre.endpoint,
+                            auth: chevreAuthClient,
+                            project: { id: req.project.id }
+                        })
                     });
                     break;
 
@@ -165,7 +170,12 @@ ownershipInfosRouter.post(
                 validFrom: now,
                 expiresInSeconds: expiresInSeconds
             })({
-                action: actionRepo
+                action: actionRepo,
+                authorization: new cinerino.chevre.service.Authorization({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
+                })
             });
             const code = authorizations[0].code;
 

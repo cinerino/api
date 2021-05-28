@@ -95,6 +95,11 @@ accountsRouter.post<ParamsDictionary>(
                     auth: req.chevreAuthClient,
                     project: { id: req.project.id }
                 }),
+                serviceOutput: new cinerino.chevre.service.ServiceOutput({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
                 transaction: transactionRepo,
                 transactionNumber: new cinerino.chevre.service.TransactionNumber({
                     endpoint: cinerino.credentials.chevre.endpoint,

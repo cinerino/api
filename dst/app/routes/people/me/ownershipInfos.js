@@ -87,7 +87,12 @@ ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_
                 break;
             case cinerino.factory.chevre.reservationType.EventReservation === typeOfGood.typeOf:
                 ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(Object.assign(Object.assign({}, searchConditions), { project: { typeOf: req.project.typeOf, id: req.project.id } }))({
-                    ownershipInfo: ownershipInfoService
+                    ownershipInfo: ownershipInfoService,
+                    reservation: new cinerino.chevre.service.Reservation({
+                        endpoint: cinerino.credentials.chevre.endpoint,
+                        auth: chevreAuthClient,
+                        project: { id: req.project.id }
+                    })
                 });
                 break;
             default:
@@ -136,7 +141,12 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['people.me.*
             validFrom: now,
             expiresInSeconds: expiresInSeconds
         })({
-            action: actionRepo
+            action: actionRepo,
+            authorization: new cinerino.chevre.service.Authorization({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            })
         });
         const code = authorizations[0].code;
         // 座席予約に対する所有権であれば、Chevreでチェックイン

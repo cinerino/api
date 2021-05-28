@@ -252,6 +252,11 @@ paymentCardPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
+            assetTransaction: new cinerino.chevre.service.AssetTransaction({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            }),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)

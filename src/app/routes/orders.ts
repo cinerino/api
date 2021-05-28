@@ -821,7 +821,12 @@ ordersRouter.post<ParamsDictionary>(
                 validFrom: now,
                 expiresInSeconds: expiresInSeconds
             })({
-                action: actionRepo
+                action: actionRepo,
+                authorization: new cinerino.chevre.service.Authorization({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
+                })
             });
 
             // 予約番号でChevreチェックイン

@@ -133,6 +133,11 @@ productOffersRouter.post('/authorize', permitScopes_1.default(['transactions']),
             ownershipInfo: ownershipInfoService,
             product: productService,
             registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),
+            serviceOutput: new cinerino.chevre.service.ServiceOutput({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            }),
             transaction: new cinerino.repository.Transaction(mongoose.connection),
             transactionNumber: new cinerino.chevre.service.TransactionNumber({
                 endpoint: cinerino.credentials.chevre.endpoint,
@@ -171,6 +176,11 @@ productOffersRouter.put('/authorize/:actionId/void', permitScopes_1.default(['tr
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
+            assetTransaction: new cinerino.chevre.service.AssetTransaction({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            }),
             registerActionInProgress: new cinerino.repository.action.RegisterServiceInProgress(redis.getClient()),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
