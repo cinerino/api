@@ -276,33 +276,55 @@ function deposit(params) {
             const { transactionNumber } = yield repos.transactionNumber.publish({
                 project: { id: params.project.id }
             });
-            // Chevreで入金
-            const moneyTransferService = new cinerino.chevre.service.assetTransaction.MoneyTransfer({
+            const expires = moment()
+                .add(1, 'minutes')
+                .toDate();
+            // ChevreのaccountTransactionサービスを使用する
+            const depositService = new cinerino.chevre.service.accountTransaction.Deposit({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient,
                 project: { id: params.project.id }
             });
-            yield moneyTransferService.start({
-                transactionNumber: transactionNumber,
+            yield depositService.start({
+                transactionNumber,
                 project: { typeOf: cinerino.factory.chevre.organizationType.Project, id: params.project.id },
-                typeOf: cinerino.chevre.factory.assetTransactionType.MoneyTransfer,
+                typeOf: cinerino.factory.account.transactionType.Deposit,
                 agent: params.agent,
-                expires: moment()
-                    .add(1, 'minutes')
-                    .toDate(),
+                expires,
                 object: {
-                    amount: params.object.amount,
+                    amount: (typeof params.object.amount.value === 'number') ? params.object.amount.value : 0,
                     fromLocation: params.object.fromLocation,
-                    toLocation: params.object.toLocation,
-                    description: params.object.description,
-                    pendingTransaction: {
-                        typeOf: cinerino.factory.account.transactionType.Deposit,
-                        id: '' // 空でok
-                    }
+                    toLocation: { accountNumber: String(params.object.toLocation.identifier) },
+                    description: params.object.description
                 },
                 recipient: params.recipient
             });
-            yield moneyTransferService.confirm({ transactionNumber: transactionNumber });
+            yield depositService.confirm({ transactionNumber });
+            // Chevreで入金
+            // const moneyTransferService = new cinerino.chevre.service.assetTransaction.MoneyTransfer({
+            //     endpoint: cinerino.credentials.chevre.endpoint,
+            //     auth: chevreAuthClient,
+            //     project: { id: params.project.id }
+            // });
+            // await moneyTransferService.start({
+            //     transactionNumber: transactionNumber,
+            //     project: { typeOf: cinerino.factory.chevre.organizationType.Project, id: params.project.id },
+            //     typeOf: cinerino.chevre.factory.assetTransactionType.MoneyTransfer,
+            //     agent: params.agent,
+            //     expires,
+            //     object: {
+            //         amount: params.object.amount,
+            //         fromLocation: params.object.fromLocation,
+            //         toLocation: params.object.toLocation,
+            //         description: params.object.description,
+            //         pendingTransaction: {
+            //             typeOf: cinerino.factory.account.transactionType.Deposit,
+            //             id: '' // 空でok
+            //         }
+            //     },
+            //     recipient: params.recipient
+            // });
+            // await moneyTransferService.confirm({ transactionNumber: transactionNumber });
         }
         catch (error) {
             error = cinerino.errorHandler.handleChevreError(error);
