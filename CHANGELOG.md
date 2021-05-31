@@ -64,6 +64,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - マイプロジェクト検索をChevre依存で実装
 - 口座所有権検索時に所有物詳細をChevre側で取得するように変更
 - 管理者としてのポイント付与をChevre口座取引で実装
+- 注文ポイント付与をChevre口座取引で実装
+- 通貨転送をChevre口座取引で実装
 
 ### Deprecated
 
