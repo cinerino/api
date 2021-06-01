@@ -15,8 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
-const http_status_1 = require("http-status");
-const mongoose = require("mongoose");
+// import { CREATED } from 'http-status';
+// import * as mongoose from 'mongoose';
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
@@ -54,32 +54,44 @@ actionsRouter.get('', permitScopes_1.default(['actions.*', 'actions.read']), rat
 /**
  * チケット印刷アクション追加
  */
-actionsRouter.post('/print/ticket', permitScopes_1.default(['actions.*', 'actions.printTicket.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const ticket = {
-            ticketToken: req.body.ticketToken
-        };
-        const action = yield new cinerino.repository.Action(mongoose.connection).printTicket(req.user.sub, ticket, req.project);
-        res.status(http_status_1.CREATED)
-            .json(action);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// actionsRouter.post(
+//     '/print/ticket',
+//     permitScopes(['actions.*', 'actions.printTicket.*']),
+//     rateLimit,
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             const ticket = {
+//                 ticketToken: req.body.ticketToken
+//             };
+//             const action = await new cinerino.repository.Action(mongoose.connection).printTicket(
+//                 req.user.sub,
+//                 ticket,
+//                 req.project
+//             );
+//             res.status(CREATED)
+//                 .json(action);
+//         } catch (error) {
+//             next(error);
+//         }
+//     });
 /**
  * チケット印刷アクション検索
  */
-actionsRouter.get('/print/ticket', permitScopes_1.default(['actions.*', 'actions.printTicket.*']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const actions = yield new cinerino.repository.Action(mongoose.connection).searchPrintTicket({
-            agentId: req.user.sub,
-            ticketToken: req.query.ticketToken
-        });
-        res.json(actions);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+// actionsRouter.get(
+//     '/print/ticket',
+//     permitScopes(['actions.*', 'actions.printTicket.*']),
+//     rateLimit,
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             const actions = await new cinerino.repository.Action(mongoose.connection).searchPrintTicket({
+//                 agentId: req.user.sub,
+//                 ticketToken: req.query.ticketToken
+//             });
+//             res.json(actions);
+//         } catch (error) {
+//             next(error);
+//         }
+//     });
 exports.default = actionsRouter;
