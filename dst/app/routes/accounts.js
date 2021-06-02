@@ -110,7 +110,7 @@ accountsRouter.post('/openByToken', permitScopes_1.default(['accounts.openByToke
         // 指定された口座種別の特典口座が存在すれば、開設
         const awardAccount = awardAccounts.find((a) => a.typeOf === accountTypeOf);
         if (awardAccount !== undefined) {
-            yield openAccountIfNotExist(Object.assign({ project: { typeOf: 'Project', id: req.project.id }, typeOf: accountTypeOf, accountType: accountType, accountNumber: awardAccount.accountNumber, name: `Order:${orderNumber}` }, (typeof initialBalance === 'number') ? { initialBalance } : undefined));
+            yield openAccountIfNotExist(Object.assign({ project: { typeOf: cinerino.factory.organizationType.Project, id: req.project.id }, typeOf: accountTypeOf, accountType: accountType, accountNumber: awardAccount.accountNumber, name: `Order:${orderNumber}` }, (typeof initialBalance === 'number') ? { initialBalance } : undefined));
         }
         res.status(http_status_1.NO_CONTENT)
             .end();
@@ -128,12 +128,8 @@ function openAccountIfNotExist(params) {
             auth: chevreAuthClient,
             project: { id: params.project.id }
         });
-        // const accountService = new cinerino.pecorinoapi.service.Account({
-        //     endpoint: cinerino.credentials.pecorino.endpoint,
-        //     auth: pecorinoAuthClient
-        // });
         try {
-            // pecorinoで口座開設
+            // Chevreで口座開設
             yield accountService.open([params]);
         }
         catch (error) {
@@ -177,24 +173,25 @@ const depositAccountRateLimiet = middlewares.rateLimit({
  */
 accountsRouter.post('/transactions/deposit', permitScopes_1.default(['accounts.transactions.deposit.write']), 
 // 互換性維持のため
-(req, _, next) => {
-    if (req.body.object === undefined || req.body.object === null) {
-        req.body.object = {};
-    }
-    if (typeof req.body.amount === 'number') {
-        req.body.object.amount = Number(req.body.amount);
-    }
-    if (typeof req.body.notes === 'string') {
-        req.body.object.description = req.body.notes;
-    }
-    if (typeof req.body.toAccountNumber === 'string') {
-        if (req.body.object.toLocation === undefined || req.body.object.toLocation === null) {
-            req.body.object.toLocation = {};
-        }
-        req.body.object.toLocation.accountNumber = req.body.toAccountNumber;
-    }
-    next();
-}, ...[
+// (req, _, next) => {
+//     if (req.body.object === undefined || req.body.object === null) {
+//         req.body.object = {};
+//     }
+//     if (typeof req.body.amount === 'number') {
+//         req.body.object.amount = Number(req.body.amount);
+//     }
+//     if (typeof req.body.notes === 'string') {
+//         req.body.object.description = req.body.notes;
+//     }
+//     if (typeof req.body.toAccountNumber === 'string') {
+//         if (req.body.object.toLocation === undefined || req.body.object.toLocation === null) {
+//             req.body.object.toLocation = {};
+//         }
+//         req.body.object.toLocation.accountNumber = req.body.toAccountNumber;
+//     }
+//     next();
+// },
+...[
     express_validator_1.body('recipient')
         .not()
         .isEmpty()
@@ -292,7 +289,7 @@ function deposit(params) {
                 agent: params.agent,
                 expires,
                 object: {
-                    amount: (typeof params.object.amount.value === 'number') ? params.object.amount.value : 0,
+                    amount: { value: (typeof params.object.amount.value === 'number') ? params.object.amount.value : 0 },
                     fromLocation: params.object.fromLocation,
                     toLocation: { accountNumber: String(params.object.toLocation.identifier) },
                     description: params.object.description

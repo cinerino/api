@@ -9,7 +9,6 @@ import statsRouter from '../stats';
 
 import accountsRouter from '../accounts';
 import actionsRouter from '../actions';
-import authorizationsRouter from '../authorizations';
 import categoryCodesRouter from '../categoryCode';
 import creativeWorksRouter from '../creativeWorks';
 import customersRouter from '../customers';
@@ -50,7 +49,6 @@ projectDetailRouter.use('/stats', statsRouter);
 
 projectDetailRouter.use('/accounts', accountsRouter);
 projectDetailRouter.use('/actions', actionsRouter);
-projectDetailRouter.use('/authorizations', authorizationsRouter);
 projectDetailRouter.use('/categoryCodes', categoryCodesRouter);
 projectDetailRouter.use('/creativeWorks', creativeWorksRouter);
 projectDetailRouter.use('/customers', customersRouter);

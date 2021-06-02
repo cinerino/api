@@ -120,7 +120,7 @@ accountsRouter.post(
             const awardAccount = awardAccounts.find((a) => a.typeOf === accountTypeOf);
             if (awardAccount !== undefined) {
                 await openAccountIfNotExist({
-                    project: { typeOf: 'Project', id: req.project.id },
+                    project: { typeOf: cinerino.factory.organizationType.Project, id: req.project.id },
                     typeOf: accountTypeOf,
                     accountType: accountType,
                     accountNumber: awardAccount.accountNumber,
@@ -139,7 +139,7 @@ accountsRouter.post(
 );
 
 async function openAccountIfNotExist(params: {
-    project: { typeOf: 'Project'; id: string };
+    project: { typeOf: cinerino.factory.organizationType.Project; id: string };
     typeOf: string;
     accountType: string;
     accountNumber: string;
@@ -152,13 +152,9 @@ async function openAccountIfNotExist(params: {
         auth: chevreAuthClient,
         project: { id: params.project.id }
     });
-    // const accountService = new cinerino.pecorinoapi.service.Account({
-    //     endpoint: cinerino.credentials.pecorino.endpoint,
-    //     auth: pecorinoAuthClient
-    // });
 
     try {
-        // pecorinoで口座開設
+        // Chevreで口座開設
         await accountService.open([params]);
     } catch (error) {
         // 口座番号重複エラーの可能性もあるので、口座が既存であればok
@@ -207,25 +203,25 @@ accountsRouter.post(
     '/transactions/deposit',
     permitScopes(['accounts.transactions.deposit.write']),
     // 互換性維持のため
-    (req, _, next) => {
-        if (req.body.object === undefined || req.body.object === null) {
-            req.body.object = {};
-        }
-        if (typeof req.body.amount === 'number') {
-            req.body.object.amount = Number(req.body.amount);
-        }
-        if (typeof req.body.notes === 'string') {
-            req.body.object.description = req.body.notes;
-        }
-        if (typeof req.body.toAccountNumber === 'string') {
-            if (req.body.object.toLocation === undefined || req.body.object.toLocation === null) {
-                req.body.object.toLocation = {};
-            }
-            req.body.object.toLocation.accountNumber = req.body.toAccountNumber;
-        }
+    // (req, _, next) => {
+    //     if (req.body.object === undefined || req.body.object === null) {
+    //         req.body.object = {};
+    //     }
+    //     if (typeof req.body.amount === 'number') {
+    //         req.body.object.amount = Number(req.body.amount);
+    //     }
+    //     if (typeof req.body.notes === 'string') {
+    //         req.body.object.description = req.body.notes;
+    //     }
+    //     if (typeof req.body.toAccountNumber === 'string') {
+    //         if (req.body.object.toLocation === undefined || req.body.object.toLocation === null) {
+    //             req.body.object.toLocation = {};
+    //         }
+    //         req.body.object.toLocation.accountNumber = req.body.toAccountNumber;
+    //     }
 
-        next();
-    },
+    //     next();
+    // },
     ...[
         body('recipient')
             .not()
@@ -351,7 +347,7 @@ export function deposit(params: {
                 agent: params.agent,
                 expires,
                 object: {
-                    amount: (typeof params.object.amount.value === 'number') ? params.object.amount.value : 0,
+                    amount: { value: (typeof params.object.amount.value === 'number') ? params.object.amount.value : 0 },
                     fromLocation: params.object.fromLocation,
                     toLocation: { accountNumber: String(params.object.toLocation.identifier) },
                     description: params.object.description
