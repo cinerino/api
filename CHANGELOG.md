@@ -89,6 +89,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - プロジェクト設定取得を削除
 - 承認検索を削除
 - 印刷アクション関連サービスを削除
+- イベント部分更新を削除
 
 ### Fixed
 

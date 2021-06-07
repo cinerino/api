@@ -15,18 +15,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
-const http_status_1 = require("http-status");
-const mongoose = require("mongoose");
+// import { NO_CONTENT } from 'http-status';
+// import * as mongoose from 'mongoose';
 const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
-const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
-    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.CHEVRE_CLIENT_ID,
-    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
-    scopes: [],
-    state: ''
-});
+// const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+//     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+//     clientId: <string>process.env.CHEVRE_CLIENT_ID,
+//     clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+//     scopes: [],
+//     state: ''
+// });
 const eventsRouter = express_1.Router();
 /**
  * イベント検索
@@ -118,54 +118,68 @@ eventsRouter.get('/:id', permitScopes_1.default(['events.*', 'events.read']), ra
  * イベント部分更新
  */
 // tslint:disable-next-line:use-default-type-parameter
-eventsRouter.patch('/:id', permitScopes_1.default(['events.*', 'events.update']), rateLimit_1.default, ...[
-    express_validator_1.body('onUpdated.sendEmailMessage')
-        .optional()
-        .isArray({ max: 50 })
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    try {
-        const eventService = new cinerino.chevre.service.Event({
-            endpoint: cinerino.credentials.chevre.endpoint,
-            auth: chevreAuthClient,
-            project: { id: req.project.id }
-        });
-        const event = yield eventService.findById({ id: req.params.id });
-        yield eventService.updatePartially({
-            id: event.id,
-            attributes: Object.assign({ 
-                // ...event,
-                typeOf: event.typeOf }, (typeof req.body.eventStatus === 'string') ? { eventStatus: req.body.eventStatus } : undefined)
-        });
-        // onUpdatedオプションを実装
-        const sendEmailMessage = (_a = req.body.onUpdated) === null || _a === void 0 ? void 0 : _a.sendEmailMessage;
-        if (Array.isArray(sendEmailMessage) && sendEmailMessage.length > 0) {
-            const taskRepo = new cinerino.repository.Task(mongoose.connection);
-            const runsAt = new Date();
-            const taskAttributes = sendEmailMessage.map((s) => {
-                return {
-                    project: { typeOf: req.project.typeOf, id: req.project.id },
-                    name: cinerino.factory.taskName.SendEmailMessage,
-                    status: cinerino.factory.taskStatus.Ready,
-                    runsAt: runsAt,
-                    remainingNumberOfTries: 3,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        actionAttributes: Object.assign(Object.assign({}, s), { agent: req.agent, typeOf: cinerino.factory.actionType.SendAction })
-                    }
-                };
-            });
-            yield taskRepo.saveMany(taskAttributes);
-        }
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-    catch (error) {
-        error = cinerino.errorHandler.handleChevreError(error);
-        next(error);
-    }
-}));
+// eventsRouter.patch<ParamsDictionary>(
+//     '/:id',
+//     permitScopes(['events.*', 'events.update']),
+//     rateLimit,
+//     ...[
+//         body('onUpdated.sendEmailMessage')
+//             .optional()
+//             .isArray({ max: 50 })
+//     ],
+//     validator,
+//     async (req, res, next) => {
+//         try {
+//             const eventService = new cinerino.chevre.service.Event({
+//                 endpoint: cinerino.credentials.chevre.endpoint,
+//                 auth: chevreAuthClient,
+//                 project: { id: req.project.id }
+//             });
+//             const event = await eventService.findById<cinerino.factory.chevre.eventType.ScreeningEvent>({ id: req.params.id });
+//             await eventService.updatePartially<cinerino.factory.chevre.eventType.ScreeningEvent>({
+//                 id: event.id,
+//                 attributes: <any>{
+//                     // ...event,
+//                     typeOf: event.typeOf,
+//                     // とりあえず限定された属性のみ更新を許可
+//                     ...(typeof req.body.eventStatus === 'string') ? { eventStatus: req.body.eventStatus } : undefined
+//                 }
+//             });
+//             // onUpdatedオプションを実装
+//             const sendEmailMessage: cinerino.factory.action.transfer.send.message.email.IAttributes[]
+//                 = req.body.onUpdated?.sendEmailMessage;
+//             if (Array.isArray(sendEmailMessage) && sendEmailMessage.length > 0) {
+//                 const taskRepo = new cinerino.repository.Task(mongoose.connection);
+//                 const runsAt = new Date();
+//                 const taskAttributes: cinerino.factory.task.IAttributes<cinerino.factory.taskName.SendEmailMessage>[]
+//                     = sendEmailMessage.map((s) => {
+//                         return {
+//                             project: { typeOf: req.project.typeOf, id: req.project.id },
+//                             name: cinerino.factory.taskName.SendEmailMessage,
+//                             status: cinerino.factory.taskStatus.Ready,
+//                             runsAt: runsAt,
+//                             remainingNumberOfTries: 3,
+//                             numberOfTried: 0,
+//                             executionResults: [],
+//                             data: {
+//                                 actionAttributes: {
+//                                     ...s,
+//                                     agent: req.agent,
+//                                     typeOf: cinerino.factory.actionType.SendAction
+//                                 }
+//                             }
+//                         };
+//                     });
+//                 await taskRepo.saveMany(taskAttributes);
+//             }
+//             res.status(NO_CONTENT)
+//                 .end();
+//         } catch (error) {
+//             error = cinerino.errorHandler.handleChevreError(error);
+//             next(error);
+//         }
+//     }
+// );
 /**
  * イベントに対する券種オファー検索
  */
