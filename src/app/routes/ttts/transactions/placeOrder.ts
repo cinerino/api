@@ -72,7 +72,7 @@ placeOrderTransactionsRouter.post(
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId },
                 object: {
-                    event: { id: eventId },
+                    reservationFor: { id: eventId },
                     acceptedOffer: acceptedOffer,
                     ...(req.isAdmin) ? { broker: <any>req.agent } : undefined
                 }

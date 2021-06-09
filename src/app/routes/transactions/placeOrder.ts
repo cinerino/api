@@ -282,16 +282,31 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
     '/:transactionId/actions/authorize/offer/seatReservation',
     permitScopes(['transactions']),
     ...[
-        body('object.acceptedOffer.additionalProperty')
+        // body('object.acceptedOffer.additionalProperty')
+        //     .optional()
+        //     .isArray({ max: 10 }),
+        // body('object.acceptedOffer.additionalProperty.*.name')
+        //     .optional()
+        //     .not()
+        //     .isEmpty()
+        //     .isString()
+        //     .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        // body('object.acceptedOffer.additionalProperty.*.value')
+        //     .optional()
+        //     .not()
+        //     .isEmpty()
+        //     .isString()
+        //     .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        body('acceptedOffer.additionalProperty')
             .optional()
             .isArray({ max: 10 }),
-        body('object.acceptedOffer.additionalProperty.*.name')
+        body('acceptedOffer.additionalProperty.*.name')
             .optional()
             .not()
             .isEmpty()
             .isString()
             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        body('object.acceptedOffer.additionalProperty.*.value')
+        body('acceptedOffer.additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
@@ -322,8 +337,13 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             const action = await cinerino.service.offer.seatReservation.create({
                 project: req.project,
                 object: {
-                    ...req.body,
-                    broker: (req.isAdmin) ? req.agent : undefined
+                    // ...req.body,
+                    acceptedOffer: req.body.acceptedOffer,
+                    // clientUser?: factory.clientUser.IClientUser;
+                    reservationFor: {
+                        id: (typeof req.body.event?.id === 'string') ? req.body.event.id : req.body.reservationFor?.id
+                    },
+                    broker: (req.isAdmin) ? <any>req.agent : undefined
                 },
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId }
