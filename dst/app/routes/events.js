@@ -93,7 +93,7 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
         res.json(searchEventsResult.data);
     }
     catch (error) {
-        next(error);
+        next(cinerino.errorHandler.handleChevreError(error));
     }
 }));
 /**
@@ -111,7 +111,7 @@ eventsRouter.get('/:id', permitScopes_1.default(['events.*', 'events.read']), ra
         res.json(event);
     }
     catch (error) {
-        next(error);
+        next(cinerino.errorHandler.handleChevreError(error));
     }
 }));
 /**
@@ -208,7 +208,7 @@ eventsRouter.get('/:id/offers/ticket', permitScopes_1.default(['events.*', 'even
         res.json(offers);
     }
     catch (error) {
-        next(error);
+        next(cinerino.errorHandler.handleChevreError(error));
     }
 }));
 /**
@@ -229,7 +229,7 @@ eventsRouter.get('/:id/seats', permitScopes_1.default(['events.*', 'events.read'
         res.json(seats.data);
     }
     catch (error) {
-        next(error);
+        next(cinerino.errorHandler.handleChevreError(error));
     }
 }));
 exports.default = eventsRouter;

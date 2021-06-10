@@ -101,7 +101,7 @@ eventsRouter.get(
 
             res.json(searchEventsResult.data);
         } catch (error) {
-            next(error);
+            next(cinerino.errorHandler.handleChevreError(error));
         }
     }
 );
@@ -127,7 +127,7 @@ eventsRouter.get(
 
             res.json(event);
         } catch (error) {
-            next(error);
+            next(cinerino.errorHandler.handleChevreError(error));
         }
     }
 );
@@ -244,7 +244,7 @@ eventsRouter.get<ParamsDictionary>(
             });
             res.json(offers);
         } catch (error) {
-            next(error);
+            next(cinerino.errorHandler.handleChevreError(error));
         }
     }
 );
@@ -276,7 +276,7 @@ eventsRouter.get(
 
             res.json(seats.data);
         } catch (error) {
-            next(error);
+            next(cinerino.errorHandler.handleChevreError(error));
         }
     }
 );
