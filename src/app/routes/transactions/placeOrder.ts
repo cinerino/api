@@ -297,21 +297,43 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
         //     .isEmpty()
         //     .isString()
         //     .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        body('acceptedOffer.additionalProperty')
+        body('acceptedOffer.*.additionalProperty')
             .optional()
             .isArray({ max: 10 }),
-        body('acceptedOffer.additionalProperty.*.name')
+        body('acceptedOffer.*.additionalProperty.*.name')
             .optional()
             .not()
             .isEmpty()
             .isString()
             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        body('acceptedOffer.additionalProperty.*.value')
+        body('acceptedOffer.*.additionalProperty.*.value')
             .optional()
             .not()
             .isEmpty()
             .isString()
-            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH })
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        body('acceptedOffer.*.itemOffered.serviceOutput.additionalProperty')
+            .optional()
+            .isArray({ max: 10 }),
+        body('acceptedOffer.*.itemOffered.serviceOutput.additionalProperty.*.name')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        body('acceptedOffer.*.itemOffered.serviceOutput.additionalProperty.*.value')
+            .optional()
+            .not()
+            .isEmpty()
+            .isString()
+            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+        body('acceptedOffer.*.itemOffered.serviceOutput.programMembershipUsed')
+            .optional()
+            .custom((value) => {
+                return typeof value.identifier === 'string' && value.identifier.length > 0
+                    && typeof value.accessCode === 'string' && value.accessCode.length > 0;
+            })
+            .withMessage(() => 'programMembershipUsed.identifier and programMembershipUsed.accessCode required')
     ],
     validator,
     async (req, res, next) => {

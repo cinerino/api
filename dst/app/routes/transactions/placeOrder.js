@@ -239,21 +239,43 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
     //     .isEmpty()
     //     .isString()
     //     .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.body('acceptedOffer.additionalProperty')
+    express_validator_1.body('acceptedOffer.*.additionalProperty')
         .optional()
         .isArray({ max: 10 }),
-    express_validator_1.body('acceptedOffer.additionalProperty.*.name')
+    express_validator_1.body('acceptedOffer.*.additionalProperty.*.name')
         .optional()
         .not()
         .isEmpty()
         .isString()
         .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-    express_validator_1.body('acceptedOffer.additionalProperty.*.value')
+    express_validator_1.body('acceptedOffer.*.additionalProperty.*.value')
         .optional()
         .not()
         .isEmpty()
         .isString()
-        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH })
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.body('acceptedOffer.*.itemOffered.serviceOutput.additionalProperty')
+        .optional()
+        .isArray({ max: 10 }),
+    express_validator_1.body('acceptedOffer.*.itemOffered.serviceOutput.additionalProperty.*.name')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.body('acceptedOffer.*.itemOffered.serviceOutput.additionalProperty.*.value')
+        .optional()
+        .not()
+        .isEmpty()
+        .isString()
+        .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+    express_validator_1.body('acceptedOffer.*.itemOffered.serviceOutput.programMembershipUsed')
+        .optional()
+        .custom((value) => {
+        return typeof value.identifier === 'string' && value.identifier.length > 0
+            && typeof value.accessCode === 'string' && value.accessCode.length > 0;
+    })
+        .withMessage(() => 'programMembershipUsed.identifier and programMembershipUsed.accessCode required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
