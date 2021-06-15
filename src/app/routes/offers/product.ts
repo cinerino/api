@@ -147,7 +147,7 @@ productOffersRouter.post<ParamsDictionary>(
             const action = await cinerino.service.offer.product.authorize({
                 project: req.project,
                 object: actionObject,
-                agent: { id: req.user.sub },
+                agent: { id: req.user.sub, typeOf: req.agent.typeOf },
                 transaction: <any>{ typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),

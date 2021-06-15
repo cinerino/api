@@ -125,7 +125,7 @@ productOffersRouter.post('/authorize', permitScopes_1.default(['transactions']),
         const action = yield cinerino.service.offer.product.authorize({
             project: req.project,
             object: actionObject,
-            agent: { id: req.user.sub },
+            agent: { id: req.user.sub, typeOf: req.agent.typeOf },
             transaction: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),

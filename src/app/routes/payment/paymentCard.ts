@@ -48,7 +48,7 @@ paymentCardPaymentRouter.post(
             const searchPaymentCardResult = await serviceOutputService.search({
                 limit: 1,
                 page: 1,
-                project: { typeOf: req.project.typeOf, id: req.project.id },
+                project: { id: { $eq: req.project.id } },
                 typeOf: { $eq: req.body.object.typeOf },
                 identifier: { $eq: req.body.object.identifier },
                 accessCode: { $eq: req.body.object.accessCode }
@@ -179,18 +179,18 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
                         const searchPaymentCardResult = await serviceOutputService.search({
                             limit: 1,
                             page: 1,
-                            project: { typeOf: req.project.typeOf, id: req.project.id },
+                            project: { id: { $eq: req.project.id } },
                             typeOf: { $eq: paymentMethodType },
                             identifier: { $eq: accountIdentifier },
                             accessCode: { $eq: accessCode }
                         });
-                        if (searchPaymentCardResult.data.length === 0) {
+                        const paymetCard = searchPaymentCardResult.data.shift();
+                        if (paymetCard === undefined) {
                             throw new cinerino.factory.errors.NotFound('PaymentCard');
                         }
-                        const paymetCard = searchPaymentCardResult.data.shift();
                         paymentCard = {
                             typeOf: paymetCard.typeOf,
-                            identifier: paymetCard.identifier
+                            identifier: String(paymetCard.identifier)
                         };
                     } else {
                         // アクセスコード情報なし、かつ、会員の場合、所有権を確認

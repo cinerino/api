@@ -47,7 +47,7 @@ paymentCardPaymentRouter.post('/check', permitScopes_1.default(['transactions'])
         const searchPaymentCardResult = yield serviceOutputService.search({
             limit: 1,
             page: 1,
-            project: { typeOf: req.project.typeOf, id: req.project.id },
+            project: { id: { $eq: req.project.id } },
             typeOf: { $eq: req.body.object.typeOf },
             identifier: { $eq: req.body.object.identifier },
             accessCode: { $eq: req.body.object.accessCode }
@@ -163,18 +163,18 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
                     const searchPaymentCardResult = yield serviceOutputService.search({
                         limit: 1,
                         page: 1,
-                        project: { typeOf: req.project.typeOf, id: req.project.id },
+                        project: { id: { $eq: req.project.id } },
                         typeOf: { $eq: paymentMethodType },
                         identifier: { $eq: accountIdentifier },
                         accessCode: { $eq: accessCode }
                     });
-                    if (searchPaymentCardResult.data.length === 0) {
+                    const paymetCard = searchPaymentCardResult.data.shift();
+                    if (paymetCard === undefined) {
                         throw new cinerino.factory.errors.NotFound('PaymentCard');
                     }
-                    const paymetCard = searchPaymentCardResult.data.shift();
                     paymentCard = {
                         typeOf: paymetCard.typeOf,
-                        identifier: paymetCard.identifier
+                        identifier: String(paymetCard.identifier)
                     };
                 }
                 else {
