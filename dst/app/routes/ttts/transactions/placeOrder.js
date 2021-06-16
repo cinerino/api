@@ -46,7 +46,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
                 id: ticketOffer.id,
                 itemOffered: {
                     serviceOutput: {
-                        typeOf: cinerino.factory.chevre.reservationType.EventReservation,
+                        typeOf: cinerino.factory.reservationType.EventReservation,
                         additionalTicketText: (typeof offer.watcher_name === 'string') ? offer.watcher_name : ''
                     }
                 },

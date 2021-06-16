@@ -23,7 +23,7 @@ categoryCodesRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const searchConditions: cinerino.factory.chevre.categoryCode.ISearchConditions = {
+            const searchConditions: cinerino.factory.categoryCode.ISearchConditions = {
                 ...req.query,
                 project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers

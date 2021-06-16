@@ -121,7 +121,7 @@ peopleRouter.delete('/:id', permitScopes_1.default(['people.*', 'people.delete']
         const now = new Date();
         const searchOwnershipInfosResult = yield ownershipInfoService.search({
             project: { id: { $eq: req.project.id } },
-            typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
+            typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
             ownedBy: { id: person.id },
             ownedFrom: now,
             ownedThrough: now
@@ -187,7 +187,7 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['people.*', 'peo
         const searchPaymentCardProductsResult = yield productService.search({
             limit: 100,
             project: { id: { $eq: req.project.id } },
-            typeOf: { $eq: cinerino.factory.chevre.product.ProductType.PaymentCard }
+            typeOf: { $eq: cinerino.factory.product.ProductType.PaymentCard }
         });
         const paymentCardProducts = searchPaymentCardProductsResult.data;
         const paymentCardOutputTypes = [...new Set(paymentCardProducts.map((p) => { var _a; return String((_a = p.serviceOutput) === null || _a === void 0 ? void 0 : _a.typeOf); }))];
@@ -210,7 +210,7 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['people.*', 'peo
                     ownershipInfo: ownershipInfoService
                 });
                 break;
-            case cinerino.factory.chevre.reservationType.EventReservation === typeOfGood.typeOf:
+            case cinerino.factory.reservationType.EventReservation === typeOfGood.typeOf:
                 ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(Object.assign(Object.assign({}, searchConditions), { project: { typeOf: req.project.typeOf, id: req.project.id } }))({
                     ownershipInfo: ownershipInfoService,
                     reservation: new cinerino.chevre.service.Reservation({

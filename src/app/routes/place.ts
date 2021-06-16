@@ -11,7 +11,7 @@ import validator from '../middlewares/validator';
 const placesRouter = Router();
 
 placesRouter.get(
-    `/${cinerino.factory.chevre.placeType.MovieTheater}`,
+    `/${cinerino.factory.placeType.MovieTheater}`,
     permitScopes(['places.*', 'places.read']),
     rateLimit,
     validator,
@@ -36,7 +36,7 @@ placesRouter.get(
 );
 
 placesRouter.get(
-    `/${cinerino.factory.chevre.placeType.ScreeningRoom}`,
+    `/${cinerino.factory.placeType.ScreeningRoom}`,
     permitScopes(['places.*', 'places.read']),
     rateLimit,
     validator,
@@ -61,7 +61,7 @@ placesRouter.get(
 );
 
 placesRouter.get(
-    `/${cinerino.factory.chevre.placeType.Seat}`,
+    `/${cinerino.factory.placeType.Seat}`,
     permitScopes(['places.*', 'places.read']),
     rateLimit,
     validator,

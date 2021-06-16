@@ -60,7 +60,7 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.*', 'reservatio
             auth: chevreAuthClient,
             project: { id: req.project.id }
         });
-        const searchResult = yield reservationService.search(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, typeOf: cinerino.factory.chevre.reservationType.EventReservation }));
+        const searchResult = yield reservationService.search(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, typeOf: cinerino.factory.reservationType.EventReservation }));
         // totalCount対応
         if (typeof searchResult.totalCount === 'number') {
             res.set('X-Total-Count', String(searchResult.totalCount));
@@ -127,7 +127,7 @@ reservationsRouter.post('/use', permitScopes_1.default(['reservations.read', 're
                 // 注文検索
                 const order = yield orderService.findByOrderNumber({ orderNumber: payload.orderNumber });
                 const acceptedOffer = order.acceptedOffers.find((offer) => {
-                    return offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation
+                    return offer.itemOffered.typeOf === cinerino.factory.reservationType.EventReservation
                         && offer.itemOffered.id === reservationId;
                 });
                 if (acceptedOffer === undefined) {
@@ -240,7 +240,7 @@ reservationsRouter.put('/cancel', permitScopes_1.default(['reservations.*', 'res
         });
         yield cancelReservationService.startAndConfirm({
             project: { typeOf: req.project.typeOf, id: req.project.id },
-            typeOf: cinerino.factory.chevre.assetTransactionType.CancelReservation,
+            typeOf: cinerino.factory.assetTransactionType.CancelReservation,
             expires: moment()
                 .add(1, 'minute')
                 .toDate(),

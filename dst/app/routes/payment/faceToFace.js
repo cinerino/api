@@ -92,7 +92,7 @@ faceToFacePaymentRouter.post('/authorize', permitScopes_1.default(['payment.any.
                     })
                     : [], amount: Number(req.body.object.amount) }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined),
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id },
-            paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.FaceToFace
+            paymentServiceType: cinerino.factory.service.paymentService.PaymentServiceType.FaceToFace
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection),

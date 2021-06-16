@@ -138,7 +138,7 @@ peopleRouter.delete(
             const now = new Date();
             const searchOwnershipInfosResult = await ownershipInfoService.search({
                 project: { id: { $eq: req.project.id } },
-                typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
+                typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
                 ownedBy: { id: person.id },
                 ownedFrom: now,
                 ownedThrough: now
@@ -221,7 +221,7 @@ peopleRouter.get<ParamsDictionary>(
             const searchPaymentCardProductsResult = await productService.search({
                 limit: 100,
                 project: { id: { $eq: req.project.id } },
-                typeOf: { $eq: cinerino.factory.chevre.product.ProductType.PaymentCard }
+                typeOf: { $eq: cinerino.factory.product.ProductType.PaymentCard }
             });
             const paymentCardProducts = searchPaymentCardProductsResult.data;
             const paymentCardOutputTypes = [...new Set(paymentCardProducts.map((p) => String(p.serviceOutput?.typeOf)))];
@@ -257,7 +257,7 @@ peopleRouter.get<ParamsDictionary>(
 
                     break;
 
-                case cinerino.factory.chevre.reservationType.EventReservation === typeOfGood.typeOf:
+                case cinerino.factory.reservationType.EventReservation === typeOfGood.typeOf:
                     ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(<any>{
                         ...searchConditions,
                         project: { typeOf: req.project.typeOf, id: req.project.id }

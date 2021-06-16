@@ -105,7 +105,7 @@ ownershipInfosRouter.get(
             });
 
             // const andConditions: any[] = [
-            //     { 'typeOfGood.typeOf': cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership }
+            //     { 'typeOfGood.typeOf': cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership }
             // ];
 
             // andConditions.push({
@@ -128,7 +128,7 @@ ownershipInfosRouter.get(
             //     .exec();
             const searchOwnershipInfosResult = await ownershipInfoService.search({
                 project: { id: { $eq: req.project.id } },
-                typeOfGood: { typeOf: { $eq: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership } },
+                typeOfGood: { typeOf: { $eq: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership } },
                 countDocuments: '1',
                 ownedFromGte: new Date(fromDate),
                 ownedFromLte: new Date(toDate),

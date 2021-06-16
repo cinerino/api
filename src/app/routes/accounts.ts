@@ -63,7 +63,7 @@ accountsRouter.post(
             const searchProductsResult = await productService.search({
                 limit: 1,
                 project: { id: { $eq: req.project.id } },
-                typeOf: { $eq: cinerino.factory.chevre.product.ProductType.PaymentCard },
+                typeOf: { $eq: cinerino.factory.product.ProductType.PaymentCard },
                 serviceOutput: { typeOf: { $eq: accountTypeOf } }
             });
             const product = searchProductsResult.data.shift();
@@ -259,26 +259,26 @@ accountsRouter.post(
             const searchProductsResult = await productService.search({
                 limit: 1,
                 project: { id: { $eq: req.project.id } },
-                typeOf: { $eq: cinerino.factory.chevre.product.ProductType.PaymentCard }
+                typeOf: { $eq: cinerino.factory.product.ProductType.PaymentCard }
             });
             const product = searchProductsResult.data.shift();
             if (product === undefined) {
                 throw new cinerino.factory.errors.NotFound('Product');
             }
 
-            const fromLocation: cinerino.chevre.factory.assetTransaction.moneyTransfer.IFromLocation = {
+            const fromLocation: cinerino.factory.assetTransaction.moneyTransfer.IFromLocation = {
                 typeOf: cinerino.factory.personType.Person,
                 name: (req.user.username !== undefined) ? req.user.username : req.user.sub,
                 ...req.body.agent,
                 id: req.user.sub
             };
 
-            const toLocation: cinerino.chevre.factory.assetTransaction.moneyTransfer.IToLocation = {
+            const toLocation: cinerino.factory.assetTransaction.moneyTransfer.IToLocation = {
                 typeOf: String(product.serviceOutput?.typeOf),
                 identifier: req.body.object?.toLocation?.accountNumber
             };
 
-            const recipient: cinerino.chevre.factory.assetTransaction.moneyTransfer.IRecipient = {
+            const recipient: cinerino.factory.assetTransaction.moneyTransfer.IRecipient = {
                 typeOf: cinerino.factory.personType.Person,
                 ...req.body.recipient
             };
@@ -318,9 +318,9 @@ accountsRouter.post(
 
 export function deposit(params: {
     project: cinerino.factory.project.IProject;
-    agent: cinerino.chevre.factory.assetTransaction.moneyTransfer.IAgent;
-    object: cinerino.chevre.factory.assetTransaction.moneyTransfer.IObjectWithoutDetail;
-    recipient: cinerino.chevre.factory.assetTransaction.moneyTransfer.IRecipient;
+    agent: cinerino.factory.assetTransaction.moneyTransfer.IAgent;
+    object: cinerino.factory.assetTransaction.moneyTransfer.IObjectWithoutDetail;
+    recipient: cinerino.factory.assetTransaction.moneyTransfer.IRecipient;
 }) {
     return async (repos: {
         transactionNumber: cinerino.chevre.service.TransactionNumber;
@@ -342,7 +342,7 @@ export function deposit(params: {
             });
             await depositService.start({
                 transactionNumber,
-                project: { typeOf: cinerino.factory.chevre.organizationType.Project, id: params.project.id },
+                project: { typeOf: cinerino.factory.organizationType.Project, id: params.project.id },
                 typeOf: cinerino.factory.account.transactionType.Deposit,
                 agent: params.agent,
                 expires,
@@ -364,8 +364,8 @@ export function deposit(params: {
             // });
             // await moneyTransferService.start({
             //     transactionNumber: transactionNumber,
-            //     project: { typeOf: cinerino.factory.chevre.organizationType.Project, id: params.project.id },
-            //     typeOf: cinerino.chevre.factory.assetTransactionType.MoneyTransfer,
+            //     project: { typeOf: cinerino.factory.organizationType.Project, id: params.project.id },
+            //     typeOf: cinerino.factory.assetTransactionType.MoneyTransfer,
             //     agent: params.agent,
             //     expires,
             //     object: {

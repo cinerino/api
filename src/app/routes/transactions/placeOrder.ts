@@ -171,7 +171,7 @@ function createStartParams(req: Request) {
         if (broker !== undefined) {
             customer = {
                 id: req.user.client_id,
-                typeOf: <any>cinerino.factory.chevre.creativeWorkType.WebApplication
+                typeOf: <any>cinerino.factory.creativeWorkType.WebApplication
             };
         }
         if (Array.isArray(agent.identifier)) {
@@ -511,7 +511,7 @@ async function authorizePointAward(req: Request): Promise<cinerino.factory.trans
     // 所有メンバーシップを検索
     const searchOwnershipInfosResult = await ownershipInfoService.search({
         project: { id: { $eq: req.project.id } },
-        typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
+        typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
         ownedBy: { id: req.agent.id },
         ownedFrom: now,
         ownedThrough: now

@@ -836,7 +836,7 @@ ordersRouter.post<ParamsDictionary>(
                 project: { id: req.project.id }
             });
             let reservationNumbers = order.acceptedOffers
-                .filter((o) => o.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
+                .filter((o) => o.itemOffered.typeOf === cinerino.factory.reservationType.EventReservation)
                 .map((o) => (<EventReservationGoodType>o.itemOffered).reservationNumber);
             reservationNumbers = [...new Set(reservationNumbers)];
             await Promise.all(reservationNumbers.map(async (reservationNumber) => {

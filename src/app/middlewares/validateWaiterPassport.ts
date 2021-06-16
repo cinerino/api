@@ -45,7 +45,7 @@ export function validateWaiterPassport(req: Request, __: Response, next: NextFun
 
 export function createPassportValidator(params: {
     transaction: { typeOf: cinerino.factory.transactionType };
-    seller: cinerino.factory.chevre.seller.ISeller;
+    seller: cinerino.factory.seller.ISeller;
     clientId?: string;
 }): cinerino.service.transaction.placeOrderInProgress.IPassportValidator {
     return (validatorParams) => {

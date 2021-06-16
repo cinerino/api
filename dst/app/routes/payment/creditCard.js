@@ -106,7 +106,7 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['transactions
                     })
                     : [], amount: req.body.object.amount, method: req.body.object.method, creditCard: creditCard }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined), (typeof req.body.object.orderId === 'string') ? { orderId: req.body.object.orderId } : undefined),
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id },
-            paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.CreditCard
+            paymentServiceType: cinerino.factory.service.paymentService.PaymentServiceType.CreditCard
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             transaction: new cinerino.repository.Transaction(mongoose.connection),

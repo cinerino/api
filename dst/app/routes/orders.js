@@ -719,7 +719,7 @@ ordersRouter.post('/:orderNumber/authorize', permitScopes_1.default(['orders.*',
             project: { id: req.project.id }
         });
         let reservationNumbers = order.acceptedOffers
-            .filter((o) => o.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation)
+            .filter((o) => o.itemOffered.typeOf === cinerino.factory.reservationType.EventReservation)
             .map((o) => o.itemOffered.reservationNumber);
         reservationNumbers = [...new Set(reservationNumbers)];
         yield Promise.all(reservationNumbers.map((reservationNumber) => __awaiter(void 0, void 0, void 0, function* () {

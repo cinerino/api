@@ -71,7 +71,7 @@ function addLocation(params) {
     if (typeof branchCode === 'string') {
         seller.location = {
             project: seller.project,
-            typeOf: cinerino.factory.chevre.placeType.MovieTheater,
+            typeOf: cinerino.factory.placeType.MovieTheater,
             branchCode,
             name: seller.name
         };

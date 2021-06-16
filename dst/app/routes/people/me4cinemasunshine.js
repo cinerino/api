@@ -46,7 +46,7 @@ me4cinemasunshineRouter.put('/ownershipInfos/programMembership/:identifier/unReg
         const now = new Date();
         const searchOwnershipInfosResult = yield ownershipInfoService.search({
             project: { id: { $eq: req.project.id } },
-            typeOfGood: { typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership },
+            typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
             ownedBy: { id: req.agent.id },
             ownedFrom: now,
             ownedThrough: now

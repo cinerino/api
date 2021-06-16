@@ -64,7 +64,7 @@ accountsRouter.post('/openByToken', permitScopes_1.default(['accounts.openByToke
         const searchProductsResult = yield productService.search({
             limit: 1,
             project: { id: { $eq: req.project.id } },
-            typeOf: { $eq: cinerino.factory.chevre.product.ProductType.PaymentCard },
+            typeOf: { $eq: cinerino.factory.product.ProductType.PaymentCard },
             serviceOutput: { typeOf: { $eq: accountTypeOf } }
         });
         const product = searchProductsResult.data.shift();
@@ -225,7 +225,7 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['accounts.t
         const searchProductsResult = yield productService.search({
             limit: 1,
             project: { id: { $eq: req.project.id } },
-            typeOf: { $eq: cinerino.factory.chevre.product.ProductType.PaymentCard }
+            typeOf: { $eq: cinerino.factory.product.ProductType.PaymentCard }
         });
         const product = searchProductsResult.data.shift();
         if (product === undefined) {
@@ -284,7 +284,7 @@ function deposit(params) {
             });
             yield depositService.start({
                 transactionNumber,
-                project: { typeOf: cinerino.factory.chevre.organizationType.Project, id: params.project.id },
+                project: { typeOf: cinerino.factory.organizationType.Project, id: params.project.id },
                 typeOf: cinerino.factory.account.transactionType.Deposit,
                 agent: params.agent,
                 expires,
@@ -305,8 +305,8 @@ function deposit(params) {
             // });
             // await moneyTransferService.start({
             //     transactionNumber: transactionNumber,
-            //     project: { typeOf: cinerino.factory.chevre.organizationType.Project, id: params.project.id },
-            //     typeOf: cinerino.chevre.factory.assetTransactionType.MoneyTransfer,
+            //     project: { typeOf: cinerino.factory.organizationType.Project, id: params.project.id },
+            //     typeOf: cinerino.factory.assetTransactionType.MoneyTransfer,
             //     agent: params.agent,
             //     expires,
             //     object: {

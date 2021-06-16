@@ -18,7 +18,7 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const validator_1 = require("../middlewares/validator");
 const placesRouter = express_1.Router();
-placesRouter.get(`/${cinerino.factory.chevre.placeType.MovieTheater}`, permitScopes_1.default(['places.*', 'places.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placesRouter.get(`/${cinerino.factory.placeType.MovieTheater}`, permitScopes_1.default(['places.*', 'places.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const placeService = new cinerino.chevre.service.Place({
             endpoint: cinerino.credentials.chevre.endpoint,
@@ -33,7 +33,7 @@ placesRouter.get(`/${cinerino.factory.chevre.placeType.MovieTheater}`, permitSco
         next(error);
     }
 }));
-placesRouter.get(`/${cinerino.factory.chevre.placeType.ScreeningRoom}`, permitScopes_1.default(['places.*', 'places.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placesRouter.get(`/${cinerino.factory.placeType.ScreeningRoom}`, permitScopes_1.default(['places.*', 'places.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const placeService = new cinerino.chevre.service.Place({
             endpoint: cinerino.credentials.chevre.endpoint,
@@ -48,7 +48,7 @@ placesRouter.get(`/${cinerino.factory.chevre.placeType.ScreeningRoom}`, permitSc
         next(error);
     }
 }));
-placesRouter.get(`/${cinerino.factory.chevre.placeType.Seat}`, permitScopes_1.default(['places.*', 'places.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+placesRouter.get(`/${cinerino.factory.placeType.Seat}`, permitScopes_1.default(['places.*', 'places.read']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const placeService = new cinerino.chevre.service.Place({
             endpoint: cinerino.credentials.chevre.endpoint,

@@ -79,14 +79,14 @@ sellersRouter.get(
 /**
  * ssktsへの互換性維持対応として、location属性を自動保管
  */
-function addLocation(params: cinerino.factory.chevre.seller.ISeller): cinerino.factory.chevre.seller.ISeller {
-    const seller: cinerino.factory.chevre.seller.ISeller = { ...params };
+function addLocation(params: cinerino.factory.seller.ISeller): cinerino.factory.seller.ISeller {
+    const seller: cinerino.factory.seller.ISeller = { ...params };
 
     const branchCode = params.additionalProperty?.find((p) => p.name === 'branchCode')?.value;
     if (typeof branchCode === 'string') {
         seller.location = {
             project: seller.project,
-            typeOf: cinerino.factory.chevre.placeType.MovieTheater,
+            typeOf: cinerino.factory.placeType.MovieTheater,
             branchCode,
             name: seller.name
         };

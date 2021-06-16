@@ -53,11 +53,11 @@ movieTicketPaymentRouter.post(
                 project: { id: req.project.id }
             });
             const checkAction = await payService.check({
-                project: { id: req.project.id, typeOf: cinerino.chevre.factory.organizationType.Project },
-                typeOf: cinerino.chevre.factory.actionType.CheckAction,
+                project: { id: req.project.id, typeOf: cinerino.factory.organizationType.Project },
+                typeOf: cinerino.factory.actionType.CheckAction,
                 agent: req.agent,
                 object: [{
-                    typeOf: cinerino.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
+                    typeOf: cinerino.factory.service.paymentService.PaymentServiceType.MovieTicket,
                     paymentMethod: {
                         typeOf: paymentMethodType,
                         additionalProperty: [],
@@ -200,7 +200,7 @@ movieTicketPaymentRouter.post<ParamsDictionary>(
                     ...(typeof req.body.object.name === 'string') ? { name: <string>req.body.object.name } : undefined
                 },
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id },
-                paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.MovieTicket
+                paymentServiceType: cinerino.factory.service.paymentService.PaymentServiceType.MovieTicket
             })({
                 action: actionRepo,
                 transaction: transactionRepo,

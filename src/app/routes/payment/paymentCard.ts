@@ -239,7 +239,7 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
                     ...(typeof req.body.object.description === 'string') ? { description: <string>req.body.object.description } : undefined
                 },
                 purpose: { typeOf: req.body.purpose.typeOf, id: <string>req.body.purpose.id },
-                paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.PaymentCard
+                paymentServiceType: cinerino.factory.service.paymentService.PaymentServiceType.PaymentCard
             })({
                 action: actionRepo,
                 transaction: transactionRepo,

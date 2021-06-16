@@ -12,10 +12,10 @@ import paymentCardPaymentRouter from './payment/paymentCard';
 const paymentRouter = Router();
 
 paymentRouter.use('/any', faceToFacePaymentRouter);
-paymentRouter.use(`/${cinerino.factory.chevre.service.paymentService.PaymentServiceType.FaceToFace}`, faceToFacePaymentRouter);
-paymentRouter.use(`/${cinerino.factory.chevre.service.paymentService.PaymentServiceType.CreditCard}`, creditCardPaymentRouter);
-paymentRouter.use(`/${cinerino.factory.chevre.service.paymentService.PaymentServiceType.MovieTicket}`, movieTicketPaymentRouter);
-paymentRouter.use(`/${cinerino.factory.chevre.service.paymentService.PaymentServiceType.PaymentCard}`, paymentCardPaymentRouter);
+paymentRouter.use(`/${cinerino.factory.service.paymentService.PaymentServiceType.FaceToFace}`, faceToFacePaymentRouter);
+paymentRouter.use(`/${cinerino.factory.service.paymentService.PaymentServiceType.CreditCard}`, creditCardPaymentRouter);
+paymentRouter.use(`/${cinerino.factory.service.paymentService.PaymentServiceType.MovieTicket}`, movieTicketPaymentRouter);
+paymentRouter.use(`/${cinerino.factory.service.paymentService.PaymentServiceType.PaymentCard}`, paymentCardPaymentRouter);
 paymentRouter.use(`/Account`, paymentCardPaymentRouter); // PaymentCardに統合前に対する互換性維持対応
 
 export default paymentRouter;

@@ -88,7 +88,7 @@ ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.defaul
             project: { id: req.project.id }
         });
         // const andConditions: any[] = [
-        //     { 'typeOfGood.typeOf': cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership }
+        //     { 'typeOfGood.typeOf': cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership }
         // ];
         // andConditions.push({
         //     ownedFrom: {
@@ -106,7 +106,7 @@ ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.defaul
         // }
         // const count = await ownershipInfoService.countDocuments({ $and: andConditions })
         //     .exec();
-        const searchOwnershipInfosResult = yield ownershipInfoService.search(Object.assign({ project: { id: { $eq: req.project.id } }, typeOfGood: { typeOf: { $eq: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership } }, countDocuments: '1', ownedFromGte: new Date(fromDate), ownedFromLte: new Date(toDate) }, (Array.isArray(theaterIds))
+        const searchOwnershipInfosResult = yield ownershipInfoService.search(Object.assign({ project: { id: { $eq: req.project.id } }, typeOfGood: { typeOf: { $eq: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership } }, countDocuments: '1', ownedFromGte: new Date(fromDate), ownedFromLte: new Date(toDate) }, (Array.isArray(theaterIds))
             ? { acquiredFrom: { id: { $in: theaterIds } } }
             : undefined));
         const count = Number(searchOwnershipInfosResult.totalCount);

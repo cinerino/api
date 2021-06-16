@@ -108,9 +108,9 @@ productOffersRouter.post('/authorize', permitScopes_1.default(['transactions']),
             var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
             return {
                 project: req.project,
-                typeOf: cinerino.factory.chevre.offerType.Offer,
+                typeOf: cinerino.factory.offerType.Offer,
                 id: o === null || o === void 0 ? void 0 : o.id,
-                priceCurrency: cinerino.factory.chevre.priceCurrency.JPY,
+                priceCurrency: cinerino.factory.priceCurrency.JPY,
                 itemOffered: Object.assign(Object.assign({}, o === null || o === void 0 ? void 0 : o.itemOffered), { project: req.project, typeOf: (_a = o === null || o === void 0 ? void 0 : o.itemOffered) === null || _a === void 0 ? void 0 : _a.typeOf, id: (_b = o === null || o === void 0 ? void 0 : o.itemOffered) === null || _b === void 0 ? void 0 : _b.id, serviceOutput: Object.assign({ project: req.project, typeOf: (_d = (_c = o === null || o === void 0 ? void 0 : o.itemOffered) === null || _c === void 0 ? void 0 : _c.serviceOutput) === null || _d === void 0 ? void 0 : _d.typeOf, accessCode: (_f = (_e = o === null || o === void 0 ? void 0 : o.itemOffered) === null || _e === void 0 ? void 0 : _e.serviceOutput) === null || _f === void 0 ? void 0 : _f.accessCode, name: (_h = (_g = o === null || o === void 0 ? void 0 : o.itemOffered) === null || _g === void 0 ? void 0 : _g.serviceOutput) === null || _h === void 0 ? void 0 : _h.name }, (Array.isArray((_k = (_j = o === null || o === void 0 ? void 0 : o.itemOffered) === null || _j === void 0 ? void 0 : _j.serviceOutput) === null || _k === void 0 ? void 0 : _k.additionalProperty))
                         ? { additionalProperty: o.itemOffered.serviceOutput.additionalProperty }
                         : undefined) }),

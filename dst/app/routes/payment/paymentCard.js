@@ -213,7 +213,7 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
                     })
                     : [], amount: Number(req.body.object.amount), accountId: paymentCard.identifier }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined), (typeof req.body.object.description === 'string') ? { description: req.body.object.description } : undefined),
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id },
-            paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.PaymentCard
+            paymentServiceType: cinerino.factory.service.paymentService.PaymentServiceType.PaymentCard
         })({
             action: actionRepo,
             transaction: transactionRepo,

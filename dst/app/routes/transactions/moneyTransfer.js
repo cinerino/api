@@ -121,7 +121,7 @@ moneyTransferTransactionsRouter.post('/start', permitScopes_1.default(['transact
         const searchProductsResult = yield productService.search({
             limit: 1,
             project: { id: { $eq: req.project.id } },
-            typeOf: { $eq: cinerino.factory.chevre.product.ProductType.PaymentCard },
+            typeOf: { $eq: cinerino.factory.product.ProductType.PaymentCard },
             serviceOutput: { typeOf: { $eq: fromLocation.typeOf } }
         });
         const product = searchProductsResult.data.shift();

@@ -51,11 +51,11 @@ movieTicketPaymentRouter.post('/actions/check', permitScopes_1.default(['transac
             project: { id: req.project.id }
         });
         const checkAction = yield payService.check({
-            project: { id: req.project.id, typeOf: cinerino.chevre.factory.organizationType.Project },
-            typeOf: cinerino.chevre.factory.actionType.CheckAction,
+            project: { id: req.project.id, typeOf: cinerino.factory.organizationType.Project },
+            typeOf: cinerino.factory.actionType.CheckAction,
             agent: req.agent,
             object: [{
-                    typeOf: cinerino.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
+                    typeOf: cinerino.factory.service.paymentService.PaymentServiceType.MovieTicket,
                     paymentMethod: {
                         typeOf: paymentMethodType,
                         additionalProperty: [],
@@ -172,7 +172,7 @@ movieTicketPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
                     return Object.assign(Object.assign({}, o), { typeOf: paymentMethodType });
                 }) }, (typeof req.body.object.name === 'string') ? { name: req.body.object.name } : undefined),
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id },
-            paymentServiceType: cinerino.factory.chevre.service.paymentService.PaymentServiceType.MovieTicket
+            paymentServiceType: cinerino.factory.service.paymentService.PaymentServiceType.MovieTicket
         })({
             action: actionRepo,
             transaction: transactionRepo,

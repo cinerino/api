@@ -64,7 +64,7 @@ ownershipInfosRouter.get(
             const searchPaymentCardProductsResult = await productService.search({
                 limit: 100,
                 project: { id: { $eq: req.project.id } },
-                typeOf: { $eq: cinerino.factory.chevre.product.ProductType.PaymentCard }
+                typeOf: { $eq: cinerino.factory.product.ProductType.PaymentCard }
             });
             const paymentCardProducts = searchPaymentCardProductsResult.data;
             const paymentCardOutputTypes = [...new Set(paymentCardProducts.map((p) => String(p.serviceOutput?.typeOf)))];
@@ -98,7 +98,7 @@ ownershipInfosRouter.get(
 
                     break;
 
-                case cinerino.factory.chevre.reservationType.EventReservation === typeOfGood.typeOf:
+                case cinerino.factory.reservationType.EventReservation === typeOfGood.typeOf:
                     ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(<any>{
                         ...searchConditions,
                         project: { typeOf: req.project.typeOf, id: req.project.id }
@@ -180,7 +180,7 @@ ownershipInfosRouter.post(
             const code = authorizations[0].code;
 
             // 座席予約に対する所有権であれば、Chevreでチェックイン
-            if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
+            if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.reservationType.EventReservation) {
                 const reservationService = new cinerino.chevre.service.Reservation({
                     endpoint: cinerino.credentials.chevre.endpoint,
                     auth: chevreAuthClient,

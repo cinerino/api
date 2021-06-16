@@ -39,14 +39,14 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                     // no op
                 }
 
-                let programMembership: cinerino.factory.chevre.programMembership.IProgramMembership | undefined;
+                let programMembership: cinerino.factory.programMembership.IProgramMembership | undefined;
                 if (typeof user.username === 'string') {
                     programMembership = {
                         membershipNumber: user.username,
                         // name: 'Default Program Membership',
                         programName: 'Default Program Membership',
                         project: req.project,
-                        typeOf: cinerino.factory.chevre.programMembership.ProgramMembershipType.ProgramMembership
+                        typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership
                         // url: user.iss
                     };
                 }
@@ -62,7 +62,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                         memberOf: programMembership
                     }
                     : {
-                        typeOf: <any>cinerino.factory.chevre.creativeWorkType.WebApplication,
+                        typeOf: <any>cinerino.factory.creativeWorkType.WebApplication,
                         id: user.sub,
                         identifier: identifier
                     };

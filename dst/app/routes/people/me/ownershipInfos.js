@@ -62,7 +62,7 @@ ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_
         const searchPaymentCardProductsResult = yield productService.search({
             limit: 100,
             project: { id: { $eq: req.project.id } },
-            typeOf: { $eq: cinerino.factory.chevre.product.ProductType.PaymentCard }
+            typeOf: { $eq: cinerino.factory.product.ProductType.PaymentCard }
         });
         const paymentCardProducts = searchPaymentCardProductsResult.data;
         const paymentCardOutputTypes = [...new Set(paymentCardProducts.map((p) => { var _a; return String((_a = p.serviceOutput) === null || _a === void 0 ? void 0 : _a.typeOf); }))];
@@ -85,7 +85,7 @@ ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_
                     ownershipInfo: ownershipInfoService
                 });
                 break;
-            case cinerino.factory.chevre.reservationType.EventReservation === typeOfGood.typeOf:
+            case cinerino.factory.reservationType.EventReservation === typeOfGood.typeOf:
                 ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(Object.assign(Object.assign({}, searchConditions), { project: { typeOf: req.project.typeOf, id: req.project.id } }))({
                     ownershipInfo: ownershipInfoService,
                     reservation: new cinerino.chevre.service.Reservation({
@@ -150,7 +150,7 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['people.me.*
         });
         const code = authorizations[0].code;
         // 座席予約に対する所有権であれば、Chevreでチェックイン
-        if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
+        if (ownershipInfo.typeOfGood.typeOf === cinerino.factory.reservationType.EventReservation) {
             const reservationService = new cinerino.chevre.service.Reservation({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: chevreAuthClient,

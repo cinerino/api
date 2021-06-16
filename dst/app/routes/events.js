@@ -35,7 +35,7 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
 // 互換性維持のため
 (req, _, next) => {
     if (typeof req.query.typeOf !== 'string') {
-        req.query.typeOf = cinerino.factory.chevre.eventType.ScreeningEvent;
+        req.query.typeOf = cinerino.factory.eventType.ScreeningEvent;
     }
     next();
 }, ...[
@@ -135,8 +135,8 @@ eventsRouter.get('/:id', permitScopes_1.default(['events.*', 'events.read']), ra
 //                 auth: chevreAuthClient,
 //                 project: { id: req.project.id }
 //             });
-//             const event = await eventService.findById<cinerino.factory.chevre.eventType.ScreeningEvent>({ id: req.params.id });
-//             await eventService.updatePartially<cinerino.factory.chevre.eventType.ScreeningEvent>({
+//             const event = await eventService.findById<cinerino.factory.eventType.ScreeningEvent>({ id: req.params.id });
+//             await eventService.updatePartially<cinerino.factory.eventType.ScreeningEvent>({
 //                 id: event.id,
 //                 attributes: <any>{
 //                     // ...event,

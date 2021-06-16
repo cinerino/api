@@ -68,6 +68,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 通貨転送をChevre口座取引で実装
 - 予約承認時にメンバーシップを指定できるように調整
 - メンバーシップオファー承認時のアプリケーションクライアントに対する排他処理調整
+- @cinerino/sdkで再構築
 
 ### Deprecated
 

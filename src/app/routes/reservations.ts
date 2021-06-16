@@ -67,7 +67,7 @@ reservationsRouter.get(
             const searchResult = await reservationService.search({
                 ...req.query,
                 project: { ids: [req.project.id] },
-                typeOf: cinerino.factory.chevre.reservationType.EventReservation
+                typeOf: cinerino.factory.reservationType.EventReservation
             });
 
             // totalCount対応
@@ -147,7 +147,7 @@ reservationsRouter.post(
                     const order = await orderService.findByOrderNumber({ orderNumber: (<any>payload).orderNumber });
 
                     const acceptedOffer = order.acceptedOffers.find((offer) => {
-                        return offer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation
+                        return offer.itemOffered.typeOf === cinerino.factory.reservationType.EventReservation
                             && (<cinerino.factory.order.IReservation>offer.itemOffered).id === reservationId;
                     });
                     if (acceptedOffer === undefined) {
@@ -212,7 +212,7 @@ function useReservation(params: {
             auth: chevreAuthClient,
             project: { id: params.project.id }
         });
-        const reservation = await reservationService.findById<cinerino.factory.chevre.reservationType.EventReservation>({
+        const reservation = await reservationService.findById<cinerino.factory.reservationType.EventReservation>({
             id: params.object.id
         });
 
@@ -294,7 +294,7 @@ reservationsRouter.put(
             });
             await cancelReservationService.startAndConfirm({
                 project: { typeOf: req.project.typeOf, id: req.project.id },
-                typeOf: cinerino.factory.chevre.assetTransactionType.CancelReservation,
+                typeOf: cinerino.factory.assetTransactionType.CancelReservation,
                 expires: moment()
                     .add(1, 'minute')
                     .toDate(),

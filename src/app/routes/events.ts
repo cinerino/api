@@ -33,7 +33,7 @@ eventsRouter.get(
     // 互換性維持のため
     (req, _, next) => {
         if (typeof req.query.typeOf !== 'string') {
-            req.query.typeOf = cinerino.factory.chevre.eventType.ScreeningEvent;
+            req.query.typeOf = cinerino.factory.eventType.ScreeningEvent;
         }
 
         next();
@@ -89,7 +89,7 @@ eventsRouter.get(
                 project: { id: req.project.id }
             });
 
-            const searchConditions: cinerino.chevre.factory.event.screeningEvent.ISearchConditions = {
+            const searchConditions: cinerino.factory.event.screeningEvent.ISearchConditions = {
                 ...req.query,
                 project: { ids: [req.project.id] },
                 // tslint:disable-next-line:no-magic-numbers
@@ -116,7 +116,7 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            let event: cinerino.factory.chevre.event.screeningEvent.IEvent;
+            let event: cinerino.factory.event.screeningEvent.IEvent;
 
             const eventService = new cinerino.chevre.service.Event({
                 endpoint: cinerino.credentials.chevre.endpoint,
@@ -154,9 +154,9 @@ eventsRouter.get(
 //                 project: { id: req.project.id }
 //             });
 
-//             const event = await eventService.findById<cinerino.factory.chevre.eventType.ScreeningEvent>({ id: req.params.id });
+//             const event = await eventService.findById<cinerino.factory.eventType.ScreeningEvent>({ id: req.params.id });
 
-//             await eventService.updatePartially<cinerino.factory.chevre.eventType.ScreeningEvent>({
+//             await eventService.updatePartially<cinerino.factory.eventType.ScreeningEvent>({
 //                 id: event.id,
 //                 attributes: <any>{
 //                     // ...event,

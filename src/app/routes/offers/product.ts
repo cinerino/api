@@ -117,9 +117,9 @@ productOffersRouter.post<ParamsDictionary>(
             const actionObject: cinerino.factory.action.authorize.offer.product.IObject = (<any[]>req.body.object).map((o) => {
                 return {
                     project: req.project,
-                    typeOf: cinerino.factory.chevre.offerType.Offer,
+                    typeOf: cinerino.factory.offerType.Offer,
                     id: o?.id,
-                    priceCurrency: cinerino.factory.chevre.priceCurrency.JPY,
+                    priceCurrency: cinerino.factory.priceCurrency.JPY,
                     itemOffered: {
                         ...o?.itemOffered,
                         project: req.project,

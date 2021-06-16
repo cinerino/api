@@ -82,7 +82,7 @@ monetaryAmountOffersRouter.post<ParamsDictionary>(
                 project: req.project,
                 object: {
                     project: req.project,
-                    typeOf: cinerino.factory.chevre.offerType.Offer,
+                    typeOf: cinerino.factory.offerType.Offer,
                     itemOffered: {
                         typeOf: 'MonetaryAmount',
                         value: Number(req.body.object.itemOffered.value),

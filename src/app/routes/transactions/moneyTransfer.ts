@@ -129,10 +129,10 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
             const searchProductsResult = await productService.search({
                 limit: 1,
                 project: { id: { $eq: req.project.id } },
-                typeOf: { $eq: cinerino.factory.chevre.product.ProductType.PaymentCard },
+                typeOf: { $eq: cinerino.factory.product.ProductType.PaymentCard },
                 serviceOutput: { typeOf: { $eq: fromLocation.typeOf } }
             });
-            const product = <cinerino.factory.chevre.product.IProduct | undefined>searchProductsResult.data.shift();
+            const product = <cinerino.factory.product.IProduct | undefined>searchProductsResult.data.shift();
             if (product === undefined) {
                 throw new cinerino.factory.errors.NotFound('Product');
             }

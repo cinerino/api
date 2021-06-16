@@ -64,7 +64,7 @@ iamMembersRouter.use('/me', me_1.default);
 //             .not()
 //             .isEmpty()
 //             .withMessage(() => 'required')
-//             .isIn([cinerino.factory.personType.Person, cinerino.factory.chevre.creativeWorkType.WebApplication]),
+//             .isIn([cinerino.factory.personType.Person, cinerino.factory.creativeWorkType.WebApplication]),
 //         body('member.hasRole')
 //             .not()
 //             .isEmpty()
@@ -115,7 +115,7 @@ iamMembersRouter.use('/me', me_1.default);
 //                             );
 //                         });
 //                     member = {
-//                         typeOf: cinerino.factory.chevre.creativeWorkType.WebApplication,
+//                         typeOf: cinerino.factory.creativeWorkType.WebApplication,
 //                         id: userPoolClient.ClientId,
 //                         name: (typeof req.body.member?.name === 'string')
 //                             ? String(req.body.member.name)
@@ -157,7 +157,7 @@ iamMembersRouter.use('/me', me_1.default);
 //                                 hasRole: roles
 //                             };
 //                             break;
-//                         case cinerino.factory.chevre.creativeWorkType.WebApplication:
+//                         case cinerino.factory.creativeWorkType.WebApplication:
 //                             // クライアント検索
 //                             userPoolClient =
 //                                 await new Promise<cinerino.AWS.CognitoIdentityServiceProvider.UserPoolClientType>((resolve, reject) => {
@@ -180,7 +180,7 @@ iamMembersRouter.use('/me', me_1.default);
 //                                     );
 //                                 });
 //                             member = {
-//                                 typeOf: cinerino.factory.chevre.creativeWorkType.WebApplication,
+//                                 typeOf: cinerino.factory.creativeWorkType.WebApplication,
 //                                 id: userPoolClient.ClientId,
 //                                 name: (typeof req.body.member?.name === 'string')
 //                                     ? String(req.body.member.name)
