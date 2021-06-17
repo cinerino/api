@@ -92,10 +92,15 @@ creditCardPaymentRouter.post('/authorize', permitScopes_1.default(['transactions
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        const projectRepo = new cinerino.repository.Project(mongoose.connection);
-        const project = yield projectRepo.findById({ id: req.project.id });
-        const useUsernameAsGMOMemberId = ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.useUsernameAsGMOMemberId) === true;
-        const memberId = (useUsernameAsGMOMemberId) ? req.user.username : req.user.sub;
+        // 会員の場合のみmemberIdをセット
+        let memberId = '';
+        if (req.canReadPeopleMe) {
+            const projectRepo = new cinerino.repository.Project(mongoose.connection);
+            // 会員IDを強制的にログイン中の人物IDに変更
+            const project = yield projectRepo.findById({ id: req.project.id });
+            const useUsernameAsGMOMemberId = ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.useUsernameAsGMOMemberId) === true;
+            memberId = (useUsernameAsGMOMemberId) ? req.user.username : req.user.sub;
+        }
         const creditCard = Object.assign(Object.assign({}, req.body.object.creditCard), { memberId: memberId });
         const action = yield cinerino.service.payment.chevre.authorize({
             project: req.project,

@@ -151,7 +151,7 @@ function createStartParams(req) {
         if (Array.isArray(agent.identifier)) {
             customer.identifier = agent.identifier;
         }
-        if (typeof ((_e = agent.memberOf) === null || _e === void 0 ? void 0 : _e.typeOf) === 'string') {
+        if (req.canReadPeopleMe && typeof ((_e = agent.memberOf) === null || _e === void 0 ? void 0 : _e.typeOf) === 'string') {
             customer.memberOf = agent.memberOf;
         }
         // customerの指定があれば、存在確認の上で上書き

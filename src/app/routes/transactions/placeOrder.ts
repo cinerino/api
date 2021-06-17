@@ -177,7 +177,7 @@ function createStartParams(req: Request) {
         if (Array.isArray(agent.identifier)) {
             customer.identifier = agent.identifier;
         }
-        if (typeof agent.memberOf?.typeOf === 'string') {
+        if (req.canReadPeopleMe && typeof agent.memberOf?.typeOf === 'string') {
             customer.memberOf = agent.memberOf;
         }
 

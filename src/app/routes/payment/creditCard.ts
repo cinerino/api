@@ -95,14 +95,18 @@ creditCardPaymentRouter.post<ParamsDictionary>(
     },
     async (req, res, next) => {
         try {
-            const projectRepo = new cinerino.repository.Project(mongoose.connection);
-            const project = await projectRepo.findById({ id: req.project.id });
-            const useUsernameAsGMOMemberId = project.settings?.useUsernameAsGMOMemberId === true;
+            // 会員の場合のみmemberIdをセット
+            let memberId = '';
+            if (req.canReadPeopleMe) {
+                const projectRepo = new cinerino.repository.Project(mongoose.connection);
 
-            // 会員IDを強制的にログイン中の人物IDに変更
-            type ICreditCard4authorizeAction = cinerino.factory.action.authorize.paymentMethod.any.ICreditCard;
-            const memberId = (useUsernameAsGMOMemberId) ? <string>req.user.username : req.user.sub;
-            const creditCard: ICreditCard4authorizeAction = {
+                // 会員IDを強制的にログイン中の人物IDに変更
+                const project = await projectRepo.findById({ id: req.project.id });
+                const useUsernameAsGMOMemberId = project.settings?.useUsernameAsGMOMemberId === true;
+                memberId = (useUsernameAsGMOMemberId) ? <string>req.user.username : req.user.sub;
+            }
+
+            const creditCard: cinerino.factory.action.authorize.paymentMethod.any.ICreditCard = {
                 ...req.body.object.creditCard,
                 memberId: memberId
             };

@@ -64,7 +64,7 @@ paymentCardPaymentRouter.post('/check', permitScopes_1.default(['transactions'])
     }
 }));
 /**
- * 口座確保
+ * ペイメントカード承認
  */
 // tslint:disable-next-line:use-default-type-parameter
 paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transactions']), rateLimit_1.default, 
@@ -134,7 +134,7 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
         });
         let paymentCard;
         const paymentMethodType = (_a = req.body.object) === null || _a === void 0 ? void 0 : _a.paymentMethod;
-        // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
+        // トークン化されたペイメントカード情報でリクエストされた場合、実ペイメントカード情報へ変換する
         if (typeof ((_b = req.body.object) === null || _b === void 0 ? void 0 : _b.fromLocation) === 'string') {
             const accountOwnershipInfo = yield cinerino.service.code.verifyToken({
                 project: req.project,
@@ -179,14 +179,15 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
                 }
                 else {
                     // アクセスコード情報なし、かつ、会員の場合、所有権を確認
-                    if (typeof req.user.username === 'string') {
-                        // 口座に所有権があるかどうか確認
+                    if (req.canReadPeopleMe) {
+                        // ペイメントカードに所有権があるかどうか確認
+                        const now = new Date();
                         const searchOwnershipInfosResult = yield ownershipInfoService.search({
                             limit: 1,
                             project: { id: { $eq: req.project.id } },
                             ownedBy: { id: req.user.sub },
-                            ownedFrom: new Date(),
-                            ownedThrough: new Date(),
+                            ownedFrom: now,
+                            ownedThrough: now,
                             typeOfGood: {
                                 typeOf: paymentMethodType,
                                 accountNumber: { $eq: accountIdentifier }
@@ -231,7 +232,7 @@ paymentCardPaymentRouter.post('/authorize', permitScopes_1.default(['transaction
     }
 }));
 /**
- * 口座承認取消
+ * ペイメントカード承認取消
  */
 paymentCardPaymentRouter.put('/authorize/:actionId/void', permitScopes_1.default(['transactions']), rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({

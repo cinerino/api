@@ -69,7 +69,7 @@ paymentCardPaymentRouter.post(
 );
 
 /**
- * 口座確保
+ * ペイメントカード承認
  */
 // tslint:disable-next-line:use-default-type-parameter
 paymentCardPaymentRouter.post<ParamsDictionary>(
@@ -149,7 +149,7 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
 
             const paymentMethodType: string = req.body.object?.paymentMethod;
 
-            // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
+            // トークン化されたペイメントカード情報でリクエストされた場合、実ペイメントカード情報へ変換する
             if (typeof req.body.object?.fromLocation === 'string') {
                 type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
                 const accountOwnershipInfo = await cinerino.service.code.verifyToken<IPayload>({
@@ -194,14 +194,15 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
                         };
                     } else {
                         // アクセスコード情報なし、かつ、会員の場合、所有権を確認
-                        if (typeof req.user.username === 'string') {
-                            // 口座に所有権があるかどうか確認
+                        if (req.canReadPeopleMe) {
+                            // ペイメントカードに所有権があるかどうか確認
+                            const now = new Date();
                             const searchOwnershipInfosResult = await ownershipInfoService.search({
                                 limit: 1,
                                 project: { id: { $eq: req.project.id } },
                                 ownedBy: { id: req.user.sub },
-                                ownedFrom: new Date(),
-                                ownedThrough: new Date(),
+                                ownedFrom: now,
+                                ownedThrough: now,
                                 typeOfGood: {
                                     typeOf: paymentMethodType,
                                     accountNumber: { $eq: accountIdentifier }
@@ -259,7 +260,7 @@ paymentCardPaymentRouter.post<ParamsDictionary>(
 );
 
 /**
- * 口座承認取消
+ * ペイメントカード承認取消
  */
 paymentCardPaymentRouter.put(
     '/authorize/:actionId/void',

@@ -76,6 +76,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - req.canReadPeopleMeを導入
 - CLIENTS_CAN_READ_PEOPLE_ME設定を導入
 - 会員ログイン判定にreq.canReadPeopleMeを使用するように調整
+- 会員の場合のみクレジットカード承認にmemberIdを指定するように調整
+- 会員の場合のみ注文のcustomerにmemberOfを含めるように調整
 
 ### Deprecated
 

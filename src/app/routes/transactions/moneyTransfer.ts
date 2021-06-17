@@ -200,7 +200,7 @@ async function validateFromLocation(req: Request): Promise<{
     let fromLocation = <cinerino.factory.transaction.moneyTransfer.IFromLocationBeforeStart>req.body.object.fromLocation;
     let pendingTransactionIdentifier: string | undefined;
 
-    // トークン化された口座情報でリクエストされた場合、実口座情報へ変換する
+    // トークン化されたペイメントカード情報でリクエストされた場合、実ペイメントカード情報へ変換する
     if (typeof fromLocation === 'string') {
         throw new cinerino.factory.errors.NotImplemented('tokenized from location not implemented');
         // tslint:disable-next-line:max-line-length
@@ -299,7 +299,7 @@ async function validateFromLocation(req: Request): Promise<{
             } else {
                 throw new cinerino.factory.errors.NotImplemented('owned payment card not implemented');
                 // アクセスコード情報なし、かつ、会員の場合、所有権を確認
-                // 口座に所有権があるかどうか確認
+                // ペイメントカードに所有権があるかどうか確認
                 // const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
                 // const count = await ownershipInfoRepo.count<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
                 //     limit: 1,
