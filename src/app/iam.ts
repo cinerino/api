@@ -3,7 +3,8 @@
  */
 export enum Permission {
     Admin = 'admin',
-    ReadIAMMembersMe = 'iam.members.me.read'
+    ReadIAMMembersMe = 'iam.members.me.read',
+    ReadPeopleMe = 'people.me.read'
 }
 
 export enum RoleName {

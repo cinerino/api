@@ -23,6 +23,7 @@ exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* 
     try {
         let isPOS = false;
         let isProjectMember = false;
+        let canReadPeopleMe = false;
         let memberPermissions = [];
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
         const roleRepo = new cinerino.repository.Role(mongoose.connection);
@@ -66,11 +67,14 @@ exports.default = (req, _, next) => __awaiter(void 0, void 0, void 0, function* 
                 isPOS = searchPermissionsResult.roleNames.includes(iam_1.RoleName.POS);
             }
         }
+        // 会員リソースを読み取り可能かどうかクライアントから判断
+        canReadPeopleMe = req.user.scopes.includes(`${RESOURCE_SERVER_IDENTIFIER}/${iam_1.Permission.ReadPeopleMe}`);
         req.memberPermissions = memberPermissions;
         req.isPOS = isPOS;
         req.isProjectMember = isProjectMember;
         // isAdminの条件は、プロジェクトメンバーかどうか
         // req.isAdmin = req.isProjectMember === true;
+        req.canReadPeopleMe = canReadPeopleMe;
         next();
     }
     catch (error) {

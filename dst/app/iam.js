@@ -8,6 +8,7 @@ var Permission;
 (function (Permission) {
     Permission["Admin"] = "admin";
     Permission["ReadIAMMembersMe"] = "iam.members.me.read";
+    Permission["ReadPeopleMe"] = "people.me.read";
 })(Permission = exports.Permission || (exports.Permission = {}));
 var RoleName;
 (function (RoleName) {

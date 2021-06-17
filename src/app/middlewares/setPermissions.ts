@@ -15,6 +15,7 @@ export default async (req: Request, _: Response, next: NextFunction) => {
     try {
         let isPOS = false;
         let isProjectMember = false;
+        let canReadPeopleMe = false;
         let memberPermissions: string[] = [];
 
         const memberRepo = new cinerino.repository.Member(mongoose.connection);
@@ -67,11 +68,15 @@ export default async (req: Request, _: Response, next: NextFunction) => {
             }
         }
 
+        // 会員リソースを読み取り可能かどうかクライアントから判断
+        canReadPeopleMe = req.user.scopes.includes(`${RESOURCE_SERVER_IDENTIFIER}/${Permission.ReadPeopleMe}`);
+
         req.memberPermissions = memberPermissions;
         req.isPOS = isPOS;
         req.isProjectMember = isProjectMember;
         // isAdminの条件は、プロジェクトメンバーかどうか
         // req.isAdmin = req.isProjectMember === true;
+        req.canReadPeopleMe = canReadPeopleMe;
 
         next();
     } catch (error) {

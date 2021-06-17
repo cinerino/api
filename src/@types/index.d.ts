@@ -30,6 +30,10 @@ declare global {
              * プロジェクトメンバーの権限
              */
             memberPermissions: string[];
+            /**
+             * 会員リソース読み取り権限を持っているかどうか
+             */
+            canReadPeopleMe: boolean;
             waiterPassport?: cinerino.factory.transaction.IPassportBeforeStart;
         }
     }
