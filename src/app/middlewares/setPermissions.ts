@@ -9,7 +9,6 @@ import { Permission, RoleName } from '../iam';
 
 const RESOURCE_SERVER_IDENTIFIER = <string>process.env.RESOURCE_SERVER_IDENTIFIER;
 const ANY_PROJECT_ID = '*';
-const ADMIN_CLIENTS: string[] = (typeof process.env.ADMIN_CLIENTS === 'string') ? process.env.ADMIN_CLIENTS.split(',') : [];
 
 export default async (req: Request, _: Response, next: NextFunction) => {
     try {
@@ -27,8 +26,7 @@ export default async (req: Request, _: Response, next: NextFunction) => {
                 roleNames: string[];
                 permissions: string[];
             };
-            const memberPermissionReadable = req.user.scopes.includes(`${RESOURCE_SERVER_IDENTIFIER}/${Permission.ReadIAMMembersMe}`)
-                || ADMIN_CLIENTS.includes(req.user.client_id);
+            const memberPermissionReadable = req.user.scopes.includes(`${RESOURCE_SERVER_IDENTIFIER}/${Permission.ReadIAMMembersMe}`);
 
             // Adminユーザーの認可コードフローであれば、プロジェクトメンバーとしてのmemberPermissions
             if (memberPermissionReadable) {
