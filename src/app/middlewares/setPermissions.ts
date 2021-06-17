@@ -9,6 +9,8 @@ import { Permission, RoleName } from '../iam';
 
 const RESOURCE_SERVER_IDENTIFIER = <string>process.env.RESOURCE_SERVER_IDENTIFIER;
 const ANY_PROJECT_ID = '*';
+const CLIENTS_CAN_READ_PEOPLE_ME: string[]
+    = (typeof process.env.CLIENTS_CAN_READ_PEOPLE_ME === 'string') ? process.env.CLIENTS_CAN_READ_PEOPLE_ME.split(',') : [];
 
 export default async (req: Request, _: Response, next: NextFunction) => {
     try {
@@ -67,7 +69,8 @@ export default async (req: Request, _: Response, next: NextFunction) => {
         }
 
         // 会員リソースを読み取り可能かどうかクライアントから判断
-        canReadPeopleMe = req.user.scopes.includes(`${RESOURCE_SERVER_IDENTIFIER}/${Permission.ReadPeopleMe}`);
+        canReadPeopleMe = req.user.scopes.includes(`${RESOURCE_SERVER_IDENTIFIER}/${Permission.ReadPeopleMe}`)
+            || CLIENTS_CAN_READ_PEOPLE_ME.includes(req.user.client_id);
 
         req.memberPermissions = memberPermissions;
         req.isPOS = isPOS;
