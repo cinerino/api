@@ -75,6 +75,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - req.isAdminを廃止
 - req.canReadPeopleMeを導入
 - CLIENTS_CAN_READ_PEOPLE_ME設定を導入
+- 会員ログイン判定にreq.canReadPeopleMeを使用するように調整
 
 ### Deprecated
 

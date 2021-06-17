@@ -26,12 +26,15 @@ describe('requireMember.default()', () => {
 
     it('会員であればnextが呼ばれるはず', async () => {
         const params = {
-            req: { user: { username: 'username' } },
+            req: { user: { username: 'username' }, canReadPeopleMe: true },
             res: {},
             next: () => undefined
         };
 
-        sandbox.mock(params).expects('next').once().withExactArgs();
+        sandbox.mock(params)
+            .expects('next')
+            .once()
+            .withExactArgs();
 
         const result = await requireMember.default(<any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);
@@ -45,7 +48,10 @@ describe('requireMember.default()', () => {
             next: () => undefined
         };
 
-        sandbox.mock(params).expects('next').once().withExactArgs(sinon.match.instanceOf(cinerino.factory.errors.Forbidden));
+        sandbox.mock(params)
+            .expects('next')
+            .once()
+            .withExactArgs(sinon.match.instanceOf(cinerino.factory.errors.Forbidden));
 
         const result = await requireMember.default(<any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);

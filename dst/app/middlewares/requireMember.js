@@ -8,7 +8,7 @@ const createDebug = require("debug");
 const debug = createDebug('cinerino-api:middlewares');
 exports.default = (req, __, next) => {
     // 会員としてログイン済みであればOK
-    if (isMember(req.user)) {
+    if (isMember(req)) {
         debug('logged in as', req.user.sub);
         next();
     }
@@ -16,6 +16,7 @@ exports.default = (req, __, next) => {
         next(new cinerino.factory.errors.Forbidden('login required'));
     }
 };
-function isMember(user) {
-    return (user.username !== undefined);
+function isMember(req) {
+    // req.canReadPeopleMeで判定
+    return req.canReadPeopleMe === true && typeof req.user.username === 'string';
 }
