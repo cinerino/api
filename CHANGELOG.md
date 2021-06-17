@@ -70,6 +70,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - メンバーシップオファー承認時のアプリケーションクライアントに対する排他処理調整
 - @cinerino/sdkで再構築
 - ADMIN_USER_POOL_ID設定を廃止
+- TOKEN_ISSUERS_AS_ADMIN設定を廃止
 
 ### Deprecated
 

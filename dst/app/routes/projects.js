@@ -29,9 +29,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
-// const TOKEN_ISSUERS_AS_ADMIN: string[] = (typeof process.env.TOKEN_ISSUERS_AS_ADMIN === 'string')
-//     ? process.env.TOKEN_ISSUERS_AS_ADMIN.split(',')
-//     : [];
 const projectsRouter = express_1.Router();
 /**
  * プロジェクト検索
@@ -48,50 +45,6 @@ rateLimit_1.default, validator_1.default, (req, res, next) => __awaiter(void 0, 
         });
         const { data } = yield meService.searchProjects(Object.assign({}, req.query));
         res.json(data);
-        // const memberRepo = new cinerino.repository.Member(mongoose.connection);
-        // const projectService = new cinerino.chevre.service.Project({
-        //     endpoint: cinerino.credentials.chevre.endpoint,
-        //     auth: chevreAuthClient,
-        //     project: { id: '' }
-        // });
-        // // tslint:disable-next-line:no-magic-numbers
-        // const limit = (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100;
-        // const page = (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1;
-        // // 権限を持つプロジェクト検索
-        // let searchConditions: any;
-        // if (TOKEN_ISSUERS_AS_ADMIN.includes(req.user.iss)) {
-        //     // 管理ユーザープールのクライアントであればreq.user.subとして検索
-        //     searchConditions = {
-        //         'member.id': { $eq: req.user.sub }
-        //     };
-        // } else {
-        //     // それ以外であればreq.user.client_idとして検索
-        //     searchConditions = {
-        //         'member.id': { $eq: req.user.client_id }
-        //     };
-        // }
-        // const projectMembers = await memberRepo.memberModel.find(
-        //     searchConditions,
-        //     { project: 1 }
-        // )
-        //     .limit(limit)
-        //     .skip(limit * (page - 1))
-        //     .setOptions({ maxTimeMS: 10000 })
-        //     .exec()
-        //     .then((docs) => docs.map((doc) => doc.toObject()));
-        // let projectIds = projectMembers.map((m) => m.project.id);
-        // // length=1だとidsの指定がない検索になってしまうので、ありえないプロジェクトIDで保管
-        // if (projectIds.length === 0) {
-        //     projectIds = ['***NoProjects***'];
-        // }
-        // const searchResult = await projectService.search(
-        //     {
-        //         ids: projectIds,
-        //         limit: limit,
-        //         $projection: { settings: 0 }
-        //     }
-        // );
-        // res.json(searchResult.data);
     }
     catch (error) {
         next(error);
