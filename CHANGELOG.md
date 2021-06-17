@@ -69,6 +69,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 予約承認時にメンバーシップを指定できるように調整
 - メンバーシップオファー承認時のアプリケーションクライアントに対する排他処理調整
 - @cinerino/sdkで再構築
+- ADMIN_USER_POOL_ID設定を廃止
 
 ### Deprecated
 

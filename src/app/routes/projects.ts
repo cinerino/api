@@ -21,8 +21,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     state: ''
 });
 
-const ADMIN_USER_POOL_ID = <string>process.env.ADMIN_USER_POOL_ID;
-
 const RESOURCE_SERVER_IDENTIFIER = <string>process.env.RESOURCE_SERVER_IDENTIFIER;
 // const TOKEN_ISSUERS_AS_ADMIN: string[] = (typeof process.env.TOKEN_ISSUERS_AS_ADMIN === 'string')
 //     ? process.env.TOKEN_ISSUERS_AS_ADMIN.split(',')
@@ -140,9 +138,9 @@ projectsRouter.get(
                         settings: {
                             ...project.settings,
                             cognito: {
-                                ...project.settings?.cognito,
+                                ...project.settings?.cognito
                                 // 互換性維持対応として
-                                adminUserPool: { id: ADMIN_USER_POOL_ID }
+                                // adminUserPool: { id: ADMIN_USER_POOL_ID }
                             }
                         }
                     }
@@ -153,36 +151,5 @@ projectsRouter.get(
         }
     }
 );
-
-/**
- * プロジェクト設定取得
- */
-// projectsRouter.get(
-//     '/:id/settings',
-//     permitScopes(['projects.*', 'projects.settings.read']),
-//     rateLimit,
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const projectService = new cinerino.chevre.service.Project({
-//                 endpoint: cinerino.credentials.chevre.endpoint,
-//                 auth: chevreAuthClient,
-//                 project: { id: '' }
-//             });
-//             const project = await projectService.findById({ id: req.project.id });
-
-//             res.json({
-//                 ...project.settings,
-//                 cognito: {
-//                     ...project.settings?.cognito,
-//                     // 互換性維持対応として
-//                     adminUserPool: { id: ADMIN_USER_POOL_ID }
-//                 }
-//             });
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
 
 export default projectsRouter;

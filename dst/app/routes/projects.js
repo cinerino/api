@@ -28,7 +28,6 @@ const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
-const ADMIN_USER_POOL_ID = process.env.ADMIN_USER_POOL_ID;
 const RESOURCE_SERVER_IDENTIFIER = process.env.RESOURCE_SERVER_IDENTIFIER;
 // const TOKEN_ISSUERS_AS_ADMIN: string[] = (typeof process.env.TOKEN_ISSUERS_AS_ADMIN === 'string')
 //     ? process.env.TOKEN_ISSUERS_AS_ADMIN.split(',')
@@ -115,9 +114,7 @@ projectsRouter.get('/:id', permitScopes_1.default(['projects.*', 'projects.read'
         const project = yield projectService.findById(Object.assign({ id: req.project.id }, (projection !== undefined) ? { $projection: projection } : undefined));
         res.json(Object.assign(Object.assign({}, project), (project.settings !== undefined)
             ? {
-                settings: Object.assign(Object.assign({}, project.settings), { cognito: Object.assign(Object.assign({}, (_a = project.settings) === null || _a === void 0 ? void 0 : _a.cognito), { 
-                        // 互換性維持対応として
-                        adminUserPool: { id: ADMIN_USER_POOL_ID } }) })
+                settings: Object.assign(Object.assign({}, project.settings), { cognito: Object.assign({}, (_a = project.settings) === null || _a === void 0 ? void 0 : _a.cognito) })
             }
             : undefined));
     }
@@ -125,33 +122,4 @@ projectsRouter.get('/:id', permitScopes_1.default(['projects.*', 'projects.read'
         next(error);
     }
 }));
-/**
- * プロジェクト設定取得
- */
-// projectsRouter.get(
-//     '/:id/settings',
-//     permitScopes(['projects.*', 'projects.settings.read']),
-//     rateLimit,
-//     validator,
-//     async (req, res, next) => {
-//         try {
-//             const projectService = new cinerino.chevre.service.Project({
-//                 endpoint: cinerino.credentials.chevre.endpoint,
-//                 auth: chevreAuthClient,
-//                 project: { id: '' }
-//             });
-//             const project = await projectService.findById({ id: req.project.id });
-//             res.json({
-//                 ...project.settings,
-//                 cognito: {
-//                     ...project.settings?.cognito,
-//                     // 互換性維持対応として
-//                     adminUserPool: { id: ADMIN_USER_POOL_ID }
-//                 }
-//             });
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
 exports.default = projectsRouter;
