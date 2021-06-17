@@ -51,7 +51,7 @@ const ordersRouter = Router();
 /**
  * 管理者でないかどうかの判定を担うカスタムバリデータ
  */
-const isNotAdmin: CustomValidator = (__, { req }) => !req.isAdmin;
+const isNotAdmin: CustomValidator = (__, { req }) => !req.isProjectMember;
 
 /**
  * 注文検索
@@ -301,7 +301,7 @@ ordersRouter.post(
                 let placeOrderTransaction:
                     cinerino.factory.transaction.ITransaction<cinerino.factory.transactionType.PlaceOrder> | undefined;
 
-                if (req.isAdmin) {
+                if (req.isProjectMember) {
                     // 注文取引検索
                     const placeOrderTransactions = await transactionRepo.search<cinerino.factory.transactionType.PlaceOrder>({
                         limit: 1,
@@ -683,7 +683,7 @@ ordersRouter.post<ParamsDictionary>(
                 orderNumber: orderNumber
             });
 
-            if (req.isAdmin) {
+            if (req.isProjectMember) {
                 // no op
             } else {
                 // 確認番号を検証

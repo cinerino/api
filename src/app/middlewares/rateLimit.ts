@@ -27,7 +27,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         }
 
         // 管理者として利用しているかどうか
-        if (!req.isAdmin) {
+        if (!req.isProjectMember) {
             next();
 
             return;

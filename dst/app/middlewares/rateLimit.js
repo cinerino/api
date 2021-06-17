@@ -32,7 +32,7 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
             return;
         }
         // 管理者として利用しているかどうか
-        if (!req.isAdmin) {
+        if (!req.isProjectMember) {
             next();
             return;
         }

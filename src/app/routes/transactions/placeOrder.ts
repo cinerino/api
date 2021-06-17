@@ -148,7 +148,7 @@ function createStartParams(req: Request) {
 
         const orderName: string | undefined = (typeof req.body.object?.name === 'string') ? req.body.object?.name : DEFAULT_ORDER_NAME;
 
-        const broker: cinerino.factory.order.IBroker | undefined = (req.isAdmin) ? req.agent : undefined;
+        const broker: cinerino.factory.order.IBroker | undefined = (req.isProjectMember) ? req.agent : undefined;
 
         const agent: cinerino.factory.transaction.placeOrder.IAgent = {
             ...req.agent,
@@ -365,7 +365,7 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
                     reservationFor: {
                         id: (typeof req.body.event?.id === 'string') ? req.body.event.id : req.body.reservationFor?.id
                     },
-                    broker: (req.isAdmin) ? <any>req.agent : undefined
+                    broker: (req.isProjectMember) ? <any>req.agent : undefined
                 },
                 agent: { id: req.user.sub },
                 transaction: { id: req.params.transactionId }

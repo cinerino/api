@@ -127,7 +127,7 @@ function createStartParams(req) {
         const project = yield repos.project.findById({ id: req.project.id });
         const useTransactionClientUser = ((_a = project.settings) === null || _a === void 0 ? void 0 : _a.useTransactionClientUser) === true;
         const orderName = (typeof ((_b = req.body.object) === null || _b === void 0 ? void 0 : _b.name) === 'string') ? (_c = req.body.object) === null || _c === void 0 ? void 0 : _c.name : DEFAULT_ORDER_NAME;
-        const broker = (req.isAdmin) ? req.agent : undefined;
+        const broker = (req.isProjectMember) ? req.agent : undefined;
         const agent = Object.assign(Object.assign({}, req.agent), { identifier: [
                 ...(Array.isArray(req.agent.identifier)) ? req.agent.identifier : [],
                 ...(Array.isArray((_d = req.body.agent) === null || _d === void 0 ? void 0 : _d.identifier))
@@ -303,7 +303,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
                 reservationFor: {
                     id: (typeof ((_a = req.body.event) === null || _a === void 0 ? void 0 : _a.id) === 'string') ? req.body.event.id : (_b = req.body.reservationFor) === null || _b === void 0 ? void 0 : _b.id
                 },
-                broker: (req.isAdmin) ? req.agent : undefined
+                broker: (req.isProjectMember) ? req.agent : undefined
             },
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId }

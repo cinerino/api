@@ -71,7 +71,7 @@ export default async (req: Request, _: Response, next: NextFunction) => {
         req.isPOS = isPOS;
         req.isProjectMember = isProjectMember;
         // isAdminの条件は、プロジェクトメンバーかどうか
-        req.isAdmin = req.isProjectMember === true;
+        // req.isAdmin = req.isProjectMember === true;
 
         next();
     } catch (error) {

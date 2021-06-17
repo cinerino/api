@@ -71,6 +71,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - @cinerino/sdkで再構築
 - ADMIN_USER_POOL_ID設定を廃止
 - TOKEN_ISSUERS_AS_ADMIN設定を廃止
+- req.isAdminを廃止
 
 ### Deprecated
 

@@ -23,7 +23,7 @@ declare global {
             user: IUser;
             accessToken: string;
             chevreAuthClient: cinerino.chevre.auth.ClientCredentials;
-            isAdmin: boolean;
+            // isAdmin: boolean;
             isPOS: boolean;
             isProjectMember: boolean;
             /**

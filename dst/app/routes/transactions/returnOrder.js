@@ -70,7 +70,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
         let order;
         let returnableOrder = req.body.object.order;
         // APIユーザーが管理者の場合、顧客情報を自動取得
-        if (req.isAdmin) {
+        if (req.isProjectMember) {
             order = yield orderRepo.findByOrderNumber({ orderNumber: returnableOrder[0].orderNumber });
             // returnableOrder = { ...returnableOrder, customer: { email: order.customer.email, telephone: order.customer.telephone } };
         }
@@ -112,7 +112,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['transactio
             returnableOrder = [order];
         }
         // posロールでの返品処理の場合も、販売者都合とする
-        const reason = (req.isAdmin || req.isPOS)
+        const reason = (req.isProjectMember || req.isPOS)
             ? cinerino.factory.transaction.returnOrder.Reason.Seller
             : cinerino.factory.transaction.returnOrder.Reason.Customer;
         const transaction = yield cinerino.service.transaction.returnOrder.start({

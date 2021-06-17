@@ -46,7 +46,7 @@ const ordersRouter = express_1.Router();
 /**
  * 管理者でないかどうかの判定を担うカスタムバリデータ
  */
-const isNotAdmin = (__, { req }) => !req.isAdmin;
+const isNotAdmin = (__, { req }) => !req.isProjectMember;
 /**
  * 注文検索
  */
@@ -260,7 +260,7 @@ ordersRouter.post('', permitScopes_1.default(['orders.*', 'orders.create']), rat
         // 注文未作成であれば作成
         if (order === undefined) {
             let placeOrderTransaction;
-            if (req.isAdmin) {
+            if (req.isProjectMember) {
                 // 注文取引検索
                 const placeOrderTransactions = yield transactionRepo.search({
                     limit: 1,
@@ -587,7 +587,7 @@ ordersRouter.post('/:orderNumber/deliver', permitScopes_1.default(['orders.*', '
         const order = yield orderRepo.findByOrderNumber({
             orderNumber: orderNumber
         });
-        if (req.isAdmin) {
+        if (req.isProjectMember) {
             // no op
         }
         else {

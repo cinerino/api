@@ -74,7 +74,7 @@ placeOrderTransactionsRouter.post(
                 object: {
                     reservationFor: { id: eventId },
                     acceptedOffer: acceptedOffer,
-                    ...(req.isAdmin) ? { broker: <any>req.agent } : undefined
+                    ...(req.isProjectMember) ? { broker: <any>req.agent } : undefined
                 }
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
