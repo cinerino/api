@@ -78,6 +78,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 会員ログイン判定にreq.canReadPeopleMeを使用するように調整
 - 会員の場合のみクレジットカード承認にmemberIdを指定するように調整
 - 会員の場合のみ注文のcustomerにmemberOfを含めるように調整
+- AccountTypeの使用を廃止してCurrencyTypeに変更
 
 ### Deprecated
 
