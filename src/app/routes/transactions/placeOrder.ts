@@ -377,6 +377,11 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
                     auth: chevreAuthClient,
                     project: { id: req.project.id }
                 }),
+                reserveTransaction: new cinerino.chevre.service.assetTransaction.Reserve({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
                 seller: new cinerino.chevre.service.Seller({
                     endpoint: cinerino.credentials.chevre.endpoint,
                     auth: req.chevreAuthClient,
@@ -427,6 +432,11 @@ placeOrderTransactionsRouter.put<ParamsDictionary>(
                 id: req.params.actionId
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
+                reserveTransaction: new cinerino.chevre.service.assetTransaction.Reserve({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
                 transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 

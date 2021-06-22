@@ -41,6 +41,7 @@ accountsRouter.post<ParamsDictionary>(
             .withMessage(() => 'required')
     ],
     validator,
+    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             const actionRepo = new cinerino.repository.Action(mongoose.connection);
@@ -90,6 +91,11 @@ accountsRouter.post<ParamsDictionary>(
                 product: productService,
                 registerActionInProgress: registerActionInProgressRepo,
                 project: projectRepo,
+                registerServiceTransaction: new cinerino.chevre.service.assetTransaction.RegisterService({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
                 seller: new cinerino.chevre.service.Seller({
                     endpoint: cinerino.credentials.chevre.endpoint,
                     auth: req.chevreAuthClient,

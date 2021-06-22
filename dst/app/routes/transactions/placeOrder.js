@@ -315,6 +315,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
                 auth: chevreAuthClient,
                 project: { id: req.project.id }
             }),
+            reserveTransaction: new cinerino.chevre.service.assetTransaction.Reserve({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            }),
             seller: new cinerino.chevre.service.Seller({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: req.chevreAuthClient,
@@ -357,6 +362,11 @@ placeOrderTransactionsRouter.put('/:transactionId/actions/authorize/offer/seatRe
             id: req.params.actionId
         })({
             action: new cinerino.repository.Action(mongoose.connection),
+            reserveTransaction: new cinerino.chevre.service.assetTransaction.Reserve({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            }),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)

@@ -74,6 +74,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
                 auth: chevreAuthClient,
                 project: { id: req.project.id }
             }),
+            reserveTransaction: new cinerino.chevre.service.assetTransaction.Reserve({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            }),
             seller: new cinerino.chevre.service.Seller({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: req.chevreAuthClient,

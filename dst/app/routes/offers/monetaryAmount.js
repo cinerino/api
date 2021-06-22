@@ -26,6 +26,13 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
     : 256;
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 const monetaryAmountOffersRouter = express_1.Router();
 // tslint:disable-next-line:use-default-type-parameter
 monetaryAmountOffersRouter.post('/authorize', permitScopes_1.default(['transactions']), rateLimit_1.default, ...[
@@ -100,6 +107,11 @@ monetaryAmountOffersRouter.post('/authorize', permitScopes_1.default(['transacti
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
+            depositTransaction: new cinerino.chevre.service.accountTransaction.Deposit({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            }),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED)
@@ -133,6 +145,21 @@ monetaryAmountOffersRouter.put('/authorize/:actionId/void', permitScopes_1.defau
             purpose: { typeOf: req.body.purpose.typeOf, id: req.body.purpose.id }
         })({
             action: new cinerino.repository.Action(mongoose.connection),
+            depositTransaction: new cinerino.chevre.service.accountTransaction.Deposit({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            }),
+            transferTransaction: new cinerino.chevre.service.accountTransaction.Transfer({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            }),
+            withdrawTransaction: new cinerino.chevre.service.accountTransaction.Withdraw({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            }),
             transaction: new cinerino.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT)

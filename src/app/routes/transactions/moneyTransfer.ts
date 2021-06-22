@@ -100,6 +100,7 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
     ],
     validator,
     validateWaiterPassport,
+    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             const sellerService = new cinerino.chevre.service.Seller({
@@ -182,7 +183,22 @@ moneyTransferTransactionsRouter.post<ParamsDictionary>(
             })({
                 action: actionRepo,
                 seller: sellerService,
-                transaction: transactionRepo
+                transaction: transactionRepo,
+                depositTransaction: new cinerino.chevre.service.accountTransaction.Deposit({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
+                transferTransaction: new cinerino.chevre.service.accountTransaction.Transfer({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
+                withdrawTransaction: new cinerino.chevre.service.accountTransaction.Withdraw({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
+                })
             });
 
             res.json(transaction);

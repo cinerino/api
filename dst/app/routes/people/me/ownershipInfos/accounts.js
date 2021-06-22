@@ -39,7 +39,9 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
         .not()
         .isEmpty()
         .withMessage(() => 'required')
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+], validator_1.default, 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     try {
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
@@ -86,6 +88,11 @@ accountsRouter.post('/:accountType', permitScopes_1.default(['people.me.*']), ra
             product: productService,
             registerActionInProgress: registerActionInProgressRepo,
             project: projectRepo,
+            registerServiceTransaction: new cinerino.chevre.service.assetTransaction.RegisterService({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            }),
             seller: new cinerino.chevre.service.Seller({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: req.chevreAuthClient,
