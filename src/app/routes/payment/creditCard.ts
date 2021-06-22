@@ -132,6 +132,11 @@ creditCardPaymentRouter.post<ParamsDictionary>(
                 paymentServiceType: cinerino.factory.service.paymentService.PaymentServiceType.CreditCard
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
+                payTransaction: new cinerino.chevre.service.assetTransaction.Pay({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
                 transaction: new cinerino.repository.Transaction(mongoose.connection),
                 transactionNumber: new cinerino.chevre.service.TransactionNumber({
                     endpoint: cinerino.credentials.chevre.endpoint,
@@ -181,6 +186,11 @@ creditCardPaymentRouter.put(
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 assetTransaction: new cinerino.chevre.service.AssetTransaction({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
+                payTransaction: new cinerino.chevre.service.assetTransaction.Pay({
                     endpoint: cinerino.credentials.chevre.endpoint,
                     auth: chevreAuthClient,
                     project: { id: req.project.id }

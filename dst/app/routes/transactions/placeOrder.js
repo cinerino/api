@@ -310,6 +310,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             event: eventService,
+            payTransaction: new cinerino.chevre.service.assetTransaction.Pay({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            }),
             seller: new cinerino.chevre.service.Seller({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: req.chevreAuthClient,

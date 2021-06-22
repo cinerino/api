@@ -19,6 +19,13 @@ const mongoose = require("mongoose");
 const placeOrderTransactionsRouter = express_1.Router();
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const validator_1 = require("../../../middlewares/validator");
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: process.env.CHEVRE_CLIENT_ID,
+    clientSecret: process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
 /**
  * 座席仮予約
  */
@@ -62,6 +69,11 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
         })({
             action: new cinerino.repository.Action(mongoose.connection),
             event: eventService,
+            payTransaction: new cinerino.chevre.service.assetTransaction.Pay({
+                endpoint: cinerino.credentials.chevre.endpoint,
+                auth: chevreAuthClient,
+                project: { id: req.project.id }
+            }),
             seller: new cinerino.chevre.service.Seller({
                 endpoint: cinerino.credentials.chevre.endpoint,
                 auth: req.chevreAuthClient,

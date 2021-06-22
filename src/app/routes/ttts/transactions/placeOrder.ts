@@ -11,6 +11,14 @@ const placeOrderTransactionsRouter = Router();
 import permitScopes from '../../../middlewares/permitScopes';
 import validator from '../../../middlewares/validator';
 
+const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
+    domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
+    clientId: <string>process.env.CHEVRE_CLIENT_ID,
+    clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
+    scopes: [],
+    state: ''
+});
+
 export interface IAcceptedOffer4ttts {
     /**
      * オファーコード(オファーIDではない)
@@ -79,6 +87,11 @@ placeOrderTransactionsRouter.post(
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 event: eventService,
+                payTransaction: new cinerino.chevre.service.assetTransaction.Pay({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
                 seller: new cinerino.chevre.service.Seller({
                     endpoint: cinerino.credentials.chevre.endpoint,
                     auth: req.chevreAuthClient,

@@ -204,6 +204,11 @@ movieTicketPaymentRouter.post<ParamsDictionary>(
             })({
                 action: actionRepo,
                 transaction: transactionRepo,
+                payTransaction: new cinerino.chevre.service.assetTransaction.Pay({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
                 transactionNumber: new cinerino.chevre.service.TransactionNumber({
                     endpoint: cinerino.credentials.chevre.endpoint,
                     auth: req.chevreAuthClient,
@@ -249,6 +254,11 @@ movieTicketPaymentRouter.put(
             })({
                 action: new cinerino.repository.Action(mongoose.connection),
                 assetTransaction: new cinerino.chevre.service.AssetTransaction({
+                    endpoint: cinerino.credentials.chevre.endpoint,
+                    auth: chevreAuthClient,
+                    project: { id: req.project.id }
+                }),
+                payTransaction: new cinerino.chevre.service.assetTransaction.Pay({
                     endpoint: cinerino.credentials.chevre.endpoint,
                     auth: chevreAuthClient,
                     project: { id: req.project.id }
