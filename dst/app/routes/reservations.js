@@ -60,7 +60,7 @@ reservationsRouter.get('', permitScopes_1.default(['reservations.*', 'reservatio
             auth: chevreAuthClient,
             project: { id: req.project.id }
         });
-        const searchResult = yield reservationService.search(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, typeOf: cinerino.factory.reservationType.EventReservation }));
+        const searchResult = yield reservationService.search(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, typeOf: cinerino.factory.reservationType.EventReservation }));
         // totalCount対応
         if (typeof searchResult.totalCount === 'number') {
             res.set('X-Total-Count', String(searchResult.totalCount));

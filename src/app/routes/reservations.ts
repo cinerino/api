@@ -66,7 +66,7 @@ reservationsRouter.get(
             });
             const searchResult = await reservationService.search({
                 ...req.query,
-                project: { ids: [req.project.id] },
+                project: { id: { $eq: req.project.id } },
                 typeOf: cinerino.factory.reservationType.EventReservation
             });
 

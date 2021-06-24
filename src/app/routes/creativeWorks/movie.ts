@@ -27,7 +27,7 @@ movieRouter.get(
             });
             const { data } = await creativeWorkService.searchMovies({
                 ...req.query,
-                project: { ids: [req.project.id] }
+                project: { id: { $eq: req.project.id } }
             });
 
             res.json(data);

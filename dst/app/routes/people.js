@@ -103,7 +103,7 @@ peopleRouter.delete('/:id', permitScopes_1.default(['people.*', 'people.delete']
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
             siteId: credentials.siteId,
             sitePass: credentials.sitePass,
-            cardService: new cinerino.GMO.service.Card({ endpoint: credentials.endpoint })
+            cardService: new cinerino.GMO.service.Card({ endpoint: credentials.endpoint }, { timeout: cinerino.credentials.gmo.timeout })
         });
         const personRepo = new cinerino.repository.Person({
             userPoolId: project.settings.cognito.customerUserPool.id
@@ -268,7 +268,7 @@ peopleRouter.get('/:id/ownershipInfos/creditCards', permitScopes_1.default(['peo
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
             siteId: credentials.siteId,
             sitePass: credentials.sitePass,
-            cardService: new cinerino.GMO.service.Card({ endpoint: credentials.endpoint })
+            cardService: new cinerino.GMO.service.Card({ endpoint: credentials.endpoint }, { timeout: cinerino.credentials.gmo.timeout })
         });
         const searchCardResults = yield creditCardRepo.search({ personId: memberId });
         res.json(searchCardResults);
@@ -314,7 +314,7 @@ peopleRouter.delete('/:id/ownershipInfos/creditCards/:cardSeq', permitScopes_1.d
         const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
             siteId: credentials.siteId,
             sitePass: credentials.sitePass,
-            cardService: new cinerino.GMO.service.Card({ endpoint: credentials.endpoint })
+            cardService: new cinerino.GMO.service.Card({ endpoint: credentials.endpoint }, { timeout: cinerino.credentials.gmo.timeout })
         });
         yield creditCardRepo.deleteBySequenceNumber({
             personId: memberId,

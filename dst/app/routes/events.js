@@ -86,7 +86,7 @@ eventsRouter.get('', permitScopes_1.default(['events.*', 'events.read']), rateLi
             auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
-        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] }, 
+        const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined });
         const searchEventsResult = yield eventService.search(searchConditions);

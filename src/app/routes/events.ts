@@ -91,7 +91,7 @@ eventsRouter.get(
 
             const searchConditions: cinerino.factory.event.screeningEvent.ISearchConditions = {
                 ...req.query,
-                project: { ids: [req.project.id] },
+                project: { id: { $eq: req.project.id } },
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined

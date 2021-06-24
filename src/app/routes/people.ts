@@ -117,7 +117,10 @@ peopleRouter.delete(
             const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
                 siteId: credentials.siteId,
                 sitePass: credentials.sitePass,
-                cardService: new cinerino.GMO.service.Card({ endpoint: credentials.endpoint })
+                cardService: new cinerino.GMO.service.Card(
+                    { endpoint: credentials.endpoint },
+                    { timeout: cinerino.credentials.gmo.timeout }
+                )
             });
             const personRepo = new cinerino.repository.Person({
                 userPoolId: project.settings.cognito.customerUserPool.id
@@ -331,7 +334,10 @@ peopleRouter.get(
             const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
                 siteId: credentials.siteId,
                 sitePass: credentials.sitePass,
-                cardService: new cinerino.GMO.service.Card({ endpoint: credentials.endpoint })
+                cardService: new cinerino.GMO.service.Card(
+                    { endpoint: credentials.endpoint },
+                    { timeout: cinerino.credentials.gmo.timeout }
+                )
             });
             const searchCardResults = await creditCardRepo.search({ personId: memberId });
 
@@ -389,7 +395,10 @@ peopleRouter.delete(
             const creditCardRepo = new cinerino.repository.paymentMethod.CreditCard({
                 siteId: credentials.siteId,
                 sitePass: credentials.sitePass,
-                cardService: new cinerino.GMO.service.Card({ endpoint: credentials.endpoint })
+                cardService: new cinerino.GMO.service.Card(
+                    { endpoint: credentials.endpoint },
+                    { timeout: cinerino.credentials.gmo.timeout }
+                )
             });
             await creditCardRepo.deleteBySequenceNumber({
                 personId: memberId,

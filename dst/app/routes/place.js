@@ -25,7 +25,7 @@ placesRouter.get(`/${cinerino.factory.placeType.MovieTheater}`, permitScopes_1.d
             auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
-        const { data } = yield placeService.searchMovieTheaters(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] } }));
+        const { data } = yield placeService.searchMovieTheaters(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }));
         res.json(data);
     }
     catch (error) {

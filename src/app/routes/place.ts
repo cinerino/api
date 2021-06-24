@@ -24,7 +24,7 @@ placesRouter.get(
             });
             const { data } = await placeService.searchMovieTheaters({
                 ...req.query,
-                project: { ids: [req.project.id] }
+                project: { id: { $eq: req.project.id } }
             });
 
             res.json(data);

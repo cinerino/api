@@ -28,7 +28,7 @@ movieRouter.get('', permitScopes_1.default(['creativeWorks.*', 'creativeWorks.re
             auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
-        const { data } = yield creativeWorkService.searchMovies(Object.assign(Object.assign({}, req.query), { project: { ids: [req.project.id] } }));
+        const { data } = yield creativeWorkService.searchMovies(Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } } }));
         res.json(data);
     }
     catch (error) {
