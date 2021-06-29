@@ -81,6 +81,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - AccountTypeの使用を廃止してCurrencyTypeに変更
 - 全リソースのプロジェクトID検索条件を統一
 - GMOリクエストにタイムアウトを設定
+- 各リソースのプロジェクトID検索条件指定を最適化($exists: trueを削除)
 
 ### Deprecated
 
