@@ -271,13 +271,15 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
     express_validator_1.body('acceptedOffer.*.itemOffered.serviceOutput.programMembershipUsed')
         .optional()
-        .custom((value) => {
-        return typeof value.identifier === 'string' && value.identifier.length > 0
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO 会員の場合不要にもできる
-            && typeof value.accessCode === 'string' && value.accessCode.length > 0;
-    })
-        .withMessage(() => 'programMembershipUsed.identifier and programMembershipUsed.accessCode required')
+        .isString()
+    // body('acceptedOffer.*.itemOffered.serviceOutput.programMembershipUsed')
+    //     .optional()
+    //     .custom((value) => {
+    //         return typeof value.identifier === 'string' && value.identifier.length > 0
+    //             // tslint:disable-next-line:no-suspicious-comment
+    //             && typeof value.accessCode === 'string' && value.accessCode.length > 0;
+    //     })
+    //     .withMessage(() => 'programMembershipUsed.identifier and programMembershipUsed.accessCode required')
 ], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     yield rateLimit4transactionInProgress_1.default({
         typeOf: cinerino.factory.transactionType.PlaceOrder,
@@ -289,24 +291,42 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         id: req.params.transactionId
     })(req, res, next);
 }), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c, _d, _e;
     try {
         const eventService = new cinerino.chevre.service.Event({
             endpoint: cinerino.credentials.chevre.endpoint,
             auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO 事前にメンバーシップのアクセスコード確認を行う(chevreで行わない)
-        // chevreで行っていると会員のアクセスコードなしを実装できない
+        const acceptedOffer = [];
+        const acceptedOfferParams = req.body.acceptedOffer;
+        if (Array.isArray(acceptedOfferParams)) {
+            for (let offerParams of acceptedOfferParams) {
+                let programMembershipUsed = (_b = (_a = offerParams.itemOffered) === null || _a === void 0 ? void 0 : _a.serviceOutput) === null || _b === void 0 ? void 0 : _b.programMembershipUsed;
+                // トークン化されたメンバーシップがリクエストされた場合、実メンバーシップ情報へ変換する
+                if (typeof programMembershipUsed === 'string') {
+                    const serviceOutputOwnershipInfo = yield cinerino.service.code.verifyToken({
+                        project: req.project,
+                        agent: req.agent,
+                        token: String(programMembershipUsed),
+                        secret: process.env.TOKEN_SECRET,
+                        issuer: process.env.RESOURCE_SERVER_IDENTIFIER
+                    })({ action: new cinerino.repository.Action(mongoose.connection) });
+                    const typeOfGood = serviceOutputOwnershipInfo.typeOfGood;
+                    programMembershipUsed = {
+                        identifier: typeOfGood.identifier
+                    };
+                    offerParams = Object.assign(Object.assign({}, offerParams), { itemOffered: Object.assign(Object.assign({}, offerParams.itemOffered), { serviceOutput: Object.assign(Object.assign({}, (_c = offerParams.itemOffered) === null || _c === void 0 ? void 0 : _c.serviceOutput), { typeOf: cinerino.factory.reservationType.EventReservation, programMembershipUsed }) }) });
+                }
+                acceptedOffer.push(offerParams);
+            }
+        }
         const action = yield cinerino.service.offer.seatReservation.create({
             project: req.project,
             object: {
-                // ...req.body,
-                acceptedOffer: req.body.acceptedOffer,
-                // clientUser?: factory.clientUser.IClientUser;
+                acceptedOffer,
                 reservationFor: {
-                    id: (typeof ((_a = req.body.event) === null || _a === void 0 ? void 0 : _a.id) === 'string') ? req.body.event.id : (_b = req.body.reservationFor) === null || _b === void 0 ? void 0 : _b.id
+                    id: (typeof ((_d = req.body.event) === null || _d === void 0 ? void 0 : _d.id) === 'string') ? req.body.event.id : (_e = req.body.reservationFor) === null || _e === void 0 ? void 0 : _e.id
                 },
                 broker: (req.isProjectMember) ? req.agent : undefined
             },
@@ -575,7 +595,7 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
 }), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
+    var _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
     try {
         const orderDate = new Date();
         const actionRepo = new cinerino.repository.Action(mongoose.connection);
@@ -592,14 +612,14 @@ placeOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.defau
             }
             email.template = String(req.body.emailTemplate);
         }
-        const potentialActions = Object.assign(Object.assign({}, req.body.potentialActions), { order: Object.assign(Object.assign({}, (_c = req.body.potentialActions) === null || _c === void 0 ? void 0 : _c.order), { potentialActions: Object.assign(Object.assign({}, (_e = (_d = req.body.potentialActions) === null || _d === void 0 ? void 0 : _d.order) === null || _e === void 0 ? void 0 : _e.potentialActions), { sendOrder: Object.assign(Object.assign({}, (_h = (_g = (_f = req.body.potentialActions) === null || _f === void 0 ? void 0 : _f.order) === null || _g === void 0 ? void 0 : _g.potentialActions) === null || _h === void 0 ? void 0 : _h.sendOrder), { potentialActions: Object.assign(Object.assign({}, (_m = (_l = (_k = (_j = req.body.potentialActions) === null || _j === void 0 ? void 0 : _j.order) === null || _k === void 0 ? void 0 : _k.potentialActions) === null || _l === void 0 ? void 0 : _l.sendOrder) === null || _m === void 0 ? void 0 : _m.potentialActions), { sendEmailMessage: [
+        const potentialActions = Object.assign(Object.assign({}, req.body.potentialActions), { order: Object.assign(Object.assign({}, (_f = req.body.potentialActions) === null || _f === void 0 ? void 0 : _f.order), { potentialActions: Object.assign(Object.assign({}, (_h = (_g = req.body.potentialActions) === null || _g === void 0 ? void 0 : _g.order) === null || _h === void 0 ? void 0 : _h.potentialActions), { sendOrder: Object.assign(Object.assign({}, (_l = (_k = (_j = req.body.potentialActions) === null || _j === void 0 ? void 0 : _j.order) === null || _k === void 0 ? void 0 : _k.potentialActions) === null || _l === void 0 ? void 0 : _l.sendOrder), { potentialActions: Object.assign(Object.assign({}, (_q = (_p = (_o = (_m = req.body.potentialActions) === null || _m === void 0 ? void 0 : _m.order) === null || _o === void 0 ? void 0 : _o.potentialActions) === null || _p === void 0 ? void 0 : _p.sendOrder) === null || _q === void 0 ? void 0 : _q.potentialActions), { sendEmailMessage: [
                                 // tslint:disable-next-line:max-line-length
-                                ...(Array.isArray((_s = (_r = (_q = (_p = (_o = req.body.potentialActions) === null || _o === void 0 ? void 0 : _o.order) === null || _p === void 0 ? void 0 : _p.potentialActions) === null || _q === void 0 ? void 0 : _q.sendOrder) === null || _r === void 0 ? void 0 : _r.potentialActions) === null || _s === void 0 ? void 0 : _s.sendEmailMessage))
+                                ...(Array.isArray((_v = (_u = (_t = (_s = (_r = req.body.potentialActions) === null || _r === void 0 ? void 0 : _r.order) === null || _s === void 0 ? void 0 : _s.potentialActions) === null || _t === void 0 ? void 0 : _t.sendOrder) === null || _u === void 0 ? void 0 : _u.potentialActions) === null || _v === void 0 ? void 0 : _v.sendEmailMessage))
                                     // tslint:disable-next-line:max-line-length
-                                    ? (_x = (_w = (_v = (_u = (_t = req.body.potentialActions) === null || _t === void 0 ? void 0 : _t.order) === null || _u === void 0 ? void 0 : _u.potentialActions) === null || _v === void 0 ? void 0 : _v.sendOrder) === null || _w === void 0 ? void 0 : _w.potentialActions) === null || _x === void 0 ? void 0 : _x.sendEmailMessage : [],
+                                    ? (_0 = (_z = (_y = (_x = (_w = req.body.potentialActions) === null || _w === void 0 ? void 0 : _w.order) === null || _x === void 0 ? void 0 : _x.potentialActions) === null || _y === void 0 ? void 0 : _y.sendOrder) === null || _z === void 0 ? void 0 : _z.potentialActions) === null || _0 === void 0 ? void 0 : _0.sendEmailMessage : [],
                                 ...(sendEmailMessage) ? [{ object: email }] : []
                             ] }) }) }) }) });
-        const resultOrderParams = Object.assign(Object.assign({}, (_y = req.body.result) === null || _y === void 0 ? void 0 : _y.order), { confirmationNumber: undefined, orderDate: orderDate, numItems: {
+        const resultOrderParams = Object.assign(Object.assign({}, (_1 = req.body.result) === null || _1 === void 0 ? void 0 : _1.order), { confirmationNumber: undefined, orderDate: orderDate, numItems: {
                 maxValue: NUM_ORDER_ITEMS_MAX_VALUE
                 // minValue: 0
             } });

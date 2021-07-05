@@ -329,13 +329,15 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
         body('acceptedOffer.*.itemOffered.serviceOutput.programMembershipUsed')
             .optional()
-            .custom((value) => {
-                return typeof value.identifier === 'string' && value.identifier.length > 0
-                    // tslint:disable-next-line:no-suspicious-comment
-                    // TODO 会員の場合不要にもできる
-                    && typeof value.accessCode === 'string' && value.accessCode.length > 0;
-            })
-            .withMessage(() => 'programMembershipUsed.identifier and programMembershipUsed.accessCode required')
+            .isString()
+        // body('acceptedOffer.*.itemOffered.serviceOutput.programMembershipUsed')
+        //     .optional()
+        //     .custom((value) => {
+        //         return typeof value.identifier === 'string' && value.identifier.length > 0
+        //             // tslint:disable-next-line:no-suspicious-comment
+        //             && typeof value.accessCode === 'string' && value.accessCode.length > 0;
+        //     })
+        //     .withMessage(() => 'programMembershipUsed.identifier and programMembershipUsed.accessCode required')
     ],
     validator,
     async (req, res, next) => {
@@ -358,16 +360,49 @@ placeOrderTransactionsRouter.post<ParamsDictionary>(
                 project: { id: req.project.id }
             });
 
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO 事前にメンバーシップのアクセスコード確認を行う(chevreで行わない)
-            // chevreで行っていると会員のアクセスコードなしを実装できない
+            const acceptedOffer: cinerino.factory.event.screeningEvent.IAcceptedTicketOfferWithoutDetail[] = [];
+            const acceptedOfferParams = <cinerino.factory.event.screeningEvent.IAcceptedTicketOfferWithoutDetail[] | undefined>
+                req.body.acceptedOffer;
+
+            if (Array.isArray(acceptedOfferParams)) {
+                for (let offerParams of acceptedOfferParams) {
+                    let programMembershipUsed = offerParams.itemOffered?.serviceOutput?.programMembershipUsed;
+                    // トークン化されたメンバーシップがリクエストされた場合、実メンバーシップ情報へ変換する
+                    if (typeof programMembershipUsed === 'string') {
+                        type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
+                        const serviceOutputOwnershipInfo = await cinerino.service.code.verifyToken<IPayload>({
+                            project: req.project,
+                            agent: req.agent,
+                            token: String(programMembershipUsed),
+                            secret: <string>process.env.TOKEN_SECRET,
+                            issuer: <string>process.env.RESOURCE_SERVER_IDENTIFIER
+                        })({ action: new cinerino.repository.Action(mongoose.connection) });
+                        const typeOfGood = <cinerino.factory.ownershipInfo.IServiceOutput>serviceOutputOwnershipInfo.typeOfGood;
+                        programMembershipUsed = {
+                            identifier: <string>typeOfGood.identifier
+                        };
+
+                        offerParams = {
+                            ...offerParams,
+                            itemOffered: {
+                                ...offerParams.itemOffered,
+                                serviceOutput: {
+                                    ...offerParams.itemOffered?.serviceOutput,
+                                    typeOf: cinerino.factory.reservationType.EventReservation,
+                                    programMembershipUsed
+                                }
+                            }
+                        };
+                    }
+
+                    acceptedOffer.push(offerParams);
+                }
+            }
 
             const action = await cinerino.service.offer.seatReservation.create({
                 project: req.project,
                 object: {
-                    // ...req.body,
-                    acceptedOffer: req.body.acceptedOffer,
-                    // clientUser?: factory.clientUser.IClientUser;
+                    acceptedOffer,
                     reservationFor: {
                         id: (typeof req.body.event?.id === 'string') ? req.body.event.id : req.body.reservationFor?.id
                     },
