@@ -52,7 +52,9 @@ ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_
         .optional()
         .isISO8601()
         .toDate()
-], validator_1.default, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+], validator_1.default, 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const productService = new cinerino.chevre.service.Product({
             endpoint: cinerino.credentials.chevre.endpoint,
@@ -98,8 +100,42 @@ ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_
             default:
                 const searchOwnershipInfosResult = yield ownershipInfoService.search(searchConditions);
                 ownershipInfos = searchOwnershipInfosResult.data;
-            // throw new cinerino.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
         }
+        // let issuedThroughTypeOf = searchConditions.typeOfGood?.issuedThrough?.typeOf?.$eq;
+        // const typeOfGoodTypeOf = req.query.typeOfGood?.typeOf;
+        // // ssktsアプリへの互換性維持対応
+        // if (typeOfGoodTypeOf === 'Account') {
+        //     issuedThroughTypeOf = cinerino.factory.product.ProductType.PaymentCard;
+        // }
+        // if (typeOfGoodTypeOf === cinerino.factory.reservationType.EventReservation) {
+        //     issuedThroughTypeOf = cinerino.factory.product.ProductType.EventService;
+        // }
+        // switch (issuedThroughTypeOf) {
+        //     case cinerino.factory.product.ProductType.PaymentCard:
+        //         ownershipInfos = await cinerino.service.account.search({
+        //             project: req.project,
+        //             conditions: searchConditions
+        //         })({
+        //             ownershipInfo: ownershipInfoService
+        //         });
+        //         break;
+        //     case cinerino.factory.product.ProductType.EventService:
+        //         ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(<any>{
+        //             ...searchConditions,
+        //             project: { typeOf: req.project.typeOf, id: req.project.id }
+        //         })({
+        //             ownershipInfo: ownershipInfoService,
+        //             reservation: new cinerino.chevre.service.Reservation({
+        //                 endpoint: cinerino.credentials.chevre.endpoint,
+        //                 auth: chevreAuthClient,
+        //                 project: { id: req.project.id }
+        //             })
+        //         });
+        //         break;
+        //     default:
+        //         const searchOwnershipInfosResult = await ownershipInfoService.search(searchConditions);
+        //         ownershipInfos = searchOwnershipInfosResult.data;
+        // }
         res.json(ownershipInfos);
     }
     catch (error) {
