@@ -273,6 +273,8 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
         .optional()
         .custom((value) => {
         return typeof value.identifier === 'string' && value.identifier.length > 0
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO 会員の場合不要にもできる
             && typeof value.accessCode === 'string' && value.accessCode.length > 0;
     })
         .withMessage(() => 'programMembershipUsed.identifier and programMembershipUsed.accessCode required')
@@ -294,6 +296,9 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/offer/seatR
             auth: req.chevreAuthClient,
             project: { id: req.project.id }
         });
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO 事前にメンバーシップのアクセスコード確認を行う(chevreで行わない)
+        // chevreで行っていると会員のアクセスコードなしを実装できない
         const action = yield cinerino.service.offer.seatReservation.create({
             project: req.project,
             object: {
