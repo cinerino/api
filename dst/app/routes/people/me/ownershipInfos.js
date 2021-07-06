@@ -55,19 +55,20 @@ ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_
 ], validator_1.default, 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d;
     try {
-        const productService = new cinerino.chevre.service.Product({
-            endpoint: cinerino.credentials.chevre.endpoint,
-            auth: req.chevreAuthClient,
-            project: { id: req.project.id }
-        });
-        const searchPaymentCardProductsResult = yield productService.search({
-            limit: 100,
-            project: { id: { $eq: req.project.id } },
-            typeOf: { $eq: cinerino.factory.product.ProductType.PaymentCard }
-        });
-        const paymentCardProducts = searchPaymentCardProductsResult.data;
-        const paymentCardOutputTypes = [...new Set(paymentCardProducts.map((p) => { var _a; return String((_a = p.serviceOutput) === null || _a === void 0 ? void 0 : _a.typeOf); }))];
+        // const productService = new cinerino.chevre.service.Product({
+        //     endpoint: cinerino.credentials.chevre.endpoint,
+        //     auth: req.chevreAuthClient,
+        //     project: { id: req.project.id }
+        // });
+        // const searchPaymentCardProductsResult = await productService.search({
+        //     limit: 100,
+        //     project: { id: { $eq: req.project.id } },
+        //     typeOf: { $eq: cinerino.factory.product.ProductType.PaymentCard }
+        // });
+        // const paymentCardProducts = searchPaymentCardProductsResult.data;
+        // const paymentCardOutputTypes = [...new Set(paymentCardProducts.map((p) => String(p.serviceOutput?.typeOf)))];
         let ownershipInfos;
         const searchConditions = Object.assign(Object.assign({}, req.query), { project: { id: { $eq: req.project.id } }, 
             // tslint:disable-next-line:no-magic-numbers
@@ -77,41 +78,9 @@ ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_
             auth: chevreAuthClient,
             project: { id: req.project.id }
         });
-        const typeOfGood = req.query.typeOfGood;
-        switch (true) {
-            case paymentCardOutputTypes.includes(String(typeOfGood.typeOf)):
-                ownershipInfos = yield cinerino.service.account.search({
-                    project: req.project,
-                    conditions: searchConditions
-                })({
-                    ownershipInfo: ownershipInfoService
-                });
-                break;
-            case cinerino.factory.reservationType.EventReservation === typeOfGood.typeOf:
-                ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(Object.assign(Object.assign({}, searchConditions), { project: { typeOf: req.project.typeOf, id: req.project.id } }))({
-                    ownershipInfo: ownershipInfoService,
-                    reservation: new cinerino.chevre.service.Reservation({
-                        endpoint: cinerino.credentials.chevre.endpoint,
-                        auth: chevreAuthClient,
-                        project: { id: req.project.id }
-                    })
-                });
-                break;
-            default:
-                const searchOwnershipInfosResult = yield ownershipInfoService.search(searchConditions);
-                ownershipInfos = searchOwnershipInfosResult.data;
-        }
-        // let issuedThroughTypeOf = searchConditions.typeOfGood?.issuedThrough?.typeOf?.$eq;
-        // const typeOfGoodTypeOf = req.query.typeOfGood?.typeOf;
-        // // ssktsアプリへの互換性維持対応
-        // if (typeOfGoodTypeOf === 'Account') {
-        //     issuedThroughTypeOf = cinerino.factory.product.ProductType.PaymentCard;
-        // }
-        // if (typeOfGoodTypeOf === cinerino.factory.reservationType.EventReservation) {
-        //     issuedThroughTypeOf = cinerino.factory.product.ProductType.EventService;
-        // }
-        // switch (issuedThroughTypeOf) {
-        //     case cinerino.factory.product.ProductType.PaymentCard:
+        // const typeOfGood = <cinerino.factory.ownershipInfo.ITypeOfGoodSearchConditions>req.query.typeOfGood;
+        // switch (true) {
+        //     case paymentCardOutputTypes.includes(String(typeOfGood.typeOf)):
         //         ownershipInfos = await cinerino.service.account.search({
         //             project: req.project,
         //             conditions: searchConditions
@@ -119,7 +88,7 @@ ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_
         //             ownershipInfo: ownershipInfoService
         //         });
         //         break;
-        //     case cinerino.factory.product.ProductType.EventService:
+        //     case cinerino.factory.reservationType.EventReservation === typeOfGood.typeOf:
         //         ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(<any>{
         //             ...searchConditions,
         //             project: { typeOf: req.project.typeOf, id: req.project.id }
@@ -136,6 +105,46 @@ ownershipInfosRouter.get('', permitScopes_1.default(['people.me.*']), rateLimit_
         //         const searchOwnershipInfosResult = await ownershipInfoService.search(searchConditions);
         //         ownershipInfos = searchOwnershipInfosResult.data;
         // }
+        // ssktsにおけるtypeOfGood.typeOfでの検索を、typeOfGood.issuedThrough.typeOfでの検索に変換する
+        // const issuedThroughTypeOf = searchConditions.typeOfGood?.issuedThrough?.typeOf?.$eq;
+        const typeOfGoodTypeOf = (_a = searchConditions.typeOfGood) === null || _a === void 0 ? void 0 : _a.typeOf;
+        // // ssktsアプリへの互換性維持対応
+        if (typeOfGoodTypeOf === 'Account') {
+            searchConditions.typeOfGood = Object.assign(Object.assign({}, searchConditions.typeOfGood), { issuedThrough: { typeOf: { $eq: cinerino.factory.product.ProductType.PaymentCard } } });
+        }
+        if (typeOfGoodTypeOf === cinerino.factory.reservationType.EventReservation) {
+            searchConditions.typeOfGood = Object.assign(Object.assign({}, searchConditions.typeOfGood), { issuedThrough: { typeOf: { $eq: cinerino.factory.product.ProductType.EventService } } });
+        }
+        if (typeOfGoodTypeOf === 'ProgramMembership') {
+            // typeOfGood?.typeOf条件は今日制定に削除する('ProgramMembership'への依存を排除するため)
+            searchConditions.typeOfGood = {
+                // ...searchConditions.typeOfGood,
+                issuedThrough: { typeOf: { $eq: cinerino.factory.product.ProductType.MembershipService } }
+            };
+        }
+        switch ((_d = (_c = (_b = searchConditions.typeOfGood) === null || _b === void 0 ? void 0 : _b.issuedThrough) === null || _c === void 0 ? void 0 : _c.typeOf) === null || _d === void 0 ? void 0 : _d.$eq) {
+            case cinerino.factory.product.ProductType.PaymentCard:
+                ownershipInfos = yield cinerino.service.account.search({
+                    project: req.project,
+                    conditions: searchConditions
+                })({
+                    ownershipInfo: ownershipInfoService
+                });
+                break;
+            case cinerino.factory.product.ProductType.EventService:
+                ownershipInfos = yield cinerino.service.reservation.searchScreeningEventReservations(Object.assign(Object.assign({}, searchConditions), { project: { typeOf: req.project.typeOf, id: req.project.id } }))({
+                    ownershipInfo: ownershipInfoService,
+                    reservation: new cinerino.chevre.service.Reservation({
+                        endpoint: cinerino.credentials.chevre.endpoint,
+                        auth: chevreAuthClient,
+                        project: { id: req.project.id }
+                    })
+                });
+                break;
+            default:
+                const searchOwnershipInfosResult = yield ownershipInfoService.search(searchConditions);
+                ownershipInfos = searchOwnershipInfosResult.data;
+        }
         res.json(ownershipInfos);
     }
     catch (error) {

@@ -57,18 +57,18 @@ ownershipInfosRouter.get(
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
-            const productService = new cinerino.chevre.service.Product({
-                endpoint: cinerino.credentials.chevre.endpoint,
-                auth: req.chevreAuthClient,
-                project: { id: req.project.id }
-            });
-            const searchPaymentCardProductsResult = await productService.search({
-                limit: 100,
-                project: { id: { $eq: req.project.id } },
-                typeOf: { $eq: cinerino.factory.product.ProductType.PaymentCard }
-            });
-            const paymentCardProducts = searchPaymentCardProductsResult.data;
-            const paymentCardOutputTypes = [...new Set(paymentCardProducts.map((p) => String(p.serviceOutput?.typeOf)))];
+            // const productService = new cinerino.chevre.service.Product({
+            //     endpoint: cinerino.credentials.chevre.endpoint,
+            //     auth: req.chevreAuthClient,
+            //     project: { id: req.project.id }
+            // });
+            // const searchPaymentCardProductsResult = await productService.search({
+            //     limit: 100,
+            //     project: { id: { $eq: req.project.id } },
+            //     typeOf: { $eq: cinerino.factory.product.ProductType.PaymentCard }
+            // });
+            // const paymentCardProducts = searchPaymentCardProductsResult.data;
+            // const paymentCardOutputTypes = [...new Set(paymentCardProducts.map((p) => String(p.serviceOutput?.typeOf)))];
 
             let ownershipInfos: cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGoodWithDetail>[]
                 | cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>[];
@@ -87,49 +87,9 @@ ownershipInfosRouter.get(
                 project: { id: req.project.id }
             });
 
-            const typeOfGood = <cinerino.factory.ownershipInfo.ITypeOfGoodSearchConditions>req.query.typeOfGood;
-            switch (true) {
-                case paymentCardOutputTypes.includes(String(typeOfGood.typeOf)):
-                    ownershipInfos = await cinerino.service.account.search({
-                        project: req.project,
-                        conditions: searchConditions
-                    })({
-                        ownershipInfo: ownershipInfoService
-                    });
-
-                    break;
-
-                case cinerino.factory.reservationType.EventReservation === typeOfGood.typeOf:
-                    ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(<any>{
-                        ...searchConditions,
-                        project: { typeOf: req.project.typeOf, id: req.project.id }
-                    })({
-                        ownershipInfo: ownershipInfoService,
-                        reservation: new cinerino.chevre.service.Reservation({
-                            endpoint: cinerino.credentials.chevre.endpoint,
-                            auth: chevreAuthClient,
-                            project: { id: req.project.id }
-                        })
-                    });
-                    break;
-
-                default:
-                    const searchOwnershipInfosResult = await ownershipInfoService.search(searchConditions);
-                    ownershipInfos = searchOwnershipInfosResult.data;
-            }
-
-            // let issuedThroughTypeOf = searchConditions.typeOfGood?.issuedThrough?.typeOf?.$eq;
-            // const typeOfGoodTypeOf = req.query.typeOfGood?.typeOf;
-            // // ssktsアプリへの互換性維持対応
-            // if (typeOfGoodTypeOf === 'Account') {
-            //     issuedThroughTypeOf = cinerino.factory.product.ProductType.PaymentCard;
-            // }
-            // if (typeOfGoodTypeOf === cinerino.factory.reservationType.EventReservation) {
-            //     issuedThroughTypeOf = cinerino.factory.product.ProductType.EventService;
-            // }
-
-            // switch (issuedThroughTypeOf) {
-            //     case cinerino.factory.product.ProductType.PaymentCard:
+            // const typeOfGood = <cinerino.factory.ownershipInfo.ITypeOfGoodSearchConditions>req.query.typeOfGood;
+            // switch (true) {
+            //     case paymentCardOutputTypes.includes(String(typeOfGood.typeOf)):
             //         ownershipInfos = await cinerino.service.account.search({
             //             project: req.project,
             //             conditions: searchConditions
@@ -139,7 +99,7 @@ ownershipInfosRouter.get(
 
             //         break;
 
-            //     case cinerino.factory.product.ProductType.EventService:
+            //     case cinerino.factory.reservationType.EventReservation === typeOfGood.typeOf:
             //         ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(<any>{
             //             ...searchConditions,
             //             project: { typeOf: req.project.typeOf, id: req.project.id }
@@ -157,6 +117,60 @@ ownershipInfosRouter.get(
             //         const searchOwnershipInfosResult = await ownershipInfoService.search(searchConditions);
             //         ownershipInfos = searchOwnershipInfosResult.data;
             // }
+
+            // ssktsにおけるtypeOfGood.typeOfでの検索を、typeOfGood.issuedThrough.typeOfでの検索に変換する
+            // const issuedThroughTypeOf = searchConditions.typeOfGood?.issuedThrough?.typeOf?.$eq;
+            const typeOfGoodTypeOf = searchConditions.typeOfGood?.typeOf;
+            // // ssktsアプリへの互換性維持対応
+            if (typeOfGoodTypeOf === 'Account') {
+                searchConditions.typeOfGood = {
+                    ...searchConditions.typeOfGood,
+                    issuedThrough: { typeOf: { $eq: cinerino.factory.product.ProductType.PaymentCard } }
+                };
+            }
+            if (typeOfGoodTypeOf === cinerino.factory.reservationType.EventReservation) {
+                searchConditions.typeOfGood = {
+                    ...searchConditions.typeOfGood,
+                    issuedThrough: { typeOf: { $eq: cinerino.factory.product.ProductType.EventService } }
+                };
+            }
+            if (typeOfGoodTypeOf === 'ProgramMembership') {
+                // typeOfGood?.typeOf条件は今日制定に削除する('ProgramMembership'への依存を排除するため)
+                searchConditions.typeOfGood = {
+                    // ...searchConditions.typeOfGood,
+                    issuedThrough: { typeOf: { $eq: cinerino.factory.product.ProductType.MembershipService } }
+                };
+            }
+
+            switch (searchConditions.typeOfGood?.issuedThrough?.typeOf?.$eq) {
+                case cinerino.factory.product.ProductType.PaymentCard:
+                    ownershipInfos = await cinerino.service.account.search({
+                        project: req.project,
+                        conditions: searchConditions
+                    })({
+                        ownershipInfo: ownershipInfoService
+                    });
+
+                    break;
+
+                case cinerino.factory.product.ProductType.EventService:
+                    ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(<any>{
+                        ...searchConditions,
+                        project: { typeOf: req.project.typeOf, id: req.project.id }
+                    })({
+                        ownershipInfo: ownershipInfoService,
+                        reservation: new cinerino.chevre.service.Reservation({
+                            endpoint: cinerino.credentials.chevre.endpoint,
+                            auth: chevreAuthClient,
+                            project: { id: req.project.id }
+                        })
+                    });
+                    break;
+
+                default:
+                    const searchOwnershipInfosResult = await ownershipInfoService.search(searchConditions);
+                    ownershipInfos = searchOwnershipInfosResult.data;
+            }
 
             res.json(ownershipInfos);
         } catch (error) {
