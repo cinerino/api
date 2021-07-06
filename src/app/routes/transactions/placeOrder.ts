@@ -567,7 +567,8 @@ async function authorizePointAward(req: Request): Promise<cinerino.factory.trans
     // 所有メンバーシップを検索
     const searchOwnershipInfosResult = await ownershipInfoService.search({
         project: { id: { $eq: req.project.id } },
-        typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
+        // typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
+        typeOfGood: { issuedThrough: { typeOf: { $eq: cinerino.factory.product.ProductType.MembershipService } } },
         ownedBy: { id: req.agent.id },
         ownedFrom: now,
         ownedThrough: now

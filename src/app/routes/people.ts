@@ -141,7 +141,8 @@ peopleRouter.delete(
             const now = new Date();
             const searchOwnershipInfosResult = await ownershipInfoService.search({
                 project: { id: { $eq: req.project.id } },
-                typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
+                // typeOfGood: { typeOf: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership },
+                typeOfGood: { issuedThrough: { typeOf: { $eq: cinerino.factory.product.ProductType.MembershipService } } },
                 ownedBy: { id: person.id },
                 ownedFrom: now,
                 ownedThrough: now

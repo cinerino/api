@@ -128,7 +128,8 @@ ownershipInfosRouter.get(
             //     .exec();
             const searchOwnershipInfosResult = await ownershipInfoService.search({
                 project: { id: { $eq: req.project.id } },
-                typeOfGood: { typeOf: { $eq: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership } },
+                // typeOfGood: { typeOf: { $eq: cinerino.factory.programMembership.ProgramMembershipType.ProgramMembership } },
+                typeOfGood: { issuedThrough: { typeOf: { $eq: cinerino.factory.product.ProductType.MembershipService } } },
                 countDocuments: '1',
                 ownedFromGte: new Date(fromDate),
                 ownedFromLte: new Date(toDate),
