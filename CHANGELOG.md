@@ -86,6 +86,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 予約所有権のtypeOfGoodにissuedThroughを追加
 - メンバーシップ登録済チェック時の所有権検索をプロダクトIDに依存するように調整
 - メンバーシップ所有権検索をtypeOfGood.typeOf: ProgramMembershipに依存しないように調整
+- メンバーシップ所有権のtypeOfGood.membershipForへの依存を排除
 
 ### Deprecated
 

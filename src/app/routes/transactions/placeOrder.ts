@@ -575,12 +575,18 @@ async function authorizePointAward(req: Request): Promise<cinerino.factory.trans
     });
     const programMembershipOwnershipInfos = searchOwnershipInfosResult.data;
 
-    const programMemberships = programMembershipOwnershipInfos.map((o) => o.typeOfGood);
+    const serviceOutputs = <cinerino.factory.ownershipInfo.IServiceOutput[]>
+        programMembershipOwnershipInfos.map((o) => o.typeOfGood);
     const givePointAwardParams: cinerino.factory.transaction.placeOrder.IGivePointAwardParams[] = [];
 
-    if (programMemberships.length > 0) {
-        for (const programMembership of programMemberships) {
-            const membershipServiceId = <string>(<any>programMembership).membershipFor?.id;
+    if (serviceOutputs.length > 0) {
+        for (const serviceOutput of serviceOutputs) {
+            // const membershipServiceId = <string>(<any>serviceOutput).membershipFor?.id;
+            const membershipServiceId = serviceOutput.issuedThrough?.id;
+            if (typeof membershipServiceId === 'string') {
+                throw new cinerino.factory.errors.NotFound('typeOfGood.issuedThrough.id');
+            }
+
             const searchMembershipServicesResult = await productService.search({
                 limit: 1,
                 id: { $eq: membershipServiceId }
@@ -589,7 +595,6 @@ async function authorizePointAward(req: Request): Promise<cinerino.factory.trans
             if (membershipService === undefined) {
                 throw new cinerino.factory.errors.NotFound('MembershipService');
             }
-            // const membershipService = await productService.findById({ id: membershipServiceId });
 
             // 登録時の獲得ポイント
             const membershipServiceOutput = membershipService.serviceOutput;

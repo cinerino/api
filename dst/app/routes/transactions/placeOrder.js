@@ -476,11 +476,15 @@ function authorizePointAward(req) {
             ownedThrough: now
         });
         const programMembershipOwnershipInfos = searchOwnershipInfosResult.data;
-        const programMemberships = programMembershipOwnershipInfos.map((o) => o.typeOfGood);
+        const serviceOutputs = programMembershipOwnershipInfos.map((o) => o.typeOfGood);
         const givePointAwardParams = [];
-        if (programMemberships.length > 0) {
-            for (const programMembership of programMemberships) {
-                const membershipServiceId = (_a = programMembership.membershipFor) === null || _a === void 0 ? void 0 : _a.id;
+        if (serviceOutputs.length > 0) {
+            for (const serviceOutput of serviceOutputs) {
+                // const membershipServiceId = <string>(<any>serviceOutput).membershipFor?.id;
+                const membershipServiceId = (_a = serviceOutput.issuedThrough) === null || _a === void 0 ? void 0 : _a.id;
+                if (typeof membershipServiceId === 'string') {
+                    throw new cinerino.factory.errors.NotFound('typeOfGood.issuedThrough.id');
+                }
                 const searchMembershipServicesResult = yield productService.search({
                     limit: 1,
                     id: { $eq: membershipServiceId }
@@ -489,7 +493,6 @@ function authorizePointAward(req) {
                 if (membershipService === undefined) {
                     throw new cinerino.factory.errors.NotFound('MembershipService');
                 }
-                // const membershipService = await productService.findById({ id: membershipServiceId });
                 // 登録時の獲得ポイント
                 const membershipServiceOutput = membershipService.serviceOutput;
                 if (membershipServiceOutput !== undefined) {
