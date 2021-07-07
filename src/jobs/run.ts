@@ -12,7 +12,6 @@ import onTransactionExpired from './continuous/onTransactionExpired/run';
 
 import cancelReservation from './continuous/cancelReservation/run';
 import confirmReservation from './continuous/confirmReservation/run';
-import createOrderReport from './continuous/createOrderReport/run';
 import deleteMember from './continuous/deleteMember/run';
 import givePointAward from './continuous/givePointAward/run';
 import moneyTransfer from './continuous/moneyTransfer/run';
@@ -44,7 +43,6 @@ export default async () => {
 
     await cancelReservation({});
     await confirmReservation({});
-    await createOrderReport({});
     await deleteMember({});
     await givePointAward({});
     await moneyTransfer({});

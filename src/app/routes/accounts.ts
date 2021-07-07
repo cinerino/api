@@ -92,7 +92,7 @@ accountsRouter.post(
 
             switch (payload.typeOf) {
                 case cinerino.factory.order.OrderType.Order:
-                    orderNumber = <string>(<any>payload).orderNumber;
+                    orderNumber = payload.orderNumber;
 
                     // 注文検索
                     const orderService = new cinerino.chevre.service.Order({

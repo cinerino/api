@@ -13,7 +13,8 @@ import permitScopes from '../middlewares/permitScopes';
 import rateLimit from '../middlewares/rateLimit';
 import validator from '../middlewares/validator';
 
-type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>;
+type IPayload = cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood>
+    | cinerino.factory.order.ISimpleOrder;
 
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
@@ -136,7 +137,7 @@ reservationsRouter.post(
             })({});
 
             switch (payload.typeOf) {
-                case <any>'Order':
+                case 'Order':
                     const orderService = new cinerino.chevre.service.Order({
                         endpoint: cinerino.credentials.chevre.endpoint,
                         auth: chevreAuthClient,
@@ -144,7 +145,7 @@ reservationsRouter.post(
                     });
 
                     // 注文検索
-                    const order = await orderService.findByOrderNumber({ orderNumber: (<any>payload).orderNumber });
+                    const order = await orderService.findByOrderNumber({ orderNumber: payload.orderNumber });
 
                     const acceptedOffer = order.acceptedOffers.find((offer) => {
                         return offer.itemOffered.typeOf === cinerino.factory.reservationType.EventReservation
