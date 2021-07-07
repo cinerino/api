@@ -482,7 +482,7 @@ function authorizePointAward(req) {
             for (const serviceOutput of serviceOutputs) {
                 // const membershipServiceId = <string>(<any>serviceOutput).membershipFor?.id;
                 const membershipServiceId = (_a = serviceOutput.issuedThrough) === null || _a === void 0 ? void 0 : _a.id;
-                if (typeof membershipServiceId === 'string') {
+                if (typeof membershipServiceId !== 'string') {
                     throw new cinerino.factory.errors.NotFound('typeOfGood.issuedThrough.id');
                 }
                 const searchMembershipServicesResult = yield productService.search({

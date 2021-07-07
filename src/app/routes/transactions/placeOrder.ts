@@ -583,7 +583,7 @@ async function authorizePointAward(req: Request): Promise<cinerino.factory.trans
         for (const serviceOutput of serviceOutputs) {
             // const membershipServiceId = <string>(<any>serviceOutput).membershipFor?.id;
             const membershipServiceId = serviceOutput.issuedThrough?.id;
-            if (typeof membershipServiceId === 'string') {
+            if (typeof membershipServiceId !== 'string') {
                 throw new cinerino.factory.errors.NotFound('typeOfGood.issuedThrough.id');
             }
 
