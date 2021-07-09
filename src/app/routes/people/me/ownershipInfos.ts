@@ -4,6 +4,7 @@
 import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import { query } from 'express-validator';
+import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import permitScopes from '../../../middlewares/permitScopes';
@@ -209,8 +210,19 @@ ownershipInfosRouter.post(
             if (ownershipInfo === undefined) {
                 throw new cinerino.factory.errors.NotFound('OwnershipInfo');
             }
+
+            // 所有者確認
             if (ownershipInfo.ownedBy.id !== req.user.sub) {
                 throw new cinerino.factory.errors.Unauthorized();
+            }
+
+            // 所有期間で制限
+            const invalidOwnedFrom = moment(ownershipInfo.ownedFrom)
+                .isAfter(moment(now));
+            const invalidOwnedThrough = ownershipInfo.ownedThrough !== undefined && moment(ownershipInfo.ownedThrough)
+                .isBefore(moment(now));
+            if (invalidOwnedFrom || invalidOwnedThrough) {
+                throw new cinerino.factory.errors.Argument('id', 'Out of ownership period');
             }
 
             const expiresInSeconds = CODE_EXPIRES_IN_SECONDS_DEFAULT;

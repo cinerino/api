@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
+const moment = require("moment");
 const mongoose = require("mongoose");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const rateLimit_1 = require("../../../middlewares/rateLimit");
@@ -173,8 +174,17 @@ ownershipInfosRouter.post('/:id/authorize', permitScopes_1.default(['people.me.*
         if (ownershipInfo === undefined) {
             throw new cinerino.factory.errors.NotFound('OwnershipInfo');
         }
+        // 所有者確認
         if (ownershipInfo.ownedBy.id !== req.user.sub) {
             throw new cinerino.factory.errors.Unauthorized();
+        }
+        // 所有期間で制限
+        const invalidOwnedFrom = moment(ownershipInfo.ownedFrom)
+            .isAfter(moment(now));
+        const invalidOwnedThrough = ownershipInfo.ownedThrough !== undefined && moment(ownershipInfo.ownedThrough)
+            .isBefore(moment(now));
+        if (invalidOwnedFrom || invalidOwnedThrough) {
+            throw new cinerino.factory.errors.Argument('id', 'Out of ownership period');
         }
         const expiresInSeconds = CODE_EXPIRES_IN_SECONDS_DEFAULT;
         const authorizations = yield cinerino.service.code.publish({

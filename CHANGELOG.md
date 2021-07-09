@@ -112,6 +112,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 印刷アクション関連サービスを削除
 - イベント部分更新を削除
 - createOrderReportタスクを削除
+- 所有権承認時に所有期間を確認
 
 ### Fixed
 
