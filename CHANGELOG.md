@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 顧客検索を追加
 - ABORTED_TASKS_WITHOUT_REPORT設定を追加
 - サービスアウトプット所有権コード発行サービスを追加
+- 決済URL発行サービスを追加
 
 ### Changed
 
@@ -87,6 +88,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - メンバーシップ登録済チェック時の所有権検索をプロダクトIDに依存するように調整
 - メンバーシップ所有権検索をtypeOfGood.typeOf: ProgramMembershipに依存しないように調整
 - メンバーシップ所有権のtypeOfGood.membershipForへの依存を排除
+- クレジットカード決済承認時に決済IDを明示的に指定できるように調整
 
 ### Deprecated
 
